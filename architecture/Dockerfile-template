@@ -1,0 +1,42 @@
+# DOCKERFILE TEMPLATE
+# Copy into each microservice's repo root as `Dockerfile`.
+# Multi-stage build: compile in a full SDK image, run in a minimal image.
+# Replace <placeholders>. Keep the LABELs — they're what makes an image traceable back to its Requirement.
+
+# ---- Build stage ----
+FROM <base-sdk-image>:<pinned-version> AS build
+WORKDIR /app
+COPY . .
+RUN <build-command>              # e.g. "npm ci && npm run build" or "mvn -B package"
+
+# ---- Runtime stage ----
+FROM <minimal-base-image>:<pinned-version>
+WORKDIR /app
+
+# Traceability labels — required. These are what let a running container be traced
+# back to the Requirement/Design/Feature/Story that produced it (see the canonical
+# ID model in the SDLC section of the summary doc).
+LABEL org.eis.requirement-id="REQ-<APP-CODE>-<NNN>" \
+      org.eis.design-id="DES-<APP-CODE>-<NNN>" \
+      org.eis.feature-id="FTR-<APP-CODE>-<NNN>" \
+      org.eis.application="<Application Name>" \
+      org.eis.tier="paas"        # or "saas" — determines which pipeline template applies
+
+# Run as a non-root user — never run production containers as root.
+RUN addgroup --system app && adduser --system --ingroup app app
+USER app
+
+COPY --from=build --chown=app:app /app/<build-output-path> ./
+EXPOSE <port>
+
+# Basic healthcheck — required for orchestrators (EKS) to know when the container is ready/live.
+HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
+  CMD <healthcheck-command>      # e.g. "curl -f http://localhost:<port>/health || exit 1"
+
+ENTRYPOINT ["<entrypoint-command>"]
+
+# --- Notes ---
+# - Pin base image versions explicitly (never ":latest") so builds are reproducible.
+# - Keep the runtime image minimal (distroless/alpine where the runtime allows it) to reduce scan findings.
+# - Image tag on push should be <service-name>:<requirement-id>-<git-sha>, e.g. catalog-service:REQ-CAT-001-a3f9c1
+#   so a running container's tag alone identifies the requirement and exact commit that produced it.

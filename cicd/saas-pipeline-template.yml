@@ -1,0 +1,100 @@
+# SAAS-TIER PIPELINE TEMPLATE
+# Place at .github/workflows/deploy.yml in any repo with org.eis.tier="saas"
+# (Valam, Varthan, Thittam, Thiran, Yukth, Tharav — anything a customer subscribes to).
+# Stricter than the PaaS-tier template: near-zero downtime tolerance, backward-compatible
+# APIs required, automated rollback on regression, and a human-approval gate before
+# production — mirroring the Change Risk Engine's high-risk-write handling.
+# Replace <placeholders> before use.
+
+name: SaaS Build & Deploy
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+env:
+  ECR_REPOSITORY: <service-name>
+  EKS_CLUSTER: <cluster-name>
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Lint traceability IDs
+        run: <script-checking-REQ/DES/TC-ids-in-PR-and-commit-messages>
+
+      - name: Run tests
+        run: <test-command>
+
+      - name: API backward-compatibility check
+        run: <openapi-diff-or-contract-test-against-previous-version>
+        # Required gate — a breaking API change here must be a major version bump
+        # with a deprecation window, not a silent break for integrated customers/partners.
+
+      - name: Build Docker image
+        run: |
+          docker build -t $ECR_REPOSITORY:${{ github.sha }} .
+          docker tag $ECR_REPOSITORY:${{ github.sha }} $ECR_REPOSITORY:<requirement-id>-${{ github.sha }}
+
+      - name: Scan image
+        run: <trivy-or-ecr-scan-command>
+        # Required gate — fail the build on Critical/High findings. No exceptions for
+        # customer-facing services.
+
+      - name: Push to ECR
+        if: github.ref == 'refs/heads/main'
+        run: |
+          aws ecr get-login-password | docker login --username AWS --password-stdin <ecr-registry-url>
+          docker push $ECR_REPOSITORY:${{ github.sha }}
+          docker push $ECR_REPOSITORY:<requirement-id>-${{ github.sha }}
+
+  deploy_lower_envs:
+    needs: build
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Deploy to DEV
+        run: <kubectl-apply-or-helm-upgrade-command>
+      - name: Deploy to QA
+        run: <same-image-tag-promoted-to-QA>
+      - name: Deploy to STAGING
+        run: <same-image-tag-promoted-to-STAGING>
+      - name: Run smoke tests against STAGING
+        run: <smoke-test-command>
+
+  human_approval:
+    needs: deploy_lower_envs
+    runs-on: ubuntu-latest
+    environment: production-approval   # GitHub Environment with required reviewers configured
+    steps:
+      - name: Await approval
+        run: echo "Production deploy requires sign-off — configure required reviewers on the 'production-approval' environment."
+        # This is the Change Risk Engine's human-approval-above-a-threshold rule,
+        # applied here: every SaaS production deploy is a high-risk write by default.
+
+  deploy_production:
+    needs: human_approval
+    runs-on: ubuntu-latest
+    steps:
+      - name: Canary deploy (5% traffic)
+        run: <canary-deploy-command-e.g.-argo-rollouts-or-weighted-target-groups>
+
+      - name: Monitor canary
+        run: <wait-and-check-CloudWatch-error-rate/latency-alarms>
+        # Automated gate — if error rate or latency alarms fire during the canary
+        # window, auto-rollback below fires instead of proceeding.
+
+      - name: Promote to 100% or roll back
+        run: |
+          <if-canary-healthy>: <promote-full-traffic-command>
+          <if-canary-unhealthy>: <auto-rollback-to-previous-image-tag-command>
+
+# --- Notes ---
+# - The SAME image tag built once above is promoted through every environment — never rebuilt per stage.
+# - Canary + automated CloudWatch-triggered rollback is required here, unlike the PaaS-tier template.
+# - The human_approval job is the enforcement point for the Change Risk Engine's rule that production
+#   changes to customer-facing systems need explicit sign-off, not just a passing test suite.

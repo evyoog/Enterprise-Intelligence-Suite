@@ -1,0 +1,73 @@
+# API SPEC TEMPLATE (OpenAPI 3.0)
+# File naming convention: API-<APP-CODE>-<NNN>.yaml
+# Fill in every <placeholder>. Keep one file per API; reference its ID (API-<APP-CODE>-<NNN>) in the owning Design doc.
+
+openapi: 3.0.3
+info:
+  title: <API Name>              # e.g. Catalog Search API
+  description: >
+    <One paragraph: what this API does, and which Requirement/Design it implements.>
+    x-requirement-id: REQ-<APP-CODE>-<NNN>
+    x-design-id: DES-<APP-CODE>-<NNN>
+  version: "1.0.0"
+  x-api-id: API-<APP-CODE>-<NNN>
+  x-application: <Application Name>
+  x-capability: <Capability Name>
+  x-priority: P0                 # P0 / P1 / P2
+  x-risk-classification: low     # low / medium / high / critical — drives the approval requirement in the Change Risk Engine
+
+servers:
+  - url: https://api.example.com/v1
+
+paths:
+  /v1/<resource>:
+    get:
+      summary: <what this operation does>
+      operationId: <resource_verb>       # e.g. searchProducts — this becomes the MCP tool name (<domain>.<operationId>)
+      x-mcp-tool: true
+      x-primary-consumer: Customer / AI Agent / Platform Service
+      security:
+        - oauth2: []
+      parameters:
+        - name: <param>
+          in: query
+          required: false
+          schema:
+            type: string
+          description: <what it filters/controls>
+      responses:
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/<ResponseSchema>"
+        "400":
+          description: Invalid request
+        "401":
+          description: Unauthorized
+        "429":
+          description: Rate limited
+
+components:
+  schemas:
+    <ResponseSchema>:
+      type: object
+      properties:
+        <field>:
+          type: string
+          description: <what this field represents>
+  securitySchemes:
+    oauth2:
+      type: oauth2
+      flows:
+        clientCredentials:
+          tokenUrl: https://auth.example.com/token
+          scopes:
+            <scope-name>: <what it grants>
+
+# --- Traceability footer (fill in before merging) ---
+# x-events-published: []          # e.g. [EVT-003 ProductPublished]
+# x-events-consumed: []
+# x-data-entities: []             # e.g. [DE-006 Product]
+# x-rate-limit: "<requests/min>"

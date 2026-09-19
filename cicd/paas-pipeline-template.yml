@@ -1,0 +1,70 @@
+# PAAS-TIER PIPELINE TEMPLATE
+# Place at .github/workflows/deploy.yml in any repo with org.eis.tier="paas"
+# (IAM, Macro Planner, Agile Planner, SW Life Cycle, the TechOps factory itself).
+# Faster/looser than the SaaS-tier template: internal users, easier to coordinate,
+# brief downtime is recoverable. Replace <placeholders> before use.
+
+name: PaaS Build & Deploy
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+env:
+  ECR_REPOSITORY: <service-name>
+  EKS_CLUSTER: <cluster-name>
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Lint traceability IDs
+        run: <script-checking-REQ/DES/TC-ids-in-PR-and-commit-messages>
+
+      - name: Run tests
+        run: <test-command>
+
+      - name: Build Docker image
+        run: |
+          docker build -t $ECR_REPOSITORY:${{ github.sha }} .
+          docker tag $ECR_REPOSITORY:${{ github.sha }} $ECR_REPOSITORY:<requirement-id>-${{ github.sha }}
+
+      - name: Scan image
+        run: <trivy-or-ecr-scan-command>
+        # Required gate — fail the build on Critical/High findings.
+
+      - name: Push to ECR
+        if: github.ref == 'refs/heads/main'
+        run: |
+          aws ecr get-login-password | docker login --username AWS --password-stdin <ecr-registry-url>
+          docker push $ECR_REPOSITORY:${{ github.sha }}
+          docker push $ECR_REPOSITORY:<requirement-id>-${{ github.sha }}
+
+  deploy:
+    needs: build
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Deploy to DEV
+        run: <kubectl-apply-or-helm-upgrade-command>
+
+      - name: Deploy to QA
+        run: <same-image-tag-promoted-to-QA>
+
+      - name: Deploy to STAGING
+        run: <same-image-tag-promoted-to-STAGING>
+
+      - name: Deploy to PRODUCTION
+        run: <same-image-tag-promoted-to-PRODUCTION>
+        # Standard PR review is the approval gate here — no canary/auto-rollback
+        # required for PaaS-tier internal tools. Add a manual approval step in
+        # GitHub Environments if a given PaaS service needs more caution.
+
+# --- Notes ---
+# - The SAME image tag built once above is promoted through every environment — never rebuilt per stage.
+# - This template intentionally has no canary/blue-green step. If a PaaS service becomes customer-facing
+#   later, switch its org.eis.tier label to "saas" and use saas-pipeline-template.yml instead.
