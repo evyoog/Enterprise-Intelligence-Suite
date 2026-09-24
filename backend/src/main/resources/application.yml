@@ -6,13 +6,13 @@ spring:
 
   datasource:
     # Local DB (your own machine) — ACTIVE
-    url: jdbc:postgresql://${DB_HOST:localhost}:${DB_PORT:5432}/${DB_NAME:vyoog}?currentSchema=eis_platform,public
-    username: ${DB_USER:postgres}
-    password: ${DB_PASSWORD:root}
-    # Live DB (shared RDS — vyg-pms/vyg-requirement also use this)
-    # url: jdbc:postgresql://vyg-batch-1.cgtfswn9milw.ap-south-1.rds.amazonaws.com:5432/vygmicroservice?currentSchema=eis_platform,public
+    # url: jdbc:postgresql://${DB_HOST:localhost}:${DB_PORT:5432}/${DB_NAME:vyoog}?currentSchema=eis_platform,public
     # username: ${DB_USER:postgres}
-    # password: ${DB_PASSWORD:vygpost23}
+    # password: ${DB_PASSWORD:root}
+    # Live DB (shared RDS — vyg-pms/vyg-requirement also use this)
+    url: jdbc:postgresql://vyg-batch-1.cgtfswn9milw.ap-south-1.rds.amazonaws.com:5432/vygmicroservice?currentSchema=eis_platform,public
+    username: ${DB_USER:postgres}
+    password: ${DB_PASSWORD:vygpost23}
     driver-class-name: org.postgresql.Driver
     hikari:
       connection-timeout: 20000
