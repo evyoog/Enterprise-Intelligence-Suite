@@ -1,0 +1,147 @@
+import { apiRequest } from './client'
+import type { Product } from './productsApi'
+
+export type RegistrationStatus =
+  | 'PENDING_EMAIL_VERIFICATION'
+  | 'EMAIL_VERIFIED'
+  | 'PENDING_SUBSCRIPTION'
+  | 'COMPLETED'
+  | 'CANCELLED'
+  | 'EXPIRED'
+
+export type SubscriptionStatus = 'PENDING_SUBSCRIPTION' | 'ACTIVE' | 'CANCELLED' | 'EXPIRED'
+
+// Only `name`, `businessEmail`, `gstin`, `phone`, and `firstAdmin.{email,
+// password,confirmPassword}` are ever actually collected by the real
+// registration form now — everything else here is optional and, if
+// omitted, defaulted server-side (see RegistrationService's own javadoc:
+// auto-generated code, country defaults to India, licensedSeats defaults to
+// 5, firstAdmin name defaults to the organization's own name — Keycloak
+// requires a non-blank first/last name to log in at all).
+export interface OrganizationRegistrationRequest {
+  name: string
+  code?: string
+  type?: string
+  industry?: string
+  website?: string
+  businessEmail: string
+  phone?: string
+  country?: string
+  state?: string
+  city?: string
+  address?: string
+  gstin?: string
+  pan?: string
+  companyRegistrationNumber?: string
+  taxVatNumber?: string
+  billingSameAsAddress: boolean
+  billingAddress?: string
+  billingCountry?: string
+  billingState?: string
+  billingCity?: string
+  productIds?: number[]
+  licensedSeats?: number
+  firstAdmin: {
+    firstName?: string
+    lastName?: string
+    email: string
+    mobile?: string
+    password: string
+    confirmPassword: string
+  }
+}
+
+export interface RegistrationAcceptedResponse {
+  registrationId: string
+  message: string
+}
+
+export interface RegistrationStatusResponse {
+  registrationId: string
+  status: RegistrationStatus
+}
+
+export interface MyProductAccess {
+  productId: number
+  productName: string
+  category?: string
+  /** null = never subscribed. */
+  subscriptionStatus: SubscriptionStatus | null
+}
+
+export interface OrgProductAccess {
+  productId: number
+  productName: string
+  category?: string
+  /** null = the organization has never subscribed to this product. */
+  orgSubscriptionStatus: SubscriptionStatus | null
+  myAccessAssigned: boolean
+  myProductRole?: string
+}
+
+export interface Subscription {
+  id: number
+  productId: number
+  productName: string
+  status: SubscriptionStatus
+  startedAt?: string
+  expiresAt?: string
+}
+
+export interface OrgMember {
+  organizationMemberId: number
+  customerId: number
+  firstName?: string
+  lastName?: string
+  email?: string
+  orgRole: 'ORG_ADMIN' | 'MEMBER'
+  status: 'ACTIVE' | 'INACTIVE'
+}
+
+export interface Organization {
+  id: number
+  name: string
+  code: string
+  type?: string
+  industry?: string
+  website?: string
+  businessEmail: string
+  country: string
+  licensedSeats: number
+  activeMemberCount: number
+  status: RegistrationStatus
+}
+
+// Public — matches RegistrationController, permitAll on the backend.
+export const registrationApi = {
+  registerOrganization: (payload: OrganizationRegistrationRequest) =>
+    apiRequest<RegistrationAcceptedResponse>('/register/organization', { method: 'POST', body: JSON.stringify(payload) }),
+
+  verifyEmail: (token: string) =>
+    apiRequest<RegistrationStatusResponse>('/register/verify-email', { method: 'POST', body: JSON.stringify({ token }) }),
+
+  resendVerification: (registrationId: string) =>
+    apiRequest<undefined>('/register/resend-verification', { method: 'POST', body: JSON.stringify({ registrationId }) }),
+
+  // Reuses the same real product catalog as the public storefront — the
+  // wizard's "which products" step can never drift from what actually exists.
+  listProducts: () => apiRequest<Product[]>('/register/products'),
+
+  getStatus: (registrationId: string) => apiRequest<RegistrationStatusResponse>(`/register/status/${registrationId}`),
+}
+
+// Authenticated — an individual customer's own products/subscriptions.
+export const myProductsApi = {
+  listProducts: () => apiRequest<MyProductAccess[]>('/me/products'),
+  listSubscriptions: () => apiRequest<Subscription[]>('/me/subscriptions'),
+  subscribe: (productId: number) =>
+    apiRequest<Subscription>('/me/subscriptions', { method: 'POST', body: JSON.stringify({ productId }) }),
+}
+
+// Authenticated — always scoped to the caller's own organization on the backend.
+export const organizationApi = {
+  getMyOrganization: () => apiRequest<Organization>('/organization/me'),
+  listMyOrgUsers: () => apiRequest<OrgMember[]>('/organization/me/users'),
+  listMyOrgProducts: () => apiRequest<OrgProductAccess[]>('/organization/me/products'),
+  listMyOrgSubscription: () => apiRequest<Subscription[]>('/organization/me/subscription'),
+}

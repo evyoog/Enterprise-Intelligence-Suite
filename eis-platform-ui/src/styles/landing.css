@@ -1,0 +1,453 @@
+.vyoog-landing {
+  --black: #020307;
+  --ink: #070910;
+  --white: #f8f8fc;
+  --muted: #a4a8b6;
+  --blue: #4c63ff;
+  --violet: #733dff;
+  --cyan: #42d8ff;
+  --line: rgba(255, 255, 255, 0.11);
+  --glass: rgba(13, 16, 29, 0.72);
+
+  background: var(--black);
+  color: var(--white);
+  font-family: Inter, Arial, sans-serif;
+  overflow-x: hidden;
+}
+html { scroll-behavior: smooth; }
+.vyoog-landing button, .vyoog-landing input { font: inherit; }
+.vyoog-landing a { text-decoration: none; color: inherit; }
+.vyoog-landing .container { width: min(1200px, calc(100% - 64px)); margin: auto; }
+
+/* NAV */
+.vyoog-landing .navbar {
+  position: fixed; top: 0; left: 0; right: 0; height: 72px; z-index: 100;
+  background: rgba(2, 3, 7, 0.72); backdrop-filter: blur(18px);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.035);
+}
+.vyoog-landing .nav-inner { height: 100%; display: flex; align-items: center; justify-content: space-between; }
+.vyoog-landing .brand { display: flex; align-items: center; gap: 10px; font-size: 22px; font-weight: 800; letter-spacing: -1px; }
+.vyoog-landing .brand-logo { height: 29px; width: auto; display: block; }
+.vyoog-landing .nav-links { display: flex; align-items: center; gap: 34px; margin-left: 80px; color: #9da2af; font-size: 12px; }
+.vyoog-landing .nav-links a:hover { color: #fff; }
+
+/* Dropdown / mega-menu: each nav item with real inner content (Products,
+   Solutions, Company, Resources) opens a panel of its actual sub-links on
+   hover, instead of jumping straight to the section. */
+.vyoog-landing .nav-item { position: relative; display: flex; align-items: center; }
+.vyoog-landing .nav-trigger {
+  display: inline-flex; align-items: center; gap: 4px; cursor: pointer;
+  background: none; border: 0; padding: 0; margin: 0; font: inherit; color: inherit;
+}
+.vyoog-landing .nav-chevron { transition: transform 0.18s ease; }
+.vyoog-landing .nav-chevron.open { transform: rotate(180deg); }
+
+.vyoog-landing .mega-panel {
+  position: absolute; top: 53px; left: 50%; transform: translateX(-50%) translateY(4px) scale(0.98);
+  width: 280px; z-index: 90;
+  background: #0a0c16; border: 1px solid var(--line); border-radius: 16px;
+  padding: 10px; box-shadow: 0 24px 60px -20px rgba(0, 0, 0, 0.65);
+  opacity: 0; visibility: hidden; pointer-events: none;
+  transition: opacity 0.16s ease, transform 0.16s ease, visibility 0s linear 0.16s;
+}
+.vyoog-landing .mega-panel.open {
+  opacity: 1; visibility: visible; pointer-events: auto; transform: translateX(-50%) translateY(0) scale(1);
+  transition: opacity 0.16s ease, transform 0.16s ease;
+}
+.vyoog-landing .mega-panel-wide { width: 460px; }
+/* Products' own panel: a left column of platforms (Thittam, Thiran, ...) and
+   a right column of the currently-selected platform's real apps — mirrors
+   the admin side's own Platform → Apps hierarchy instead of one flat list. */
+.vyoog-landing .mega-panel-platforms { width: 520px; }
+
+.vyoog-landing .mega-list, .vyoog-landing .mega-grid { display: flex; flex-direction: column; gap: 2px; }
+.vyoog-landing .mega-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 2px; }
+.vyoog-landing .mega-empty { padding: 14px 10px; font-size: 12px; color: var(--muted); }
+
+.vyoog-landing .mega-two-col { display: flex; gap: 4px; align-items: stretch; }
+.vyoog-landing .mega-platform-list {
+  width: 168px; flex-shrink: 0; display: flex; flex-direction: column; gap: 2px;
+  border-right: 1px solid var(--line); padding-right: 8px;
+}
+.vyoog-landing .mega-platform-item {
+  display: flex; align-items: center; justify-content: space-between; gap: 6px;
+  padding: 10px 10px; border-radius: 10px; text-align: left;
+  background: none; border: 0; font: inherit; font-size: 12.5px; font-weight: 600;
+  color: #cfd1db; cursor: pointer; transition: background 0.15s ease, color 0.15s ease;
+}
+.vyoog-landing .mega-platform-item svg { opacity: 0; transition: opacity 0.15s ease, transform 0.15s ease; }
+.vyoog-landing .mega-platform-item:hover,
+.vyoog-landing .mega-platform-item.active { background: rgba(255, 255, 255, 0.07); color: #fff; }
+.vyoog-landing .mega-platform-item.active svg { opacity: 1; transform: translateX(1px); }
+.vyoog-landing .mega-platform-apps {
+  flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; padding-left: 6px;
+}
+
+.vyoog-landing .mega-row {
+  display: flex; align-items: flex-start; gap: 10px; padding: 9px 10px; border-radius: 10px;
+  color: inherit; transition: background 0.15s ease;
+}
+.vyoog-landing .mega-row:hover { background: rgba(255, 255, 255, 0.07); color: #fff; }
+.vyoog-landing .mega-icon {
+  width: 30px; height: 30px; border-radius: 9px; flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center;
+}
+.vyoog-landing .mega-icon-plain { background: rgba(76, 99, 255, 0.14); color: var(--blue); }
+.vyoog-landing .mega-text { display: flex; flex-direction: column; gap: 1px; min-width: 0; }
+.vyoog-landing .mega-title { font-size: 12.5px; font-weight: 600; color: #f1f2f6; }
+.vyoog-landing .mega-desc { font-size: 10.5px; color: var(--muted); line-height: 1.4; }
+
+.vyoog-landing .mega-footer { border-top: 1px solid var(--line); margin-top: 8px; padding-top: 8px; }
+.vyoog-landing .mega-footer-link {
+  display: block; padding: 8px 10px; border-radius: 10px;
+  font-size: 12px; font-weight: 700; color: var(--blue); transition: background 0.15s ease;
+}
+.vyoog-landing .mega-footer-link:hover { background: rgba(76, 99, 255, 0.12); color: var(--blue); }
+.vyoog-landing .nav-actions { display: flex; align-items: center; gap: 26px; font-size: 12px; }
+.vyoog-landing .lang { color: #e6e7eb; display: flex; align-items: center; gap: 4px; }
+.vyoog-landing .lang span { opacity: 0.55; }
+.vyoog-landing .login { color: #fff; cursor: pointer; background: none; border: 0; }
+.vyoog-landing .admin-link {
+  display: inline-flex; align-items: center; gap: 6px;
+  color: var(--blue); font-weight: 600;
+  border: 1px solid rgba(76, 99, 255, 0.4); border-radius: 999px;
+  padding: 7px 14px; transition: background 0.2s ease, border-color 0.2s ease;
+}
+.vyoog-landing .admin-link:hover { background: rgba(76, 99, 255, 0.14); border-color: var(--blue); }
+.vyoog-landing .get-started {
+  border: 1px solid #3e5cff; border-radius: 30px; padding: 11px 20px;
+  background: rgba(40, 54, 160, 0.14); box-shadow: 0 0 18px rgba(65, 82, 255, 0.3);
+  cursor: pointer; color: #fff;
+}
+
+/* HERO */
+.vyoog-landing .hero {
+  min-height: 675px; padding-top: 72px; position: relative; overflow: hidden;
+  background:
+    radial-gradient(ellipse 58% 60% at 84% 41%, rgba(39, 47, 190, 0.52), transparent 67%),
+    radial-gradient(ellipse 55% 50% at 54% 98%, rgba(81, 69, 244, 0.58), transparent 70%),
+    linear-gradient(180deg, #020307 0%, #03040a 65%, #14155e 100%);
+}
+.vyoog-landing .hero:after {
+  content: ""; position: absolute; left: -15%; right: -15%; bottom: -190px; height: 420px;
+  background: radial-gradient(ellipse, rgba(112, 104, 255, 0.95), rgba(65, 62, 203, 0.62) 35%, transparent 70%);
+  filter: blur(28px); pointer-events: none;
+}
+.vyoog-landing .hero-grid { min-height: 603px; display: grid; grid-template-columns: 49% 51%; align-items: center; position: relative; z-index: 2; }
+.vyoog-landing .hero-copy { padding-bottom: 28px; }
+.vyoog-landing .eyebrow {
+  display: inline-flex; align-items: center; gap: 8px; border: 1px solid rgba(125, 133, 255, 0.35);
+  background: linear-gradient(90deg, rgba(91, 84, 170, 0.28), rgba(44, 45, 87, 0.2));
+  color: #aeb2c9; border-radius: 22px; padding: 7px 13px; font-size: 10px; letter-spacing: 0.15px;
+}
+.vyoog-landing .eyebrow i { font-style: normal; color: #8b73ff; display: inline-flex; }
+.vyoog-landing h1 {
+  font-size: 58px; line-height: 1.08; letter-spacing: -3.1px; font-weight: 500;
+  margin: 20px 0 15px; max-width: 590px;
+}
+.vyoog-landing .gradient-word {
+  background: linear-gradient(90deg, #fff 0%, #b9bdff 50%, #8e71ff 100%);
+  -webkit-background-clip: text; background-clip: text; color: transparent;
+}
+.vyoog-landing .hero-copy p { font-size: 13px; line-height: 1.7; color: #a7aab7; max-width: 520px; margin: 0 0 28px; }
+.vyoog-landing .hero-buttons { display: flex; align-items: center; gap: 13px; flex-wrap: wrap; }
+.vyoog-landing .white-btn {
+  border: 0; background: #fff; color: #0a0a0f; border-radius: 28px; padding: 12px 20px; font-size: 12px;
+  cursor: pointer; box-shadow: 0 10px 35px rgba(255, 255, 255, 0.12); display: inline-flex; align-items: center; gap: 6px;
+}
+.vyoog-landing .ghost-btn {
+  border: 1px solid rgba(255, 255, 255, 0.22); background: rgba(255, 255, 255, 0.04); color: #fff;
+  border-radius: 28px; padding: 11px 18px; font-size: 12px; cursor: pointer;
+}
+.vyoog-landing .hero-stat {
+  display: inline-flex; align-items: center; vertical-align: middle; margin-left: 10px; border: 1px solid rgba(130, 140, 255, 0.34);
+  border-radius: 22px; padding: 7px 13px; color: #a9b1c8; font-size: 8px; gap: 12px; background: rgba(6, 8, 18, 0.32);
+}
+.vyoog-landing .hero-stat strong { display: block; color: #6c9bff; font-size: 10px; margin-top: 2px; }
+.vyoog-landing .hero-stat em { font-style: normal; color: #6ce3aa; }
+
+/* HERO VISUAL */
+.vyoog-landing .hero-visual { height: 575px; position: relative; }
+.vyoog-landing .person {
+  position: absolute; right: -60px; top: 35px; width: 560px; height: 545px;
+  background:
+    linear-gradient(90deg, rgba(3, 5, 15, 0.25), rgba(4, 4, 8, 0) 42%),
+    center / cover no-repeat;
+  border-radius: 48% 44% 42% 47%;
+  filter: saturate(1.2) contrast(1.06);
+  mask-image: linear-gradient(90deg, transparent 0%, #000 14%, #000 87%, transparent 100%);
+  -webkit-mask-image: linear-gradient(90deg, transparent 0%, #000 14%, #000 87%, transparent 100%);
+}
+.vyoog-landing .person:before {
+  content: ""; position: absolute; inset: 0;
+  background:
+    radial-gradient(circle at 57% 33%, rgba(255, 0, 184, 0.52), transparent 23%),
+    radial-gradient(circle at 73% 55%, rgba(22, 71, 255, 0.75), transparent 40%),
+    linear-gradient(90deg, rgba(1, 4, 18, 0.85), transparent 55%);
+  mix-blend-mode: screen;
+}
+.vyoog-landing .person:after {
+  content: ""; position: absolute; inset: 0; background: linear-gradient(180deg, transparent 60%, rgba(8, 10, 41, 0.9) 100%);
+}
+.vyoog-landing .face-glow {
+  position: absolute; right: 70px; top: 65px; width: 390px; height: 390px; border-radius: 50%;
+  background: radial-gradient(circle, rgba(66, 87, 255, 0.38), transparent 66%);
+  filter: blur(30px);
+}
+.vyoog-landing .ai-card {
+  position: absolute; right: 290px; top: 350px; width: 270px; height: 150px; padding: 18px;
+  border-radius: 14px; background: linear-gradient(135deg, rgba(44, 23, 111, 0.78), rgba(9, 11, 25, 0.72));
+  border: 1px solid rgba(113, 93, 255, 0.23); box-shadow: 0 25px 70px rgba(0, 0, 0, 0.4); z-index: 4;
+  backdrop-filter: blur(12px);
+}
+.vyoog-landing .ai-card h3 { font-size: 13px; font-weight: 500; margin: 0 0 7px; }
+.vyoog-landing .ai-card p { font-size: 8px; line-height: 1.55; color: #aaa9bc; margin: 0 0 13px; max-width: 180px; }
+.vyoog-landing .ai-card button { border: 0; background: #05050b; color: #fff; border-radius: 20px; padding: 8px 13px; font-size: 9px; cursor: pointer; }
+.vyoog-landing .glow-orb {
+  position: absolute; right: 20px; bottom: 5px; width: 400px; height: 240px;
+  background: radial-gradient(ellipse, rgba(68, 64, 255, 0.46), transparent 70%); filter: blur(35px);
+}
+
+/* HERO BENTO — a small bento-grid of real, truthful glimpses of the catalog
+   (a mock "window" preview of real products, a live count, real categories,
+   a link into the full catalog) rather than an invented stat, diagram, or
+   interactive toy. Grounded entirely in the actual product list. */
+.vyoog-landing .hero-bento {
+  position: relative; z-index: 5; margin-top: -4px; padding-bottom: 20px;
+  display: grid; grid-template-columns: repeat(4, 1fr); grid-template-rows: auto auto; gap: 14px;
+  grid-template-areas: "preview preview stat cats" "preview preview cta cta";
+}
+.vyoog-landing .bento-tile {
+  background: rgba(250, 250, 253, 0.97); border-radius: 20px; padding: 18px;
+  box-shadow: 0 20px 55px rgba(0, 0, 0, 0.22); color: #101119; display: flex; flex-direction: column;
+}
+
+.vyoog-landing .bento-preview { grid-area: preview; }
+.vyoog-landing .bento-window { flex: 1; border-radius: 14px; overflow: hidden; border: 1px solid #e7e8ed; background: #fff; display: flex; flex-direction: column; }
+.vyoog-landing .bento-window-bar { display: flex; gap: 6px; padding: 10px 12px; background: #f3f3f7; }
+.vyoog-landing .bento-window-bar span { width: 8px; height: 8px; border-radius: 50%; background: #d8d9e2; }
+.vyoog-landing .bento-window-bar span:nth-child(1) { background: #ff5f57; }
+.vyoog-landing .bento-window-bar span:nth-child(2) { background: #febc2e; }
+.vyoog-landing .bento-window-bar span:nth-child(3) { background: #28c840; }
+.vyoog-landing .bento-window-body { padding: 2px 14px; }
+.vyoog-landing .bento-row { display: flex; align-items: center; gap: 10px; padding: 10px 0; border-bottom: 1px solid #f0f0f4; }
+.vyoog-landing .bento-row:last-child { border-bottom: 0; }
+.vyoog-landing .bento-row-icon { width: 26px; height: 26px; border-radius: 8px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+.vyoog-landing .bento-row-name { font-size: 12px; font-weight: 700; color: #1c1d24; flex: 1; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.vyoog-landing .bento-row-cat { font-size: 9px; color: #9195a3; background: #f3f3f7; padding: 3px 7px; border-radius: 999px; white-space: nowrap; }
+.vyoog-landing .bento-row-price { font-size: 11px; font-weight: 700; color: #4b4d58; white-space: nowrap; }
+.vyoog-landing .bento-caption { margin: 12px 2px 0; font-size: 11px; color: #9da2af; }
+
+.vyoog-landing .bento-stat { grid-area: stat; justify-content: center; gap: 4px; }
+.vyoog-landing .bento-stat-num {
+  font-size: 38px; font-weight: 800; line-height: 1;
+  background: linear-gradient(135deg, var(--blue), var(--cyan)); -webkit-background-clip: text; background-clip: text; color: transparent;
+}
+.vyoog-landing .bento-stat-label { font-size: 10.5px; color: #6c6e77; max-width: 120px; }
+
+.vyoog-landing .bento-categories { grid-area: cats; gap: 10px; }
+.vyoog-landing .bento-tile-label { font-size: 10px; text-transform: uppercase; letter-spacing: 1.2px; color: #9195a3; font-weight: 700; }
+.vyoog-landing .bento-pill-row { display: flex; flex-wrap: wrap; gap: 6px; }
+.vyoog-landing .bento-pill { font-size: 10px; font-weight: 700; color: #3646c9; background: #eef1ff; padding: 5px 10px; border-radius: 999px; }
+
+.vyoog-landing .bento-cta {
+  grid-area: cta; flex-direction: row; align-items: center; justify-content: space-between; gap: 14px;
+  background: linear-gradient(135deg, var(--blue), var(--violet)); color: #fff; transition: transform 0.15s ease;
+}
+.vyoog-landing .bento-cta:hover { transform: translateY(-2px); }
+.vyoog-landing .bento-cta strong { font-size: 13px; display: block; margin-bottom: 4px; }
+.vyoog-landing .bento-cta p { font-size: 10.5px; color: rgba(255, 255, 255, 0.8); margin: 0; max-width: 220px; }
+.vyoog-landing .bento-cta-arrow {
+  width: 34px; height: 34px; border-radius: 50%; background: rgba(255, 255, 255, 0.18);
+  display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+}
+
+/* COMMON SECTIONS */
+.vyoog-landing .section { padding: 110px 0; background: #fff; color: #101119; }
+.vyoog-landing .section.dark { background: #05060b; color: #fff; }
+.vyoog-landing .section-head { text-align: center; max-width: 760px; margin: 0 auto 50px; }
+.vyoog-landing .section-label { font-size: 10px; text-transform: uppercase; letter-spacing: 1.8px; color: #5969e8; font-weight: 700; }
+.vyoog-landing .section h2 { font-size: 45px; letter-spacing: -2px; line-height: 1.1; font-weight: 600; margin: 10px 0; }
+.vyoog-landing .section-head p { font-size: 14px; line-height: 1.7; color: #727785; }
+
+/* PRODUCT CARDS */
+.vyoog-landing .products { display: grid; grid-template-columns: repeat(4, 1fr); gap: 15px; }
+.vyoog-landing .product {
+  min-height: 290px; border-radius: 22px; padding: 25px; background: #f8f8fb; border: 1px solid #e7e8ed;
+  position: relative; overflow: hidden; transition: 0.25s;
+}
+.vyoog-landing .product:hover { transform: translateY(-7px); box-shadow: 0 20px 50px rgba(24, 27, 54, 0.12); }
+.vyoog-landing .product:after { content: ""; position: absolute; right: -55px; top: -55px; width: 150px; height: 150px; border-radius: 50%; background: radial-gradient(circle, rgba(83, 96, 255, 0.16), transparent 68%); }
+.vyoog-landing .product-icon {
+  width: 44px; height: 44px; border-radius: 13px; background: linear-gradient(135deg, #5367ff, #7639ff);
+  color: #fff; display: grid; place-items: center; font-size: 14px; font-weight: 800; margin-bottom: 25px;
+}
+.vyoog-landing .product:nth-child(4n+2) .product-icon { background: linear-gradient(135deg, #1bcbdb, #486cff); }
+.vyoog-landing .product:nth-child(4n+3) .product-icon { background: linear-gradient(135deg, #2bdb85, #169bc7); }
+.vyoog-landing .product:nth-child(4n+4) .product-icon { background: linear-gradient(135deg, #ff8b5c, #c544ff); }
+.vyoog-landing .product h3 { font-size: 23px; margin: 0 0 9px; letter-spacing: -0.7px; }
+.vyoog-landing .product p { font-size: 12px; line-height: 1.65; color: #777c88; margin: 0; }
+.vyoog-landing .product-link { position: absolute; left: 25px; bottom: 23px; color: #5366e8; font-size: 11px; font-weight: 600; background: none; border: 0; cursor: pointer; display: inline-flex; align-items: center; gap: 4px; }
+
+/* SOLUTIONS / INDUSTRY BLOCKS */
+.vyoog-landing .dark-grid { display: grid; grid-template-columns: 1.2fr 0.8fr; gap: 18px; }
+.vyoog-landing .dark-card {
+  border: 1px solid var(--line); border-radius: 22px; padding: 30px; min-height: 280px;
+  background:
+    radial-gradient(circle at 100% 0%, rgba(93, 72, 255, 0.20), transparent 36%),
+    linear-gradient(145deg, #101422, #080a10);
+}
+.vyoog-landing .dark-card h3 { font-size: 26px; margin: 10px 0; }
+.vyoog-landing .dark-card p { font-size: 13px; line-height: 1.7; color: #999eae; max-width: 580px; }
+.vyoog-landing .tags { display: flex; flex-wrap: wrap; gap: 7px; margin-top: 25px; }
+.vyoog-landing .tag { border: 1px solid rgba(255, 255, 255, 0.11); padding: 7px 10px; border-radius: 20px; color: #aeb4c3; font-size: 9px; background: rgba(255, 255, 255, 0.025); }
+.vyoog-landing .industry-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-top: 18px; }
+.vyoog-landing .industry { border: 1px solid var(--line); border-radius: 18px; padding: 21px; background: #0b0e16; min-height: 145px; }
+.vyoog-landing .industry b { font-size: 13px; }
+.vyoog-landing .industry p { font-size: 10px; color: #858b9c; line-height: 1.5; margin-top: 8px; }
+
+/* PRICING */
+.vyoog-landing .pricing { background: #f6f7fb; color: #0a0b10; }
+.vyoog-landing .billing { display: flex; justify-content: center; gap: 3px; background: #e7e8ee; padding: 4px; border-radius: 25px; width: max-content; margin: 0 auto 35px; }
+.vyoog-landing .billing button { border: 0; background: transparent; padding: 8px 14px; border-radius: 20px; font-size: 10px; color: #697080; cursor: pointer; }
+.vyoog-landing .billing .active { background: #fff; color: #111; box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08); }
+.vyoog-landing .plans { display: grid; grid-template-columns: repeat(4, 1fr); gap: 13px; }
+.vyoog-landing .plan { background: #fff; border: 1px solid #e2e4ea; border-radius: 20px; padding: 25px; min-height: 405px; position: relative; display: flex; flex-direction: column; }
+.vyoog-landing .plan.featured { border: 2px solid #6175ff; box-shadow: 0 18px 45px rgba(71, 87, 205, 0.12); transform: translateY(-8px); }
+.vyoog-landing .badge { position: absolute; right: 14px; top: 14px; border-radius: 15px; background: #edf0ff; color: #586ce8; padding: 5px 8px; font-size: 8px; font-weight: 700; }
+.vyoog-landing .plan h3 { font-size: 18px; }
+.vyoog-landing .price { font-size: 34px; font-weight: 700; margin: 18px 0 4px; }
+.vyoog-landing .price span { font-size: 10px; color: #777e8b; font-weight: 400; }
+.vyoog-landing .plan p { font-size: 10px; color: #777e8b; min-height: 35px; line-height: 1.5; }
+.vyoog-landing .plan ul { list-style: none; padding: 0; margin: 18px 0; flex-grow: 1; }
+.vyoog-landing .plan li { font-size: 10px; color: #363b46; padding: 6px 0; display: flex; align-items: center; gap: 7px; }
+.vyoog-landing .plan button { width: 100%; border-radius: 20px; padding: 9px; border: 1px solid #d9dce5; background: #fff; font-size: 10px; cursor: pointer; }
+.vyoog-landing .plan.featured button { background: #5d71ef; color: #fff; border-color: #5d71ef; }
+
+/* COMPANY */
+.vyoog-landing .company { background: #fff; color: #101119; }
+.vyoog-landing .company-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
+.vyoog-landing .company-card { border-radius: 23px; padding: 34px; background: #f7f8fb; border: 1px solid #e5e7ec; }
+.vyoog-landing .company-card.dark-company { background: #0b0e17; color: #fff; border-color: #171c2a; }
+.vyoog-landing .company-card h3 { font-size: 28px; line-height: 1.15; letter-spacing: -1px; margin: 11px 0; }
+.vyoog-landing .company-card p { font-size: 12px; line-height: 1.7; color: #777d8b; }
+.vyoog-landing .dark-company p { color: #9298a8; }
+.vyoog-landing .numbers { display: grid; grid-template-columns: repeat(3, 1fr); gap: 9px; margin-top: 27px; }
+.vyoog-landing .number { border: 1px solid #e1e3e8; border-radius: 14px; padding: 15px; background: #fff; }
+.vyoog-landing .number strong { font-size: 25px; }
+.vyoog-landing .number span { display: block; font-size: 8px; color: #7b808b; }
+.vyoog-landing .value-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 22px; }
+.vyoog-landing .value { border: 1px solid #252a38; border-radius: 15px; padding: 17px; background: #0f131e; }
+.vyoog-landing .value b { font-size: 12px; }
+.vyoog-landing .value span { display: block; color: #858c9c; font-size: 9px; margin-top: 5px; line-height: 1.5; }
+
+/* CTA + FOOTER */
+.vyoog-landing .cta { padding: 85px 0; background: linear-gradient(180deg, #080a12, #060812); }
+.vyoog-landing .cta-box {
+  border: 1px solid rgba(106, 116, 255, 0.26); border-radius: 26px; text-align: center; padding: 62px 25px;
+  background: radial-gradient(circle at 50% 0%, rgba(88, 75, 255, 0.34), transparent 58%), #0c101a;
+}
+.vyoog-landing .cta-box h2 { font-size: 48px; line-height: 1.05; letter-spacing: -2px; margin: 9px 0; }
+.vyoog-landing .cta-box p { font-size: 12px; color: #969cab; max-width: 570px; margin: 0 auto 25px; }
+.vyoog-landing .footer { background: #030409; color: #868b99; border-top: 1px solid var(--line); padding: 55px 0 25px; }
+.vyoog-landing .footer-grid { display: grid; grid-template-columns: 1.5fr repeat(3, 1fr); gap: 35px; }
+.vyoog-landing .footer h4 { color: #fff; font-size: 12px; margin: 0 0 14px; }
+.vyoog-landing .footer a { display: block; font-size: 10px; margin: 8px 0; }
+.vyoog-landing .footer a:hover { color: #fff; }
+.vyoog-landing .copy { border-top: 1px solid var(--line); margin-top: 40px; padding-top: 20px; font-size: 9px; }
+
+/* AUTH MODAL */
+.vyoog-landing .modal { position: fixed; inset: 0; z-index: 200; background: rgba(0, 0, 0, 0.76); backdrop-filter: blur(13px); display: none; align-items: center; justify-content: center; padding: 20px; }
+.vyoog-landing .modal.open { display: flex; }
+.vyoog-landing .modal-box { width: min(430px, 100%); background: #0e121d; border: 1px solid rgba(255, 255, 255, 0.13); border-radius: 23px; padding: 28px; box-shadow: 0 35px 100px #000; position: relative; }
+.vyoog-landing .modal-close { position: absolute; right: 17px; top: 12px; background: transparent; color: #9da3b3; border: 0; font-size: 24px; cursor: pointer; display: flex; }
+.vyoog-landing .auth-wrap { position: relative; }
+.vyoog-landing .modal-box h2 { font-size: 29px; letter-spacing: -1.2px; margin: 8px 0; }
+.vyoog-landing .modal-box > p { font-size: 11px; color: #858b9a; line-height: 1.6; margin-bottom: 20px; }
+.vyoog-landing .field { margin: 11px 0; }
+.vyoog-landing .field label { display: block; font-size: 9px; color: #aab0bf; margin-bottom: 6px; }
+.vyoog-landing .field input { width: 100%; border: 1px solid rgba(255, 255, 255, 0.11); background: #080b12; color: #fff; border-radius: 11px; padding: 12px; outline: none; font-size: 11px; }
+.vyoog-landing .field input:focus { border-color: #6276ff; }
+.vyoog-landing .field-hint { font-size: 9px; color: #858b9a; margin: 6px 0 0; line-height: 1.5; }
+.vyoog-landing .auth-submit { width: 100%; border: 0; border-radius: 20px; padding: 11px; background: linear-gradient(90deg, #5369ff, #713cff); color: #fff; font-size: 11px; margin-top: 6px; cursor: pointer; }
+.vyoog-landing .auth-submit:disabled { opacity: 0.6; cursor: not-allowed; }
+.vyoog-landing .auth-error { font-size: 10px; color: #ff8a8a; background: rgba(255, 80, 80, 0.1); border: 1px solid rgba(255, 80, 80, 0.25); border-radius: 10px; padding: 9px 11px; margin-bottom: 12px; }
+.vyoog-landing .auth-note { font-size: 10px; color: #7dd6a3; background: rgba(70, 220, 140, 0.08); border: 1px solid rgba(70, 220, 140, 0.2); border-radius: 10px; padding: 9px 11px; margin-bottom: 12px; }
+.vyoog-landing .switch { font-size: 9px; color: #858b9a; text-align: center; margin-top: 14px; }
+.vyoog-landing .switch a, .vyoog-landing .switch button, .vyoog-landing .link-button {
+  color: #9daaff;
+  cursor: pointer;
+  background: none;
+  border: 0;
+  padding: 0;
+  font: inherit;
+}
+.vyoog-landing .link-button:focus-visible,
+.vyoog-landing .switch button:focus-visible,
+.vyoog-landing .modal-close:focus-visible {
+  outline: 2px solid #9daaff;
+  outline-offset: 2px;
+}
+
+/* RESPONSIVE */
+@media (max-width: 980px) {
+  .vyoog-landing .nav-links { gap: 18px; margin-left: 20px; }
+  .vyoog-landing .hero-grid { grid-template-columns: 1fr; }
+  .vyoog-landing .hero { min-height: 900px; }
+  .vyoog-landing .hero-copy { padding-top: 65px; }
+  .vyoog-landing .hero-visual { height: 500px; }
+  .vyoog-landing .person { right: -100px; }
+  .vyoog-landing .products, .vyoog-landing .plans { grid-template-columns: repeat(2, 1fr); }
+  .vyoog-landing .dark-grid, .vyoog-landing .company-grid { grid-template-columns: 1fr; }
+  .vyoog-landing .industry-grid { grid-template-columns: repeat(2, 1fr); }
+}
+/* Phase 22: visually hidden until keyboard-focused (the standard skip-link
+   pattern) — off-screen by default, snaps into view at a fixed position the
+   instant it receives focus. */
+.skip-link {
+  position: absolute;
+  top: -100px;
+  left: 8px;
+  z-index: 1000;
+  background: #171246;
+  color: #fff;
+  padding: 10px 16px;
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 600;
+  text-decoration: none;
+}
+.skip-link:focus {
+  top: 8px;
+}
+
+/* Phase 20: hidden by default (desktop nav-links handle navigation there),
+   shown only once .nav-links itself is hidden below, at the same breakpoint. */
+.mobile-menu-toggle {
+  display: none !important;
+  color: #fff !important;
+}
+
+@media (max-width: 650px) {
+  .vyoog-landing .container { width: calc(100% - 28px); }
+  .vyoog-landing .nav-links { display: none; }
+  .mobile-menu-toggle { display: inline-flex !important; }
+  .vyoog-landing .nav-actions { gap: 10px; }
+  .vyoog-landing .hero { min-height: 900px; }
+  .vyoog-landing .hero-grid { display: block; }
+  .vyoog-landing .hero-copy { padding-top: 65px; }
+  .vyoog-landing h1 { font-size: 43px; letter-spacing: -2px; }
+  .vyoog-landing .hero-stat { display: none; }
+  .vyoog-landing .hero-visual { height: 470px; }
+  .vyoog-landing .person { width: 470px; height: 470px; right: -170px; top: 20px; }
+  .vyoog-landing .ai-card { right: 75px; top: 135px; }
+  .vyoog-landing .hero-bento { grid-template-columns: 1fr 1fr; grid-template-areas: "preview preview" "stat cats" "cta cta"; }
+  .vyoog-landing .products, .vyoog-landing .plans, .vyoog-landing .industry-grid { grid-template-columns: 1fr; }
+  .vyoog-landing .plan.featured { transform: none; }
+  .vyoog-landing .numbers, .vyoog-landing .value-grid { grid-template-columns: 1fr 1fr; }
+  .vyoog-landing .section { padding: 75px 0; }
+  .vyoog-landing .section h2, .vyoog-landing .cta-box h2 { font-size: 35px; }
+  .vyoog-landing .footer-grid { grid-template-columns: 1fr 1fr; }
+  .vyoog-landing .footer-grid > div:first-child { grid-column: 1 / -1; }
+  .vyoog-landing .hero-bento { grid-template-columns: 1fr; grid-template-areas: "preview" "stat" "cats" "cta"; }
+}

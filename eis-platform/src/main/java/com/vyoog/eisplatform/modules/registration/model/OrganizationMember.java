@@ -1,0 +1,55 @@
+package com.vyoog.eisplatform.modules.registration.model;
+
+import com.vyoog.eisplatform.modules.authorization.model.OrganizationOwnedResource;
+import jakarta.persistence.*;
+import lombok.Getter;
+import lombok.Setter;
+
+import java.time.Instant;
+
+/**
+ * One row per person per organization — this is what a licensed seat is
+ * counted against (see OrganizationMemberService#assertSeatAvailable),
+ * regardless of how many products that person is later assigned to. Never
+ * deleted on removal — {@link #status} flips to INACTIVE and
+ * {@link #deactivatedAt} is stamped, keeping history and freeing the seat.
+ *
+ * <p>Implements {@link OrganizationOwnedResource} (Phase 5) so
+ * {@code AuthorizationService}'s generic resource-based policies can check
+ * "does this member belong to the caller's organization" the same way any
+ * other tenant-owned resource would, instead of a bespoke comparison.
+ */
+@Entity
+@Table(name = "organization_member")
+@Getter
+@Setter
+public class OrganizationMember implements OrganizationOwnedResource {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    @Column(name = "organization_id", nullable = false)
+    private Long organizationId;
+
+    @Column(name = "customer_id", nullable = false)
+    private Long customerId;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "org_role", nullable = false, length = 20)
+    private OrgRole orgRole = OrgRole.MEMBER;
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false, length = 20)
+    private MembershipStatus status = MembershipStatus.ACTIVE;
+
+    @Column(nullable = false)
+    private Instant joinedAt = Instant.now();
+
+    private Instant deactivatedAt;
+
+    @Override
+    public Long organizationId() {
+        return organizationId;
+    }
+}

@@ -1,0 +1,190 @@
+spring:
+  application:
+    name: eis-platform
+  profiles:
+    active: ${SPRING_PROFILES_ACTIVE:dev}
+
+  datasource:
+    # Local DB (your own machine) — ACTIVE
+    url: jdbc:postgresql://${DB_HOST:localhost}:${DB_PORT:5432}/${DB_NAME:vyoog}?currentSchema=eis_platform,public
+    username: ${DB_USER:postgres}
+    password: ${DB_PASSWORD:root}
+    # Live DB (shared RDS — vyg-pms/vyg-requirement also use this)
+    # url: jdbc:postgresql://vyg-batch-1.cgtfswn9milw.ap-south-1.rds.amazonaws.com:5432/vygmicroservice?currentSchema=eis_platform,public
+    # username: ${DB_USER:postgres}
+    # password: ${DB_PASSWORD:vygpost23}
+    driver-class-name: org.postgresql.Driver
+    hikari:
+      connection-timeout: 20000
+      maximum-pool-size: 10
+      minimum-idle: 2
+      idle-timeout: 300000
+      pool-name: EisPlatformHikariPool
+
+  jpa:
+    hibernate:
+      ddl-auto: none
+    show-sql: false
+    properties:
+      hibernate:
+        default_schema: eis_platform
+        format_sql: true
+        jdbc:
+          time_zone: UTC
+    open-in-view: false
+
+  # Flyway is deliberately NOT used — schema changes are made by hand, tracked in
+  # one file (db/schema.sql), not a growing set of versioned migration files.
+  # See CLAUDE.md decision 1 and db/schema.sql's own header comment for the
+  # actual workflow and its real limitation (editing that file does not, by
+  # itself, alter an already-existing table anywhere).
+  flyway:
+    enabled: false
+
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: ${KEYCLOAK_ISSUER_URI:https://user.evyoog.com/realms/eVyoog}
+          jwk-set-uri: ${KEYCLOAK_JWK_SET_URI:https://user.evyoog.com/realms/eVyoog/protocol/openid-connect/certs}
+
+  # Registration verification emails only — no other feature in this app sends
+  # email. Every value externalized via env vars, same pattern as the Keycloak
+  # secrets above — override SMTP_USER/SMTP_PASSWORD in a real deployment
+  # rather than relying on this default account.
+  mail:
+    host: ${SMTP_HOST:smtp.gmail.com}
+    port: ${SMTP_PORT:587}
+    username: ${SMTP_USER:logesh.b@vyoog.com}
+    password: ${SMTP_PASSWORD:rgnntcfmsrypgpfl}
+    properties:
+      mail:
+        smtp:
+          auth: ${SMTP_AUTH:true}
+          starttls:
+            enable: ${SMTP_STARTTLS:true}
+
+  servlet:
+    multipart:
+      max-file-size: 25MB
+      max-request-size: 50MB
+
+  jackson:
+    serialization:
+      write-dates-as-timestamps: false
+    deserialization:
+      fail-on-unknown-properties: false
+    default-property-inclusion: non_null
+    time-zone: UTC
+
+vyoog:
+  keycloak:
+    token-uri: ${KEYCLOAK_TOKEN_URI:https://user.evyoog.com/realms/eVyoog/protocol/openid-connect/token}
+    end-session-uri: ${KEYCLOAK_END_SESSION_URI:https://user.evyoog.com/realms/eVyoog/protocol/openid-connect/logout}
+    ropc-client-id: ${KEYCLOAK_ROPC_CLIENT_ID:eis-platform-ui}
+    ropc-client-secret: ${KEYCLOAK_ROPC_CLIENT_SECRET:KaoYtuxZxM6ODlFBJjZ1jzwU3rsLouIP}
+    # Phase 8: Keycloak Admin REST API root — reuses the SAME eVyoog
+    # confidential client already configured below (vyoog.internal.impersonation-client-*),
+    # confirmed live to already hold "manage-users" on this realm (see
+    # KeycloakAdminClient's own javadoc for how that was verified before
+    # writing any code against it).
+    admin-base-uri: ${KEYCLOAK_ADMIN_BASE_URI:https://user.evyoog.com/admin/realms/eVyoog}
+  auth:
+    cookie-secure: ${AUTH_COOKIE_SECURE:true}
+    # Deliberately much shorter than the registration email-verification TTL
+    # (24h) — a password-reset link is more sensitive and time-boxed tighter
+    # by convention.
+    password-reset-token-ttl-minutes: ${PASSWORD_RESET_TTL_MINUTES:30}
+    # OFF by default — this app never reveals WHY a login was rejected to the
+    # browser (that's the deliberate anti-enumeration posture the rest of
+    # this app follows, e.g. PasswordResetService). Set
+    # VYOOG_AUTH_DEBUG_LOGIN_ERRORS=true locally only, to see Keycloak's real
+    # rejection reason (e.g. "Account is not fully set up" vs "Invalid user
+    # credentials") in the login response and browser console while
+    # diagnosing a specific account. Never enable this outside local
+    # debugging.
+    debug-login-errors: ${VYOOG_AUTH_DEBUG_LOGIN_ERRORS:true}
+    # Phase 2 (2026.3.3): Platform-owned TOTP second factor, layered on top
+    # of (not replacing) Keycloak's own username/password authentication —
+    # see PlatformMfaService's own javadoc for why this exists alongside
+    # Keycloak rather than through it (CONFIGURE_TOTP requires a
+    # Keycloak-hosted page; there is no headless enrollment path).
+    platform-mfa:
+      issuer: ${PLATFORM_MFA_ISSUER:Vyoog}
+      # AES-256-GCM key (base64), used only to encrypt TOTP secrets at rest —
+      # never used for password/token data. Override in real deployments;
+      # this default is for local dev only, same convention as every other
+      # committed fallback secret in this file.
+      encryption-key: ${PLATFORM_MFA_ENCRYPTION_KEY:LKb+gXXGU4wZ2GWbKr8duwjPpXfN081ul35H6vSS7HU=}
+      challenge-ttl-minutes: ${PLATFORM_MFA_CHALLENGE_TTL_MINUTES:5}
+      max-challenge-attempts: ${PLATFORM_MFA_MAX_ATTEMPTS:5}
+      recovery-code-count: ${PLATFORM_MFA_RECOVERY_CODE_COUNT:10}
+  internal:
+
+    partner-backend-urls: ${VYOOG_SSO_PARTNER_BACKEND_URLS:http://localhost:8080/api,http://localhost:8082,http://localhost:8083/api/v1}
+    sso-shared-secret: ${INTERNAL_SSO_SHARED_SECRET:local-dev-only-shared-secret-change-me}
+
+    sso-cookie-domain: ${SSO_COOKIE_DOMAIN:}
+
+    impersonation-client-id: ${KEYCLOAK_IMPERSONATION_CLIENT_ID:eVyoog}
+    impersonation-client-secret: ${KEYCLOAK_IMPERSONATION_CLIENT_SECRET:ssFF0O7wX5UlmWECCxjfOmflw4WRSJng}
+  mail:
+    # Gmail requires the From address to match the authenticated account (or a
+    # verified alias of it) — it silently rewrites/rejects anything else.
+    from: ${MAIL_FROM:logesh.b@vyoog.com}
+  registration:
+    verification-token-ttl-hours: ${REGISTRATION_VERIFICATION_TTL_HOURS:24}
+
+server:
+  port: ${SERVER_PORT:8081}
+  servlet:
+    context-path: /api
+  compression:
+    enabled: true
+    mime-types: application/json,text/html,text/plain
+  error:
+    include-message: always
+    include-binding-errors: always
+
+app:
+  cors-allowed-origins: ${CORS_ORIGINS}
+  frontend-url: ${FRONTEND_URL:http://localhost:5173}
+  # Phase 4 (2026.3.3): this backend's own externally-reachable base URL —
+  # needed to build absolute SAML SP entity id / ACS URLs (an IdP redirects
+  # the browser's SAML response straight back here, so these must be real,
+  # externally-resolvable URLs, not relative paths).
+  backend-url: ${BACKEND_URL:http://localhost:8081/api}
+  # Local disk for now — fine for a single instance; would need a shared store
+  # (e.g. S3) behind a load balancer with more than one app instance.
+  file-upload-dir: ${UPLOAD_DIR:./uploads/products}
+
+# OpenAPI / Swagger 
+springdoc:
+  api-docs:
+    enabled: ${SWAGGER_ENABLED:false}
+    path: /v3/api-docs
+  swagger-ui:
+    enabled: ${SWAGGER_ENABLED:false}
+    path: /swagger-ui.html
+    operationsSorter: method
+    tagsSorter: alpha
+    try-it-out-enabled: true
+
+# Actuator
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics
+  endpoint:
+    health:
+      show-details: when-authorized
+
+# Logging
+logging:
+  level:
+    com.vyoog.eisplatform: ${LOG_LEVEL:INFO}
+    org.springframework.security: WARN
+    org.hibernate.SQL: WARN
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n"

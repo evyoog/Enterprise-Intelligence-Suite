@@ -1,0 +1,5 @@
+ customer_id |            email             |             keycloak_sub             | member_id | organization_id | org_role  | member_status | organization_name | organization_status 
+-------------+------------------------------+--------------------------------------+-----------+-----------------+-----------+---------------+-------------------+---------------------
+          11 | sibisakaravarthi27@gmail.com | 195b56b1-3532-4b79-8a2d-b6252365644a |         6 |               6 | ORG_ADMIN | ACTIVE        | Vyoog Pvt Ltd     | COMPLETED
+(1 row)
+

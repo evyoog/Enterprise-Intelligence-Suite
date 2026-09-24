@@ -1,0 +1,18 @@
+spring:
+  # Datasource is no longer set per-profile — see the comment/uncomment toggle in
+  # the base application.yml instead.
+  jpa:
+    show-sql: true
+
+app:
+  cors-allowed-origins: ${CORS_ORIGINS:http://localhost:5173,http://192.168.1.4:5173}
+
+vyoog:
+  auth:
+    cookie-secure: ${AUTH_COOKIE_SECURE:false}
+
+springdoc:
+  api-docs:
+    enabled: true
+  swagger-ui:
+    enabled: true

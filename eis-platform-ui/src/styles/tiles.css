@@ -1,0 +1,103 @@
+/* Service-tile grid: shared by the admin Platforms/Apps grids and the public
+   storefront (ProductGrid). Kept in plain CSS rather than sx= because MUI's
+   styled-engine keyframes don't survive a per-card stagger delay cleanly —
+   a plain class + an inline `animationDelay` is simpler and reads exactly
+   the same in every consumer. */
+
+@keyframes tile-enter {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.tile {
+  position: relative;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 18px;
+  border-radius: 14px;
+  border: 1px solid var(--tile-border, #e2e8f0);
+  background: #ffffff;
+  text-decoration: none;
+  color: inherit;
+  animation: tile-enter 0.4s cubic-bezier(0.16, 1, 0.3, 1) both;
+  transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+  will-change: transform;
+}
+
+.tile:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 16px 32px -18px rgba(15, 23, 42, 0.28), 0 2px 6px -2px rgba(15, 23, 42, 0.08);
+  border-color: var(--tile-accent, #2563eb);
+}
+
+.tile:focus-visible {
+  outline: 2px solid var(--tile-accent, #2563eb);
+  outline-offset: 2px;
+}
+
+.tile-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 46px;
+  height: 46px;
+  border-radius: 12px;
+  flex-shrink: 0;
+  transition: transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.tile:hover .tile-icon {
+  transform: scale(1.08) rotate(-4deg);
+}
+
+.tile-arrow {
+  transition: transform 0.2s ease;
+}
+
+.tile:hover .tile-arrow {
+  transform: translateX(3px);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .tile,
+  .tile-icon,
+  .tile-arrow {
+    animation: none !important;
+    transition: none !important;
+  }
+  .tile:hover {
+    transform: none;
+  }
+  .tile:hover .tile-icon,
+  .tile:hover .tile-arrow {
+    transform: none;
+  }
+}
+
+/* Phase 6 (2026.3.3): a manual "reduce motion" preference (see
+   ThemeModeProvider's own doc) — for someone who wants this app's own
+   animations off without changing their OS-level setting (e.g. a shared or
+   managed machine). Same effect as the OS media query above, applied via a
+   plain attribute on <html> instead, since a preference this app stores
+   itself can't be expressed as a media query. */
+html[data-reduced-motion='true'] .tile,
+html[data-reduced-motion='true'] .tile-icon,
+html[data-reduced-motion='true'] .tile-arrow {
+  animation: none !important;
+  transition: none !important;
+}
+html[data-reduced-motion='true'] .tile:hover {
+  transform: none;
+}
+html[data-reduced-motion='true'] .tile:hover .tile-icon,
+html[data-reduced-motion='true'] .tile:hover .tile-arrow {
+  transform: none;
+}

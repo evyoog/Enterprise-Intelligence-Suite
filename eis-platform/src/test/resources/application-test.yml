@@ -1,0 +1,43 @@
+# Profile used by @SpringBootTest (see EisPlatformApplicationTests).
+#
+# Without this file the "test" profile falls through to application.yml, which has no
+# datasource of its own but would pick up whatever profile is active on the machine
+# running the build — never let a test run reach a real Postgres instance.
+spring:
+  datasource:
+    url: jdbc:h2:mem:eis_platform;MODE=PostgreSQL
+    driver-class-name: org.h2.Driver
+    username: sa
+    password:
+
+  flyway:
+    enabled: false
+
+  jpa:
+    hibernate:
+      ddl-auto: create-drop
+    properties:
+      hibernate:
+        # Base application.yml sets this to eis_platform for the real (Postgres)
+        # schema — H2 only has PUBLIC, so override it back for tests.
+        default_schema: PUBLIC
+
+  # jwk-set-uri (not just issuer-uri) is required here — with only issuer-uri, Spring
+  # would eagerly hit the real OIDC discovery endpoint at context startup. The JWK set
+  # itself is fetched lazily on first token decode, so a fake URL never gets called.
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: http://localhost/placeholder-issuer
+          jwk-set-uri: http://localhost/placeholder-issuer/certs
+
+# Required placeholders (no defaults in application.yml, by design — see
+# SecurityConfig/application.yml) that only need to resolve to *something* for the
+# context to start; no test actually calls Keycloak or a real CORS-checked browser.
+app:
+  cors-allowed-origins: http://localhost:5173
+
+vyoog:
+  keycloak:
+    ropc-client-secret: test-placeholder-secret

@@ -1,0 +1,11 @@
+spring:
+  # Connection url/username/password come from the comment/uncomment toggle in
+  # base application.yml now, not from here.
+  jpa:
+    show-sql: false
+
+springdoc:
+  api-docs:
+    enabled: true
+  swagger-ui:
+    enabled: true
