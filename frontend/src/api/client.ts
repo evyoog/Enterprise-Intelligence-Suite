@@ -1,10 +1,13 @@
-// Falls back to whatever host the page itself was loaded from (same port
-// convention, :8081) rather than a hardcoded "localhost" — that's what makes
-// opening the app via a LAN IP (e.g. http://192.168.1.4:5173) automatically
-// call that same machine's backend instead of silently trying localhost:8081
-// on whatever device's browser is loading the page. Set VITE_API_BASE_URL to
-// override this outright (e.g. for a real deployed domain).
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? `http://${window.location.hostname}:8081/api`
+// In dev, calls go to the page's own origin ("/api") and the Vite dev server
+// proxies them to the backend (see vite.config.ts). That works unchanged on
+// localhost, a LAN IP, and GitHub Codespaces — where the page is https and
+// ports are separate subdomains, so "http://<host>:8081" is both blocked as
+// mixed content and the wrong host.
+// Production builds fall back to the page's host on the :8081 convention.
+// Set VITE_API_BASE_URL to override either (e.g. for a real deployed domain).
+const API_BASE_URL =
+  import.meta.env.VITE_API_BASE_URL ??
+  (import.meta.env.DEV ? '/api' : `http://${window.location.hostname}:8081/api`)
 
 // The backend returns uploaded-asset URLs (e.g. product images) as paths
 // relative to its own root ("/api/products/images/xxx.jpg"), not full URLs —
