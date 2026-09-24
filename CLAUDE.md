@@ -32,6 +32,9 @@ Identity provider: Keycloak at `https://user.evyoog.com`, realm `eVyoog`.
 | What | Where |
 |------|-------|
 | Business context | `docs/01-business/` |
+| Roadmap and sprints (PI / sprint scope per application) | `docs/01-business/roadmap/` (`sprints/SPRINT-<PI.N>.md`, `applications/`) |
+| Original planning documents ([PO] [CG] [WB]) | `docs/01-business/source-documents/` (read-only) |
+| Open planning conflicts | `docs/01-business/roadmap/open-decisions.md` |
 | Feature requirements (FRD) | `docs/02-requirements/FRD/<feature>/` |
 | Business rules | `docs/03-business-rules/` (cross-feature) and `FRD/<feature>/business-rules.md` |
 | Workflows | `docs/04-workflows/` |
@@ -55,6 +58,8 @@ test-cases/functional/<feature>/TC-<APP-CODE>-<NNN>.md
 Flow: Requirement → FRD → Business rules → UI → API → Database → Frontend → Backend → Test cases → UAT.
 
 Start a new feature by copying `docs/02-requirements/FRD/_template/`.
+
+Before implementing, check the feature's sprint in `docs/01-business/roadmap/sprints/` and its application page in `docs/01-business/roadmap/applications/`. Stories use `Sprint (PI.Sprint)` = the sprint ID. Do not invent scope that the roadmap marks **Not specified**; raise it in `open-decisions.md` instead.
 
 ## Backend rules
 - Java 21, Spring Boot 3.2.5, Maven, PostgreSQL, REST, Keycloak JWTs.
