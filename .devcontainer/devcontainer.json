@@ -1,0 +1,36 @@
+{
+  "name": "eVyoog EIS",
+  "image": "mcr.microsoft.com/devcontainers/base:ubuntu",
+  "features": {
+    "ghcr.io/devcontainers/features/java:1": {
+      "version": "21",
+      "installMaven": "true"
+    },
+    "ghcr.io/devcontainers/features/node:1": {
+      "version": "22"
+    },
+    "ghcr.io/devcontainers/features/python:1": {
+      "version": "3.12"
+    },
+    "ghcr.io/devcontainers/features/docker-in-docker:2": {}
+  },
+  "forwardPorts": [5173, 8081, 8000, 5432],
+  "portsAttributes": {
+    "5173": { "label": "frontend" },
+    "8081": { "label": "backend" },
+    "8000": { "label": "ai-service" },
+    "5432": { "label": "postgres" }
+  },
+  "postCreateCommand": "cd frontend && npm ci && cd ../ai-service && python -m venv .venv && .venv/bin/pip install -r requirements.txt",
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "vscjava.vscode-java-pack",
+        "vmware.vscode-boot-dev-pack",
+        "dbaeumer.vscode-eslint",
+        "ms-python.python",
+        "anthropic.claude-code"
+      ]
+    }
+  }
+}

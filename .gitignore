@@ -1,0 +1,35 @@
+# OS / editors
+.DS_Store
+Thumbs.db
+.idea/
+*.iml
+.vscode/*
+!.vscode/extensions.json
+*.swp
+
+# Logs
+logs/
+*.log
+
+# Local env files (commit *.env.example instead)
+.env.local
+.env.*.local
+deployment/environments/*/.env
+
+# Node
+node_modules/
+dist/
+dist-ssr/
+coverage/
+
+# Java / Maven
+target/
+*.class
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+.pytest_cache/
+.ruff_cache/

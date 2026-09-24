@@ -1,0 +1,25 @@
+name: Deploy
+
+# Manual only until the AWS target is configured.
+# Templates for the full pipeline: deployment/aws/{paas,saas}-pipeline-template.yml
+on:
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: Target environment
+        type: choice
+        options: [dev, uat, prod]
+        required: true
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment: ${{ inputs.environment }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build backend image
+        run: docker build -f backend/docker/Dockerfile -t eis-platform-backend:${{ github.sha }} backend
+      - name: Build ai-service image
+        run: docker build -t eis-ai-service:${{ github.sha }} ai-service
+      - name: Deploy
+        run: scripts/deploy.sh "${{ inputs.environment }}"
