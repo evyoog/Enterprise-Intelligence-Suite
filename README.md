@@ -2,28 +2,6 @@
 
 eVyoog Enterprise Intelligence Suite (EIS) is a Platform hosted in the cloud and offered as Platform as a Service (PaaS) hosting multiple product suites (Valam.ai, Varthan.ai, Thittam.ai, Thiran.ai, Yukth.ai, Tharav.ai), plus the shared platform layer (IAM, security, notifications, analytics) they all depend on.
 
-This repository is **one product**: code, documentation, database scripts, test cases and deployment configuration together, so the whole product context is in one place.
-
-```
-                    EIS Platform
-                         │
-       ┌─────────────────┼─────────────────┐
-       ▼                 ▼                 ▼
-   FRONTEND          BACKEND           AI SERVICE
-    React          Spring Boot          FastAPI
-       └─────────────────┼─────────────────┘
-                         ▼
-                 DATABASE (PostgreSQL)
-                         ▼
-                 PRODUCT DOCUMENTS
-            ┌────────────┼────────────┐
-            ▼            ▼            ▼
-           FRD     Business Rules  Workflows
-            └────────────┼────────────┘
-                         ▼
-                    TEST CASES
-```
-
 ## Repository structure
 
 ```
