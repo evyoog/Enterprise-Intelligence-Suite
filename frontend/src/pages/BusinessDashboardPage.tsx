@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import {
   Alert, Box, Button, Chip, CircularProgress, Container, Grid, LinearProgress,
   Paper, Table, TableBody, TableCell, TableHead, TableRow, Typography,
@@ -8,6 +9,9 @@ import { ApiError } from '../api/client'
 import { businessDashboardApi, type BusinessDashboard } from '../api/businessDashboardApi'
 import { SiteNavbar } from '../components/layout/SiteNavbar'
 import { PageHeader } from '../components/layout/PageHeader'
+import { OrganizationMfaPolicyCard } from '../components/organization/OrganizationMfaPolicyCard'
+import { OrganizationMembersCard } from '../components/organization/OrganizationMembersCard'
+import { OrganizationPrivilegedAccessCard } from '../components/organization/OrganizationPrivilegedAccessCard'
 import { useLocalePreference } from '../theming/LocalePreferenceProvider'
 
 function StatTile({ label, value, sub }: { label: string; value: string; sub?: string }) {
@@ -33,6 +37,7 @@ function SectionTitle({ children }: { children: React.ReactNode }) {
  * see BusinessDashboardService's own javadoc.
  */
 export function BusinessDashboardPage() {
+  const { t } = useTranslation()
   const navigate = useNavigate()
   const [dashboard, setDashboard] = useState<BusinessDashboard | null>(null)
   const [error, setError] = useState<string | null>(null)
@@ -185,6 +190,16 @@ export function BusinessDashboardPage() {
                 </Paper>
               </Grid>
             </Grid>
+
+            {/* Sprint 2026.3.3: REQ-IAM-001 (MFA policy), REQ-IAM-002 (member roles),
+                REQ-IAM-004 (organization privileged-access approvals). Each card
+                loads its own data and hides itself if the backend refuses. */}
+            <SectionTitle>{t('orgSettings.title')}</SectionTitle>
+            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+              <OrganizationMfaPolicyCard />
+              <OrganizationMembersCard />
+              <OrganizationPrivilegedAccessCard />
+            </Box>
           </>
         )}
       </Container>

@@ -1,13 +1,19 @@
 import { useEffect, useState } from 'react'
-import { Box, Button, Chip, CircularProgress, IconButton, Tab, Tabs, TextField, Typography } from '@mui/material'
+import { useTranslation } from 'react-i18next'
+import { Alert, Box, Button, Chip, CircularProgress, IconButton, Tab, Tabs, TextField, Typography } from '@mui/material'
 import { Check, Pencil, X } from 'lucide-react'
 import {
   adminRegistrationApi,
   type CustomerAdmin,
   type OrganizationAdmin,
+  type OrganizationLifecycleAction,
+  type OrganizationLifecycleResult,
+  type OrganizationLifecycleStatus,
   type PendingProvisioning,
 } from '../../api/adminRegistrationApi'
 import { ApiError } from '../../api/client'
+import { OrganizationEditDialog } from '../../components/admin/OrganizationEditDialog'
+import { OrganizationLifecycleDialog, type LifecycleTarget } from '../../components/admin/OrganizationLifecycleDialog'
 import { PageHeader } from '../../components/layout/PageHeader'
 
 type TabKey = 'organizations' | 'individuals' | 'pending'
@@ -47,8 +53,13 @@ function DetailRow({ label, value }: { label: string; value?: React.ReactNode })
 }
 
 function OrganizationsTab() {
+  const { t } = useTranslation()
   const [rows, setRows] = useState<OrganizationAdmin[] | null>(null)
   const [error, setError] = useState<string | null>(null)
+  // REQ-TEN-001: edit and suspend / activate / close.
+  const [editing, setEditing] = useState<OrganizationAdmin | null>(null)
+  const [lifecycleTarget, setLifecycleTarget] = useState<LifecycleTarget | null>(null)
+  const [notice, setNotice] = useState<{ message: string; failures: string[] } | null>(null)
   const [editingSeatsFor, setEditingSeatsFor] = useState<number | null>(null)
   const [seatInput, setSeatInput] = useState('')
   const [savingSeats, setSavingSeats] = useState(false)
@@ -81,12 +92,37 @@ function OrganizationsTab() {
     }
   }
 
+  const replaceRow = (updated: OrganizationAdmin) =>
+    setRows((current) => current?.map((o) => (o.id === updated.id ? updated : o)) ?? current)
+
+  const onSaved = (updated: OrganizationAdmin) => {
+    replaceRow(updated)
+    setEditing(null)
+  }
+
+  const onLifecycleDone = (result: OrganizationLifecycleResult, action: OrganizationLifecycleAction) => {
+    replaceRow(result.organization)
+    setLifecycleTarget(null)
+    setNotice({
+      message: t(`adminOrgLifecycle.done.${action}`, { name: result.organization.name, count: result.accountsUpdated }),
+      failures: result.accountsNotUpdated,
+    })
+  }
+
   if (error) return <Typography color="error" role="alert">{error}</Typography>
   if (rows === null) return <Box sx={{ display: 'flex', justifyContent: 'center', py: 8 }}><CircularProgress size={28} /></Box>
   if (rows.length === 0) return <Typography sx={{ color: 'text.secondary' }}>No organizations have registered yet.</Typography>
 
   return (
     <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+      {notice && (
+        <Alert severity={notice.failures.length ? 'warning' : 'success'} onClose={() => setNotice(null)}>
+          {notice.message}
+          {notice.failures.length > 0 && <> {t('adminOrgLifecycle.partialFailure', { emails: notice.failures.join(', ') })}</>}
+        </Alert>
+      )}
+      <OrganizationEditDialog organization={editing} onClose={() => setEditing(null)} onSaved={onSaved} />
+      <OrganizationLifecycleDialog target={lifecycleTarget} onClose={() => setLifecycleTarget(null)} onDone={onLifecycleDone} />
       {rows.map((org) => {
         const billing = org.billingSameAsAddress
           ? 'Same as organization address'
@@ -97,6 +133,7 @@ function OrganizationsTab() {
               <Typography sx={{ fontWeight: 700, fontSize: 17 }}>{org.name}</Typography>
               <Chip size="small" label={org.code} variant="outlined" />
               <StatusChip status={org.status} />
+              <LifecycleChip status={org.lifecycleStatus} />
               {editingSeatsFor === org.id ? (
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
                   <TextField
@@ -122,6 +159,43 @@ function OrganizationsTab() {
                   deleteIcon={<Pencil size={12} />}
                 />
               )}
+              <Box sx={{ display: 'flex', gap: 1, ml: 'auto', flexWrap: 'wrap' }}>
+                <Button
+                  size="small" variant="outlined"
+                  aria-label={t('adminOrgLifecycle.editLabel', { name: org.name })}
+                  disabled={org.lifecycleStatus === 'CLOSED'}
+                  onClick={() => setEditing(org)}
+                >
+                  {t('adminOrgLifecycle.editButton')}
+                </Button>
+                {org.lifecycleStatus === 'ACTIVE' && (
+                  <Button
+                    size="small" variant="outlined" color="warning"
+                    aria-label={t('adminOrgLifecycle.suspendLabel', { name: org.name })}
+                    onClick={() => setLifecycleTarget({ organization: org, action: 'suspend' })}
+                  >
+                    {t('adminOrgLifecycle.suspendButton')}
+                  </Button>
+                )}
+                {org.lifecycleStatus !== 'ACTIVE' && (
+                  <Button
+                    size="small" variant="outlined"
+                    aria-label={t('adminOrgLifecycle.activateLabel', { name: org.name })}
+                    onClick={() => setLifecycleTarget({ organization: org, action: 'activate' })}
+                  >
+                    {t('adminOrgLifecycle.activateButton')}
+                  </Button>
+                )}
+                {org.lifecycleStatus !== 'CLOSED' && (
+                  <Button
+                    size="small" variant="outlined" color="error"
+                    aria-label={t('adminOrgLifecycle.closeLabel', { name: org.name })}
+                    onClick={() => setLifecycleTarget({ organization: org, action: 'close' })}
+                  >
+                    {t('adminOrgLifecycle.closeButton')}
+                  </Button>
+                )}
+              </Box>
             </Box>
 
             <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr' }, gap: 1.5 }}>
@@ -266,4 +340,17 @@ function PendingProvisioningTab() {
 function StatusChip({ status }: { status: string }) {
   const color = status === 'COMPLETED' ? 'success' : status === 'CANCELLED' || status === 'EXPIRED' ? 'default' : 'warning'
   return <Chip size="small" label={status.replaceAll('_', ' ')} color={color as 'success' | 'default' | 'warning'} />
+}
+
+function LifecycleChip({ status }: { status: OrganizationLifecycleStatus }) {
+  const { t } = useTranslation()
+  const color = status === 'ACTIVE' ? 'success' : status === 'SUSPENDED' ? 'warning' : 'default'
+  return (
+    <Chip
+      size="small"
+      variant="outlined"
+      color={color}
+      label={t('adminOrgLifecycle.lifecycleLabel', { status: t(`adminOrgLifecycle.lifecycleStatus.${status}`) })}
+    />
+  )
 }

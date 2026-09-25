@@ -9,6 +9,7 @@ import { mfaApi, type MfaStatus } from '../api/mfaApi'
 import { sessionsApi, type SessionInfo } from '../api/sessionsApi'
 import { SiteNavbar } from '../components/layout/SiteNavbar'
 import { PageHeader } from '../components/layout/PageHeader'
+import { PrivilegedAccessRequestsCard } from '../components/security/PrivilegedAccessRequestsCard'
 
 type EnrollStep = 'password' | 'scan' | 'recoveryCodes'
 type ManageAction = 'disable' | 'regenerate'
@@ -339,6 +340,9 @@ export function SecuritySettingsPage() {
             </Table>
           )}
         </Paper>
+
+        {/* Sprint 2026.3.3, REQ-IAM-004: request elevated access and see your own requests. */}
+        <PrivilegedAccessRequestsCard />
       </Container>
     </Box>
   )

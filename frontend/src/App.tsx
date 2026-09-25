@@ -24,6 +24,8 @@ import { CommonSettingsPage } from './pages/admin/settings/CommonSettingsPage'
 import { RegistrationsAdminPage } from './pages/admin/RegistrationsAdminPage'
 import { AdminAuditLogPage } from './pages/admin/AdminAuditLogPage'
 import { AdminPrivilegedAccessPage } from './pages/admin/AdminPrivilegedAccessPage'
+import { RolesAdminPage } from './pages/admin/RolesAdminPage'
+import { PermissionsAdminPage } from './pages/admin/PermissionsAdminPage'
 import { RequireAdmin } from './components/routing/RequireAdmin'
 import { RequireAuth } from './components/routing/RequireAuth'
 import { useAuth } from './auth/AuthProvider'
@@ -112,6 +114,8 @@ function MainApp() {
           <Route path="registrations" element={<RegistrationsAdminPage />} />
           <Route path="audit-log" element={<AdminAuditLogPage />} />
           <Route path="privileged-access" element={<AdminPrivilegedAccessPage />} />
+          <Route path="roles" element={<RolesAdminPage />} />
+          <Route path="permissions" element={<PermissionsAdminPage />} />
         </Route>
       </Routes>
     </AuthModalProvider>

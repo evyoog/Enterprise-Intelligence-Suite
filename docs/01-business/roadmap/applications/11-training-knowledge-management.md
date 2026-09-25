@@ -2,12 +2,13 @@
 
 | Field | Value |
 |---|---|
-| Application ID | 11 ([WB] numbering; an `APP-<CODE>` code is not assigned in any source) |
+| Application ID | 11 ([WB] numbering) |
+| Application code | `APP-KNW` ([DN-5](../open-decisions.md#dn-5-application-codes)); IDs use `KNW`, for example `REQ-KNW-001` |
 | Application | Training & Knowledge Management |
 | Description | Documentation, courses, labs and certifications ([PO] Table 1, [WB:Application Summary]) |
 | Product | EIS (PaaS) |
 | PI – CY Quarter | 2027.1 ([PO] "eVyoog EIS - Roadmap Initiatives") |
-| Sprint | [2027.1.3](../sprints/SPRINT-2027.1.3.md) |
+| Sprint | [2027.1.3](../sprints/SPRINT-2027.1.3.md) (1–31 Mar 2027, [DN-2](../open-decisions.md#dn-2-sprint-scope-length-and-dates)) |
 | Capabilities / features / functions | 4 / 7 / 26 ([WB]) |
 | Application status | Not specified |
 
@@ -15,102 +16,105 @@
 - **[PO]** [`2026Q3_ProdOps_Plan.docx`](../../source-documents/2026Q3_ProdOps_Plan.docx)
 - **[CG]** [`eVyoog_EIS_Platform_-_ChatGPT2.docx`](../../source-documents/eVyoog_EIS_Platform_-_ChatGPT2.docx)
 - **[WB]** [`Full_SaaS_PaaS_Product_Architecture_Workbook.xlsx`](../../source-documents/Full_SaaS_PaaS_Product_Architecture_Workbook.xlsx)
+- **Decisions:** [`open-decisions.md`](../open-decisions.md) (2026-09-25)
 
-Full analysis: [`EIS-document-analysis.md`](../EIS-document-analysis.md). Values that no source gives are written **Not specified**.
+Full analysis: [`EIS-document-analysis.md`](../EIS-document-analysis.md). Values that no source or decision gives are written **Not specified**.
 
 ## Capabilities
 
-| Capability ID | Capability | Features | Priority | MVP | AI relevant |
-|---|---|---|---|---|---|
-| [11.01](#1101-knowledge-base) | Knowledge Base | 11.01.01 Knowledge Articles, 11.01.02 AI Knowledge | P0 | Yes | No |
-| [11.02](#1102-learning-management) | Learning Management | 11.02.01 Courses, 11.02.02 Learning Paths | P0 | Yes | No |
-| [11.03](#1103-training-delivery) | Training Delivery | 11.03.01 Labs & Assessments, 11.03.02 Video Learning | P0 | Yes | No |
-| [11.04](#1104-certification) | Certification | 11.04.01 Certificates | P0 | Yes | No |
+MVP, priority and phase follow [C4](../open-decisions.md#c4), [C5](../open-decisions.md#c5) and [C6](../open-decisions.md#c6). The [WB] MVP, priority and phase columns are ignored. Where a capability is not placed in any [WB:Roadmap] workstream, its phase and priority are Not specified.
 
-> The Priority and MVP values are copied from [WB:Capabilities]. Every capability in [WB] is P0 / MVP=Yes, which conflicts with the function-level MVP flags (C4 in [open-decisions.md](../open-decisions.md)).
+| Capability ID | Capability | Features | MVP | Priority | Phase | Basis |
+|---|---|---|---|---|---|---|
+| [11.01](#1101-knowledge-base) | Knowledge Base | 11.01.01 Knowledge Articles, 11.01.02 AI Knowledge | Yes | Phase 1 / MVP | P0 | C4 |
+| [11.02](#1102-learning-management) | Learning Management | 11.02.01 Courses, 11.02.02 Learning Paths | No | Phase 2 | P1 | [WB:Roadmap] "Learning" |
+| [11.03](#1103-training-delivery) | Training Delivery | 11.03.01 Labs & Assessments, 11.03.02 Video Learning | No | Phase 2 | P1 | [WB:Roadmap] "Learning" |
+| [11.04](#1104-certification) | Certification | 11.04.01 Certificates | No | Phase 2 | P1 | [WB:Roadmap] "Learning" |
 
 ## 11.01 Knowledge Base
 
 ### Feature 11.01.01 Knowledge Articles
 
-Priority P1 · MVP Yes · AI required No ([WB:Features])
+AI required: decided in the feature FRD ([C12](../open-decisions.md#c12)). [WB:Features] flag, informational only: No.
 
-| Function ID | Function (requirement candidate) | MVP | AI | Actor | Suggested API | Primary API | Microservice | Entity | Event | Journey | Phase |
-|---|---|---|---|---|---|---|---|---|---|---|---|
-| 11.01.01.01 | Create article | No | No | Platform Service | `/knowledge-base/create-article` | API-017 POST /v1/knowledge/search | Knowledge Service | KnowledgeArticle | - | UJ-005 Provision Service | Phase 2 |
-| 11.01.01.02 | Edit article | No | No | Platform Service | `/knowledge-base/edit-article` | API-017 POST /v1/knowledge/search | Knowledge Service | KnowledgeArticle | - | UJ-005 Provision Service | Phase 2 |
-| 11.01.01.03 | Publish article | No | No | Platform Service | `/knowledge-base/publish-article` | API-017 POST /v1/knowledge/search | Knowledge Service | KnowledgeArticle | - | UJ-005 Provision Service | Phase 2 |
-| 11.01.01.04 | Search article | No | No | Platform Service | `/knowledge-base/search-article` | API-017 POST /v1/knowledge/search | Knowledge Service | KnowledgeArticle | - | UJ-005 Provision Service | Phase 2 |
-| 11.01.01.05 | Version article | No | No | Platform Service | `/knowledge-base/version-article` | API-017 POST /v1/knowledge/search | Knowledge Service | KnowledgeArticle | - | UJ-005 Provision Service | Phase 2 |
+| Function ID | Function (requirement candidate) | MVP | Priority | Phase | AI ([WB], info) | Actor | Suggested API | Primary API | Microservice | Entity | Event | Journey |
+|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| 11.01.01.01 | Create article | Yes | Phase 1 / MVP | P0 | No | Platform Service | `/knowledge-base/create-article` | API-017 POST /v1/knowledge/search | Knowledge Service | KnowledgeArticle | - | UJ-005 Provision Service |
+| 11.01.01.02 | Edit article | Yes | Phase 1 / MVP | P0 | No | Platform Service | `/knowledge-base/edit-article` | API-017 POST /v1/knowledge/search | Knowledge Service | KnowledgeArticle | - | UJ-005 Provision Service |
+| 11.01.01.03 | Publish article | Yes | Phase 1 / MVP | P0 | No | Platform Service | `/knowledge-base/publish-article` | API-017 POST /v1/knowledge/search | Knowledge Service | KnowledgeArticle | - | UJ-005 Provision Service |
+| 11.01.01.04 | Search article | Yes | Phase 1 / MVP | P0 | No | Platform Service | `/knowledge-base/search-article` | API-017 POST /v1/knowledge/search | Knowledge Service | KnowledgeArticle | - | UJ-005 Provision Service |
+| 11.01.01.05 | Version article | Yes | Phase 1 / MVP | P0 | No | Platform Service | `/knowledge-base/version-article` | API-017 POST /v1/knowledge/search | Knowledge Service | KnowledgeArticle | - | UJ-005 Provision Service |
 
 ### Feature 11.01.02 AI Knowledge
 
-Priority P1 · MVP Yes · AI required Yes ([WB:Features])
+AI required: decided in the feature FRD ([C12](../open-decisions.md#c12)). [WB:Features] flag, informational only: Yes.
 
-| Function ID | Function (requirement candidate) | MVP | AI | Actor | Suggested API | Primary API | Microservice | Entity | Event | Journey | Phase |
-|---|---|---|---|---|---|---|---|---|---|---|---|
-| 11.01.02.01 | Index content | No | No | Platform Service | `/knowledge-base/index-content` | API-017 POST /v1/knowledge/search | Knowledge Service | KnowledgeArticle | - | UJ-005 Provision Service | Phase 2 |
-| 11.01.02.02 | Retrieve relevant content | No | No | Platform Service | `/knowledge-base/retrieve-relevant-content` | API-017 POST /v1/knowledge/search | Knowledge Service | KnowledgeArticle | - | UJ-005 Provision Service | Phase 2 |
-| 11.01.02.03 | Validate source | No | No | Platform Service | `/knowledge-base/validate-source` | API-017 POST /v1/knowledge/search | Knowledge Service | KnowledgeArticle | - | UJ-005 Provision Service | Phase 2 |
+| Function ID | Function (requirement candidate) | MVP | Priority | Phase | AI ([WB], info) | Actor | Suggested API | Primary API | Microservice | Entity | Event | Journey |
+|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| 11.01.02.01 | Index content | Yes | Phase 1 / MVP | P0 | No | Platform Service | `/knowledge-base/index-content` | API-017 POST /v1/knowledge/search | Knowledge Service | KnowledgeArticle | - | UJ-005 Provision Service |
+| 11.01.02.02 | Retrieve relevant content | Yes | Phase 1 / MVP | P0 | No | Platform Service | `/knowledge-base/retrieve-relevant-content` | API-017 POST /v1/knowledge/search | Knowledge Service | KnowledgeArticle | - | UJ-005 Provision Service |
+| 11.01.02.03 | Validate source | Yes | Phase 1 / MVP | P0 | No | Platform Service | `/knowledge-base/validate-source` | API-017 POST /v1/knowledge/search | Knowledge Service | KnowledgeArticle | - | UJ-005 Provision Service |
 
 ## 11.02 Learning Management
 
 ### Feature 11.02.01 Courses
 
-Priority P1 · MVP Yes · AI required No ([WB:Features])
+AI required: decided in the feature FRD ([C12](../open-decisions.md#c12)). [WB:Features] flag, informational only: No.
 
-| Function ID | Function (requirement candidate) | MVP | AI | Actor | Suggested API | Primary API | Microservice | Entity | Event | Journey | Phase |
-|---|---|---|---|---|---|---|---|---|---|---|---|
-| 11.02.01.01 | Create course | No | No | Platform Service | `/learning-management/create-course` | - | Knowledge Service | KnowledgeArticle | - | UJ-005 Provision Service | Phase 2 |
-| 11.02.01.02 | Publish course | No | No | Platform Service | `/learning-management/publish-course` | - | Knowledge Service | KnowledgeArticle | - | UJ-005 Provision Service | Phase 2 |
-| 11.02.01.03 | Enroll user | No | No | Platform Service | `/learning-management/enroll-user` | - | Knowledge Service | KnowledgeArticle | - | UJ-005 Provision Service | Phase 2 |
-| 11.02.01.04 | Track progress | No | No | Platform Service | `/learning-management/track-progress` | - | Knowledge Service | KnowledgeArticle | - | UJ-005 Provision Service | Phase 2 |
-| 11.02.01.05 | Complete course | No | No | Platform Service | `/learning-management/complete-course` | - | Knowledge Service | KnowledgeArticle | - | UJ-005 Provision Service | Phase 2 |
+| Function ID | Function (requirement candidate) | MVP | Priority | Phase | AI ([WB], info) | Actor | Suggested API | Primary API | Microservice | Entity | Event | Journey |
+|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| 11.02.01.01 | Create course | No | Phase 2 | P1 | No | Platform Service | `/learning-management/create-course` | - | Knowledge Service | KnowledgeArticle | - | UJ-005 Provision Service |
+| 11.02.01.02 | Publish course | No | Phase 2 | P1 | No | Platform Service | `/learning-management/publish-course` | - | Knowledge Service | KnowledgeArticle | - | UJ-005 Provision Service |
+| 11.02.01.03 | Enroll user | No | Phase 2 | P1 | No | Platform Service | `/learning-management/enroll-user` | - | Knowledge Service | KnowledgeArticle | - | UJ-005 Provision Service |
+| 11.02.01.04 | Track progress | No | Phase 2 | P1 | No | Platform Service | `/learning-management/track-progress` | - | Knowledge Service | KnowledgeArticle | - | UJ-005 Provision Service |
+| 11.02.01.05 | Complete course | No | Phase 2 | P1 | No | Platform Service | `/learning-management/complete-course` | - | Knowledge Service | KnowledgeArticle | - | UJ-005 Provision Service |
 
 ### Feature 11.02.02 Learning Paths
 
-Priority P1 · MVP Yes · AI required No ([WB:Features])
+AI required: decided in the feature FRD ([C12](../open-decisions.md#c12)). [WB:Features] flag, informational only: No.
 
-| Function ID | Function (requirement candidate) | MVP | AI | Actor | Suggested API | Primary API | Microservice | Entity | Event | Journey | Phase |
-|---|---|---|---|---|---|---|---|---|---|---|---|
-| 11.02.02.01 | Create learning path | No | No | Platform Service | `/learning-management/create-learning-path` | - | Knowledge Service | KnowledgeArticle | - | UJ-005 Provision Service | Phase 2 |
-| 11.02.02.02 | Assign learning path | No | No | Platform Service | `/learning-management/assign-learning-path` | - | Knowledge Service | KnowledgeArticle | - | UJ-005 Provision Service | Phase 2 |
-| 11.02.02.03 | Track path progress | No | No | Platform Service | `/learning-management/track-path-progress` | - | Knowledge Service | KnowledgeArticle | - | UJ-005 Provision Service | Phase 2 |
+| Function ID | Function (requirement candidate) | MVP | Priority | Phase | AI ([WB], info) | Actor | Suggested API | Primary API | Microservice | Entity | Event | Journey |
+|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| 11.02.02.01 | Create learning path | No | Phase 2 | P1 | No | Platform Service | `/learning-management/create-learning-path` | - | Knowledge Service | KnowledgeArticle | - | UJ-005 Provision Service |
+| 11.02.02.02 | Assign learning path | No | Phase 2 | P1 | No | Platform Service | `/learning-management/assign-learning-path` | - | Knowledge Service | KnowledgeArticle | - | UJ-005 Provision Service |
+| 11.02.02.03 | Track path progress | No | Phase 2 | P1 | No | Platform Service | `/learning-management/track-path-progress` | - | Knowledge Service | KnowledgeArticle | - | UJ-005 Provision Service |
 
 ## 11.03 Training Delivery
 
 ### Feature 11.03.01 Labs & Assessments
 
-Priority P1 · MVP Yes · AI required No ([WB:Features])
+AI required: decided in the feature FRD ([C12](../open-decisions.md#c12)). [WB:Features] flag, informational only: No.
 
-| Function ID | Function (requirement candidate) | MVP | AI | Actor | Suggested API | Primary API | Microservice | Entity | Event | Journey | Phase |
-|---|---|---|---|---|---|---|---|---|---|---|---|
-| 11.03.01.01 | Launch lab | No | Yes | AI Agent | `/training-delivery/launch-lab` | - | Knowledge Service | KnowledgeArticle | - | UJ-002 AI Guided Selection | Phase 2 |
-| 11.03.01.02 | Submit assessment | No | Yes | AI Agent | `/training-delivery/submit-assessment` | - | Knowledge Service | KnowledgeArticle | - | UJ-002 AI Guided Selection | Phase 2 |
-| 11.03.01.03 | Score assessment | No | Yes | AI Agent | `/training-delivery/score-assessment` | - | Knowledge Service | KnowledgeArticle | - | UJ-002 AI Guided Selection | Phase 2 |
-| 11.03.01.04 | Track completion | No | Yes | AI Agent | `/training-delivery/track-completion` | - | Knowledge Service | KnowledgeArticle | - | UJ-002 AI Guided Selection | Phase 2 |
+| Function ID | Function (requirement candidate) | MVP | Priority | Phase | AI ([WB], info) | Actor | Suggested API | Primary API | Microservice | Entity | Event | Journey |
+|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| 11.03.01.01 | Launch lab | No | Phase 2 | P1 | Yes | AI Agent | `/training-delivery/launch-lab` | - | Knowledge Service | KnowledgeArticle | - | UJ-002 AI Guided Selection |
+| 11.03.01.02 | Submit assessment | No | Phase 2 | P1 | Yes | AI Agent | `/training-delivery/submit-assessment` | - | Knowledge Service | KnowledgeArticle | - | UJ-002 AI Guided Selection |
+| 11.03.01.03 | Score assessment | No | Phase 2 | P1 | Yes | AI Agent | `/training-delivery/score-assessment` | - | Knowledge Service | KnowledgeArticle | - | UJ-002 AI Guided Selection |
+| 11.03.01.04 | Track completion | No | Phase 2 | P1 | Yes | AI Agent | `/training-delivery/track-completion` | - | Knowledge Service | KnowledgeArticle | - | UJ-002 AI Guided Selection |
 
 ### Feature 11.03.02 Video Learning
 
-Priority P1 · MVP Yes · AI required No ([WB:Features])
+AI required: decided in the feature FRD ([C12](../open-decisions.md#c12)). [WB:Features] flag, informational only: No.
 
-| Function ID | Function (requirement candidate) | MVP | AI | Actor | Suggested API | Primary API | Microservice | Entity | Event | Journey | Phase |
-|---|---|---|---|---|---|---|---|---|---|---|---|
-| 11.03.02.01 | Stream video | No | Yes | AI Agent | `/training-delivery/stream-video` | - | Knowledge Service | KnowledgeArticle | - | UJ-002 AI Guided Selection | Phase 2 |
-| 11.03.02.02 | Track watch progress | No | Yes | AI Agent | `/training-delivery/track-watch-progress` | - | Knowledge Service | KnowledgeArticle | - | UJ-002 AI Guided Selection | Phase 2 |
+| Function ID | Function (requirement candidate) | MVP | Priority | Phase | AI ([WB], info) | Actor | Suggested API | Primary API | Microservice | Entity | Event | Journey |
+|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| 11.03.02.01 | Stream video | No | Phase 2 | P1 | Yes | AI Agent | `/training-delivery/stream-video` | - | Knowledge Service | KnowledgeArticle | - | UJ-002 AI Guided Selection |
+| 11.03.02.02 | Track watch progress | No | Phase 2 | P1 | Yes | AI Agent | `/training-delivery/track-watch-progress` | - | Knowledge Service | KnowledgeArticle | - | UJ-002 AI Guided Selection |
 
 ## 11.04 Certification
 
 ### Feature 11.04.01 Certificates
 
-Priority P1 · MVP Yes · AI required No ([WB:Features])
+AI required: decided in the feature FRD ([C12](../open-decisions.md#c12)). [WB:Features] flag, informational only: No.
 
-| Function ID | Function (requirement candidate) | MVP | AI | Actor | Suggested API | Primary API | Microservice | Entity | Event | Journey | Phase |
-|---|---|---|---|---|---|---|---|---|---|---|---|
-| 11.04.01.01 | Define certification | No | No | Platform Service | `/certification/define-certification` | - | Knowledge Service | KnowledgeArticle | - | UJ-005 Provision Service | Phase 2 |
-| 11.04.01.02 | Issue certificate | No | No | Platform Service | `/certification/issue-certificate` | - | Knowledge Service | KnowledgeArticle | - | UJ-005 Provision Service | Phase 2 |
-| 11.04.01.03 | Verify certificate | No | No | Platform Service | `/certification/verify-certificate` | - | Knowledge Service | KnowledgeArticle | - | UJ-005 Provision Service | Phase 2 |
-| 11.04.01.04 | Expire certificate | No | No | Platform Service | `/certification/expire-certificate` | - | Knowledge Service | KnowledgeArticle | - | UJ-005 Provision Service | Phase 2 |
+| Function ID | Function (requirement candidate) | MVP | Priority | Phase | AI ([WB], info) | Actor | Suggested API | Primary API | Microservice | Entity | Event | Journey |
+|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| 11.04.01.01 | Define certification | No | Phase 2 | P1 | No | Platform Service | `/certification/define-certification` | - | Knowledge Service | KnowledgeArticle | - | UJ-005 Provision Service |
+| 11.04.01.02 | Issue certificate | No | Phase 2 | P1 | No | Platform Service | `/certification/issue-certificate` | - | Knowledge Service | KnowledgeArticle | - | UJ-005 Provision Service |
+| 11.04.01.03 | Verify certificate | No | Phase 2 | P1 | No | Platform Service | `/certification/verify-certificate` | - | Knowledge Service | KnowledgeArticle | - | UJ-005 Provision Service |
+| 11.04.01.04 | Expire certificate | No | Phase 2 | P1 | No | Platform Service | `/certification/expire-certificate` | - | Knowledge Service | KnowledgeArticle | - | UJ-005 Provision Service |
+
+> **Columns from [WB:Traceability]** (Primary API, Microservice, Entity, Event, Journey) are kept for reference only. Under [C13](../open-decisions.md#c13) microservices are logical domains built as modules in the single backend. Under [C14](../open-decisions.md#c14) the implemented endpoints and each FRD's `api-requirements.md` are the source of truth for APIs.
 
 ## Dependencies
 
@@ -125,14 +129,14 @@ Priority P1 · MVP Yes · AI required No ([WB:Features])
 
 ## Deliverables
 
-Not specified in any source. [WB:Traceability] links these functions to the API and microservice columns in the tables above; those are the nearest implied deliverables.
+Not specified in any source. Under [DN-2](../open-decisions.md#dn-2-sprint-scope-length-and-dates) the sprint commits this application's P0 capabilities; P1 capabilities are stretch scope.
 
 ## Requirements, design and tests
 
 | Artifact | Location | Status |
 |---|---|---|
-| Feature FRD | `docs/02-requirements/FRD/<feature>/` (copy `_template/`) | Not created |
-| Requirement | `docs/02-requirements/functional-requirements/REQ-<APP-CODE>-<NNN>.md` | Not created. No REQ-IDs exist in the sources |
-| Business rules | `docs/03-business-rules/` | Not specified in the sources |
-| Test cases | `test-cases/functional/<feature>/TC-<APP-CODE>-<NNN>.md` | Not created |
+| Feature FRD | `docs/02-requirements/FRD/<feature>/` (copy `_template/`) | See the sprint page for FRDs in progress |
+| Requirement | `REQ-KNW-<NNN>` inside the FRD | Approved FRD required before build ([DN-4](../open-decisions.md#dn-4-business-rules-and-acceptance-criteria)) |
+| Business rules | `docs/03-business-rules/` and `FRD/<feature>/business-rules.md` | Per FRD |
+| Test cases | `test-cases/functional/<feature>/TC-KNW-<NNN>.md` | Not created |
 | NFRs | [WB:Non-Functional Requirements] NFR-001 to NFR-014 (platform-wide) | See [EIS-document-analysis.md](../EIS-document-analysis.md) section 2.17 |

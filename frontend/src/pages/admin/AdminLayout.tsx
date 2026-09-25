@@ -1,11 +1,12 @@
 import { useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import {
   AppBar, Box, Collapse, Divider, Drawer, IconButton, List, ListItemButton,
   ListItemIcon, ListItemText, Toolbar, Typography, useMediaQuery, useTheme,
 } from '@mui/material'
 import {
   ChevronDown, ChevronRight, KeyRound, LayoutGrid, Layers, LogOut, Menu as MenuIcon,
-  Package, ScrollText, Settings, SlidersHorizontal, UserCheck,
+  Package, ScrollText, Settings, ShieldCheck, SlidersHorizontal, UserCheck, UsersRound,
 } from 'lucide-react'
 import { Outlet, useLocation, Link as RouterLink } from 'react-router-dom'
 import { useAuth } from '../../auth/AuthProvider'
@@ -32,6 +33,7 @@ const SETTINGS_ITEMS = [
  * button in a small top AppBar) below that.
  */
 export function AdminLayout() {
+  const { t } = useTranslation()
   const auth = useAuth()
   const location = useLocation()
   const theme = useTheme()
@@ -89,6 +91,31 @@ export function AdminLayout() {
             <KeyRound size={18} />
           </ListItemIcon>
           <ListItemText primary="Privileged Access" />
+        </ListItemButton>
+
+        {/* Sprint 2026.3.3, REQ-IAM-003 */}
+        <ListItemButton
+          component={RouterLink}
+          to="/admin/roles"
+          selected={location.pathname === '/admin/roles'}
+          onClick={() => setMobileOpen(false)}
+        >
+          <ListItemIcon sx={{ minWidth: 36 }}>
+            <UsersRound size={18} />
+          </ListItemIcon>
+          <ListItemText primary={t('adminRbac.navRoles')} />
+        </ListItemButton>
+
+        <ListItemButton
+          component={RouterLink}
+          to="/admin/permissions"
+          selected={location.pathname === '/admin/permissions'}
+          onClick={() => setMobileOpen(false)}
+        >
+          <ListItemIcon sx={{ minWidth: 36 }}>
+            <ShieldCheck size={18} />
+          </ListItemIcon>
+          <ListItemText primary={t('adminRbac.navPermissions')} />
         </ListItemButton>
 
         <ListItemButton

@@ -78,6 +78,11 @@ public class OrganizationSelfService {
         if (!authorizationService.organizationInGoodStanding(organization.getStatus())) {
             throw new ForbiddenException("Your organization's account is not currently active");
         }
+        // REQ-TEN-001 BR-TEN-008: a suspended or closed organization is refused
+        // too, so a member's still-valid access token stops working at once.
+        if (organization.getLifecycleStatus() != OrganizationLifecycleStatus.ACTIVE) {
+            throw new ForbiddenException("Your organization's account is not currently active");
+        }
         return member;
     }
 
