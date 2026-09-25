@@ -233,4 +233,47 @@ class PrivilegedAccessServiceTest {
         privilegedAccessService.approve(approver.getKeycloakSub(), created.id(), RoleScope.PLATFORM, null, "ok, temporarily");
         assertThat(privilegedAccessService.hasActivePlatformGrant(requester.getKeycloakSub(), "MANAGE_CATALOG")).isTrue();
     }
+
+    // ------------------------------------------------------------------
+    // Decision C24 (REQ-IAM-004): requestable-permissions list
+    // ------------------------------------------------------------------
+
+    @Test
+    void requestablePermissionsNeverIncludeTheApprovalPermission() {
+        Organization org = newOrganization();
+        var member = organizationMemberService.addMember(org.getId(), newCustomer("req-list-guard@test-org.example").getId(), OrgRole.MEMBER);
+
+        assertThat(privilegedAccessService.listRequestablePermissions(member.getCustomerId()))
+            .extracting(p -> p.permissionName())
+            .doesNotContain("MANAGE_PRIVILEGED_ACCESS")
+            .contains("MANAGE_USERS", "MANAGE_CATALOG");
+    }
+
+    @Test
+    void organizationScopePermissionsAreListedOnlyForOrganizationMembers() {
+        Customer lone = newCustomer("req-list-lone@test-org.example");
+
+        var list = privilegedAccessService.listRequestablePermissions(lone.getId());
+        assertThat(list).isNotEmpty();
+        assertThat(list).allMatch(p -> p.scope() == RoleScope.PLATFORM);
+        assertThat(list).extracting(p -> p.permissionName()).doesNotContain("MANAGE_USERS");
+
+        // A caller with no customer row at all (e.g. a platform admin) is treated the same way.
+        assertThat(privilegedAccessService.listRequestablePermissions(null)).allMatch(p -> p.scope() == RoleScope.PLATFORM);
+    }
+
+    @Test
+    void everyListedPermissionIsAcceptedByRequest() {
+        Organization org = newOrganization();
+        var member = organizationMemberService.addMember(org.getId(), newCustomer("req-list-consistent@test-org.example").getId(), OrgRole.MEMBER);
+        Customer customer = customerRepository.findById(member.getCustomerId()).orElseThrow();
+
+        var list = privilegedAccessService.listRequestablePermissions(customer.getId());
+        assertThat(list).extracting(p -> p.scope()).contains(RoleScope.ORGANIZATION, RoleScope.PLATFORM);
+        for (var permission : list) {
+            PrivilegedAccessRequestDto created = privilegedAccessService.request(
+                customer.getKeycloakSub(), customer.getId(), permission.permissionName(), "consistency check", 5);
+            assertThat(created.scope()).isEqualTo(permission.scope());
+        }
+    }
 }

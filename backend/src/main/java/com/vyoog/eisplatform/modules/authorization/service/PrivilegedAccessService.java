@@ -5,6 +5,7 @@ import com.vyoog.eisplatform.common.exception.ResourceNotFoundException;
 import com.vyoog.eisplatform.modules.audit.service.AuditService;
 import com.vyoog.eisplatform.modules.authorization.dto.PrivilegedAccessAuditEntryDto;
 import com.vyoog.eisplatform.modules.authorization.dto.PrivilegedAccessRequestDto;
+import com.vyoog.eisplatform.modules.authorization.dto.RequestablePermissionDto;
 import com.vyoog.eisplatform.modules.authorization.model.*;
 import com.vyoog.eisplatform.modules.authorization.repository.PrivilegedAccessAuditEntryRepository;
 import com.vyoog.eisplatform.modules.authorization.repository.PrivilegedAccessRequestRepository;
@@ -21,8 +22,12 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
+import java.util.EnumSet;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
+import java.util.TreeMap;
 import java.util.stream.Collectors;
 
 /**
@@ -115,6 +120,36 @@ public class PrivilegedAccessService {
             "PrivilegedAccessRequest", request.getId().toString(), organizationId,
             "Requested " + permissionName + " for " + durationMinutes + " minutes");
         return toDto(request);
+    }
+
+    /**
+     * Decision C24 (REQ-IAM-004): the permissions {@link #request} would accept
+     * from this caller, so the request form can offer them as a dropdown. Applies
+     * only the rules {@link #request} and {@link #resolveScope} already enforce —
+     * granted by some role, in exactly one scope, never
+     * {@link #SELF_ESCALATION_GUARD_PERMISSION}, and ORGANIZATION scope only for
+     * an active organization member. Adds no rules of its own.
+     */
+    public List<RequestablePermissionDto> listRequestablePermissions(Long requesterCustomerId) {
+        boolean isOrganizationMember = requesterCustomerId != null
+            && organizationMemberRepository.findFirstByCustomerIdAndStatus(requesterCustomerId, MembershipStatus.ACTIVE).isPresent();
+
+        Map<String, Set<RoleScope>> scopesByPermission = new TreeMap<>();
+        Map<String, String> descriptionByPermission = new HashMap<>();
+        for (Role role : roleRepository.findAll()) {
+            for (Permission permission : role.getPermissions()) {
+                scopesByPermission.computeIfAbsent(permission.getName(), name -> EnumSet.noneOf(RoleScope.class)).add(role.getScope());
+                descriptionByPermission.putIfAbsent(permission.getName(), permission.getDescription());
+            }
+        }
+
+        return scopesByPermission.entrySet().stream()
+            .filter(entry -> !SELF_ESCALATION_GUARD_PERMISSION.equals(entry.getKey()))
+            .filter(entry -> entry.getValue().size() == 1)
+            .filter(entry -> isOrganizationMember || !entry.getValue().contains(RoleScope.ORGANIZATION))
+            .map(entry -> new RequestablePermissionDto(
+                entry.getKey(), entry.getValue().iterator().next(), descriptionByPermission.get(entry.getKey())))
+            .toList();
     }
 
     private RoleScope resolveScope(String permissionName) {

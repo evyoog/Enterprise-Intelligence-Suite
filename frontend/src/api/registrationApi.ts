@@ -110,6 +110,8 @@ export interface Organization {
   licensedSeats: number
   activeMemberCount: number
   status: RegistrationStatus
+  /** Organization MFA policy (REQ-IAM-001) — always present on OrganizationDto. */
+  mfaRequired: boolean
 }
 
 // Public — matches RegistrationController, permitAll on the backend.
@@ -142,6 +144,12 @@ export const myProductsApi = {
 export const organizationApi = {
   getMyOrganization: () => apiRequest<Organization>('/organization/me'),
   listMyOrgUsers: () => apiRequest<OrgMember[]>('/organization/me/users'),
+  // REQ-IAM-001 — requires MANAGE_ORGANIZATION (enforced server-side).
+  updateMfaPolicy: (mfaRequired: boolean) =>
+    apiRequest<Organization>('/organization/me/mfa-policy', { method: 'PATCH', body: JSON.stringify({ mfaRequired }) }),
+  // REQ-IAM-002 — requires MANAGE_USERS on the target member (enforced server-side).
+  changeMemberRole: (memberId: number, orgRole: OrgMember['orgRole']) =>
+    apiRequest<OrgMember>(`/organization/me/members/${memberId}/role`, { method: 'PATCH', body: JSON.stringify({ orgRole }) }),
   listMyOrgProducts: () => apiRequest<OrgProductAccess[]>('/organization/me/products'),
   listMyOrgSubscription: () => apiRequest<Subscription[]>('/organization/me/subscription'),
 }

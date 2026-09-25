@@ -49,8 +49,5 @@ A signed-in user can request temporary, time-boxed access to a permission they d
 
 ## Dependencies
 - Existing endpoints under `/me/privileged-access` and `/organization/me/privileged-access`.
-- **One new backend endpoint** ([C24](../../../01-business/roadmap/open-decisions.md#c24)): `GET /me/privileged-access/requestable-permissions`. It adds no new rules.
+- Backend endpoint added under [C24](../../../01-business/roadmap/open-decisions.md#c24): `GET /me/privileged-access/requestable-permissions` (`PrivilegedAccessController`). It adds no new rules.
 - Existing types in `frontend/src/api/platformPrivilegedAccessApi.ts` (reuse, do not duplicate the platform calls).
-
-## Open questions
-- The response shape of `GET /me/privileged-access/requestable-permissions` is Not specified in [C24](../../../01-business/roadmap/open-decisions.md#c24) (for example, whether it returns the scope alongside each permission name). Define it before approval.

@@ -1,10 +1,10 @@
 # API requirements — Privileged Access (User and Organization Administrator)
 
-All endpoints **already exist** on branch `dev`, except `GET /me/privileged-access/requestable-permissions`, which is new under [C24](../../../01-business/roadmap/open-decisions.md#c24) and needs a backend change. Paths are relative to the backend base path `/api`. Error bodies are `{"message": "…"}` from `GlobalExceptionHandler`.
+All endpoints exist on branch `dev`. `GET /me/privileged-access/requestable-permissions` was added in sprint 2026.3.3 under [C24](../../../01-business/roadmap/open-decisions.md#c24). Paths are relative to the backend base path `/api`. Error bodies are `{"message": "…"}` from `GlobalExceptionHandler`.
 
 | Method | Path | Purpose | Permission | Success | Errors |
 |---|---|---|---|---|---|
-| GET | `/me/privileged-access/requestable-permissions` | **New (C24).** List the permissions the caller may request | Signed-in user | 200 (response shape Not specified) | Not specified |
+| GET | `/me/privileged-access/requestable-permissions` | List the permissions the caller may request (C24) | Signed-in user | 200 `RequestablePermissionDto[]` | - |
 | POST | `/me/privileged-access/requests` | Submit a request | Signed-in user | 200 `PrivilegedAccessRequestDto` | 400 |
 | GET | `/me/privileged-access/requests` | List own requests (newest first) | Signed-in user | 200 `PrivilegedAccessRequestDto[]` | - |
 | POST | `/me/privileged-access/requests/{id}/revoke` | Withdraw own request | Requester | 200 `PrivilegedAccessRequestDto` | 400, 403, 404 |
@@ -20,6 +20,8 @@ All endpoints **already exist** on branch `dev`, except `GET /me/privileged-acce
 ```
 
 Decision body (`PrivilegedAccessDecisionRequest`, optional): `{ "note": "…" }`
+
+`RequestablePermissionDto` (C24, sorted by name): `permissionName`, `scope` (`PLATFORM` or `ORGANIZATION`), `description`.
 
 `PrivilegedAccessRequestDto`: `id`, `scope`, `organizationId`, `permissionName`, `justification`, `status`, `effectiveStatus`, `requestedAt`, `requestedDurationMinutes`, `decidedAt`, `decidedByKeycloakSub`, `decisionNote`, `expiresAt`, `auditTrail[]` (`eventType`, `actorKeycloakSub`, `occurredAt`, `note`).
 

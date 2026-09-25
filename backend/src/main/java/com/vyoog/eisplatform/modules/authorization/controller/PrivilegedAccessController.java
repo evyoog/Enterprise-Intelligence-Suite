@@ -3,6 +3,7 @@ package com.vyoog.eisplatform.modules.authorization.controller;
 import com.vyoog.eisplatform.modules.authorization.dto.PrivilegedAccessDecisionRequest;
 import com.vyoog.eisplatform.modules.authorization.dto.PrivilegedAccessRequestCreateRequest;
 import com.vyoog.eisplatform.modules.authorization.dto.PrivilegedAccessRequestDto;
+import com.vyoog.eisplatform.modules.authorization.dto.RequestablePermissionDto;
 import com.vyoog.eisplatform.modules.authorization.service.PrivilegedAccessService;
 import com.vyoog.eisplatform.modules.registration.service.CurrentCustomerResolver;
 import jakarta.validation.Valid;
@@ -34,6 +35,13 @@ public class PrivilegedAccessController {
     public PrivilegedAccessRequestDto request(@AuthenticationPrincipal Jwt jwt, @Valid @RequestBody PrivilegedAccessRequestCreateRequest request) {
         Long customerId = currentCustomerResolver.resolveOptional(jwt).map(c -> c.getId()).orElse(null);
         return privilegedAccessService.request(jwt.getSubject(), customerId, request.permissionName(), request.justification(), request.durationMinutes());
+    }
+
+    /** Decision C24 (REQ-IAM-004): what the request form may offer this caller. */
+    @GetMapping("/requestable-permissions")
+    public List<RequestablePermissionDto> requestablePermissions(@AuthenticationPrincipal Jwt jwt) {
+        Long customerId = currentCustomerResolver.resolveOptional(jwt).map(c -> c.getId()).orElse(null);
+        return privilegedAccessService.listRequestablePermissions(customerId);
     }
 
     @GetMapping("/requests")

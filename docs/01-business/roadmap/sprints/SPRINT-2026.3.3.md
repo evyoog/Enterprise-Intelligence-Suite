@@ -111,7 +111,7 @@ Full breakdown with APIs, services, entities and events: [applications/06-identi
 
 ### Related code already in this repository
 
-Observed on branch `dev`, module level only: `backend/…/modules/auth`, `backend/…/modules/authorization`, `backend/…/modules/federation`; `frontend/src/pages/SecuritySettingsPage.tsx`, `frontend/src/pages/OrganizationSamlProvidersPage.tsx`, `frontend/src/pages/ForgotPasswordPage.tsx`, `frontend/src/pages/ResetPasswordPage.tsx`, `frontend/src/pages/admin/AdminPrivilegedAccessPage.tsx`, `frontend/src/auth/`.
+Observed on branch `dev`, module level only: `backend/…/modules/auth`, `backend/…/modules/authorization`, `backend/…/modules/federation`; `frontend/src/pages/SecuritySettingsPage.tsx`, `frontend/src/pages/OrganizationSamlProvidersPage.tsx`, `frontend/src/pages/ForgotPasswordPage.tsx`, `frontend/src/pages/ResetPasswordPage.tsx`, `frontend/src/pages/admin/AdminPrivilegedAccessPage.tsx`, `frontend/src/auth/`, `frontend/src/components/organization/`, `frontend/src/components/security/PrivilegedAccessRequestsCard.tsx`, `frontend/src/pages/admin/RolesAdminPage.tsx`, `frontend/src/pages/admin/PermissionsAdminPage.tsx`, `frontend/src/api/rolesApi.ts`, `frontend/src/api/permissionsApi.ts`, `frontend/src/api/privilegedAccessApi.ts`.
 
 ## Decisions affecting this sprint
 

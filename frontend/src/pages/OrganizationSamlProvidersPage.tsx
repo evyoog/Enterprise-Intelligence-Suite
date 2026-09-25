@@ -1,16 +1,18 @@
 import { useEffect, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import {
   Alert, Box, Button, Chip, CircularProgress, Container, IconButton, List, ListItem,
   ListItemText, Paper, TextField, ToggleButton, ToggleButtonGroup, Typography,
 } from '@mui/material'
-import { Trash2 } from 'lucide-react'
+import { Pencil, Trash2 } from 'lucide-react'
 import { ApiError, resolveAssetUrl } from '../api/client'
 import { samlApi, type SamlProvider, type SamlProviderTestResult } from '../api/samlApi'
 import { organizationApi } from '../api/registrationApi'
 import { SiteNavbar } from '../components/layout/SiteNavbar'
 import { PageHeader } from '../components/layout/PageHeader'
 
-type EntryMode = 'metadata' | 'manual'
+/** 'keep' exists only when editing: change the name, leave the connection details as they are. */
+type EntryMode = 'metadata' | 'manual' | 'keep'
 
 /**
  * Phase 4 (2026.3.3): ORG_ADMIN self-service SAML Identity Federation
@@ -19,11 +21,14 @@ type EntryMode = 'metadata' | 'manual'
  * is configuration only, exactly as scoped.
  */
 export function OrganizationSamlProvidersPage() {
+  const { t } = useTranslation()
   const [organizationId, setOrganizationId] = useState<number | null>(null)
   const [providers, setProviders] = useState<SamlProvider[] | null>(null)
   const [loadError, setLoadError] = useState<string | null>(null)
 
   const [adding, setAdding] = useState(false)
+  // REQ-IAM-005 (sprint 2026.3.3): the provider being edited, reusing the create form.
+  const [editingId, setEditingId] = useState<number | null>(null)
   const [entryMode, setEntryMode] = useState<EntryMode>('metadata')
   const [name, setName] = useState('')
   const [metadataXml, setMetadataXml] = useState('')
@@ -47,6 +52,7 @@ export function OrganizationSamlProvidersPage() {
 
   const resetForm = () => {
     setAdding(false)
+    setEditingId(null)
     setEntryMode('metadata')
     setName('')
     setMetadataXml('')
@@ -68,6 +74,34 @@ export function OrganizationSamlProvidersPage() {
       load()
     } catch (e) {
       setFormError(e instanceof ApiError ? e.message : 'Could not add this SAML provider.')
+    } finally {
+      setSubmitting(false)
+    }
+  }
+
+  const startEdit = (provider: SamlProvider) => {
+    resetForm()
+    setEditingId(provider.id)
+    setEntryMode('keep')
+    setName(provider.name)
+    setEntityId(provider.entityId)
+    setSsoUrl(provider.ssoUrl)
+    setCertificatePem(provider.certificatePem)
+  }
+
+  const submitEdit = async () => {
+    if (editingId === null) return
+    setFormError(null)
+    setSubmitting(true)
+    try {
+      await samlApi.update(editingId, {
+        name,
+        ...(entryMode === 'metadata' ? { metadataXml } : entryMode === 'manual' ? { entityId, ssoUrl, certificatePem } : {}),
+      })
+      resetForm()
+      load()
+    } catch (e) {
+      setFormError(e instanceof ApiError ? e.message : t('saml.saveError'))
     } finally {
       setSubmitting(false)
     }
@@ -155,6 +189,13 @@ export function OrganizationSamlProvidersPage() {
                     <Button size="small" variant="text" disabled={testingId === provider.id} onClick={() => runTest(provider.id)}>
                       {testingId === provider.id ? 'Testing…' : 'Test'}
                     </Button>
+                    <Button
+                      size="small" variant="text" startIcon={<Pencil size={14} />}
+                      aria-label={t('saml.editLabel', { name: provider.name })}
+                      onClick={() => startEdit(provider)}
+                    >
+                      {t('saml.edit')}
+                    </Button>
                   </Box>
                   {testResults[provider.id] && (
                     <Box sx={{ mt: 1.5 }}>
@@ -172,13 +213,15 @@ export function OrganizationSamlProvidersPage() {
           </Paper>
         )}
 
-        {!adding && (
+        {!adding && editingId === null && (
           <Button variant="contained" onClick={() => setAdding(true)}>Add SAML provider</Button>
         )}
 
-        {adding && (
-          <Paper variant="outlined" sx={{ p: 3 }}>
-            <Typography variant="h6" sx={{ fontWeight: 700, mb: 2 }}>Add SAML provider</Typography>
+        {(adding || editingId !== null) && (
+          <Paper variant="outlined" sx={{ p: 3 }} component="section" aria-labelledby="saml-form-title">
+            <Typography id="saml-form-title" variant="h6" component="h2" sx={{ fontWeight: 700, mb: 2 }}>
+              {editingId !== null ? t('saml.editTitle') : 'Add SAML provider'}
+            </Typography>
             {formError && <Alert severity="error" sx={{ mb: 2 }}>{formError}</Alert>}
             <TextField label="Name" fullWidth required value={name} onChange={(e) => setName(e.target.value)} sx={{ mb: 2 }} />
 
@@ -186,11 +229,14 @@ export function OrganizationSamlProvidersPage() {
               exclusive value={entryMode} onChange={(_, v) => v && setEntryMode(v)}
               size="small" sx={{ mb: 2 }}
             >
+              {editingId !== null && <ToggleButton value="keep">{t('saml.keepConnection')}</ToggleButton>}
               <ToggleButton value="metadata">Paste IdP metadata XML</ToggleButton>
               <ToggleButton value="manual">Enter details manually</ToggleButton>
             </ToggleButtonGroup>
 
-            {entryMode === 'metadata' ? (
+            {entryMode === 'keep' ? (
+              <Typography variant="body2" sx={{ color: 'text.secondary', mb: 2 }}>{t('saml.keepConnectionHint')}</Typography>
+            ) : entryMode === 'metadata' ? (
               <TextField
                 label="IdP metadata XML" fullWidth required multiline minRows={6}
                 value={metadataXml} onChange={(e) => setMetadataXml(e.target.value)}
@@ -211,10 +257,13 @@ export function OrganizationSamlProvidersPage() {
 
             <Box sx={{ display: 'flex', gap: 1.5 }}>
               <Button
-                variant="contained" disabled={submitting || !name || (entryMode === 'metadata' ? !metadataXml : !entityId || !ssoUrl || !certificatePem)}
-                onClick={submitCreate}
+                variant="contained"
+                disabled={submitting || !name || (entryMode === 'metadata' ? !metadataXml : entryMode === 'manual' ? !entityId || !ssoUrl || !certificatePem : false)}
+                onClick={editingId !== null ? submitEdit : submitCreate}
               >
-                {submitting ? 'Adding…' : 'Add provider'}
+                {editingId !== null
+                  ? (submitting ? t('saml.saving') : t('saml.save'))
+                  : (submitting ? 'Adding…' : 'Add provider')}
               </Button>
               <Button variant="text" onClick={resetForm}>Cancel</Button>
             </Box>
