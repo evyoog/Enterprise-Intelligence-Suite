@@ -26,6 +26,21 @@ IDs match section 3.5 of the analysis. C1, C7, C8, C9 and C15 are left out becau
 | C14 | **API verbs do not match functions.** Create and update functions map to GET endpoints (API-004, API-015). | [WB:Traceability] | Correct them before writing OpenAPI |
 
 
+## Sprint 2026.3.3: functions not specified or dependent on later sprints
+Raised from the sprint 2026.3.3 development plan. These functions are in the sprint scope but are not being built now. Each needs a decision before any work starts.
+
+| # | Function | Why it is not built now | Status |
+|---|----------|-------------------------|--------|
+| C16 | 01.03.01 Semantic search | The approach, engine and data sources are Not specified | Open |
+| C17 | 01.03.01 Unified search beyond products | Documentation and support search need Apps 11 and 12 (sprint 2027.1.3) | Open |
+| C18 | 01.04.02 Send SMS | No SMS provider or rules are specified | Open |
+| C19 | 01.02.01 View spending | Needs Billing (App 08, sprint 2026.4.3). The dashboard already shows a "not available" note | Open |
+| C20 | 01.02.02 View incidents; per-product service status | Needs Incident management (App 12, sprint 2027.1.3) and product health monitoring, which is Not specified | Open |
+| C21 | 06.02.02 General policy engine (beyond the MFA policy) | Policy Management is App 15 (sprint 2027.2.2). Requirements are Not specified | Open |
+| C22 | 06.04.01 Configure OIDC (per-organization identity provider) | Only SAML is specified and built. OIDC identity-provider federation requirements are Not specified | Open |
+| C23 | 06.04.01 Map claims (configurable per provider) | The current fixed attribute mapping works. Configurable mapping is Not specified | Open |
+| C24 | 06.03.01 Request elevated access: how the requester chooses the permission | The backend accepts any permission name that some role grants, but there is no endpoint listing requestable permissions for a regular user (`GET /me/permissions` returns only the caller's own). The UI control is Not specified. Blocks the request form in FRD `privileged-access` | Open |
+
 ## Decisions needed
 1. **C2 and C3:** confirm the MVP and the order of applications. [PO] sprints and [CG]/[WB] phases disagree.
 2. **Sprint scope:** decide which capabilities and features of an application go into its [PO] sprint, and the sprint length and dates.

@@ -1,0 +1,27 @@
+# API requirements — Privileged Access (User and Organization Administrator)
+
+All endpoints **already exist** on branch `dev`. Paths are relative to the backend base path `/api`. Error bodies are `{"message": "…"}` from `GlobalExceptionHandler`.
+
+| Method | Path | Purpose | Permission | Success | Errors |
+|---|---|---|---|---|---|
+| POST | `/me/privileged-access/requests` | Submit a request | Signed-in user | 200 `PrivilegedAccessRequestDto` | 400 |
+| GET | `/me/privileged-access/requests` | List own requests (newest first) | Signed-in user | 200 `PrivilegedAccessRequestDto[]` | - |
+| POST | `/me/privileged-access/requests/{id}/revoke` | Withdraw own request | Requester | 200 `PrivilegedAccessRequestDto` | 400, 403, 404 |
+| GET | `/organization/me/privileged-access/pending` | List pending organization requests | `MANAGE_PRIVILEGED_ACCESS` (standing) | 200 `PrivilegedAccessRequestDto[]` | 403, 404 |
+| POST | `/organization/me/privileged-access/{id}/approve` | Approve | `MANAGE_PRIVILEGED_ACCESS` (standing) | 200 `PrivilegedAccessRequestDto` | 400, 403, 404 |
+| POST | `/organization/me/privileged-access/{id}/reject` | Reject | `MANAGE_PRIVILEGED_ACCESS` (standing) | 200 `PrivilegedAccessRequestDto` | 400, 403, 404 |
+| POST | `/organization/me/privileged-access/{id}/revoke` | Revoke | `MANAGE_PRIVILEGED_ACCESS` (standing) | 200 `PrivilegedAccessRequestDto` | 400, 403, 404 |
+
+## Request / response
+`PrivilegedAccessRequestCreateRequest`:
+```json
+{ "permissionName": "MANAGE_USERS", "justification": "…", "durationMinutes": 60 }
+```
+
+Decision body (`PrivilegedAccessDecisionRequest`, optional): `{ "note": "…" }`
+
+`PrivilegedAccessRequestDto`: `id`, `scope`, `organizationId`, `permissionName`, `justification`, `status`, `effectiveStatus`, `requestedAt`, `requestedDurationMinutes`, `decidedAt`, `decidedByKeycloakSub`, `decisionNote`, `expiresAt`, `auditTrail[]` (`eventType`, `actorKeycloakSub`, `occurredAt`, `note`).
+
+Frontend client: new `frontend/src/api/privilegedAccessApi.ts`, reusing the `PrivilegedAccessRequest` types from `platformPrivilegedAccessApi.ts`.
+
+OpenAPI contract: `docs/06-api/openapi/API-<APP-CODE>-<NNN>.yaml` (not created). The running backend serves its live spec at `/api/swagger-ui.html` in dev and uat.

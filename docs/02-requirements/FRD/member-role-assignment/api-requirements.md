@@ -1,0 +1,20 @@
+# API requirements — Member Role Assignment
+
+All endpoints **already exist** on branch `dev`. Paths are relative to the backend base path `/api`. Error bodies are `{"message": "…"}` from `GlobalExceptionHandler`.
+
+| Method | Path | Purpose | Permission | Success | Errors |
+|---|---|---|---|---|---|
+| GET | `/organization/me/users` | List members of the caller's organization | `MANAGE_USERS` | 200 `OrgMemberDto[]` | 403, 404 |
+| PATCH | `/organization/me/members/{memberId}/role` | Change a member's organization role | `MANAGE_USERS` on the target | 200 `OrgMemberDto` | 400, 403, 404 |
+
+## Request / response
+`PATCH /organization/me/members/{memberId}/role` request (`ChangeMemberRoleRequest`):
+```json
+{ "orgRole": "ORG_ADMIN" }
+```
+
+`OrgMemberDto` fields: `organizationMemberId`, `customerId`, `firstName`, `lastName`, `email`, `orgRole`, `status`.
+
+Frontend client: `organizationApi.listMyOrgUsers` already exists in `frontend/src/api/registrationApi.ts`. Add the PATCH call to the same object.
+
+OpenAPI contract: `docs/06-api/openapi/API-<APP-CODE>-<NNN>.yaml` (not created). The running backend serves its live spec at `/api/swagger-ui.html` in dev and uat.
