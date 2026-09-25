@@ -62,7 +62,7 @@ The sprint is from [PO]. The code column is observed on branch `dev`, at module 
 
 | ID | Application | Sprint | Roadmap page | Backend (`backend/src/main/java/com/vyoog/eisplatform/`) | Frontend (`frontend/src/`) |
 |----|-------------|--------|--------------|------------------------------------------------------------|----------------------------|
-| 01 | Experience & Customer Portal | 2026.3.3 | [01](../../01-business/roadmap/applications/01-experience-customer-portal.md) | `modules/dashboard`, `modules/notification`, `modules/preference` | `pages/HomePage.tsx`, `pages/BusinessDashboardPage.tsx`, `pages/PreferencesPage.tsx`, `components/layout/` |
+| 01 | Enterprise Intelligence Suite | 2026.3.3 | [01](../../01-business/roadmap/applications/01-enterprise-intelligence-suite.md) | `modules/dashboard`, `modules/notification`, `modules/preference` | `pages/HomePage.tsx`, `pages/BusinessDashboardPage.tsx`, `pages/PreferencesPage.tsx`, `components/layout/` |
 | 02 | Product & Catalog Management | 2026.4.1 | [02](../../01-business/roadmap/applications/02-product-catalog-management.md) | `modules/product`, `modules/platform` | `pages/ProductsPage.tsx`, `pages/admin/*Product*`, `pages/admin/*Platform*` |
 | 03 | Marketplace | 2027.1.3 | [03](../../01-business/roadmap/applications/03-marketplace.md) | Not started | Not started |
 | 04 | AI Advisor & Agent Platform | 2027.1.2 | [04](../../01-business/roadmap/applications/04-ai-advisor-agent-platform.md) | Not started (`ai-service/` skeleton only) | Not started |
@@ -92,4 +92,4 @@ The sprint is from [PO]. The code column is observed on branch `dev`, at module 
 | Test plan / case | `test-cases/` | `TESTPLAN-<APP-CODE>-<NNN>.md` / `<type>/<feature>/TC-<APP-CODE>-<NNN>.md` |
 | Release notes | `docs/11-release-notes/` | `vX.Y.Z.md` or `YYYY.PI.Sprint.md` |
 
-`<APP-CODE>` values have not been assigned yet. The only example in the templates is `APP-CAT` / `CAT` in `planning-roadmap-template.xlsx`. See [open-decisions.md](../../01-business/roadmap/open-decisions.md).
+`<APP-CODE>` is the application code from [DN-5](../../01-business/roadmap/open-decisions.md#dn-5-application-codes), used without the `APP-` prefix (for example `REQ-IAM-001`, `TC-IAM-001`). Application 01 is named "Enterprise Intelligence Suite" ([C10](../../01-business/roadmap/open-decisions.md#c10)). Under [C13](../../01-business/roadmap/open-decisions.md#c13), each [WB] microservice is a module in the single backend, and container rules apply per deployable (backend, frontend, `ai-service`).

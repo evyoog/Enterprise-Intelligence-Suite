@@ -1,4 +1,4 @@
-# REQ-<APP-CODE>-<NNN> — Organization MFA Policy
+# REQ-IAM-001 — Organization MFA Policy
 
 **Status:** Draft
 **BRD:** Not specified
@@ -8,8 +8,11 @@
 | Field | Value |
 |---|---|
 | Sprint | [2026.3.3](../../../01-business/roadmap/sprints/SPRINT-2026.3.3.md) |
+| Requirement ID | REQ-IAM-001 |
 | Application | [06 Identity & Access Management](../../../01-business/roadmap/applications/06-identity-access-management.md) |
-| Application code | Not assigned. `<APP-CODE>` is left as-is; application codes are an open decision ([open-decisions.md](../../../01-business/roadmap/open-decisions.md)) |
+| Application code | `APP-IAM` ([DN-5](../../../01-business/roadmap/open-decisions.md#dn-5-application-codes)) |
+| Priority | P0: the application is MVP scope ([C4](../../../01-business/roadmap/open-decisions.md#c4), [C5](../../../01-business/roadmap/open-decisions.md#c5)) |
+| AI required | No. This feature makes no use of AI (proposed; confirmed when the FRD is approved, C12) |
 
 ## Source functions
 Workbook functions from the sprint and application pages that this FRD covers:
@@ -30,12 +33,12 @@ An organization administrator can require multi-factor authentication for every 
 ## Functional requirements
 | ID | Requirement | Priority |
 |---|---|---|
-| REQ-<APP-CODE>-<NNN>.1 | The administrator can see whether MFA is currently required for their organization. | Not specified |
-| REQ-<APP-CODE>-<NNN>.2 | The administrator can turn the MFA requirement on or off for their own organization. | Not specified |
-| REQ-<APP-CODE>-<NNN>.3 | When MFA is required, a member's login that did not use a one-time password is refused (existing behaviour). | Not specified |
+| REQ-IAM-001.1 | The administrator can see whether MFA is currently required for their organization. | P0 |
+| REQ-IAM-001.2 | The administrator can turn the MFA requirement on or off for their own organization. | P0 |
+| REQ-IAM-001.3 | When MFA is required, a member's login that did not use a one-time password is refused (existing behaviour). | P0 |
 
 ## Out of scope
-- A general policy engine or any policy other than the MFA requirement (App 15 Policy Management, sprint 2027.2.2; see [open-decisions.md](../../../01-business/roadmap/open-decisions.md))
+- A general policy engine or any policy other than the MFA requirement. Under [C21](../../../01-business/roadmap/open-decisions.md#c21) it is deferred to sprint 2027.2.2 with Policy Management (15.02)
 - Changing MFA enrolment for individual users (06.01.02, already implemented)
 
 ## Dependencies

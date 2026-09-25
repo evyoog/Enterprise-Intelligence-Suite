@@ -11,7 +11,7 @@ Screens and placement follow the sprint 2026.3.3 development plan: reuse existin
 ## Fields and validation
 | Field | Type | Required | Validation | Error message (i18n key) |
 |---|---|---|---|---|
-| Permission | Not specified (see Open questions in requirement.md, C24) | Yes | Backend (recognized; not `MANAGE_PRIVILEGED_ACCESS`) | Backend message shown as returned |
+| Permission | Dropdown filled from `GET /me/privileged-access/requestable-permissions` (C24) | Yes | Backend (recognized; not `MANAGE_PRIVILEGED_ACCESS`) | Backend message shown as returned |
 | Justification | Text | Yes | Backend (not blank) | Backend message shown as returned |
 | Duration (minutes) | Number | Yes | Backend: 1–480 | Backend message shown as returned |
 | Decision note | Text | No | - | - |

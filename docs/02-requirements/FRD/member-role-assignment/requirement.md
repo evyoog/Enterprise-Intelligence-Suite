@@ -1,4 +1,4 @@
-# REQ-<APP-CODE>-<NNN> — Member Role Assignment
+# REQ-IAM-002 — Member Role Assignment
 
 **Status:** Draft
 **BRD:** Not specified
@@ -8,8 +8,11 @@
 | Field | Value |
 |---|---|
 | Sprint | [2026.3.3](../../../01-business/roadmap/sprints/SPRINT-2026.3.3.md) |
+| Requirement ID | REQ-IAM-002 |
 | Application | [06 Identity & Access Management](../../../01-business/roadmap/applications/06-identity-access-management.md) |
-| Application code | Not assigned. `<APP-CODE>` is left as-is; application codes are an open decision ([open-decisions.md](../../../01-business/roadmap/open-decisions.md)) |
+| Application code | `APP-IAM` ([DN-5](../../../01-business/roadmap/open-decisions.md#dn-5-application-codes)) |
+| Priority | P0: the application is MVP scope ([C4](../../../01-business/roadmap/open-decisions.md#c4), [C5](../../../01-business/roadmap/open-decisions.md#c5)) |
+| AI required | No. This feature makes no use of AI (proposed; confirmed when the FRD is approved, C12) |
 
 ## Source functions
 Workbook functions from the sprint and application pages that this FRD covers:
@@ -28,9 +31,9 @@ An organization administrator can see the members of their organization and chan
 ## Functional requirements
 | ID | Requirement | Priority |
 |---|---|---|
-| REQ-<APP-CODE>-<NNN>.1 | The administrator can list the members of their own organization with name, email, role and status. | Not specified |
-| REQ-<APP-CODE>-<NNN>.2 | The administrator can change a member's organization role to `ORG_ADMIN` or `MEMBER`. | Not specified |
-| REQ-<APP-CODE>-<NNN>.3 | When the backend refuses a change (for example, demoting the last administrator), its message is shown. | Not specified |
+| REQ-IAM-002.1 | The administrator can list the members of their own organization with name, email, role and status. | P0 |
+| REQ-IAM-002.2 | The administrator can change a member's organization role to `ORG_ADMIN` or `MEMBER`. | P0 |
+| REQ-IAM-002.3 | When the backend refuses a change (for example, demoting the last administrator), its message is shown. | P0 |
 
 ## Out of scope
 - Any organization role other than `ORG_ADMIN` and `MEMBER`

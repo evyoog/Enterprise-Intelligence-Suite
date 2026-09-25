@@ -1,4 +1,4 @@
-# REQ-<APP-CODE>-<NNN> — Privileged Access (User and Organization Administrator)
+# REQ-IAM-004 — Privileged Access (User and Organization Administrator)
 
 **Status:** Draft
 **BRD:** Not specified
@@ -8,8 +8,11 @@
 | Field | Value |
 |---|---|
 | Sprint | [2026.3.3](../../../01-business/roadmap/sprints/SPRINT-2026.3.3.md) |
+| Requirement ID | REQ-IAM-004 |
 | Application | [06 Identity & Access Management](../../../01-business/roadmap/applications/06-identity-access-management.md) |
-| Application code | Not assigned. `<APP-CODE>` is left as-is; application codes are an open decision ([open-decisions.md](../../../01-business/roadmap/open-decisions.md)) |
+| Application code | `APP-IAM` ([DN-5](../../../01-business/roadmap/open-decisions.md#dn-5-application-codes)) |
+| Priority | P0: the application is MVP scope ([C4](../../../01-business/roadmap/open-decisions.md#c4), [C5](../../../01-business/roadmap/open-decisions.md#c5)) |
+| AI required | No. This feature makes no use of AI (proposed; confirmed when the FRD is approved, C12) |
 
 ## Source functions
 Workbook functions from the sprint and application pages that this FRD covers:
@@ -31,13 +34,14 @@ A signed-in user can request temporary, time-boxed access to a permission they d
 ## Functional requirements
 | ID | Requirement | Priority |
 |---|---|---|
-| REQ-<APP-CODE>-<NNN>.1 | A user can submit a request with a permission name, a justification and a duration in minutes. | Not specified |
-| REQ-<APP-CODE>-<NNN>.2 | A user can see their own requests, with status, effective status (including EXPIRED), duration, decision and expiry. | Not specified |
-| REQ-<APP-CODE>-<NNN>.3 | A user can withdraw their own request while it is pending, or while the grant is active. | Not specified |
-| REQ-<APP-CODE>-<NNN>.4 | An organization administrator can list pending ORGANIZATION-scope requests for their own organization. | Not specified |
-| REQ-<APP-CODE>-<NNN>.5 | An organization administrator can approve, reject or revoke those requests, with an optional note. | Not specified |
-| REQ-<APP-CODE>-<NNN>.6 | An approved request grants the permission until it expires. | Not specified |
-| REQ-<APP-CODE>-<NNN>.7 | When the backend refuses an action, its message is shown. | Not specified |
+| REQ-IAM-004.1 | A user can submit a request with a permission name, a justification and a duration in minutes. | P0 |
+| REQ-IAM-004.2 | A user can see their own requests, with status, effective status (including EXPIRED), duration, decision and expiry. | P0 |
+| REQ-IAM-004.3 | A user can withdraw their own request while it is pending, or while the grant is active. | P0 |
+| REQ-IAM-004.4 | An organization administrator can list pending ORGANIZATION-scope requests for their own organization. | P0 |
+| REQ-IAM-004.5 | An organization administrator can approve, reject or revoke those requests, with an optional note. | P0 |
+| REQ-IAM-004.6 | An approved request grants the permission until it expires. | P0 |
+| REQ-IAM-004.7 | The request form offers the permissions the user may request as a dropdown, from a new read-only endpoint `GET /me/privileged-access/requestable-permissions` ([C24](../../../01-business/roadmap/open-decisions.md#c24)). | P0 |
+| REQ-IAM-004.8 | When the backend refuses an action, its message is shown. | P0 |
 
 ## Out of scope
 - Platform-administrator approve, reject and revoke (already built: `AdminPrivilegedAccessPage`, `/admin/privileged-access/**`)
@@ -45,7 +49,8 @@ A signed-in user can request temporary, time-boxed access to a permission they d
 
 ## Dependencies
 - Existing endpoints under `/me/privileged-access` and `/organization/me/privileged-access`.
+- **One new backend endpoint** ([C24](../../../01-business/roadmap/open-decisions.md#c24)): `GET /me/privileged-access/requestable-permissions`. It adds no new rules.
 - Existing types in `frontend/src/api/platformPrivilegedAccessApi.ts` (reuse, do not duplicate the platform calls).
 
 ## Open questions
-- How the requester chooses `permissionName` in the UI is **Not specified**. The backend accepts any permission name that some role grants. There is no endpoint that lists requestable permissions for a regular user (`GET /me/permissions` returns only the caller's own permissions). Recorded as C24 in [open-decisions.md](../../../01-business/roadmap/open-decisions.md).
+- The response shape of `GET /me/privileged-access/requestable-permissions` is Not specified in [C24](../../../01-business/roadmap/open-decisions.md#c24) (for example, whether it returns the scope alongside each permission name). Define it before approval.

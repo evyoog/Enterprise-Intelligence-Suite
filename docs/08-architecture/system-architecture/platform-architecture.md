@@ -22,7 +22,7 @@
 ## 2. Applications ([WB:Application Summary] = [PO] Table 1)
 | Application ID | Application | Description | Capabilities |
 |---|---|---|---|
-| 01 | Experience & Customer Portal | Customer-facing web/mobile experience | Portal Experience; Customer Dashboard; Global Search; Notifications & Communications |
+| 01 | Enterprise Intelligence Suite (workbook: Experience & Customer Portal; [C10](../../01-business/roadmap/open-decisions.md#c10)) | Customer-facing web/mobile experience | Portal Experience; Customer Dashboard; Global Search; Notifications & Communications |
 | 02 | Product & Catalog Management | Products, solutions, services, plans and content | Product Management; Offering Management; Plan Management; Product Content; Localization |
 | 03 | Marketplace | Discovery, evaluation, comparison and checkout | Product Discovery; Product Evaluation; Marketplace Checkout; Reviews & Ratings |
 | 04 | AI Advisor & Agent Platform | AI-guided selling, technical assistance and support | AI Product Advisor; AI Sales Agent; AI Technical Advisor; AI Support Agent; AI Agent Orchestration |
@@ -112,6 +112,8 @@ Global Platform
 | MS-022 | Analytics Service | Analytics & Data Platform | KPIs and reporting | Data Warehouse/Lakehouse | REST/SQL | P1 | Domain-aligned service | Yes |
 
 [CG] principle: "the business capability comes first; microservice boundaries come afterward."
+
+**Decision [C13](../../01-business/roadmap/open-decisions.md#c13) (2026-09-25):** these are **logical domain boundaries**. Each one is built as a module in the single backend (`backend/…/modules/<domain>/`), not as a separate deployable. Container rules apply per deployable: one image each for the backend, the frontend and `ai-service`, each built once and promoted unchanged through DEV → QA → STAGING → PRODUCTION. A module becomes its own container only through a new, recorded decision.
 
 ## 7. Architecture principles ([WB:Architecture Principles])
 | Principle | Guidance |

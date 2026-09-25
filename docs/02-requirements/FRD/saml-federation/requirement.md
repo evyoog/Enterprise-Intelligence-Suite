@@ -1,4 +1,4 @@
-# REQ-<APP-CODE>-<NNN> — SAML Federation — Edit Provider
+# REQ-IAM-005 — SAML Federation — Edit Provider
 
 **Status:** Draft
 **BRD:** Not specified
@@ -8,8 +8,11 @@
 | Field | Value |
 |---|---|
 | Sprint | [2026.3.3](../../../01-business/roadmap/sprints/SPRINT-2026.3.3.md) |
+| Requirement ID | REQ-IAM-005 |
 | Application | [06 Identity & Access Management](../../../01-business/roadmap/applications/06-identity-access-management.md) |
-| Application code | Not assigned. `<APP-CODE>` is left as-is; application codes are an open decision ([open-decisions.md](../../../01-business/roadmap/open-decisions.md)) |
+| Application code | `APP-IAM` ([DN-5](../../../01-business/roadmap/open-decisions.md#dn-5-application-codes)) |
+| Priority | P0: the application is MVP scope ([C4](../../../01-business/roadmap/open-decisions.md#c4), [C5](../../../01-business/roadmap/open-decisions.md#c5)) |
+| AI required | No. This feature makes no use of AI (proposed; confirmed when the FRD is approved, C12) |
 
 ## Source functions
 Workbook functions from the sprint and application pages that this FRD covers:
@@ -27,14 +30,14 @@ An organization administrator can edit an existing SAML identity provider for th
 ## Functional requirements
 | ID | Requirement | Priority |
 |---|---|---|
-| REQ-<APP-CODE>-<NNN>.1 | The administrator can open an existing provider for editing, with its current values filled in. | Not specified |
-| REQ-<APP-CODE>-<NNN>.2 | The administrator can change the provider name. | Not specified |
-| REQ-<APP-CODE>-<NNN>.3 | The administrator can replace the connection details with IdP metadata XML, or with entity id, SSO URL and certificate. | Not specified |
-| REQ-<APP-CODE>-<NNN>.4 | When the backend refuses the change, its message is shown. | Not specified |
+| REQ-IAM-005.1 | The administrator can open an existing provider for editing, with its current values filled in. | P0 |
+| REQ-IAM-005.2 | The administrator can change the provider name. | P0 |
+| REQ-IAM-005.3 | The administrator can replace the connection details with IdP metadata XML, or with entity id, SSO URL and certificate. | P0 |
+| REQ-IAM-005.4 | When the backend refuses the change, its message is shown. | P0 |
 
 ## Out of scope
 - Create, enable, disable, delete and test (already built)
-- OIDC identity providers and configurable claim mapping (Not specified; see [open-decisions.md](../../../01-business/roadmap/open-decisions.md))
+- OIDC identity providers (FRD [`oidc-federation`](../oidc-federation/requirement.md), [C22](../../../01-business/roadmap/open-decisions.md#c22)) and configurable claim mapping (FRD [`claim-mapping`](../claim-mapping/requirement.md), [C23](../../../01-business/roadmap/open-decisions.md#c23))
 
 ## Dependencies
 - Existing endpoint `PUT /organization/me/saml-providers/{id}`; existing client `samlApi.update` in `frontend/src/api/samlApi.ts`.
