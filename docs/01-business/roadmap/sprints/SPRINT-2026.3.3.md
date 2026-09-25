@@ -40,14 +40,14 @@ Build starts only when the FRD is Approved ([DN-4](../open-decisions.md#dn-4-bus
 
 | FRD | Requirement | Functions | Status |
 |---|---|---|---|
-| [organization-mfa-policy](../../../02-requirements/FRD/organization-mfa-policy/requirement.md) | REQ-IAM-001 | 06.02.02 | Draft |
-| [member-role-assignment](../../../02-requirements/FRD/member-role-assignment/requirement.md) | REQ-IAM-002 | 06.02.01 | Draft |
-| [role-permission-administration](../../../02-requirements/FRD/role-permission-administration/requirement.md) | REQ-IAM-003 | 06.02.01 | Draft |
-| [privileged-access](../../../02-requirements/FRD/privileged-access/requirement.md) | REQ-IAM-004 | 06.03.01 | Draft |
-| [saml-federation](../../../02-requirements/FRD/saml-federation/requirement.md) | REQ-IAM-005 | 06.04.01 | Draft |
-| [oidc-federation](../../../02-requirements/FRD/oidc-federation/requirement.md) | REQ-IAM-006 | 06.04.01 | Draft |
-| [claim-mapping](../../../02-requirements/FRD/claim-mapping/requirement.md) | REQ-IAM-007 | 06.04.01 | Draft |
-| [service-status-page](../../../02-requirements/FRD/service-status-page/requirement.md) | REQ-PRT-001 | 01.02.02 | Draft |
+| [organization-mfa-policy](../../../02-requirements/FRD/organization-mfa-policy/requirement.md) | REQ-IAM-001 | 06.02.02 | Approved |
+| [member-role-assignment](../../../02-requirements/FRD/member-role-assignment/requirement.md) | REQ-IAM-002 | 06.02.01 | Approved |
+| [role-permission-administration](../../../02-requirements/FRD/role-permission-administration/requirement.md) | REQ-IAM-003 | 06.02.01 | Approved |
+| [privileged-access](../../../02-requirements/FRD/privileged-access/requirement.md) | REQ-IAM-004 | 06.03.01 | Approved |
+| [saml-federation](../../../02-requirements/FRD/saml-federation/requirement.md) | REQ-IAM-005 | 06.04.01 | Approved |
+| [oidc-federation](../../../02-requirements/FRD/oidc-federation/requirement.md) | REQ-IAM-006 | 06.04.01 | Approved |
+| [claim-mapping](../../../02-requirements/FRD/claim-mapping/requirement.md) | REQ-IAM-007 | 06.04.01 | Approved |
+| [service-status-page](../../../02-requirements/FRD/service-status-page/requirement.md) | REQ-PRT-001 | 01.02.02 | Approved |
 
 ## EIS 01 Enterprise Intelligence Suite
 

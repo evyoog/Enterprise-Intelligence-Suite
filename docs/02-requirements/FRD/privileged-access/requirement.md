@@ -1,9 +1,9 @@
 # REQ-IAM-004 — Privileged Access (User and Organization Administrator)
 
-**Status:** Draft
+**Status:** Approved
 **BRD:** Not specified
-**Owner:** Not specified
-**Approved by / on:** Not specified / Not specified
+**Owner:** Product owner
+**Approved by / on:** Product owner / 2026-09-25
 
 | Field | Value |
 |---|---|

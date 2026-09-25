@@ -83,6 +83,7 @@ Raised from the sprint 2026.3.3 development plan.
 ### C5
 **Decision:** **P0** = MVP scope (C4). **P1** = all other [WB:Roadmap] Phase 2 and Phase 3 scope. **P2** = "AI Autonomous Operations" (as [WB:Roadmap] marks it). The [WB] capability, feature and function priority columns are ignored.
 **Reason:** Reuses the only consistent priority data in the sources and stays consistent with C4.
+**Addendum (decided 2026-09-25, product owner):** 12.04 Incident & Problem Management, which [WB:Roadmap] places in no phase, is **P0 (Commit)**, so that the C20 retirement task in sprint 2027.1.3 is guaranteed. Its MVP and phase values under C4 and C6 are unchanged.
 
 ### C6
 **Decision:** Phase comes from **[WB:Roadmap]**, mapped to capabilities as in C4. The [WB:Traceability] "Roadmap Phase" column is ignored. Application pages show the derived phase instead of the Traceability value.
@@ -129,6 +130,7 @@ Raised from the sprint 2026.3.3 development plan.
 
 **Retirement:** the interim page is controlled by a single on/off configuration setting. Sprints 2027.1.1 and 2027.1.3 each carry a retirement task to switch their part to the real source; the interim page is removed after sprint 2027.1.3.
 **Conditions:** requires an Approved FRD before build (DN-4). Its fields (product, status values, incident title and message, start and end time, visibility) are to be defined in that FRD.
+**Addendum (decided 2026-09-25, product owner):** 12.04 Incident & Problem Management is **P0 (Commit)** (see C5), so the incident part of the interim page is retired on schedule in sprint 2027.1.3.
 
 ### C21
 **Decision:** In sprint 2026.3.3, 06.02.02 Policy means the **organization MFA policy** (enforced by `MfaPolicyService`; frontend toggle pending). A general policy engine is **deferred to sprint 2027.2.2**, with Policy Management (15.02), where its requirements are defined.

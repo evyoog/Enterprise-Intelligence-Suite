@@ -29,7 +29,7 @@ MVP, priority and phase follow [C4](../open-decisions.md#c4), [C5](../open-decis
 | [12.01](#1201-support) | Support | 12.01.01 Ticket Management | Yes | Phase 1 / MVP | P0 | C4 |
 | [12.02](#1202-ai-support) | AI Support | 12.02.01 Conversational Support, 12.02.02 Human Handoff | Yes | Phase 1 / MVP | P0 | C4 |
 | [12.03](#1203-sla-management) | SLA Management | 12.03.01 SLA Policy, 12.03.02 SLA Monitoring | No | Not specified | Not specified | Not in [WB:Roadmap] |
-| [12.04](#1204-incident--problem-management) | Incident & Problem Management | 12.04.01 Incident, 12.04.02 Problem | No | Not specified | Not specified | Not in [WB:Roadmap] |
+| [12.04](#1204-incident--problem-management) | Incident & Problem Management | 12.04.01 Incident, 12.04.02 Problem | No | Not specified | P0 | C5, C20 addendum (2026-09-25) |
 
 ## 12.01 Support
 
@@ -101,10 +101,10 @@ AI required: decided in the feature FRD ([C12](../open-decisions.md#c12)). [WB:F
 
 | Function ID | Function (requirement candidate) | MVP | Priority | Phase | AI ([WB], info) | Actor | Suggested API | Primary API | Microservice | Entity | Event | Journey |
 |---|---|---|---|---|---|---|---|---|---|---|---|---|
-| 12.04.01.01 | Log incident | No | Not specified | Not specified | No | Platform Service | `/incident-problem-management/log-incident` | - | Support Service | SupportTicket | TicketCreated | UJ-005 Provision Service |
-| 12.04.01.02 | Investigate incident | No | Not specified | Not specified | No | Platform Service | `/incident-problem-management/investigate-incident` | - | Support Service | SupportTicket | TicketCreated | UJ-005 Provision Service |
-| 12.04.01.03 | Resolve incident | No | Not specified | Not specified | No | Platform Service | `/incident-problem-management/resolve-incident` | - | Support Service | SupportTicket | TicketCreated | UJ-005 Provision Service |
-| 12.04.01.04 | Close incident | No | Not specified | Not specified | No | Platform Service | `/incident-problem-management/close-incident` | - | Support Service | SupportTicket | TicketCreated | UJ-005 Provision Service |
+| 12.04.01.01 | Log incident | No | Not specified | P0 | No | Platform Service | `/incident-problem-management/log-incident` | - | Support Service | SupportTicket | TicketCreated | UJ-005 Provision Service |
+| 12.04.01.02 | Investigate incident | No | Not specified | P0 | No | Platform Service | `/incident-problem-management/investigate-incident` | - | Support Service | SupportTicket | TicketCreated | UJ-005 Provision Service |
+| 12.04.01.03 | Resolve incident | No | Not specified | P0 | No | Platform Service | `/incident-problem-management/resolve-incident` | - | Support Service | SupportTicket | TicketCreated | UJ-005 Provision Service |
+| 12.04.01.04 | Close incident | No | Not specified | P0 | No | Platform Service | `/incident-problem-management/close-incident` | - | Support Service | SupportTicket | TicketCreated | UJ-005 Provision Service |
 
 ### Feature 12.04.02 Problem
 
@@ -112,9 +112,9 @@ AI required: decided in the feature FRD ([C12](../open-decisions.md#c12)). [WB:F
 
 | Function ID | Function (requirement candidate) | MVP | Priority | Phase | AI ([WB], info) | Actor | Suggested API | Primary API | Microservice | Entity | Event | Journey |
 |---|---|---|---|---|---|---|---|---|---|---|---|---|
-| 12.04.02.01 | Create problem | No | Not specified | Not specified | No | Platform Service | `/incident-problem-management/create-problem` | - | Support Service | SupportTicket | TicketCreated | UJ-005 Provision Service |
-| 12.04.02.02 | Perform root cause analysis | No | Not specified | Not specified | No | Platform Service | `/incident-problem-management/perform-root-cause-analysis` | - | Support Service | SupportTicket | TicketCreated | UJ-005 Provision Service |
-| 12.04.02.03 | Track corrective action | No | Not specified | Not specified | No | Platform Service | `/incident-problem-management/track-corrective-action` | - | Support Service | SupportTicket | TicketCreated | UJ-005 Provision Service |
+| 12.04.02.01 | Create problem | No | Not specified | P0 | No | Platform Service | `/incident-problem-management/create-problem` | - | Support Service | SupportTicket | TicketCreated | UJ-005 Provision Service |
+| 12.04.02.02 | Perform root cause analysis | No | Not specified | P0 | No | Platform Service | `/incident-problem-management/perform-root-cause-analysis` | - | Support Service | SupportTicket | TicketCreated | UJ-005 Provision Service |
+| 12.04.02.03 | Track corrective action | No | Not specified | P0 | No | Platform Service | `/incident-problem-management/track-corrective-action` | - | Support Service | SupportTicket | TicketCreated | UJ-005 Provision Service |
 
 > **Columns from [WB:Traceability]** (Primary API, Microservice, Entity, Event, Journey) are kept for reference only. Under [C13](../open-decisions.md#c13) microservices are logical domains built as modules in the single backend. Under [C14](../open-decisions.md#c14) the implemented endpoints and each FRD's `api-requirements.md` are the source of truth for APIs.
 

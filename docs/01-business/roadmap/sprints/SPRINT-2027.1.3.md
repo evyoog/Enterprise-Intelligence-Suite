@@ -27,7 +27,7 @@
 |---|---|---|---|
 | Added | [C16](../open-decisions.md#c16) Semantic search (01.03.01), delivered with Knowledge (11). Moved from sprint [2026.3.3](SPRINT-2026.3.3.md) | - | - |
 | Added | [C17](../open-decisions.md#c17) Global search (01.03.01) adds knowledge articles (11) and support tickets (12) | - | - |
-| Retirement task | [C20](../open-decisions.md#c20) Switch incidents on the interim status page to Incident & Problem Management (12.04), then remove the interim page. Note: 12.04 has no phase in [WB:Roadmap] (priority Not specified under C5) | [service-status-page](../../../02-requirements/FRD/service-status-page/requirement.md) | REQ-PRT-001 |
+| Retirement task | [C20](../open-decisions.md#c20) Switch incidents on the interim status page to Incident & Problem Management (12.04), then remove the interim page. 12.04 is P0 (Commit) under the C5 and C20 addendum of 2026-09-25, so this task is committed | [service-status-page](../../../02-requirements/FRD/service-status-page/requirement.md) | REQ-PRT-001 |
 
 ## EIS 03 Marketplace
 
@@ -102,8 +102,8 @@ Full breakdown with APIs, services, entities and events: [applications/12-suppor
 | [12.02 AI Support](../applications/12-support-service-management.md#1202-ai-support) | 12.02.02 Human Handoff | Create ticket; Transfer conversation; Provide AI summary | P0 | Commit |
 | [12.03 SLA Management](../applications/12-support-service-management.md#1203-sla-management) | 12.03.01 SLA Policy | Define SLA; Assign SLA; Calculate SLA | Not specified | Not specified |
 | [12.03 SLA Management](../applications/12-support-service-management.md#1203-sla-management) | 12.03.02 SLA Monitoring | Monitor SLA; Warn before breach; Escalate breach | Not specified | Not specified |
-| [12.04 Incident & Problem Management](../applications/12-support-service-management.md#1204-incident--problem-management) | 12.04.01 Incident | Log incident; Investigate incident; Resolve incident; Close incident | Not specified | Not specified |
-| [12.04 Incident & Problem Management](../applications/12-support-service-management.md#1204-incident--problem-management) | 12.04.02 Problem | Create problem; Perform root cause analysis; Track corrective action | Not specified | Not specified |
+| [12.04 Incident & Problem Management](../applications/12-support-service-management.md#1204-incident--problem-management) | 12.04.01 Incident | Log incident; Investigate incident; Resolve incident; Close incident | P0 | Commit |
+| [12.04 Incident & Problem Management](../applications/12-support-service-management.md#1204-incident--problem-management) | 12.04.02 Problem | Create problem; Perform root cause analysis; Track corrective action | P0 | Commit |
 
 ### Dependencies
 
