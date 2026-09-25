@@ -4,13 +4,19 @@ import com.vyoog.eisplatform.modules.registration.dto.CustomerAdminDto;
 import com.vyoog.eisplatform.modules.registration.dto.LinkKeycloakUserRequest;
 import com.vyoog.eisplatform.modules.registration.dto.OrganizationAdminDto;
 import com.vyoog.eisplatform.modules.registration.dto.OrganizationDto;
+import com.vyoog.eisplatform.modules.registration.dto.OrganizationLifecycleRequest;
+import com.vyoog.eisplatform.modules.registration.dto.OrganizationLifecycleResultDto;
 import com.vyoog.eisplatform.modules.registration.dto.OrganizationSummaryDto;
 import com.vyoog.eisplatform.modules.registration.dto.PendingProvisioningDto;
+import com.vyoog.eisplatform.modules.registration.dto.UpdateOrganizationRequest;
 import com.vyoog.eisplatform.modules.registration.dto.UpdateSeatsRequest;
 import com.vyoog.eisplatform.modules.registration.service.AdminRegistrationService;
+import com.vyoog.eisplatform.modules.registration.service.CurrentCustomerResolver;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -29,6 +35,7 @@ import java.util.List;
 public class AdminRegistrationController {
 
     private final AdminRegistrationService adminRegistrationService;
+    private final CurrentCustomerResolver currentCustomerResolver;
 
     @GetMapping("/pending-provisioning")
     public List<PendingProvisioningDto> pendingProvisioning() {
@@ -66,5 +73,46 @@ public class AdminRegistrationController {
     @PatchMapping("/organizations/{organizationId}/seats")
     public OrganizationDto updateSeats(@PathVariable Long organizationId, @Valid @RequestBody UpdateSeatsRequest request) {
         return adminRegistrationService.updateSeats(organizationId, request.licensedSeats());
+    }
+
+    /** REQ-TEN-001 / 05.01.01.02 Update organization. */
+    @PutMapping("/organizations/{organizationId}")
+    public OrganizationAdminDto updateOrganization(@PathVariable Long organizationId,
+                                                   @Valid @RequestBody UpdateOrganizationRequest request,
+                                                   @AuthenticationPrincipal Jwt jwt) {
+        return adminRegistrationService.updateOrganization(organizationId, request, actor(jwt));
+    }
+
+    /** REQ-TEN-001 / 05.01.01.03 Suspend organization. */
+    @PostMapping("/organizations/{organizationId}/suspend")
+    public OrganizationLifecycleResultDto suspendOrganization(@PathVariable Long organizationId,
+                                                              @Valid @RequestBody(required = false) OrganizationLifecycleRequest request,
+                                                              @AuthenticationPrincipal Jwt jwt) {
+        return adminRegistrationService.suspendOrganization(organizationId, reason(request), actor(jwt));
+    }
+
+    /** REQ-TEN-001 / 05.01.01.04 Activate organization. */
+    @PostMapping("/organizations/{organizationId}/activate")
+    public OrganizationLifecycleResultDto activateOrganization(@PathVariable Long organizationId,
+                                                               @Valid @RequestBody(required = false) OrganizationLifecycleRequest request,
+                                                               @AuthenticationPrincipal Jwt jwt) {
+        return adminRegistrationService.activateOrganization(organizationId, reason(request), actor(jwt));
+    }
+
+    /** REQ-TEN-001 / 05.01.01.05 Close organization (soft; nothing is deleted). */
+    @PostMapping("/organizations/{organizationId}/close")
+    public OrganizationLifecycleResultDto closeOrganization(@PathVariable Long organizationId,
+                                                            @Valid @RequestBody(required = false) OrganizationLifecycleRequest request,
+                                                            @AuthenticationPrincipal Jwt jwt) {
+        return adminRegistrationService.closeOrganization(organizationId, reason(request), actor(jwt));
+    }
+
+    private AdminRegistrationService.Actor actor(Jwt jwt) {
+        Long customerId = currentCustomerResolver.resolveOptional(jwt).map(c -> c.getId()).orElse(null);
+        return new AdminRegistrationService.Actor(jwt.getSubject(), customerId, jwt.getClaimAsString("email"));
+    }
+
+    private static String reason(OrganizationLifecycleRequest request) {
+        return request == null ? null : request.reason();
     }
 }

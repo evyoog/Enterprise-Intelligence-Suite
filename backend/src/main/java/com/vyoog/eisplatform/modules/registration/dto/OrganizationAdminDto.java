@@ -1,5 +1,6 @@
 package com.vyoog.eisplatform.modules.registration.dto;
 
+import com.vyoog.eisplatform.modules.registration.model.OrganizationLifecycleStatus;
 import com.vyoog.eisplatform.modules.registration.model.RegistrationStatus;
 
 import java.time.Instant;
@@ -32,6 +33,7 @@ public record OrganizationAdminDto(
     int licensedSeats,
     long activeMemberCount,
     RegistrationStatus status,
+    OrganizationLifecycleStatus lifecycleStatus,
     String adminFirstName,
     String adminLastName,
     String adminEmail,

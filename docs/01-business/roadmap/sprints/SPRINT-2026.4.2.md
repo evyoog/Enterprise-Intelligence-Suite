@@ -19,6 +19,12 @@
 
 > **Commitment ([DN-2](../open-decisions.md#dn-2-sprint-scope-length-and-dates)):** this sprint commits the P0 (MVP) capabilities of its applications and treats P1 capabilities as stretch scope. Anything not finished is recorded as carry-over on the next sprint page.
 
+## Scope changes from decisions
+
+| Change | Decision and scope | FRD | Requirement |
+|---|---|---|---|
+| Pulled forward | [C25](../open-decisions.md#c25) 05.01.01.02–.05 (update, suspend, activate, soft close organization) were built early in sprint [2026.3.3](SPRINT-2026.3.3.md). 05.01.01.01 Create organization stays in this sprint | [organization-lifecycle](../../../02-requirements/FRD/organization-lifecycle/requirement.md) | REQ-TEN-001 |
+
 ## EIS 05 Customer / Tenant Management
 
 **Planned work ([PO] / [WB] description):** Organizations, tenants, users and projects
@@ -49,7 +55,7 @@ Full breakdown with APIs, services, entities and events: [applications/05-custom
 
 ### Related code already in this repository
 
-Observed on branch `dev`, module level only: `backend/…/modules/registration (organization, members, seats)`; `frontend/src/pages/register/OrganizationRegisterPage.tsx`, `frontend/src/pages/register/VerifyEmailPage.tsx`, `frontend/src/pages/admin/RegistrationsAdminPage.tsx`.
+Observed on branch `dev`, module level only: `backend/…/modules/registration (organization, members, seats, organization lifecycle)`; `frontend/src/pages/register/OrganizationRegisterPage.tsx`, `frontend/src/pages/register/VerifyEmailPage.tsx`, `frontend/src/pages/admin/RegistrationsAdminPage.tsx`, `frontend/src/components/admin/OrganizationEditDialog.tsx`, `frontend/src/components/admin/OrganizationLifecycleDialog.tsx`.
 
 ## Decisions affecting this sprint
 

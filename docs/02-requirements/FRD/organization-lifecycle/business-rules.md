@@ -1,0 +1,16 @@
+# Business rules — Organization Lifecycle
+
+Decided with the product owner on 2026-09-25 ([C25](../../../01-business/roadmap/open-decisions.md#c25)). Enforced by the backend; the cited class and method are the source of truth.
+
+| ID | Rule | Enforced in | Source |
+|---|---|---|---|
+| BR-TEN-001 | Lifecycle transitions: ACTIVE → SUSPENDED, ACTIVE or SUSPENDED → CLOSED, SUSPENDED or CLOSED → ACTIVE. A CLOSED organization cannot be suspended: 400 "A closed organization cannot be suspended. Activate it first." Repeating the current action is allowed (see BR-TEN-005). | backend | `AdminRegistrationService#suspendOrganization`, `#closeOrganization`, `#activateOrganization` |
+| BR-TEN-002 | Close is soft. No organization, member, customer, subscription or audit row is deleted, and a closed organization can be activated again. | backend | `AdminRegistrationService#changeLifecycle` |
+| BR-TEN-003 | Edit replaces the editable details as sent; a blank optional field is cleared. Name, business email (valid email) and country are required. When "billing same as address" is set, the separate billing fields are cleared. Code, seats, MFA policy, parent and both statuses are never changed by an edit. | backend | `UpdateOrganizationRequest`, `AdminRegistrationService#updateOrganization` |
+| BR-TEN-004 | A CLOSED organization cannot be edited: 400 "This organization is closed. Activate it before editing its details." | backend | `AdminRegistrationService#updateOrganization` |
+| BR-TEN-005 | Suspend and close disable the Keycloak login of every ACTIVE member that has a linked Keycloak user and end all their sessions; activate enables them again. If Keycloak refuses or cannot be reached for a member, the status change still stands, the member's email is returned in `accountsNotUpdated`, and repeating the same action retries. | backend | `AdminRegistrationService#changeLifecycle` |
+| BR-TEN-006 | An administrator who is an active member of the organization cannot suspend or close it: 400 "You are a member of this organization and cannot suspend or close it yourself." | backend | `AdminRegistrationService#changeLifecycle` |
+| BR-TEN-007 | Activating an organization whose registration is still `PENDING_EMAIL_VERIFICATION` does not enable any login; email verification still enables the admin's login. | backend | `AdminRegistrationService#changeLifecycle` |
+| BR-TEN-008 | While an organization is SUSPENDED or CLOSED, its members' organization self-service calls return 403 "Your organization's account is not currently active", so a still-valid access token stops working at once. | backend | `OrganizationSelfService#resolveMembership` |
+| BR-TEN-009 | Every edit and lifecycle action is recorded in the audit log (`ORGANIZATION_UPDATED`, `ORGANIZATION_SUSPENDED`, `ORGANIZATION_ACTIVATED`, `ORGANIZATION_CLOSED`) with the actor, the previous and new status, the number of logins updated, any Keycloak failures and the reason. | backend | `AdminRegistrationService#updateOrganization`, `#changeLifecycle` |
+| BR-TEN-010 | All endpoints require `MANAGE_REGISTRATIONS`: 401 without a token, 403 without the permission. An unknown organization id returns 404 "Organization not found". | backend | `SecurityConfig` (`/admin/registrations/**`), `AdminRegistrationService#findOrganization` |

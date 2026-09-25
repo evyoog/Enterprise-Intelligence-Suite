@@ -208,5 +208,72 @@
     "keepConnection": "Keep current connection details",
     "keepConnectionHint": "Only the name is changed. Choose another option to replace the entity ID, SSO URL and certificate.",
     "saveError": "Could not update this SAML provider."
+  },
+  "adminOrgLifecycle": {
+    "lifecycleStatus": {
+      "ACTIVE": "Active",
+      "SUSPENDED": "Suspended",
+      "CLOSED": "Closed"
+    },
+    "lifecycleLabel": "Lifecycle: {{status}}",
+    "editButton": "Edit",
+    "editLabel": "Edit {{name}}",
+    "suspendButton": "Suspend",
+    "suspendLabel": "Suspend {{name}}",
+    "activateButton": "Activate",
+    "activateLabel": "Activate {{name}}",
+    "closeButton": "Close",
+    "closeLabel": "Close {{name}}",
+    "editTitle": "Edit {{name}}",
+    "editHint": "The organization code ({{code}}), seats, MFA policy and parent organization are not changed here.",
+    "save": "Save changes",
+    "saving": "Saving…",
+    "cancel": "Cancel",
+    "saveError": "Could not save the organization.",
+    "actionError": "Could not change the organization's status.",
+    "reason": "Reason (optional)",
+    "reasonHint": "Recorded in the audit log.",
+    "suspend": {
+      "title": "Suspend {{name}}?",
+      "body": "Every active member's login is disabled and their sessions are ended. Nothing is deleted. You can activate the organization again later.",
+      "confirm": "Suspend"
+    },
+    "activate": {
+      "title": "Activate {{name}}?",
+      "body": "Every active member's login is enabled again. An administrator who has not yet verified their email stays disabled until they do.",
+      "confirm": "Activate"
+    },
+    "close": {
+      "title": "Close {{name}}?",
+      "body": "The organization is closed and every active member's login is disabled. Its data, members and history are kept, and it can be activated again. A closed organization cannot be edited.",
+      "confirm": "Close organization"
+    },
+    "done": {
+      "suspend": "{{name}} is suspended. {{count}} member login(s) disabled.",
+      "activate": "{{name}} is active. {{count}} member login(s) enabled.",
+      "close": "{{name}} is closed. {{count}} member login(s) disabled."
+    },
+    "partialFailure": "Keycloak did not update these logins: {{emails}}. Repeat the same action to retry.",
+    "fields": {
+      "name": "Name",
+      "businessEmail": "Business email",
+      "phone": "Phone",
+      "type": "Type",
+      "industry": "Industry",
+      "website": "Website",
+      "country": "Country",
+      "state": "State",
+      "city": "City",
+      "address": "Address",
+      "gstin": "GSTIN",
+      "pan": "PAN",
+      "companyRegistrationNumber": "Company registration number",
+      "taxVatNumber": "Tax / VAT number",
+      "billingSameAsAddress": "Billing address is the same as the organization address",
+      "billingAddress": "Billing address",
+      "billingCountry": "Billing country",
+      "billingState": "Billing state",
+      "billingCity": "Billing city"
+    }
   }
 }

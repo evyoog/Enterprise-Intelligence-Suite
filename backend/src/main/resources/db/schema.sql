@@ -174,6 +174,10 @@ CREATE TABLE organization (
     -- AuthController#login / MfaPolicyService.
     mfa_required BOOLEAN NOT NULL DEFAULT false,
     status VARCHAR(30) NOT NULL DEFAULT 'PENDING_EMAIL_VERIFICATION',
+    -- REQ-TEN-001 (2026.4.2, 05.01.01): platform-admin lifecycle, separate
+    -- from the registration status above. See migration V001.
+    lifecycle_status VARCHAR(20) NOT NULL DEFAULT 'ACTIVE'
+        CHECK (lifecycle_status IN ('ACTIVE', 'SUSPENDED', 'CLOSED')),
     created_at TIMESTAMP NOT NULL DEFAULT now(),
     updated_at TIMESTAMP NOT NULL DEFAULT now()
 );

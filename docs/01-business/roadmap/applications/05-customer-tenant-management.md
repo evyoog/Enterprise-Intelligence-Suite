@@ -136,5 +136,5 @@ Not specified in any source. Under [DN-2](../open-decisions.md#dn-2-sprint-scope
 
 Observed on branch `dev`. This is a module-level mapping, not a verified function-by-function implementation status.
 
-- Backend: `backend/src/main/java/com/vyoog/eisplatform/modules/registration (organization, members, seats)`
-- Frontend: `frontend/src/pages/register/OrganizationRegisterPage.tsx`, `frontend/src/pages/register/VerifyEmailPage.tsx`, `frontend/src/pages/admin/RegistrationsAdminPage.tsx`
+- Backend: `backend/src/main/java/com/vyoog/eisplatform/modules/registration (organization, members, seats, organization lifecycle)`
+- Frontend: `frontend/src/pages/register/OrganizationRegisterPage.tsx`, `frontend/src/pages/register/VerifyEmailPage.tsx`, `frontend/src/pages/admin/RegistrationsAdminPage.tsx`, `frontend/src/components/admin/OrganizationEditDialog.tsx`, `frontend/src/components/admin/OrganizationLifecycleDialog.tsx`

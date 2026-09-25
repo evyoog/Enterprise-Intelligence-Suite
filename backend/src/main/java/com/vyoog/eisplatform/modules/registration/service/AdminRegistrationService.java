@@ -3,15 +3,19 @@ package com.vyoog.eisplatform.modules.registration.service;
 import com.vyoog.eisplatform.common.exception.DuplicateResourceException;
 import com.vyoog.eisplatform.common.exception.ResourceNotFoundException;
 import com.vyoog.eisplatform.modules.audit.service.AuditService;
+import com.vyoog.eisplatform.modules.auth.service.KeycloakAdminClient;
 import com.vyoog.eisplatform.modules.registration.dto.CustomerAdminDto;
 import com.vyoog.eisplatform.modules.registration.dto.OrganizationAdminDto;
 import com.vyoog.eisplatform.modules.registration.dto.OrganizationDto;
+import com.vyoog.eisplatform.modules.registration.dto.OrganizationLifecycleResultDto;
 import com.vyoog.eisplatform.modules.registration.dto.OrganizationSummaryDto;
 import com.vyoog.eisplatform.modules.registration.dto.PendingProvisioningDto;
+import com.vyoog.eisplatform.modules.registration.dto.UpdateOrganizationRequest;
 import com.vyoog.eisplatform.modules.registration.model.Customer;
 import com.vyoog.eisplatform.modules.registration.model.MembershipStatus;
 import com.vyoog.eisplatform.modules.registration.model.OrgRole;
 import com.vyoog.eisplatform.modules.registration.model.Organization;
+import com.vyoog.eisplatform.modules.registration.model.OrganizationLifecycleStatus;
 import com.vyoog.eisplatform.modules.registration.model.OrganizationMember;
 import com.vyoog.eisplatform.modules.registration.model.RegistrationStatus;
 import com.vyoog.eisplatform.modules.registration.repository.CustomerRepository;
@@ -21,6 +25,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Set;
@@ -44,6 +49,7 @@ public class AdminRegistrationService {
     private final OrganizationRepository organizationRepository;
     private final OrganizationMemberRepository memberRepository;
     private final AuditService auditService;
+    private final KeycloakAdminClient keycloakAdminClient;
 
     public List<PendingProvisioningDto> listPendingProvisioning() {
         return customerRepository.findByKeycloakSubIsNullAndStatusNot(RegistrationStatus.PENDING_EMAIL_VERIFICATION)
@@ -86,7 +92,7 @@ public class AdminRegistrationService {
             org.getBusinessEmail(), org.getPhone(), org.getCountry(), org.getState(), org.getCity(), org.getAddress(),
             org.getGstin(), org.getPan(), org.getCompanyRegistrationNumber(), org.getTaxVatNumber(),
             org.isBillingSameAsAddress(), org.getBillingAddress(), org.getBillingCountry(), org.getBillingState(), org.getBillingCity(),
-            org.getParentOrganizationId(), org.getLicensedSeats(), activeMembers, org.getStatus(),
+            org.getParentOrganizationId(), org.getLicensedSeats(), activeMembers, org.getStatus(), org.getLifecycleStatus(),
             admin == null ? null : admin.getFirstName(),
             admin == null ? null : admin.getLastName(),
             admin == null ? null : admin.getEmail(),
@@ -168,5 +174,131 @@ public class AdminRegistrationService {
             organization.getCountry(), organization.getLicensedSeats(), activeMembers, organization.getStatus(),
             organization.isMfaRequired()
         );
+    }
+
+    /** Who performed an admin action, for the audit log. {@code customerId}
+     * is null for a platform admin with no customer row (the usual case). */
+    public record Actor(String keycloakSub, Long customerId, String email) {
+    }
+
+    /**
+     * REQ-TEN-001 / 05.01.01.02 Update organization. Replaces the editable
+     * company details (see UpdateOrganizationRequest for what is excluded).
+     * BR-TEN-004: a CLOSED organization must be reactivated first.
+     */
+    @Transactional
+    public OrganizationAdminDto updateOrganization(Long organizationId, UpdateOrganizationRequest request, Actor actor) {
+        Organization org = findOrganization(organizationId);
+        if (org.getLifecycleStatus() == OrganizationLifecycleStatus.CLOSED) {
+            throw new IllegalArgumentException("This organization is closed. Activate it before editing its details.");
+        }
+        org.setName(request.name().trim());
+        org.setType(blankToNull(request.type()));
+        org.setIndustry(blankToNull(request.industry()));
+        org.setWebsite(blankToNull(request.website()));
+        org.setBusinessEmail(request.businessEmail().trim());
+        org.setPhone(blankToNull(request.phone()));
+        org.setCountry(request.country().trim());
+        org.setState(blankToNull(request.state()));
+        org.setCity(blankToNull(request.city()));
+        org.setAddress(blankToNull(request.address()));
+        org.setGstin(blankToNull(request.gstin()));
+        org.setPan(blankToNull(request.pan()));
+        org.setCompanyRegistrationNumber(blankToNull(request.companyRegistrationNumber()));
+        org.setTaxVatNumber(blankToNull(request.taxVatNumber()));
+        org.setBillingSameAsAddress(request.billingSameAsAddress());
+        // BR-TEN-003: "same as address" means no separate billing address is kept.
+        org.setBillingAddress(request.billingSameAsAddress() ? null : blankToNull(request.billingAddress()));
+        org.setBillingCountry(request.billingSameAsAddress() ? null : blankToNull(request.billingCountry()));
+        org.setBillingState(request.billingSameAsAddress() ? null : blankToNull(request.billingState()));
+        org.setBillingCity(request.billingSameAsAddress() ? null : blankToNull(request.billingCity()));
+        org = organizationRepository.save(org);
+        auditService.recordSuccess("ORGANIZATION_UPDATED", actor.keycloakSub(), actor.customerId(), actor.email(),
+            "Organization", organizationId.toString(), organizationId, "Organization details updated");
+        return toAdminDto(org);
+    }
+
+    /** REQ-TEN-001 / 05.01.01.03. BR-TEN-001: not from CLOSED; repeating it
+     * on a SUSPENDED organization retries the Keycloak step (BR-TEN-005). */
+    @Transactional
+    public OrganizationLifecycleResultDto suspendOrganization(Long organizationId, String reason, Actor actor) {
+        Organization org = findOrganization(organizationId);
+        if (org.getLifecycleStatus() == OrganizationLifecycleStatus.CLOSED) {
+            throw new IllegalArgumentException("A closed organization cannot be suspended. Activate it first.");
+        }
+        return changeLifecycle(org, OrganizationLifecycleStatus.SUSPENDED, "ORGANIZATION_SUSPENDED", reason, actor);
+    }
+
+    /** REQ-TEN-001 / 05.01.01.05. Soft close: nothing is deleted (BR-TEN-002). */
+    @Transactional
+    public OrganizationLifecycleResultDto closeOrganization(Long organizationId, String reason, Actor actor) {
+        return changeLifecycle(findOrganization(organizationId), OrganizationLifecycleStatus.CLOSED,
+            "ORGANIZATION_CLOSED", reason, actor);
+    }
+
+    /** REQ-TEN-001 / 05.01.01.04. From SUSPENDED or CLOSED; repeating it on
+     * an ACTIVE organization retries the Keycloak step (BR-TEN-005). */
+    @Transactional
+    public OrganizationLifecycleResultDto activateOrganization(Long organizationId, String reason, Actor actor) {
+        return changeLifecycle(findOrganization(organizationId), OrganizationLifecycleStatus.ACTIVE,
+            "ORGANIZATION_ACTIVATED", reason, actor);
+    }
+
+    private OrganizationLifecycleResultDto changeLifecycle(Organization org, OrganizationLifecycleStatus target,
+                                                           String auditAction, String reason, Actor actor) {
+        boolean disabling = target != OrganizationLifecycleStatus.ACTIVE;
+        List<Customer> activeMembers = memberRepository.findByOrganizationId(org.getId()).stream()
+            .filter(m -> m.getStatus() == MembershipStatus.ACTIVE)
+            .map(m -> customerRepository.findById(m.getCustomerId()).orElse(null))
+            .filter(c -> c != null)
+            .toList();
+
+        // BR-TEN-006: an admin cannot lock themselves out through their own organization.
+        if (disabling && actor.customerId() != null
+            && activeMembers.stream().anyMatch(c -> c.getId().equals(actor.customerId()))) {
+            throw new IllegalArgumentException("You are a member of this organization and cannot suspend or close it yourself.");
+        }
+
+        OrganizationLifecycleStatus previous = org.getLifecycleStatus();
+        org.setLifecycleStatus(target);
+        org = organizationRepository.save(org);
+
+        // BR-TEN-007: a registration still awaiting email verification keeps
+        // its admin login disabled; activating the organization does not skip that step.
+        boolean keycloakStep = disabling || org.getStatus() != RegistrationStatus.PENDING_EMAIL_VERIFICATION;
+        int updated = 0;
+        List<String> notUpdated = new ArrayList<>();
+        if (keycloakStep) {
+            for (Customer member : activeMembers) {
+                if (member.getKeycloakSub() == null) {
+                    continue;
+                }
+                if (keycloakAdminClient.setEnabled(member.getKeycloakSub(), !disabling)) {
+                    if (disabling) {
+                        keycloakAdminClient.logoutAllSessions(member.getKeycloakSub());
+                    }
+                    updated++;
+                } else {
+                    notUpdated.add(member.getEmail());
+                }
+            }
+        }
+
+        String detail = "Lifecycle " + previous + " -> " + target
+            + "; member logins " + (disabling ? "disabled" : "enabled") + ": " + updated
+            + (notUpdated.isEmpty() ? "" : "; Keycloak failed for: " + String.join(", ", notUpdated))
+            + (reason == null || reason.isBlank() ? "" : "; reason: " + reason.trim());
+        auditService.recordSuccess(auditAction, actor.keycloakSub(), actor.customerId(), actor.email(),
+            "Organization", org.getId().toString(), org.getId(), detail);
+        return new OrganizationLifecycleResultDto(toAdminDto(org), updated, notUpdated);
+    }
+
+    private Organization findOrganization(Long organizationId) {
+        return organizationRepository.findById(organizationId)
+            .orElseThrow(() -> new ResourceNotFoundException("Organization not found"));
+    }
+
+    private static String blankToNull(String value) {
+        return value == null || value.isBlank() ? null : value.trim();
     }
 }

@@ -36,11 +36,46 @@ export interface OrganizationAdmin {
   licensedSeats: number
   activeMemberCount: number
   status: RegistrationStatus
+  lifecycleStatus: OrganizationLifecycleStatus
   adminFirstName?: string
   adminLastName?: string
   adminEmail?: string
   adminKeycloakLinked: boolean
   createdAt?: string
+}
+
+// REQ-TEN-001: platform-admin lifecycle, separate from the registration status.
+export type OrganizationLifecycleStatus = 'ACTIVE' | 'SUSPENDED' | 'CLOSED'
+
+export type OrganizationLifecycleAction = 'suspend' | 'activate' | 'close'
+
+// Matches UpdateOrganizationRequest. Code, seats, MFA policy and parent are not editable here.
+export interface UpdateOrganizationPayload {
+  name: string
+  type?: string
+  industry?: string
+  website?: string
+  businessEmail: string
+  phone?: string
+  country: string
+  state?: string
+  city?: string
+  address?: string
+  gstin?: string
+  pan?: string
+  companyRegistrationNumber?: string
+  taxVatNumber?: string
+  billingSameAsAddress: boolean
+  billingAddress?: string
+  billingCountry?: string
+  billingState?: string
+  billingCity?: string
+}
+
+export interface OrganizationLifecycleResult {
+  organization: OrganizationAdmin
+  accountsUpdated: number
+  accountsNotUpdated: string[]
 }
 
 export interface CustomerAdmin {
@@ -77,5 +112,17 @@ export const adminRegistrationApi = {
     apiRequest<{ licensedSeats: number }>(`/admin/registrations/organizations/${organizationId}/seats`, {
       method: 'PATCH',
       body: JSON.stringify({ licensedSeats }),
+    }),
+  // REQ-TEN-001 — AdminRegistrationController#updateOrganization.
+  updateOrganization: (organizationId: number, payload: UpdateOrganizationPayload) =>
+    apiRequest<OrganizationAdmin>(`/admin/registrations/organizations/${organizationId}`, {
+      method: 'PUT',
+      body: JSON.stringify(payload),
+    }),
+  // REQ-TEN-001 — suspend / activate / close (soft; nothing is deleted).
+  changeOrganizationLifecycle: (organizationId: number, action: OrganizationLifecycleAction, reason?: string) =>
+    apiRequest<OrganizationLifecycleResult>(`/admin/registrations/organizations/${organizationId}/${action}`, {
+      method: 'POST',
+      body: JSON.stringify({ reason: reason?.trim() || undefined }),
     }),
 }

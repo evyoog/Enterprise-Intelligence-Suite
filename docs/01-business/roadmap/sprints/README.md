@@ -10,14 +10,14 @@ To add a sprint, copy [`_template.md`](_template.md).
 
 | Sprint | Dates | EIS applications | Scope changes from decisions |
 |---|---|---|---|
-| [2026.3.3](SPRINT-2026.3.3.md) | 1–30 Sep 2026 | [01 Enterprise Intelligence Suite](../applications/01-enterprise-intelligence-suite.md), [06 Identity & Access Management](../applications/06-identity-access-management.md) | C16, C17, C18, C19, C20, C21, C22, C23, C24 |
+| [2026.3.3](SPRINT-2026.3.3.md) | 1–30 Sep 2026 | [01 Enterprise Intelligence Suite](../applications/01-enterprise-intelligence-suite.md), [06 Identity & Access Management](../applications/06-identity-access-management.md) | C16, C17, C18, C19, C20, C21, C22, C23, C24, C25 |
 
 ## PI 2026.4
 
 | Sprint | Dates | EIS applications | Scope changes from decisions |
 |---|---|---|---|
 | [2026.4.1](SPRINT-2026.4.1.md) | 1–31 Oct 2026 | [02 Product & Catalog Management](../applications/02-product-catalog-management.md) | - |
-| [2026.4.2](SPRINT-2026.4.2.md) | 1–30 Nov 2026 | [05 Customer / Tenant Management](../applications/05-customer-tenant-management.md) | - |
+| [2026.4.2](SPRINT-2026.4.2.md) | 1–30 Nov 2026 | [05 Customer / Tenant Management](../applications/05-customer-tenant-management.md) | C25 |
 | [2026.4.3](SPRINT-2026.4.3.md) | 1–31 Dec 2026 | [07 Subscription & Entitlement Management](../applications/07-subscription-entitlement-management.md), [08 Billing & Payments](../applications/08-billing-payments.md) | C19 |
 
 ## PI 2027.1

@@ -42,6 +42,7 @@ Raised from the sprint 2026.3.3 development plan.
 | C22 | 06.04.01 Configure OIDC (per-organization identity provider) | Only SAML is specified and built. OIDC identity-provider federation requirements are Not specified | Decided 2026-09-25 ([record](#c22)) |
 | C23 | 06.04.01 Map claims (configurable per provider) | The current fixed attribute mapping works. Configurable mapping is Not specified | Decided 2026-09-25 ([record](#c23)) |
 | C24 | 06.03.01 Request elevated access: how the requester chooses the permission | The backend accepts any permission name that some role grants, but there is no endpoint listing requestable permissions for a regular user (`GET /me/permissions` returns only the caller's own). The UI control is Not specified. Blocks the request form in FRD `privileged-access` | Decided 2026-09-25 ([record](#c24)) |
+| C25 | 05.01.01 Organization Lifecycle on `/admin/registrations`: meaning of delete, scope, create, timing | Sprint 2026.4.2 scope with no FRD; "delete" vs the roadmap's "Close organization" was Not specified | Decided 2026-09-25 ([record](#c25)) |
 
 ## Decisions needed
 1. **C2 and C3:** confirm the MVP and the order of applications. → Decided 2026-09-25: see [C2](#c2) and [C3](#c3).
@@ -154,6 +155,10 @@ Raised from the sprint 2026.3.3 development plan.
 ### C24
 **Decision:** Add **one read-only backend endpoint listing the permissions a user may request** (for example `GET /me/privileged-access/requestable-permissions`). It applies only the rules `PrivilegedAccessService` already enforces: the permission is granted by some role; it is not `MANAGE_PRIVILEGED_ACCESS`; organization-scope permissions require organization membership. The request form shows the result as a dropdown.
 **Conditions:** specified in FRD `privileged-access` (DN-4). No new rules are added.
+
+### C25
+**Decision (product owner, 2026-09-25):** On `/admin/registrations`, platform administrators get **edit, suspend, activate and close for organizations only**. **Close is a soft close**: the organization's status becomes CLOSED, data and audit history are kept, active members' Keycloak logins are disabled and their sessions ended, and it can be activated again. **No create** from the admin page: organizations still come only from self-registration. No hard delete. Individual customers are unchanged. 05.01.01.02–.05 are **pulled forward from 2026.4.2** and built in 2026.3.3; 05.01.01.01 Create organization stays in 2026.4.2.
+**Conditions:** FRD [`organization-lifecycle`](../../02-requirements/FRD/organization-lifecycle/requirement.md) (REQ-TEN-001), approved the same day.
 
 ### DN-2 Sprint scope, length and dates
 **Decision:**

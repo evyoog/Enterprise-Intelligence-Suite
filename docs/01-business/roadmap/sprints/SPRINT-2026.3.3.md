@@ -33,6 +33,7 @@
 | Deferred | [C17](../open-decisions.md#c17) Global search stays products-only here. Knowledge articles and support tickets are added in sprint [2027.1.3](SPRINT-2027.1.3.md) | - | - |
 | Deferred | [C18](../open-decisions.md#c18) Send SMS (01.04.02) is deferred until an SMS provider and rules are specified in a new FRD (no sprint assigned). Email and in-app notifications satisfy 01.04.02 here | - | - |
 | Deferred | [C19](../open-decisions.md#c19) View spending (01.02.01) moves to sprint [2026.4.3](SPRINT-2026.4.3.md). The dashboard keeps its "not available" note | - | - |
+| Pulled forward | [C25](../open-decisions.md#c25) Organization Lifecycle 05.01.01.02–.05 (update, suspend, activate, soft close) on `/admin/registrations`, from sprint [2026.4.2](SPRINT-2026.4.2.md) | [organization-lifecycle](../../../02-requirements/FRD/organization-lifecycle/requirement.md) | REQ-TEN-001 |
 
 ## FRDs for this sprint
 
@@ -48,6 +49,7 @@ Build starts only when the FRD is Approved ([DN-4](../open-decisions.md#dn-4-bus
 | [oidc-federation](../../../02-requirements/FRD/oidc-federation/requirement.md) | REQ-IAM-006 | 06.04.01 | Approved |
 | [claim-mapping](../../../02-requirements/FRD/claim-mapping/requirement.md) | REQ-IAM-007 | 06.04.01 | Approved |
 | [service-status-page](../../../02-requirements/FRD/service-status-page/requirement.md) | REQ-PRT-001 | 01.02.02 | Approved |
+| [organization-lifecycle](../../../02-requirements/FRD/organization-lifecycle/requirement.md) | REQ-TEN-001 | 05.01.01 | Approved |
 
 ## EIS 01 Enterprise Intelligence Suite
 

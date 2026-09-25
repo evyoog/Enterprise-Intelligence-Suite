@@ -108,6 +108,12 @@ public class Organization {
     @Column(nullable = false, length = 30)
     private RegistrationStatus status = RegistrationStatus.PENDING_EMAIL_VERIFICATION;
 
+    /** REQ-TEN-001: platform-admin-managed only (see AdminRegistrationService
+     * #suspendOrganization / #activateOrganization / #closeOrganization). */
+    @Enumerated(EnumType.STRING)
+    @Column(name = "lifecycle_status", nullable = false, length = 20)
+    private OrganizationLifecycleStatus lifecycleStatus = OrganizationLifecycleStatus.ACTIVE;
+
     @CreatedDate
     @Column(updatable = false)
     private Instant createdAt;

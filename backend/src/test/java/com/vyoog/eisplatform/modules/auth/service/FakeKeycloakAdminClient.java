@@ -27,6 +27,8 @@ public class FakeKeycloakAdminClient implements KeycloakAdminClient {
     private int nextSessionId = 1;
     private final Map<String, List<KeycloakSessionInfo>> sessionsByUserId = new HashMap<>();
     public final List<String> revokeSessionCalls = new ArrayList<>();
+    /** User ids whose {@link #setEnabled} call should report failure. */
+    public final java.util.Set<String> setEnabledFailsFor = new java.util.HashSet<>();
 
     public record CreateUserCall(String email, String firstName, String lastName, String password, boolean enabled) {
     }
@@ -63,6 +65,7 @@ public class FakeKeycloakAdminClient implements KeycloakAdminClient {
         nextSessionId = 1;
         sessionsByUserId.clear();
         revokeSessionCalls.clear();
+        setEnabledFailsFor.clear();
     }
 
     @Override
@@ -95,6 +98,9 @@ public class FakeKeycloakAdminClient implements KeycloakAdminClient {
 
     @Override
     public boolean setEnabled(String keycloakUserId, boolean enabled) {
+        if (setEnabledFailsFor.contains(keycloakUserId)) {
+            return false;
+        }
         enabledByUserId.put(keycloakUserId, enabled);
         return true;
     }
