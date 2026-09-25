@@ -2,28 +2,6 @@
 
 eVyoog Enterprise Intelligence Suite (EIS) is a Platform hosted in the cloud and offered as Platform as a Service (PaaS) hosting multiple product suites (Valam.ai, Varthan.ai, Thittam.ai, Thiran.ai, Yukth.ai, Tharav.ai), plus the shared platform layer (IAM, security, notifications, analytics) they all depend on.
 
-This repository is **one product**: code, documentation, database scripts, test cases and deployment configuration together, so the whole product context is in one place.
-
-```
-                    EIS Platform
-                         │
-       ┌─────────────────┼─────────────────┐
-       ▼                 ▼                 ▼
-   FRONTEND          BACKEND           AI SERVICE
-    React          Spring Boot          FastAPI
-       └─────────────────┼─────────────────┘
-                         ▼
-                 DATABASE (PostgreSQL)
-                         ▼
-                 PRODUCT DOCUMENTS
-            ┌────────────┼────────────┐
-            ▼            ▼            ▼
-           FRD     Business Rules  Workflows
-            └────────────┼────────────┘
-                         ▼
-                    TEST CASES
-```
-
 ## Repository structure
 
 ```
@@ -35,7 +13,9 @@ Enterprise-Intelligence-Suite/
 │   ├── tests/
 │   └── requirements.txt
 ├── docs/                      # Product documentation, ordered by lifecycle
-│   ├── 01-business/           # BRD/, vision.md, scope.md
+│   ├── README.md              # Documentation index
+│   ├── 01-business/           # BRD/, vision.md, scope.md, source-documents/ ([PO] [CG] [WB])
+│   │   └── roadmap/           # sprints/SPRINT-<PI.N>.md, applications/, roadmap.csv, open-decisions.md
 │   ├── 02-requirements/       # FRD/<feature>/, functional-, non-functional-requirements/
 │   ├── 03-business-rules/
 │   ├── 04-workflows/
@@ -57,11 +37,16 @@ Enterprise-Intelligence-Suite/
 └── .gitignore
 ```
 
+## Roadmap and sprints
+
+The delivery plan is in [`docs/01-business/roadmap/`](docs/01-business/roadmap/README.md). It has one document per sprint (for example [`SPRINT-2026.3.3`](docs/01-business/roadmap/sprints/SPRINT-2026.3.3.md)) and one page per application. Each is traceable to the original planning documents in [`docs/01-business/source-documents/`](docs/01-business/source-documents/README.md). The repository folder architecture is in [`docs/08-architecture/system-architecture/repository-architecture.md`](docs/08-architecture/system-architecture/repository-architecture.md).
+
 ## Feature traceability
 
 A feature keeps the same name across every layer:
 
 ```
+docs/01-business/roadmap/sprints/SPRINT-<PI.N>.md  →  application → capability → feature (roadmap)
 docs/02-requirements/FRD/<feature>/     →  requirement, business rules, workflow, UI, API, acceptance criteria
 database/migrations/V<NNN>__*.sql       →  schema change
 frontend/src/…  ·  backend/…/modules/<feature>/  →  implementation

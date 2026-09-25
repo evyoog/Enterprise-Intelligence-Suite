@@ -1,0 +1,17 @@
+Item ID,Item Type (Application/Capability),Item Name,PI (YYYY.Q),Sprint (PI.N),Status,Linked GitHub Repo,Notes
+01,Application,Experience & Customer Portal,2026.3,2026.3.3,Not specified,evyoog/Enterprise-Intelligence-Suite,EIS (PaaS); source [PO] eVyoog EIS - Roadmap Initiatives
+06,Application,Identity & Access Management,2026.3,2026.3.3,Not specified,evyoog/Enterprise-Intelligence-Suite,EIS (PaaS); source [PO] eVyoog EIS - Roadmap Initiatives
+02,Application,Product & Catalog Management,2026.4,2026.4.1,Not specified,evyoog/Enterprise-Intelligence-Suite,EIS (PaaS); source [PO] eVyoog EIS - Roadmap Initiatives
+05,Application,Customer / Tenant Management,2026.4,2026.4.2,Not specified,evyoog/Enterprise-Intelligence-Suite,EIS (PaaS); source [PO] eVyoog EIS - Roadmap Initiatives
+07,Application,Subscription & Entitlement Management,2026.4,2026.4.3,Not specified,evyoog/Enterprise-Intelligence-Suite,EIS (PaaS); source [PO] eVyoog EIS - Roadmap Initiatives
+08,Application,Billing & Payments,2026.4,2026.4.3,Not specified,evyoog/Enterprise-Intelligence-Suite,EIS (PaaS); source [PO] eVyoog EIS - Roadmap Initiatives
+09,Application,Order & Provisioning Management,2027.1,2027.1.1,Not specified,evyoog/Enterprise-Intelligence-Suite,EIS (PaaS); source [PO] eVyoog EIS - Roadmap Initiatives
+10,Application,Service & Resource Management,2027.1,2027.1.1,Not specified,evyoog/Enterprise-Intelligence-Suite,EIS (PaaS); source [PO] eVyoog EIS - Roadmap Initiatives
+13,Application,Integration & API Platform,2027.1,2027.1.1,Not specified,evyoog/Enterprise-Intelligence-Suite,EIS (PaaS); source [PO] eVyoog EIS - Roadmap Initiatives
+16,Application,Analytics & Data Platform,2027.1,2027.1.1,Not specified,evyoog/Enterprise-Intelligence-Suite,EIS (PaaS); source [PO] eVyoog EIS - Roadmap Initiatives
+04,Application,AI Advisor & Agent Platform,2027.1,2027.1.2,Not specified,evyoog/Enterprise-Intelligence-Suite,EIS (PaaS); source [PO] eVyoog EIS - Roadmap Initiatives
+03,Application,Marketplace,2027.1,2027.1.3,Not specified,evyoog/Enterprise-Intelligence-Suite,EIS (PaaS); source [PO] eVyoog EIS - Roadmap Initiatives
+11,Application,Training & Knowledge Management,2027.1,2027.1.3,Not specified,evyoog/Enterprise-Intelligence-Suite,EIS (PaaS); source [PO] eVyoog EIS - Roadmap Initiatives
+12,Application,Support & Service Management,2027.1,2027.1.3,Not specified,evyoog/Enterprise-Intelligence-Suite,EIS (PaaS); source [PO] eVyoog EIS - Roadmap Initiatives
+14,Application,Partner & Provider Management,2027.2,2027.2.1,Not specified,evyoog/Enterprise-Intelligence-Suite,EIS (PaaS); source [PO] eVyoog EIS - Roadmap Initiatives
+15,Application,Administration & Governance,2027.2,2027.2.2,Not specified,evyoog/Enterprise-Intelligence-Suite,EIS (PaaS); source [PO] eVyoog EIS - Roadmap Initiatives
