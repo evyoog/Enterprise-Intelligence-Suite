@@ -9,7 +9,7 @@
 | Team / capacity | Not specified |
 | Status | Not specified |
 | Source | [PO] roadmap tables ([`2026Q3_ProdOps_Plan.docx`](../../source-documents/2026Q3_ProdOps_Plan.docx)) |
-| Previous / next sprint | [2027.2.1](SPRINT-2027.2.1.md) · [2027.4.1](SPRINT-2027.4.1.md) |
+| Previous / next sprint | [2027.2.1](SPRINT-2027.2.1.md) · (last) |
 
 ## Scope
 

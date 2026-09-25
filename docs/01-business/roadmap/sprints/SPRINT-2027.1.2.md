@@ -16,9 +16,6 @@
 | Product | Application ID | Application | Roadmap item(s) | Source |
 |---|---|---|---|---|
 | EIS (PaaS) | 04 | [AI Advisor & Agent Platform](../applications/04-ai-advisor-agent-platform.md) | (whole application) | [PO] "eVyoog EIS - Roadmap Initiatives" |
-| Thiran (SaaS) | Not specified | [SW Life Cycle](../applications/thiran-sw-life-cycle.md) | SWLC-CAP-18 AI Engineering Platform, SWLC-CAP-19 Automation Platform | [PO] "SW Life Cycle - Roadmap Initiatives" |
-| Thittam (SaaS) | Not specified | [Agile Planner](../applications/thittam-agile-planner.md) | AP-C17 Administration, Configuration & Security | [PO] "Agile Planner - Roadmap Initiatives" |
-| Thittam (SaaS) | Not specified | [Macro Planner](../applications/thittam-macro-planner.md) | #14 Localization | [PO] "Macro Planner - Roadmap Initiatives" |
 
 > [PO] assigns **one sprint per EIS application**. It does not say which capabilities or features fall inside this sprint, or whether the application must be finished in it. The EIS scope below is the application's full [WB] breakdown until sprint scope is decided (see [open-decisions.md](../open-decisions.md)).
 
@@ -50,20 +47,6 @@ Full breakdown with APIs, services, entities and events: [applications/04-ai-adv
 
 - Not specified in any source.
 - Implied by [WB:Traceability]: APIs `API-007 POST /v1/recommendations`; services AI Agent Gateway.
-
-## Hosted SaaS products in this sprint
-
-These are tracked here so their dependencies on EIS are visible. [PO] lists no functions, requirements or deliverables for them.
-
-| Product | Application | ID | Capability | Features ([PO]) | PI stated |
-|---|---|---|---|---|---|
-| Thittam (SaaS) | [Macro Planner](../applications/thittam-macro-planner.md) | #14 | Localization | Not specified | 2027.1 |
-| Thittam (SaaS) | [Agile Planner](../applications/thittam-agile-planner.md) | AP-C17 | Administration, Configuration & Security | Not specified | 2027.1 |
-| Thiran (SaaS) | [SW Life Cycle](../applications/thiran-sw-life-cycle.md) | SWLC-CAP-18 | AI Engineering Platform | Not specified | 2027.1 |
-| Thiran (SaaS) | [SW Life Cycle](../applications/thiran-sw-life-cycle.md) | SWLC-CAP-19 | Automation Platform | Not specified | 2027.1 |
-
-**Stated dependencies ([PO]):**
-- SW Life Cycle integrates with Macro Planner and Agile Planner.
 
 ## Open issues affecting this sprint
 

@@ -15,10 +15,10 @@ Enterprise-Intelligence-Suite/
 │   │   ├── source-documents/       [PO] [CG] [WB]: the original planning documents (read-only)
 │   │   ├── roadmap/
 │   │   │   ├── README.md           PI → sprint → application index
-│   │   │   ├── sprints/            SPRINT-<PI.N>.md (10 sprints) · _template.md
-│   │   │   ├── applications/       <NN>-<application>.md (16 EIS) · thittam-*.md · thiran-*.md
-│   │   │   ├── roadmap.csv         72 roadmap rows (planning-roadmap-template columns)
-│   │   │   ├── open-decisions.md   conflicts C1–C15, decisions needed
+│   │   │   ├── sprints/            SPRINT-<PI.N>.md (9 EIS sprints) · _template.md
+│   │   │   ├── applications/       <NN>-<application>.md (16 EIS applications)
+│   │   │   ├── roadmap.csv         16 EIS roadmap rows (planning-roadmap-template columns)
+│   │   │   ├── open-decisions.md   conflicts affecting EIS sprints, decisions needed
 │   │   │   └── EIS-document-analysis.md
 │   │   ├── BRD/ · vision.md · scope.md · planning-roadmap-template.xlsx
 │   ├── 02-requirements/            FRD/<feature>/ (from _template/) · functional-/non-functional-requirements/
@@ -79,13 +79,12 @@ The sprint is from [PO]. The code column is observed on branch `dev`, at module 
 | 15 | Administration & Governance | 2027.2.2 | [15](../../01-business/roadmap/applications/15-administration-governance.md) | `modules/audit` | `pages/admin/AdminAuditLogPage.tsx`, `pages/admin/settings/` |
 | 16 | Analytics & Data Platform | 2027.1.1 | [16](../../01-business/roadmap/applications/16-analytics-data-platform.md) | Not started | Not started |
 
-The hosted SaaS products (Thittam: Macro Planner and Agile Planner; Thiran: SW Life Cycle) are planned in the roadmap. They have no code in this repository, and [PO] does not say which repository will hold them (Not specified).
 
 ## 4. Naming conventions
 | Artifact | Location | Name |
 |----------|----------|------|
 | Sprint | `docs/01-business/roadmap/sprints/` | `SPRINT-<PI.Sprint>.md`, for example `SPRINT-2026.4.1.md` |
-| Application page | `docs/01-business/roadmap/applications/` | `<NN>-<application-kebab>.md` for EIS; `<product>-<application>.md` for SaaS |
+| Application page | `docs/01-business/roadmap/applications/` | `<NN>-<application-kebab>.md` |
 | Feature FRD | `docs/02-requirements/FRD/` | `<feature-kebab>/` (copy `_template/`) |
 | Requirement / story | `docs/02-requirements/functional-requirements/` | `REQ-<APP-CODE>-<NNN>.md` / `STORY-<APP-CODE>-<NNN>.md` |
 | Design / ADR | `docs/08-architecture/system-architecture/` | `DES-<APP-CODE>-<NNN>.md` / `ADR-<NNN>-<slug>.md` |

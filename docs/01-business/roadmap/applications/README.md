@@ -1,6 +1,6 @@
 # Applications
 
-One page per application in the [PO] roadmap. EIS pages list every capability, feature and function from [WB]. The hosted SaaS pages list what [PO] gives.
+One page per EIS (PaaS) application in the [PO] roadmap. Each page lists every capability, feature and function from [WB].
 
 ## EIS (PaaS): 16 applications
 
@@ -22,15 +22,3 @@ One page per application in the [PO] roadmap. EIS pages list every capability, f
 | 14 | [Partner & Provider Management](14-partner-provider-management.md) | Providers, publishers, onboarding and revenue sharing | 4 | 23 | 2027.2 | [2027.2.1](../sprints/SPRINT-2027.2.1.md) |
 | 15 | [Administration & Governance](15-administration-governance.md) | Platform configuration, policies, audit and compliance | 5 | 33 | 2027.2 | [2027.2.2](../sprints/SPRINT-2027.2.2.md) |
 | 16 | [Analytics & Data Platform](16-analytics-data-platform.md) | Customer, product, operational and business analytics | 5 | 32 | 2027.1 | [2027.1.1](../sprints/SPRINT-2027.1.1.md) |
-
-## Hosted SaaS applications
-
-| Product | Application | Capabilities | Sprints |
-|---|---|---|---|
-| Thittam | [Macro Planner](thittam-macro-planner.md) | 15 | 2026.3.3, 2026.4.2, 2026.4.3, 2027.1.1, 2027.1.2, 2027.1.3, 2027.4.1 |
-| Thittam | [Agile Planner](thittam-agile-planner.md) | 18 | 2026.3.3, 2026.4.2, 2026.4.3, 2027.1.1, 2027.1.2, 2027.1.3, 2027.4.1 |
-| Thiran | [SW Life Cycle](thiran-sw-life-cycle.md) | 23 | 2026.3.3, 2026.4.1, 2026.4.2, 2026.4.3, 2027.1.1, 2027.1.2, 2027.1.3 |
-
-**Named in [PO] with no content (Not specified):**
-- Thiran: Product Life Cycle Management, Production Management, Service Management
-- Tharav, Valam, Varthan, Yukth: all content

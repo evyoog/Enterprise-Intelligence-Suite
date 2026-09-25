@@ -16,9 +16,6 @@
 | Product | Application ID | Application | Roadmap item(s) | Source |
 |---|---|---|---|---|
 | EIS (PaaS) | 05 | [Customer / Tenant Management](../applications/05-customer-tenant-management.md) | (whole application) | [PO] "eVyoog EIS - Roadmap Initiatives" |
-| Thiran (SaaS) | Not specified | [SW Life Cycle](../applications/thiran-sw-life-cycle.md) | SWLC-CAP-12 Change & Configuration Management, SWLC-CAP-13 Release & Deployment Management | [PO] "SW Life Cycle - Roadmap Initiatives" |
-| Thittam (SaaS) | Not specified | [Agile Planner](../applications/thittam-agile-planner.md) | AP-C11 Progress & Status Management, AP-C13 Metrics, Dashboards & Reporting | [PO] "Agile Planner - Roadmap Initiatives" |
-| Thittam (SaaS) | Not specified | [Macro Planner](../applications/thittam-macro-planner.md) | #6 Goal & KPI Management, #8 Collaboration | [PO] "Macro Planner - Roadmap Initiatives" |
 
 > [PO] assigns **one sprint per EIS application**. It does not say which capabilities or features fall inside this sprint, or whether the application must be finished in it. The EIS scope below is the application's full [WB] breakdown until sprint scope is decided (see [open-decisions.md](../open-decisions.md)).
 
@@ -55,25 +52,9 @@ Full breakdown with APIs, services, entities and events: [applications/05-custom
 
 Observed on branch `dev`, module level only: `backend/…/modules/registration (organization, members, seats)`; `frontend/src/pages/register/OrganizationRegisterPage.tsx`, `frontend/src/pages/register/VerifyEmailPage.tsx`, `frontend/src/pages/admin/RegistrationsAdminPage.tsx`.
 
-## Hosted SaaS products in this sprint
-
-These are tracked here so their dependencies on EIS are visible. [PO] lists no functions, requirements or deliverables for them.
-
-| Product | Application | ID | Capability | Features ([PO]) | PI stated |
-|---|---|---|---|---|---|
-| Thittam (SaaS) | [Macro Planner](../applications/thittam-macro-planner.md) | #6 | Goal & KPI Management | KPI definition, KPI target, Actual, Forecast, Threshold, Variance, Trend | 2026.4 |
-| Thittam (SaaS) | [Macro Planner](../applications/thittam-macro-planner.md) | #8 | Collaboration | Comments, Mentions, Discussions, Notifications, Activity feed, @user, @team | 2026.4 |
-| Thittam (SaaS) | [Agile Planner](../applications/thittam-agile-planner.md) | AP-C11 | Progress & Status Management | Not specified | 2026.4 |
-| Thittam (SaaS) | [Agile Planner](../applications/thittam-agile-planner.md) | AP-C13 | Metrics, Dashboards & Reporting | Not specified | 2026.4 |
-| Thiran (SaaS) | [SW Life Cycle](../applications/thiran-sw-life-cycle.md) | SWLC-CAP-12 | Change & Configuration Management | Not specified | 2026.4 |
-| Thiran (SaaS) | [SW Life Cycle](../applications/thiran-sw-life-cycle.md) | SWLC-CAP-13 | Release & Deployment Management | Not specified | 2026.4 |
-
-**Stated dependencies ([PO]):**
-- SW Life Cycle integrates with Macro Planner and Agile Planner.
-
 ## Open issues affecting this sprint
 
-- C8: EIS 05 Customer / Tenant Management arrives after the SaaS tenancy capabilities scheduled in 2026.3.3
+- None specific to this sprint. The general decisions in open-decisions.md still apply
 - The sprint scope, deliverables, acceptance criteria and dates are not specified in any source.
 
 Details: [open-decisions.md](../open-decisions.md).

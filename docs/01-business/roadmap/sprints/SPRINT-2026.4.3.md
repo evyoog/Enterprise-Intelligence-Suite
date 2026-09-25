@@ -17,9 +17,6 @@
 |---|---|---|---|---|
 | EIS (PaaS) | 07 | [Subscription & Entitlement Management](../applications/07-subscription-entitlement-management.md) | (whole application) | [PO] "eVyoog EIS - Roadmap Initiatives" |
 | EIS (PaaS) | 08 | [Billing & Payments](../applications/08-billing-payments.md) | (whole application) | [PO] "eVyoog EIS - Roadmap Initiatives" |
-| Thiran (SaaS) | Not specified | [SW Life Cycle](../applications/thiran-sw-life-cycle.md) | SWLC-CAP-14 Documentation Management, SWLC-CAP-15 Risk & Compliance Management | [PO] "SW Life Cycle - Roadmap Initiatives" |
-| Thittam (SaaS) | Not specified | [Agile Planner](../applications/thittam-agile-planner.md) | AP-C12 Dependency & Risk Management | [PO] "Agile Planner - Roadmap Initiatives" |
-| Thittam (SaaS) | Not specified | [Macro Planner](../applications/thittam-macro-planner.md) | #7 Template Management | [PO] "Macro Planner - Roadmap Initiatives" |
 
 > [PO] assigns **one sprint per EIS application**. It does not say which capabilities or features fall inside this sprint, or whether the application must be finished in it. The EIS scope below is the application's full [WB] breakdown until sprint scope is decided (see [open-decisions.md](../open-decisions.md)).
 
@@ -92,23 +89,9 @@ Full breakdown with APIs, services, entities and events: [applications/08-billin
 - Not specified in any source.
 - Implied by [WB:Traceability]: APIs `API-006 POST /v1/pricing/quote`, `API-013 POST /v1/billing/invoices`, `API-014 POST /v1/payments`; services Pricing Service.
 
-## Hosted SaaS products in this sprint
-
-These are tracked here so their dependencies on EIS are visible. [PO] lists no functions, requirements or deliverables for them.
-
-| Product | Application | ID | Capability | Features ([PO]) | PI stated |
-|---|---|---|---|---|---|
-| Thittam (SaaS) | [Macro Planner](../applications/thittam-macro-planner.md) | #7 | Template Management | Business Plan, Sales Plan, Marketing Plan, HR Plan, Finance Plan, Production Plan, Purchase Plan, Delivery Plan, Project Plan, Product Plan, Training Plan, Strategic Plan, Operational Plan, Capacity Plan, Resource Plan, Quality Plan, Risk Plan, Compliance Plan | 2026.4 |
-| Thittam (SaaS) | [Agile Planner](../applications/thittam-agile-planner.md) | AP-C12 | Dependency & Risk Management | Work dependency, Feature dependency, Team dependency, Application dependency, External dependency, Blocking relationship, Risk, Issue, Assumption, Decision, Escalation | 2026.4 |
-| Thiran (SaaS) | [SW Life Cycle](../applications/thiran-sw-life-cycle.md) | SWLC-CAP-14 | Documentation Management | Not specified | 2026.4 |
-| Thiran (SaaS) | [SW Life Cycle](../applications/thiran-sw-life-cycle.md) | SWLC-CAP-15 | Risk & Compliance Management | Not specified | 2026.4 |
-
-**Stated dependencies ([PO]):**
-- SW Life Cycle integrates with Macro Planner and Agile Planner.
-
 ## Open issues affecting this sprint
 
-- C8: EIS 07 Subscription arrives after the SaaS capabilities scheduled in 2026.3.3
+- None specific to this sprint. The general decisions in open-decisions.md still apply
 - The sprint scope, deliverables, acceptance criteria and dates are not specified in any source.
 
 Details: [open-decisions.md](../open-decisions.md).

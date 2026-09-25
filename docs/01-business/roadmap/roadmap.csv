@@ -1,73 +1,17 @@
 Item ID,Item Type (Application/Capability),Item Name,PI (YYYY.Q),Sprint (PI.N),Status,Linked GitHub Repo,Notes
 01,Application,Experience & Customer Portal,2026.3,2026.3.3,Not specified,evyoog/Enterprise-Intelligence-Suite,EIS (PaaS); source [PO] eVyoog EIS - Roadmap Initiatives
 06,Application,Identity & Access Management,2026.3,2026.3.3,Not specified,evyoog/Enterprise-Intelligence-Suite,EIS (PaaS); source [PO] eVyoog EIS - Roadmap Initiatives
-SWLC-CAP-01,Capability,SW Life Cycle: Platform & Tenant Management,2026.3,2026.3.3,Not specified,Not specified,"Thiran (SaaS); source [PO] ""SW Life Cycle - Roadmap Initiatives"""
-SWLC-CAP-02,Capability,SW Life Cycle: Organization & Project Management,2026.3,2026.3.3,Not specified,Not specified,"Thiran (SaaS); source [PO] ""SW Life Cycle - Roadmap Initiatives"""
-SWLC-CAP-03,Capability,SW Life Cycle: Lifecycle / Work Item Management,2026.3,2026.3.3,Not specified,Not specified,"Thiran (SaaS); source [PO] ""SW Life Cycle - Roadmap Initiatives"""
-SWLC-CAP-04,Capability,SW Life Cycle: Requirements Management,2026.3,2026.3.3,Not specified,Not specified,"Thiran (SaaS); source [PO] ""SW Life Cycle - Roadmap Initiatives"""
-SWLC-CAP-05,Capability,SW Life Cycle: Architecture & Design Management,2026.3,2026.3.3,Not specified,Not specified,"Thiran (SaaS); source [PO] ""SW Life Cycle - Roadmap Initiatives"""
-SWLC-CAP-06,Capability,SW Life Cycle: API & Interface Management,2026.3,2026.3.3,Not specified,Not specified,"Thiran (SaaS); source [PO] ""SW Life Cycle - Roadmap Initiatives"""
-SWLC-CAP-07,Capability,SW Life Cycle: Software Configuration / Code Management,2026.3,2026.3.3,Not specified,Not specified,"Thiran (SaaS); source [PO] ""SW Life Cycle - Roadmap Initiatives"""
-SWLC-CAP-08,Capability,SW Life Cycle: Test Management,2026.3,2026.3.3,Not specified,Not specified,"Thiran (SaaS); source [PO] ""SW Life Cycle - Roadmap Initiatives"""
-SWLC-CAP-09,Capability,SW Life Cycle: Defect & Issue Management,2026.3,2026.3.3,Not specified,Not specified,"Thiran (SaaS); source [PO] ""SW Life Cycle - Roadmap Initiatives"""
-SWLC-CAP-10,Capability,SW Life Cycle: Traceability & Impact Analysis,2026.3,2026.3.3,Not specified,Not specified,"Thiran (SaaS); source [PO] ""SW Life Cycle - Roadmap Initiatives"""
-#1,Capability,Macro Planner: Organization & Identity,2026.3,2026.3.3,Not specified,Not specified,"Thittam (SaaS); source [PO] ""Macro Planner - Roadmap Initiatives"""
-#2,Capability,Macro Planner: Planning & Portfolio,2026.3,2026.3.3,Not specified,Not specified,"Thittam (SaaS); source [PO] ""Macro Planner - Roadmap Initiatives"""
-#3,Capability,Macro Planner: Work Management,2026.3,2026.3.3,Not specified,Not specified,"Thittam (SaaS); source [PO] ""Macro Planner - Roadmap Initiatives"""
-#4,Capability,Macro Planner: Schedule & Dependency,2026.3,2026.3.3,Not specified,Not specified,"Thittam (SaaS); source [PO] ""Macro Planner - Roadmap Initiatives"""
-#5,Capability,Macro Planner: Resource Management,2026.3,2026.3.3,Not specified,Not specified,"Thittam (SaaS); source [PO] ""Macro Planner - Roadmap Initiatives"""
-AP-C01,Capability,Agile Planner: Organization & Tenant Management,2026.3,2026.3.3,Not specified,Not specified,"Thittam (SaaS); source [PO] ""Agile Planner - Roadmap Initiatives"""
-AP-C02,Capability,Agile Planner: Portfolio / Program Management,2026.3,2026.3.3,Not specified,Not specified,"Thittam (SaaS); source [PO] ""Agile Planner - Roadmap Initiatives"""
-AP-C03,Capability,Agile Planner: Application / Product Management,2026.3,2026.3.3,Not specified,Not specified,"Thittam (SaaS); source [PO] ""Agile Planner - Roadmap Initiatives"""
-AP-C04,Capability,Agile Planner: Capability & Feature Management,2026.3,2026.3.3,Not specified,Not specified,"Thittam (SaaS); source [PO] ""Agile Planner - Roadmap Initiatives"""
-AP-C05,Capability,Agile Planner: Function & Backlog Management,2026.3,2026.3.3,Not specified,Not specified,"Thittam (SaaS); source [PO] ""Agile Planner - Roadmap Initiatives"""
-AP-C06,Capability,Agile Planner: Agile Planning & Sprint Management,2026.3,2026.3.3,Not specified,Not specified,"Thittam (SaaS); source [PO] ""Agile Planner - Roadmap Initiatives"""
-AP-C07,Capability,Agile Planner: Team & Resource Management,2026.3,2026.3.3,Not specified,Not specified,"Thittam (SaaS); source [PO] ""Agile Planner - Roadmap Initiatives"""
-AP-C08,Capability,Agile Planner: Board Management,2026.3,2026.3.3,Not specified,Not specified,"Thittam (SaaS); source [PO] ""Agile Planner - Roadmap Initiatives"""
-AP-C09,Capability,Agile Planner: Workflow & State Management,2026.3,2026.3.3,Not specified,Not specified,"Thittam (SaaS); source [PO] ""Agile Planner - Roadmap Initiatives"""
-AP-C10,Capability,Agile Planner: Work Assignment & Collaboration,2026.3,2026.3.3,Not specified,Not specified,"Thittam (SaaS); source [PO] ""Agile Planner - Roadmap Initiatives"""
 02,Application,Product & Catalog Management,2026.4,2026.4.1,Not specified,evyoog/Enterprise-Intelligence-Suite,EIS (PaaS); source [PO] eVyoog EIS - Roadmap Initiatives
-SWLC-CAP-11,Capability,SW Life Cycle: Workflow & Approval Management,2026.4,2026.4.1,Not specified,Not specified,"Thiran (SaaS); source [PO] ""SW Life Cycle - Roadmap Initiatives"""
 05,Application,Customer / Tenant Management,2026.4,2026.4.2,Not specified,evyoog/Enterprise-Intelligence-Suite,EIS (PaaS); source [PO] eVyoog EIS - Roadmap Initiatives
-SWLC-CAP-12,Capability,SW Life Cycle: Change & Configuration Management,2026.4,2026.4.2,Not specified,Not specified,"Thiran (SaaS); source [PO] ""SW Life Cycle - Roadmap Initiatives"""
-SWLC-CAP-13,Capability,SW Life Cycle: Release & Deployment Management,2026.4,2026.4.2,Not specified,Not specified,"Thiran (SaaS); source [PO] ""SW Life Cycle - Roadmap Initiatives"""
-#6,Capability,Macro Planner: Goal & KPI Management,2026.4,2026.4.2,Not specified,Not specified,"Thittam (SaaS); source [PO] ""Macro Planner - Roadmap Initiatives"""
-#8,Capability,Macro Planner: Collaboration,2026.4,2026.4.2,Not specified,Not specified,"Thittam (SaaS); source [PO] ""Macro Planner - Roadmap Initiatives"""
-AP-C11,Capability,Agile Planner: Progress & Status Management,2026.4,2026.4.2,Not specified,Not specified,"Thittam (SaaS); source [PO] ""Agile Planner - Roadmap Initiatives"""
-AP-C13,Capability,"Agile Planner: Metrics, Dashboards & Reporting",2026.4,2026.4.2,Not specified,Not specified,"Thittam (SaaS); source [PO] ""Agile Planner - Roadmap Initiatives"""
 07,Application,Subscription & Entitlement Management,2026.4,2026.4.3,Not specified,evyoog/Enterprise-Intelligence-Suite,EIS (PaaS); source [PO] eVyoog EIS - Roadmap Initiatives
 08,Application,Billing & Payments,2026.4,2026.4.3,Not specified,evyoog/Enterprise-Intelligence-Suite,EIS (PaaS); source [PO] eVyoog EIS - Roadmap Initiatives
-SWLC-CAP-14,Capability,SW Life Cycle: Documentation Management,2026.4,2026.4.3,Not specified,Not specified,"Thiran (SaaS); source [PO] ""SW Life Cycle - Roadmap Initiatives"""
-SWLC-CAP-15,Capability,SW Life Cycle: Risk & Compliance Management,2026.4,2026.4.3,Not specified,Not specified,"Thiran (SaaS); source [PO] ""SW Life Cycle - Roadmap Initiatives"""
-#7,Capability,Macro Planner: Template Management,2026.4,2026.4.3,Not specified,Not specified,"Thittam (SaaS); source [PO] ""Macro Planner - Roadmap Initiatives"""
-AP-C12,Capability,Agile Planner: Dependency & Risk Management,2026.4,2026.4.3,Not specified,Not specified,"Thittam (SaaS); source [PO] ""Agile Planner - Roadmap Initiatives"""
 09,Application,Order & Provisioning Management,2027.1,2027.1.1,Not specified,evyoog/Enterprise-Intelligence-Suite,EIS (PaaS); source [PO] eVyoog EIS - Roadmap Initiatives
 10,Application,Service & Resource Management,2027.1,2027.1.1,Not specified,evyoog/Enterprise-Intelligence-Suite,EIS (PaaS); source [PO] eVyoog EIS - Roadmap Initiatives
 13,Application,Integration & API Platform,2027.1,2027.1.1,Not specified,evyoog/Enterprise-Intelligence-Suite,EIS (PaaS); source [PO] eVyoog EIS - Roadmap Initiatives
 16,Application,Analytics & Data Platform,2027.1,2027.1.1,Not specified,evyoog/Enterprise-Intelligence-Suite,EIS (PaaS); source [PO] eVyoog EIS - Roadmap Initiatives
-SWLC-CAP-16,Capability,SW Life Cycle: Reporting & Analytics,2027.1,2027.1.1,Not specified,Not specified,"Thiran (SaaS); source [PO] ""SW Life Cycle - Roadmap Initiatives"""
-SWLC-CAP-17,Capability,SW Life Cycle: Collaboration & Review,2027.1,2027.1.1,Not specified,Not specified,"Thiran (SaaS); source [PO] ""SW Life Cycle - Roadmap Initiatives"""
-#11,Capability,Macro Planner: Integration & API,2027.1,2027.1.1,Not specified,Not specified,"Thittam (SaaS); source [PO] ""Macro Planner - Roadmap Initiatives"""
-#13,Capability,Macro Planner: Administration & Configuration,2027.1,2027.1.1,Not specified,Not specified,"Thittam (SaaS); source [PO] ""Macro Planner - Roadmap Initiatives"""
-AP-C16,Capability,Agile Planner: Automation & Notifications,2027.1,2027.1.1,Not specified,Not specified,"Thittam (SaaS); source [PO] ""Agile Planner - Roadmap Initiatives"""
 04,Application,AI Advisor & Agent Platform,2027.1,2027.1.2,Not specified,evyoog/Enterprise-Intelligence-Suite,EIS (PaaS); source [PO] eVyoog EIS - Roadmap Initiatives
-SWLC-CAP-18,Capability,SW Life Cycle: AI Engineering Platform,2027.1,2027.1.2,Not specified,Not specified,"Thiran (SaaS); source [PO] ""SW Life Cycle - Roadmap Initiatives"""
-SWLC-CAP-19,Capability,SW Life Cycle: Automation Platform,2027.1,2027.1.2,Not specified,Not specified,"Thiran (SaaS); source [PO] ""SW Life Cycle - Roadmap Initiatives"""
-#14,Capability,Macro Planner: Localization,2027.1,2027.1.2,Not specified,Not specified,"Thittam (SaaS); source [PO] ""Macro Planner - Roadmap Initiatives"""
-AP-C17,Capability,"Agile Planner: Administration, Configuration & Security",2027.1,2027.1.2,Not specified,Not specified,"Thittam (SaaS); source [PO] ""Agile Planner - Roadmap Initiatives"""
 03,Application,Marketplace,2027.1,2027.1.3,Not specified,evyoog/Enterprise-Intelligence-Suite,EIS (PaaS); source [PO] eVyoog EIS - Roadmap Initiatives
 11,Application,Training & Knowledge Management,2027.1,2027.1.3,Not specified,evyoog/Enterprise-Intelligence-Suite,EIS (PaaS); source [PO] eVyoog EIS - Roadmap Initiatives
 12,Application,Support & Service Management,2027.1,2027.1.3,Not specified,evyoog/Enterprise-Intelligence-Suite,EIS (PaaS); source [PO] eVyoog EIS - Roadmap Initiatives
-SWLC-CAP-20,Capability,SW Life Cycle: Integration & Marketplace,2027.1,2027.1.3,Not specified,Not specified,"Thiran (SaaS); source [PO] ""SW Life Cycle - Roadmap Initiatives"""
-SWLC-CAP-21,Capability,SW Life Cycle: Templates & Methodologies,2027.1,2027.1.3,Not specified,Not specified,"Thiran (SaaS); source [PO] ""SW Life Cycle - Roadmap Initiatives"""
-SWLC-CAP-22,Capability,SW Life Cycle: Administration & Governance,2027.1,2027.1.3,Not specified,Not specified,"Thiran (SaaS); source [PO] ""SW Life Cycle - Roadmap Initiatives"""
-SWLC-CAP-23,Capability,SW Life Cycle: Localization & Regionalization,2027.1,2027.1.3,Not specified,Not specified,"Thiran (SaaS); source [PO] ""SW Life Cycle - Roadmap Initiatives"""
-#12,Capability,Macro Planner: Marketplace & Extensions,2027.1,2027.1.3,Not specified,Not specified,"Thittam (SaaS); source [PO] ""Macro Planner - Roadmap Initiatives"""
-#15,Capability,Macro Planner: Platform Operations,2027.1,2027.1.3,Not specified,Not specified,"Thittam (SaaS); source [PO] ""Macro Planner - Roadmap Initiatives"""
-AP-C18,Capability,Agile Planner: Marketplace / Integration Platform,2027.1,2027.1.3,Not specified,Not specified,"Thittam (SaaS); source [PO] ""Agile Planner - Roadmap Initiatives"""
 14,Application,Partner & Provider Management,2027.2,2027.2.1,Not specified,evyoog/Enterprise-Intelligence-Suite,EIS (PaaS); source [PO] eVyoog EIS - Roadmap Initiatives
 15,Application,Administration & Governance,2027.2,2027.2.2,Not specified,evyoog/Enterprise-Intelligence-Suite,EIS (PaaS); source [PO] eVyoog EIS - Roadmap Initiatives
-#10,Capability,Macro Planner: Analytics & Reporting,2026.4,2027.4.1,Not specified,Not specified,"Thittam (SaaS); source [PO] ""Macro Planner - Roadmap Initiatives""; C1: sprint not inside stated PI"
-#9,Capability,Macro Planner: Workflow & Automation,2026.4,2027.4.1,Not specified,Not specified,"Thittam (SaaS); source [PO] ""Macro Planner - Roadmap Initiatives""; C1: sprint not inside stated PI"
-AP-C14,Capability,Agile Planner: ALM Integration & Traceability,2026.4,2027.4.1,Not specified,Not specified,"Thittam (SaaS); source [PO] ""Agile Planner - Roadmap Initiatives""; C1: sprint not inside stated PI"
-AP-C15,Capability,Agile Planner: MACRO PLANNER Integration,2026.4,2027.4.1,Not specified,Not specified,"Thittam (SaaS); source [PO] ""Agile Planner - Roadmap Initiatives""; C1: sprint not inside stated PI"

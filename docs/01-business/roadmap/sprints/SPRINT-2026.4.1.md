@@ -16,7 +16,6 @@
 | Product | Application ID | Application | Roadmap item(s) | Source |
 |---|---|---|---|---|
 | EIS (PaaS) | 02 | [Product & Catalog Management](../applications/02-product-catalog-management.md) | (whole application) | [PO] "eVyoog EIS - Roadmap Initiatives" |
-| Thiran (SaaS) | Not specified | [SW Life Cycle](../applications/thiran-sw-life-cycle.md) | SWLC-CAP-11 Workflow & Approval Management | [PO] "SW Life Cycle - Roadmap Initiatives" |
 
 > [PO] assigns **one sprint per EIS application**. It does not say which capabilities or features fall inside this sprint, or whether the application must be finished in it. The EIS scope below is the application's full [WB] breakdown until sprint scope is decided (see [open-decisions.md](../open-decisions.md)).
 
@@ -55,17 +54,6 @@ Full breakdown with APIs, services, entities and events: [applications/02-produc
 ### Related code already in this repository
 
 Observed on branch `dev`, module level only: `backend/…/modules/product`, `backend/…/modules/platform`; `frontend/src/pages/ProductsPage.tsx`, `frontend/src/pages/admin/AdminProductsPage.tsx`, `frontend/src/pages/admin/EditProductPage.tsx`, `frontend/src/pages/admin/PlatformsListPage.tsx`, `frontend/src/pages/admin/EditPlatformPage.tsx`.
-
-## Hosted SaaS products in this sprint
-
-These are tracked here so their dependencies on EIS are visible. [PO] lists no functions, requirements or deliverables for them.
-
-| Product | Application | ID | Capability | Features ([PO]) | PI stated |
-|---|---|---|---|---|---|
-| Thiran (SaaS) | [SW Life Cycle](../applications/thiran-sw-life-cycle.md) | SWLC-CAP-11 | Workflow & Approval Management | Not specified | 2026.4 |
-
-**Stated dependencies ([PO]):**
-- SW Life Cycle integrates with Macro Planner and Agile Planner.
 
 ## Open issues affecting this sprint
 

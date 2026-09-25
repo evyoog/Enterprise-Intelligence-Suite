@@ -19,9 +19,6 @@
 | EIS (PaaS) | 10 | [Service & Resource Management](../applications/10-service-resource-management.md) | (whole application) | [PO] "eVyoog EIS - Roadmap Initiatives" |
 | EIS (PaaS) | 13 | [Integration & API Platform](../applications/13-integration-api-platform.md) | (whole application) | [PO] "eVyoog EIS - Roadmap Initiatives" |
 | EIS (PaaS) | 16 | [Analytics & Data Platform](../applications/16-analytics-data-platform.md) | (whole application) | [PO] "eVyoog EIS - Roadmap Initiatives" |
-| Thiran (SaaS) | Not specified | [SW Life Cycle](../applications/thiran-sw-life-cycle.md) | SWLC-CAP-16 Reporting & Analytics, SWLC-CAP-17 Collaboration & Review | [PO] "SW Life Cycle - Roadmap Initiatives" |
-| Thittam (SaaS) | Not specified | [Agile Planner](../applications/thittam-agile-planner.md) | AP-C16 Automation & Notifications | [PO] "Agile Planner - Roadmap Initiatives" |
-| Thittam (SaaS) | Not specified | [Macro Planner](../applications/thittam-macro-planner.md) | #11 Integration & API, #13 Administration & Configuration | [PO] "Macro Planner - Roadmap Initiatives" |
 
 > [PO] assigns **one sprint per EIS application**. It does not say which capabilities or features fall inside this sprint, or whether the application must be finished in it. The EIS scope below is the application's full [WB] breakdown until sprint scope is decided (see [open-decisions.md](../open-decisions.md)).
 
@@ -141,21 +138,6 @@ Full breakdown with APIs, services, entities and events: [applications/16-analyt
 
 - Not specified in any source.
 - Implied by [WB:Traceability]: APIs `API-021 GET /v1/analytics`; services Analytics Service.
-
-## Hosted SaaS products in this sprint
-
-These are tracked here so their dependencies on EIS are visible. [PO] lists no functions, requirements or deliverables for them.
-
-| Product | Application | ID | Capability | Features ([PO]) | PI stated |
-|---|---|---|---|---|---|
-| Thittam (SaaS) | [Macro Planner](../applications/thittam-macro-planner.md) | #11 | Integration & API | Not specified | 2027.1 |
-| Thittam (SaaS) | [Macro Planner](../applications/thittam-macro-planner.md) | #13 | Administration & Configuration | Not specified | 2027.1 |
-| Thittam (SaaS) | [Agile Planner](../applications/thittam-agile-planner.md) | AP-C16 | Automation & Notifications | Not specified | 2027.1 |
-| Thiran (SaaS) | [SW Life Cycle](../applications/thiran-sw-life-cycle.md) | SWLC-CAP-16 | Reporting & Analytics | Not specified | 2027.1 |
-| Thiran (SaaS) | [SW Life Cycle](../applications/thiran-sw-life-cycle.md) | SWLC-CAP-17 | Collaboration & Review | Not specified | 2027.1 |
-
-**Stated dependencies ([PO]):**
-- SW Life Cycle integrates with Macro Planner and Agile Planner.
 
 ## Open issues affecting this sprint
 
