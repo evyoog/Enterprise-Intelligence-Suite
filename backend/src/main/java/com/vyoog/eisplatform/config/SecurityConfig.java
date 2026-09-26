@@ -119,6 +119,8 @@ public class SecurityConfig {
                 // today, see RbacSeeder, but this is now a distinct, separately
                 // revocable permission from MANAGE_CATALOG above).
                 .requestMatchers("/admin/registrations/**").access(permissions.platformPermission("MANAGE_REGISTRATIONS"))
+                // C26 (REQ-PRT-001): posting product status and incidents.
+                .requestMatchers("/admin/service-status/**").access(permissions.platformPermission("MANAGE_SERVICE_STATUS"))
                 // Phase 6 (PAM): approving/rejecting/revoking PLATFORM-scope
                 // privileged-access requests — its own permission, distinct
                 // from both MANAGE_CATALOG and MANAGE_REGISTRATIONS, since

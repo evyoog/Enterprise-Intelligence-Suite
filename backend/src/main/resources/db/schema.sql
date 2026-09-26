@@ -496,3 +496,30 @@ CREATE TABLE audit_log (
 CREATE INDEX idx_audit_log_organization ON audit_log (organization_id, "timestamp" DESC);
 CREATE INDEX idx_audit_log_actor ON audit_log (actor_customer_id, "timestamp" DESC);
 CREATE INDEX idx_audit_log_timestamp ON audit_log ("timestamp" DESC);
+
+-- REQ-PRT-001 interim service status page (sprint 2026.3.3, decisions C20/C26).
+-- Posted by platform admins (MANAGE_SERVICE_STATUS). A product with no row is
+-- OPERATIONAL. Replaced by Health Monitoring / Incident Management later (C20).
+-- See migration V003.
+CREATE TABLE product_service_status (
+    product_id BIGINT PRIMARY KEY REFERENCES products(id) ON DELETE CASCADE,
+    status VARCHAR(20) NOT NULL DEFAULT 'OPERATIONAL'
+        CHECK (status IN ('OPERATIONAL', 'DEGRADED', 'PARTIAL_OUTAGE', 'MAJOR_OUTAGE', 'MAINTENANCE')),
+    note VARCHAR(500),
+    updated_at TIMESTAMP NOT NULL DEFAULT now(),
+    updated_by_keycloak_sub VARCHAR(255)
+);
+
+CREATE TABLE service_incident (
+    id BIGSERIAL PRIMARY KEY,
+    product_id BIGINT NOT NULL REFERENCES products(id) ON DELETE CASCADE,
+    title VARCHAR(200) NOT NULL,
+    message VARCHAR(4000) NOT NULL,
+    started_at TIMESTAMP NOT NULL,
+    ended_at TIMESTAMP,
+    created_at TIMESTAMP NOT NULL DEFAULT now(),
+    updated_at TIMESTAMP NOT NULL DEFAULT now(),
+    created_by_keycloak_sub VARCHAR(255),
+    CHECK (ended_at IS NULL OR ended_at >= started_at)
+);
+CREATE INDEX idx_service_incident_product ON service_incident (product_id, started_at DESC);

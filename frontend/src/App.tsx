@@ -25,6 +25,8 @@ import { AdminAuditLogPage } from './pages/admin/AdminAuditLogPage'
 import { AdminPrivilegedAccessPage } from './pages/admin/AdminPrivilegedAccessPage'
 import { RolesAdminPage } from './pages/admin/RolesAdminPage'
 import { PermissionsAdminPage } from './pages/admin/PermissionsAdminPage'
+import { ServiceStatusAdminPage } from './pages/admin/ServiceStatusAdminPage'
+import { ServiceStatusPage } from './pages/ServiceStatusPage'
 import { RequireAdmin } from './components/routing/RequireAdmin'
 import { RequireAuth } from './components/routing/RequireAuth'
 import { AuthAwareLayout, PublicOnly } from './components/layout/AppShell'
@@ -94,6 +96,8 @@ function MainApp() {
           <Route path="/organization/business-dashboard" element={<RequireAuth><BusinessDashboardPage /></RequireAuth>} />
           <Route path="/account/security" element={<RequireAuth><SecuritySettingsPage /></RequireAuth>} />
           <Route path="/organization/identity-federation" element={<RequireAuth><OrganizationSamlProvidersPage /></RequireAuth>} />
+          {/* REQ-PRT-001 (C26): signed-in customers. */}
+          <Route path="/status" element={<RequireAuth><ServiceStatusPage /></RequireAuth>} />
 
           {/* "settings" is a category (see the sidebar's expandable Settings
               group), so a bare /admin/settings visit redirects to its first
@@ -117,6 +121,7 @@ function MainApp() {
             <Route path="privileged-access" element={<AdminPrivilegedAccessPage />} />
             <Route path="roles" element={<RolesAdminPage />} />
             <Route path="permissions" element={<PermissionsAdminPage />} />
+            <Route path="service-status" element={<ServiceStatusAdminPage />} />
           </Route>
         </Route>
       </Routes>

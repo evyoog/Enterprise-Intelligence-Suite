@@ -1,7 +1,7 @@
 import type { ComponentType } from 'react'
 import {
   Building2, KeyRound, LayoutDashboard, LayoutGrid, Layers, Package, ScrollText, Settings, ShieldCheck,
-  SlidersHorizontal, Store, UserCheck, UserCog, UsersRound, Palette, Boxes,
+  SlidersHorizontal, Store, UserCheck, UserCog, UsersRound, Palette, Boxes, Activity,
 } from 'lucide-react'
 import type { MyPermissions } from '../../api/myPermissionsApi'
 
@@ -59,6 +59,8 @@ export function buildAppNavigation({ isAdmin, permissions }: NavAccess): AppNavS
     workspace.push({ key: 'myProducts', labelKey: 'myProducts', to: '/my/products', icon: Package })
   }
   workspace.push({ key: 'catalog', labelKey: 'catalog', to: '/products', icon: Store })
+  // REQ-PRT-001 (C26): every signed-in user sees the status page.
+  workspace.push({ key: 'serviceStatus', labelKey: 'serviceStatus', to: '/status', icon: Activity })
 
   const organizationItems: AppNavItem[] = []
   if (organization('MANAGE_ORGANIZATION')) {
@@ -77,6 +79,9 @@ export function buildAppNavigation({ isAdmin, permissions }: NavAccess): AppNavS
   if (platform('MANAGE_ROLES')) admin.push({ key: 'roles', labelKey: 'roles', to: '/admin/roles', icon: UsersRound })
   if (platform('MANAGE_PERMISSIONS')) admin.push({ key: 'permissions', labelKey: 'permissions', to: '/admin/permissions', icon: ShieldCheck })
   if (platform('VIEW_AUDIT_LOG')) admin.push({ key: 'auditLog', labelKey: 'auditLog', to: '/admin/audit-log', icon: ScrollText })
+  if (platform('MANAGE_SERVICE_STATUS')) {
+    admin.push({ key: 'adminServiceStatus', labelKey: 'serviceStatus', to: '/admin/service-status', icon: Activity })
+  }
   if (platform('MANAGE_CATALOG')) {
     admin.push({
       key: 'settings', labelKey: 'settings', to: '/admin/settings/product', icon: Settings, matchPrefixes: ['/admin/settings'],

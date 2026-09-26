@@ -45,9 +45,13 @@ class LayeredArchitectureTest {
         // - ..modules.dashboard.. (Phase 16) reuses ProductRepository the same
         //   way, only to confirm a product id is real before favoriting/
         //   recording a launch against it — not a duplicate catalog either.
+        // - ..modules.servicestatus.. (REQ-PRT-001, 2026-09-26) reads the same
+        //   catalog to list the products whose status is posted — again no
+        //   duplicate catalog.
         ArchRule rule = classes().that().resideInAPackage("..modules.product..")
             .should().onlyHaveDependentClassesThat().resideInAnyPackage(
                 "..modules.product..", "..modules.platform..", "..modules.registration..", "..modules.dashboard..",
+                "..modules.servicestatus..",
                 "com.vyoog.eisplatform", "..config.."
             );
 

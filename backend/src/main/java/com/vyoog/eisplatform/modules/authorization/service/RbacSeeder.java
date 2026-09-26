@@ -55,7 +55,9 @@ public class RbacSeeder implements ApplicationRunner {
         // to redefine what every OTHER permission/role means is a more
         // foundational capability than any single administrative action.
         "ADMIN", List.of("MANAGE_CATALOG", "MANAGE_REGISTRATIONS", "MANAGE_PRIVILEGED_ACCESS", "VIEW_AUDIT_LOG",
-            "MANAGE_ROLES", "MANAGE_PERMISSIONS")
+            "MANAGE_ROLES", "MANAGE_PERMISSIONS",
+            // C26 (2026-09-26): posting the interim service status page (REQ-PRT-001).
+            "MANAGE_SERVICE_STATUS")
     );
 
     private static final Map<String, List<String>> ORGANIZATION_ROLES = Map.of(

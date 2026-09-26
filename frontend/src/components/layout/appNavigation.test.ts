@@ -10,7 +10,7 @@ describe('buildAppNavigation', () => {
       isAdmin: false,
       permissions: { platform: [], organization: ['MANAGE_ORGANIZATION', 'MANAGE_USERS'] },
     }))
-    expect(nav.workspace).toEqual(['dashboard', 'myProducts', 'catalog'])
+    expect(nav.workspace).toEqual(['dashboard', 'myProducts', 'catalog', 'serviceStatus'])
     expect(nav.organization).toEqual(['identityFederation'])
     expect(nav.administration).toBeUndefined()
     expect(nav.account).toEqual(['security', 'preferences'])
@@ -19,7 +19,7 @@ describe('buildAppNavigation', () => {
   it('gives a plain member or an individual no business dashboard and no organization items', () => {
     for (const organization of [['MANAGE_PRIVILEGED_ACCESS_SELF'], []]) {
       const nav = keys(buildAppNavigation({ isAdmin: false, permissions: { platform: [], organization } }))
-      expect(nav.workspace).toEqual(['myProducts', 'catalog'])
+      expect(nav.workspace).toEqual(['myProducts', 'catalog', 'serviceStatus'])
       expect(nav.organization).toBeUndefined()
       expect(nav.administration).toBeUndefined()
     }
@@ -31,13 +31,13 @@ describe('buildAppNavigation', () => {
       permissions: { platform: ['MANAGE_REGISTRATIONS', 'VIEW_AUDIT_LOG'], organization: [] },
     }))
     expect(nav.administration).toEqual(['registrations', 'auditLog'])
-    expect(nav.workspace).toEqual(['catalog'])
+    expect(nav.workspace).toEqual(['catalog', 'serviceStatus'])
   })
 
   it('shows a platform admin the full admin menu while permissions are unknown', () => {
     const nav = keys(buildAppNavigation({ isAdmin: true, permissions: null }))
     expect(nav.administration).toEqual([
-      'platforms', 'apps', 'registrations', 'privilegedAccess', 'roles', 'permissions', 'auditLog', 'settings',
+      'platforms', 'apps', 'registrations', 'privilegedAccess', 'roles', 'permissions', 'auditLog', 'adminServiceStatus', 'settings',
     ])
   })
 
@@ -59,5 +59,14 @@ describe('appHomePath and isNavItemActive', () => {
     expect(isNavItemActive(platforms, '/admin')).toBe(true)
     expect(isNavItemActive(platforms, '/admin/platforms/4')).toBe(true)
     expect(isNavItemActive(platforms, '/admin/roles')).toBe(false)
+  })
+})
+
+describe('service status navigation (REQ-PRT-001, C26)', () => {
+  it('gives the status admin screen only to MANAGE_SERVICE_STATUS', () => {
+    const withPerm = keys(buildAppNavigation({ isAdmin: true, permissions: { platform: ['MANAGE_SERVICE_STATUS'], organization: [] } }))
+    expect(withPerm.administration).toEqual(['adminServiceStatus'])
+    const without = keys(buildAppNavigation({ isAdmin: true, permissions: { platform: ['VIEW_AUDIT_LOG'], organization: [] } }))
+    expect(without.administration).toEqual(['auditLog'])
   })
 })
