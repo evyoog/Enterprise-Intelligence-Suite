@@ -13,7 +13,6 @@ import { useAuthModal } from '../../auth/AuthModalContext'
 import { useThemeMode } from '../../theming/ThemeModeProvider'
 import { useLocalePreference, SUPPORTED_TIMEZONES } from '../../theming/LocalePreferenceProvider'
 import { SUPPORTED_LANGUAGES } from '../../i18n'
-import { NotificationBell } from './NotificationBell'
 import '../../styles/landing.css'
 
 interface SubLink {
@@ -317,37 +316,24 @@ export function SiteNavbar() {
             </Menu>
 
             {auth.isAuthenticated ? (
+              // Signed-in users normally never see the public website: "/"
+              // sends them to the tool (PublicOnly), and every tool page
+              // renders in AppShell. This header only shows for them on the
+              // public account flows (register, verify, password reset), so
+              // it offers just the way into the tool and sign out.
               <>
-                {auth.isAdmin && (
+                {auth.isAdmin ? (
                   <RouterLink className="admin-link" to="/admin">
                     <ShieldCheck size={14} /> {t('nav.adminPanel')}
                   </RouterLink>
-                )}
-                {!auth.isAdmin && (
-                  // Phase 7 (2026.3.3): always the SAME target regardless of
-                  // whether this account turns out to be an org admin, an
-                  // ordinary org member, or an individual with no
-                  // organization at all — BusinessDashboardPage's own
-                  // 403/404 handling already sorts those three cases into
-                  // the right destination (see that page's own doc), so the
-                  // navbar doesn't need to know which one this account is.
-                  // Before this, an org admin who navigated away from their
-                  // business dashboard had no persistent link back to it —
-                  // this one link now covers all three shapes consistently.
+                ) : (
+                  // Always the business-dashboard route: that page itself sends
+                  // members without MANAGE_ORGANIZATION and individuals on to
+                  // /my/products (see BusinessDashboardPage).
                   <RouterLink className="admin-link" to="/organization/business-dashboard">
                     {t('nav.myWorkspace')}
                   </RouterLink>
                 )}
-                <RouterLink className="admin-link" to="/account/security">
-                  {t('nav.security')}
-                </RouterLink>
-                <RouterLink className="admin-link" to="/account/preferences">
-                  {t('nav.preferences')}
-                </RouterLink>
-                <NotificationBell />
-                <span className="login" onClick={() => window.location.assign(auth.isAdmin ? '/admin' : '/organization/business-dashboard')}>
-                  {t('nav.greeting', { name: auth.user?.username })}
-                </span>
                 <button className="get-started" onClick={auth.logout}>{t('nav.signOut')}</button>
               </>
             ) : (
@@ -394,12 +380,6 @@ export function SiteNavbar() {
                   onClick={() => setMobileOpen(false)}
                 >
                   <ListItemText primary={auth.isAdmin ? t('nav.adminPanel') : t('nav.myWorkspace')} />
-                </ListItemButton>
-                <ListItemButton component={RouterLink} to="/account/security" onClick={() => setMobileOpen(false)}>
-                  <ListItemText primary={t('nav.security')} />
-                </ListItemButton>
-                <ListItemButton component={RouterLink} to="/account/preferences" onClick={() => setMobileOpen(false)}>
-                  <ListItemText primary={t('nav.preferences')} />
                 </ListItemButton>
                 <ListItemButton onClick={() => { setMobileOpen(false); auth.logout() }}>
                   <ListItemText primary={t('nav.signOut')} />

@@ -275,5 +275,39 @@
       "billingState": "Billing state",
       "billingCity": "Billing city"
     }
+  },
+  "appShell": {
+    "productName": "EIS Platform",
+    "sidebarLabel": "Application",
+    "userMenu": "Account menu for {{name}}",
+    "rolePlatformAdmin": "Platform administrator",
+    "roleUser": "Signed in",
+    "sections": {
+      "workspace": "Workspace",
+      "organization": "Organization",
+      "administration": "Administration",
+      "account": "Account"
+    },
+    "nav": {
+      "dashboard": "Business dashboard",
+      "myProducts": "My products",
+      "catalog": "Product catalog",
+      "identityFederation": "Identity federation",
+      "platforms": "Platforms",
+      "apps": "All apps",
+      "registrations": "Registrations",
+      "privilegedAccess": "Privileged access",
+      "roles": "Roles",
+      "permissions": "Permissions",
+      "auditLog": "Audit log",
+      "settings": "Settings",
+      "settingsApp": "App",
+      "settingsPlatform": "Products",
+      "settingsCommon": "Common",
+      "security": "Security",
+      "preferences": "Preferences"
+    },
+    "catalogTitle": "Product catalog",
+    "catalogSubtitle": "Search and filter the products available on the platform."
   }
 }

@@ -8,7 +8,6 @@ import { Link as RouterLink } from 'react-router-dom'
 import { ApiError } from '../api/client'
 import { dashboardApi, type Dashboard, type DashboardProduct } from '../api/dashboardApi'
 import { myProductsApi } from '../api/registrationApi'
-import { SiteNavbar } from '../components/layout/SiteNavbar'
 
 type ViewState =
   | { kind: 'loading' }
@@ -51,18 +50,16 @@ export function MyProductsPage() {
 
   if (state.kind === 'loading') {
     return (
-      <Box sx={{ minHeight: '100vh', bgcolor: 'background.default' }}>
-        <SiteNavbar />
-        <Box sx={{ display: 'flex', justifyContent: 'center', pt: '160px' }}><CircularProgress size={28} /></Box>
+      <Box>
+        <Box sx={{ display: 'flex', justifyContent: 'center', py: 8 }}><CircularProgress size={28} /></Box>
       </Box>
     )
   }
 
   if (state.kind === 'error') {
     return (
-      <Box sx={{ minHeight: '100vh', bgcolor: 'background.default' }}>
-        <SiteNavbar />
-        <Container component="main" id="main-content" maxWidth="md" sx={{ pt: '112px', pb: 8 }}>
+      <Box>
+        <Container maxWidth="md" disableGutters sx={{ pb: 4 }}>
           <Alert severity="error">{state.message}</Alert>
         </Container>
       </Box>
@@ -137,9 +134,8 @@ export function MyProductsPage() {
   const visibleWidgets = preferences.widgetOrder.filter((w) => !preferences.hiddenWidgets.includes(w))
 
   return (
-    <Box sx={{ minHeight: '100vh', bgcolor: 'background.default' }}>
-      <SiteNavbar />
-      <Container component="main" id="main-content" maxWidth="md" sx={{ pt: '112px', pb: 8 }}>
+    <Box>
+      <Container maxWidth="md" disableGutters sx={{ pb: 4 }}>
         <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 3 }}>
           <Typography variant="h4" sx={{ fontWeight: 700 }}>Your dashboard</Typography>
           <Button startIcon={<Settings2 size={16} />} size="small" onClick={() => setCustomizing((v) => !v)}>

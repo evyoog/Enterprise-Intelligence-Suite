@@ -4,6 +4,7 @@ import {
   Radio, RadioGroup, Select, Switch, Typography, type SelectChangeEvent,
 } from '@mui/material'
 import { SiteNavbar } from '../components/layout/SiteNavbar'
+import { useInAppShell } from '../components/layout/appShellContext'
 import { PageHeader } from '../components/layout/PageHeader'
 import { useThemeMode, type ThemeMode } from '../theming/ThemeModeProvider'
 import { useLocalePreference, SUPPORTED_REGIONS, SUPPORTED_TIMEZONES } from '../theming/LocalePreferenceProvider'
@@ -24,11 +25,19 @@ export function PreferencesPage() {
   const { t, i18n } = useTranslation()
   const { mode, setMode, reducedMotion, setReducedMotion } = useThemeMode()
   const { timeZone, setTimeZone, region, setRegion } = useLocalePreference()
+  // Signed in, the AppShell provides the frame; signed out, this is a public page.
+  const inShell = useInAppShell()
 
   return (
-    <Box sx={{ minHeight: '100vh', bgcolor: 'background.default' }}>
-      <SiteNavbar />
-      <Container component="main" id="main-content" maxWidth="sm" sx={{ pt: '112px', pb: 8 }}>
+    <Box sx={inShell ? undefined : { minHeight: '100vh', bgcolor: 'background.default' }}>
+      {!inShell && <SiteNavbar />}
+      <Container
+        component={inShell ? 'div' : 'main'}
+        id={inShell ? undefined : 'main-content'}
+        maxWidth="sm"
+        disableGutters={inShell}
+        sx={inShell ? { pb: 4 } : { pt: '112px', pb: 8 }}
+      >
         <PageHeader title={t('preferences.title')} subtitle={t('preferences.subtitle')} />
 
         <Paper variant="outlined" sx={{ p: 3, mb: 3 }}>

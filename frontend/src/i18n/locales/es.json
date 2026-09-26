@@ -275,5 +275,39 @@
       "billingState": "Estado de facturación",
       "billingCity": "Ciudad de facturación"
     }
+  },
+  "appShell": {
+    "productName": "EIS Platform",
+    "sidebarLabel": "Aplicación",
+    "userMenu": "Menú de cuenta de {{name}}",
+    "rolePlatformAdmin": "Administrador de la plataforma",
+    "roleUser": "Sesión iniciada",
+    "sections": {
+      "workspace": "Espacio de trabajo",
+      "organization": "Organización",
+      "administration": "Administración",
+      "account": "Cuenta"
+    },
+    "nav": {
+      "dashboard": "Panel de negocio",
+      "myProducts": "Mis productos",
+      "catalog": "Catálogo de productos",
+      "identityFederation": "Federación de identidad",
+      "platforms": "Plataformas",
+      "apps": "Todas las aplicaciones",
+      "registrations": "Registros",
+      "privilegedAccess": "Acceso privilegiado",
+      "roles": "Roles",
+      "permissions": "Permisos",
+      "auditLog": "Registro de auditoría",
+      "settings": "Configuración",
+      "settingsApp": "Aplicación",
+      "settingsPlatform": "Productos",
+      "settingsCommon": "General",
+      "security": "Seguridad",
+      "preferences": "Preferencias"
+    },
+    "catalogTitle": "Catálogo de productos",
+    "catalogSubtitle": "Busque y filtre los productos disponibles en la plataforma."
   }
 }

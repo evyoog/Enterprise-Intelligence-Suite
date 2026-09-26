@@ -7,7 +7,7 @@ Screens and placement follow the sprint 2026.3.3 development plan: reuse existin
 |---|---|---|---|
 | Roles list, create and edit | Under the existing `/admin` layout (exact path Not specified) | Platform administrator | Not specified |
 | Permissions list, create and edit | Under the existing `/admin` layout (exact path Not specified) | Platform administrator | Not specified |
-| Navigation entries for both pages | Existing `AdminLayout` navigation | Platform administrator | Not specified |
+| Navigation entries for both pages | Administration section of the signed-in sidebar (`appNavigation.ts`; `AdminLayout` before 2026-09-26) | Platform administrator | Not specified |
 
 ## Fields and validation
 | Field | Type | Required | Validation | Error message (i18n key) |

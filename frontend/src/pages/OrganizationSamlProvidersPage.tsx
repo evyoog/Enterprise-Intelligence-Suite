@@ -8,7 +8,6 @@ import { Pencil, Trash2 } from 'lucide-react'
 import { ApiError, resolveAssetUrl } from '../api/client'
 import { samlApi, type SamlProvider, type SamlProviderTestResult } from '../api/samlApi'
 import { organizationApi } from '../api/registrationApi'
-import { SiteNavbar } from '../components/layout/SiteNavbar'
 import { PageHeader } from '../components/layout/PageHeader'
 
 /** 'keep' exists only when editing: change the name, leave the connection details as they are. */
@@ -139,9 +138,8 @@ export function OrganizationSamlProvidersPage() {
   }
 
   return (
-    <Box sx={{ minHeight: '100vh', bgcolor: 'background.default' }}>
-      <SiteNavbar />
-      <Container component="main" id="main-content" maxWidth="md" sx={{ pt: '112px', pb: 8 }}>
+    <Box>
+      <Container maxWidth="md" disableGutters sx={{ pb: 4 }}>
         <PageHeader title="Identity Federation" subtitle="Let your organization's members sign in through your own SAML identity provider" />
 
         {organizationId !== null && (

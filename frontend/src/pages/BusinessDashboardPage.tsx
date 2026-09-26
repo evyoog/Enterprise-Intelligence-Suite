@@ -7,7 +7,6 @@ import {
 import { useNavigate } from 'react-router-dom'
 import { ApiError } from '../api/client'
 import { businessDashboardApi, type BusinessDashboard } from '../api/businessDashboardApi'
-import { SiteNavbar } from '../components/layout/SiteNavbar'
 import { PageHeader } from '../components/layout/PageHeader'
 import { OrganizationMfaPolicyCard } from '../components/organization/OrganizationMfaPolicyCard'
 import { OrganizationMembersCard } from '../components/organization/OrganizationMembersCard'
@@ -68,9 +67,8 @@ export function BusinessDashboardPage() {
   }, [navigate])
 
   return (
-    <Box sx={{ minHeight: '100vh', bgcolor: 'background.default' }}>
-      <SiteNavbar />
-      <Container component="main" id="main-content" maxWidth="lg" sx={{ pt: '112px', pb: 8 }}>
+    <Box>
+      <Container maxWidth="lg" disableGutters sx={{ pb: 4 }}>
         {error && <Alert severity="error">{error}</Alert>}
 
         {!error && !dashboard && (
