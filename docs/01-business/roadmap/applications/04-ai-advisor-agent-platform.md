@@ -8,7 +8,7 @@
 | Description | AI-guided selling, technical assistance and support ([PO] Table 1, [WB:Application Summary]) |
 | Product | EIS (PaaS) |
 | PI – CY Quarter | 2027.1 ([PO] "eVyoog EIS - Roadmap Initiatives") |
-| Sprint | [2027.1.2](../sprints/SPRINT-2027.1.2.md) (1–28 Feb 2027, [DN-2](../open-decisions.md#dn-2-sprint-scope-length-and-dates)) |
+| Sprint | Split ([C31](../open-decisions.md#c31)): 04a Agent platform in [2027.1.2](../sprints/SPRINT-2027.1.2.md) (1–28 Feb 2027); 04b Customer AI agents in [2027.1.3](../sprints/SPRINT-2027.1.3.md) (1–31 Mar 2027) |
 | Capabilities / features / functions | 5 / 6 / 31 ([WB]) |
 | Application status | Not specified |
 

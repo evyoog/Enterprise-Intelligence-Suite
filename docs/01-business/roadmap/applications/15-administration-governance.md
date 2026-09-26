@@ -8,7 +8,7 @@
 | Description | Platform configuration, policies, audit and compliance ([PO] Table 1, [WB:Application Summary]) |
 | Product | EIS (PaaS) |
 | PI – CY Quarter | 2027.2 ([PO] "eVyoog EIS - Roadmap Initiatives") |
-| Sprint | [2027.2.2](../sprints/SPRINT-2027.2.2.md) (1–31 May 2027, [DN-2](../open-decisions.md#dn-2-sprint-scope-length-and-dates)) |
+| Sprint | Split ([C31](../open-decisions.md#c31)): 15a Audit & Platform Administration in [2026.4.2](../sprints/SPRINT-2026.4.2.md) (1–30 Nov 2026); 15b Policy & compliance in [2027.1.3](../sprints/SPRINT-2027.1.3.md) (1–31 Mar 2027); 15c Regional operations in [2027.2.2](../sprints/SPRINT-2027.2.2.md) (1–31 May 2027) |
 | Capabilities / features / functions | 5 / 9 / 33 ([WB]) |
 | Application status | Not specified |
 

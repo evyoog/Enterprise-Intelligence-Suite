@@ -8,7 +8,7 @@
 | Description | Service instances and cloud/platform resources ([PO] Table 1, [WB:Application Summary]) |
 | Product | EIS (PaaS) |
 | PI – CY Quarter | 2027.1 ([PO] "eVyoog EIS - Roadmap Initiatives") |
-| Sprint | [2027.1.1](../sprints/SPRINT-2027.1.1.md) (1–31 Jan 2027, [DN-2](../open-decisions.md#dn-2-sprint-scope-length-and-dates)) |
+| Sprint | [2027.1.2](../sprints/SPRINT-2027.1.2.md) (1–28 Feb 2027, [DN-2](../open-decisions.md#dn-2-sprint-scope-length-and-dates)); moved one sprint later than [PO] ([C31](../open-decisions.md#c31)) |
 | Capabilities / features / functions | 4 / 5 / 23 ([WB]) |
 | Application status | Not specified |
 

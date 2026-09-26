@@ -16,8 +16,8 @@
 | Application ID | Code | Application | Roadmap item | Source |
 |---|---|---|---|---|
 | 09 | `APP-ORD` | [Order & Provisioning Management](../applications/09-order-provisioning-management.md) | (whole application) | [PO] "eVyoog EIS - Roadmap Initiatives" |
-| 10 | `APP-SRM` | [Service & Resource Management](../applications/10-service-resource-management.md) | (whole application) | [PO] "eVyoog EIS - Roadmap Initiatives" |
-| 13 | `APP-INT` | [Integration & API Platform](../applications/13-integration-api-platform.md) | (whole application) | [PO] "eVyoog EIS - Roadmap Initiatives" |
+| 11a | `APP-KNW` (part) | [Training & Knowledge Management](../applications/11-training-knowledge-management.md) | Knowledge Base only (11.01) | [C31](../open-decisions.md#c31): pulled forward from 2027.1.3 |
+| 13b | `APP-INT` (part) | [Integration & API Platform](../applications/13-integration-api-platform.md) | Connectors and Webhooks only (13.02, 13.04) | [C31](../open-decisions.md#c31): 13a (API Management, Event Platform) moved to 2026.4.2 |
 | 16 | `APP-ANL` | [Analytics & Data Platform](../applications/16-analytics-data-platform.md) | (whole application) | [PO] "eVyoog EIS - Roadmap Initiatives" |
 
 > **Commitment ([DN-2](../open-decisions.md#dn-2-sprint-scope-length-and-dates)):** this sprint commits the P0 (MVP) capabilities of its applications and treats P1 capabilities as stretch scope. Anything not finished is recorded as carry-over on the next sprint page.
@@ -26,7 +26,10 @@
 
 | Change | Decision and scope | FRD | Requirement |
 |---|---|---|---|
-| Retirement task | [C20](../open-decisions.md#c20) Switch per-product status on the interim status page to Health Monitoring (10.04). Note: 10.04 is P1 (stretch) under C4/C5; if it is not delivered, this task carries over (DN-2) | [service-status-page](../../../02-requirements/FRD/service-status-page/requirement.md) | REQ-PRT-001 |
+| Retirement task | [C20](../open-decisions.md#c20) Switch per-product status on the interim status page to Health Monitoring (10.04). Note: 10.04 is P1 (stretch) under C4/C5; if it is not delivered, this task carries over (DN-2). 10 itself is no longer in this sprint (see below) — this task now carries into [2027.1.2](SPRINT-2027.1.2.md) instead | [service-status-page](../../../02-requirements/FRD/service-status-page/requirement.md) | REQ-PRT-001 |
+| Moved out | [C31](../open-decisions.md#c31) 10 Service & Resource Management moves to [2027.1.2](SPRINT-2027.1.2.md) (service instances are created by provisioning, which is built in this sprint, so they can't be managed in the same sprint that builds provisioning) | - | - |
+| Moved in | [C31](../open-decisions.md#c31) 11a Knowledge Base moves here from 2027.1.3 (customers need product knowledge before they buy, and both human support and AI agents answer from it) | - | - |
+| Split | [C31](../open-decisions.md#c31) 13 Integration & API Platform splits: 13a (API Management, Event Platform) moved to [2026.4.2](SPRINT-2026.4.2.md); 13b (Connectors, Webhooks) stays here | - | - |
 
 ## EIS 09 Order & Provisioning Management
 
@@ -56,59 +59,50 @@ Full breakdown with APIs, services, entities and events: [applications/09-order-
 
 - The P0 capabilities above ([DN-2](../open-decisions.md#dn-2-sprint-scope-length-and-dates)). Deliverables are otherwise Not specified in any source.
 
-## EIS 10 Service & Resource Management
+## EIS 11a Training & Knowledge Management: Knowledge Base
 
-**Planned work ([PO] / [WB] description):** Service instances and cloud/platform resources
+**Planned work:** Knowledge Base only — 11b Learning & Training Delivery & Certification stays in [2027.1.3](SPRINT-2027.1.3.md) ([C31](../open-decisions.md#c31)).
 
-Full breakdown with APIs, services, entities and events: [applications/10-service-resource-management.md](../applications/10-service-resource-management.md).
+Full breakdown: [applications/11-training-knowledge-management.md](../applications/11-training-knowledge-management.md).
 
 ### Capabilities, features and requirement candidates
 
 | Capability | Feature | Functions (requirement candidates from [WB:Functions]) | Priority | Commitment |
 |---|---|---|---|---|
-| [10.01 Service Management](../applications/10-service-resource-management.md#1001-service-management) | 10.01.01 Service Instance | Create service instance; Configure service; Start service; Stop service; Restart service; Scale service; Delete service | P1 | Stretch |
-| [10.02 Resource Management](../applications/10-service-resource-management.md#1002-resource-management) | 10.02.01 Resource Lifecycle | Create resource; Update resource; Scale resource; Monitor resource; Delete resource | P1 | Stretch |
-| [10.03 Configuration Management](../applications/10-service-resource-management.md#1003-configuration-management) | 10.03.01 Configuration | Create configuration; Validate configuration; Apply configuration; Rollback configuration | Not specified | Not specified |
-| [10.04 Monitoring & Health](../applications/10-service-resource-management.md#1004-monitoring--health) | 10.04.01 Health Monitoring | Collect health status; Detect anomaly; Create alert; View health | P1 | Stretch |
-| [10.04 Monitoring & Health](../applications/10-service-resource-management.md#1004-monitoring--health) | 10.04.02 Usage Monitoring | Collect metrics; View usage; Set threshold | P1 | Stretch |
+| [11.01 Knowledge Base](../applications/11-training-knowledge-management.md#1101-knowledge-base) | 11.01.01 Knowledge Articles | Create article; Edit article; Publish article; Search article; Version article | P0 | Commit |
+| [11.01 Knowledge Base](../applications/11-training-knowledge-management.md#1101-knowledge-base) | 11.01.02 AI Knowledge | Index content; Retrieve relevant content; Validate source | P0 | Commit |
 
 ### Dependencies
 
 - **Stated:** Not specified.
-- **Implied by [WB]** (confirm before planning):
-  - EVT-012 ProvisioningStarted is produced by the Provisioning Orchestrator (applications 09; [WB:Events])
-  - EVT-011 EntitlementGranted is consumed by Resource and Portal (applications 07; [WB:Events])
+- **Implied by [WB]:** consumed by human support (12a, 2027.1.2), the AI support agent (04b, 2027.1.3), and search (01b, 2027.1.3).
 
 ### Expected deliverables
 
-- The P0 capabilities above ([DN-2](../open-decisions.md#dn-2-sprint-scope-length-and-dates)). Deliverables are otherwise Not specified in any source.
+- The P0 capabilities above ([DN-2](../open-decisions.md#dn-2-sprint-scope-length-and-dates)).
 
-## EIS 13 Integration & API Platform
+## EIS 13b Integration & API Platform: connectors and webhooks
 
-**Planned work ([PO] / [WB] description):** APIs, connectors, events and webhooks
+**Planned work:** Integration Hub and Webhooks only — 13a (API Management, Event Platform) moved to [2026.4.2](SPRINT-2026.4.2.md) ([C31](../open-decisions.md#c31)).
 
-Full breakdown with APIs, services, entities and events: [applications/13-integration-api-platform.md](../applications/13-integration-api-platform.md).
+Full breakdown: [applications/13-integration-api-platform.md](../applications/13-integration-api-platform.md).
 
 ### Capabilities, features and requirement candidates
 
 | Capability | Feature | Functions (requirement candidates from [WB:Functions]) | Priority | Commitment |
 |---|---|---|---|---|
-| [13.01 API Management](../applications/13-integration-api-platform.md#1301-api-management) | 13.01.01 API Lifecycle | Register API; Publish API; Version API; Deprecate API | P0 | Commit |
-| [13.01 API Management](../applications/13-integration-api-platform.md#1301-api-management) | 13.01.02 API Security | Authenticate API; Authorize API; Rate limit API; Monitor API | P0 | Commit |
 | [13.02 Integration Hub](../applications/13-integration-api-platform.md#1302-integration-hub) | 13.02.01 Connectors | Create connector; Authenticate connector; Test connector; Enable connector | P1 | Stretch |
 | [13.02 Integration Hub](../applications/13-integration-api-platform.md#1302-integration-hub) | 13.02.02 Data Integration | Synchronize data; Transform data; Handle integration error | P1 | Stretch |
-| [13.03 Event Platform](../applications/13-integration-api-platform.md#1303-event-platform) | 13.03.01 Event Bus | Publish event; Subscribe to event; Route event; Retry event; Replay event | P0 | Commit |
 | [13.04 Webhooks](../applications/13-integration-api-platform.md#1304-webhooks) | 13.04.01 Webhook Management | Register webhook; Authenticate webhook; Trigger webhook; Retry webhook; Monitor webhook | P1 | Stretch |
 
 ### Dependencies
 
 - **Stated:** Not specified.
-- **Implied by [WB]** (confirm before planning):
-  - MS-019 Event Gateway routes events for all domains; API-019 POST /v1/events (applications all; [WB:Microservices], [WB:APIs])
+- **Implied by [WB]:** depends on 13a (API Management, Event Platform), built in 2026.4.2. First needed by Partner & Provider (14, 2027.2.1).
 
 ### Expected deliverables
 
-- The P0 capabilities above ([DN-2](../open-decisions.md#dn-2-sprint-scope-length-and-dates)). Deliverables are otherwise Not specified in any source.
+- The P0 capabilities above ([DN-2](../open-decisions.md#dn-2-sprint-scope-length-and-dates)). 13.01 API Management and 13.03 Event Platform (P0, Commit) are no longer in this sprint — see [2026.4.2](SPRINT-2026.4.2.md).
 
 ## EIS 16 Analytics & Data Platform
 
@@ -145,6 +139,7 @@ Full breakdown with APIs, services, entities and events: [applications/16-analyt
 
 - [C3](../open-decisions.md#c3) The [PO] sprint order is authoritative; the MVP is complete at the end of sprint 2027.1.3.
 - [C4](../open-decisions.md#c4), [C5](../open-decisions.md#c5), [C6](../open-decisions.md#c6) MVP, priority and phase as shown above.
+- [C31](../open-decisions.md#c31) Corrected sprint sequence: 10 moved out, 11a and 13b moved/kept in as shown above.
 - Sprint goal, team, capacity and status are Not specified.
 
 Details: [open-decisions.md](../open-decisions.md).

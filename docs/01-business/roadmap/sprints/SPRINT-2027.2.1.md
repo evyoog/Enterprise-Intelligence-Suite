@@ -18,6 +18,14 @@
 | 14 | `APP-PTR` | [Partner & Provider Management](../applications/14-partner-provider-management.md) | (whole application) | [PO] "eVyoog EIS - Roadmap Initiatives" |
 
 > **Commitment ([DN-2](../open-decisions.md#dn-2-sprint-scope-length-and-dates)):** this sprint commits the P0 (MVP) capabilities of its applications and treats P1 capabilities as stretch scope. Anything not finished is recorded as carry-over on the next sprint page.
+>
+> **Possible overflow ([C31](../open-decisions.md#c31)):** 03b Trials & reviews and 11b Learning & certification are provisionally in [2027.1.3](SPRINT-2027.1.3.md), which is the busiest sprint in the corrected sequence. Neither has anything depending on it, so either can move here if 2027.1.3 is overloaded — check that sprint's page for their current status before this sprint starts.
+
+## Scope changes from decisions
+
+| Change | Decision and scope | FRD | Requirement |
+|---|---|---|---|
+| Unchanged | [C31](../open-decisions.md#c31) 14 Partners stays in this sprint. Its dependencies (03a Checkout, 08 Billing, 13b Connectors, 15b Policy & compliance) all land earlier under the corrected sequence | - | - |
 
 ## EIS 14 Partner & Provider Management
 
@@ -52,6 +60,7 @@ Full breakdown with APIs, services, entities and events: [applications/14-partne
 
 - [C3](../open-decisions.md#c3) The [PO] sprint order is authoritative; the MVP is complete at the end of sprint 2027.1.3.
 - [C4](../open-decisions.md#c4), [C5](../open-decisions.md#c5), [C6](../open-decisions.md#c6) MVP, priority and phase as shown above.
+- [C31](../open-decisions.md#c31) Corrected sprint sequence: 14 unchanged; possible overflow from 2027.1.3 as shown above.
 - Sprint goal, team, capacity and status are Not specified.
 
 Details: [open-decisions.md](../open-decisions.md).

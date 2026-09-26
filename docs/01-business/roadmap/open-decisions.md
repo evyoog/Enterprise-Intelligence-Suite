@@ -286,13 +286,9 @@ These documents are **not** changed by this file. Update them to match:
 | DN-2 | Fill "Start / end dates" on every sprint page |
 | C20, C22, C23, C24 | Add to `SPRINT-2026.3.3.md` scope; create or update their FRDs (Draft) for approval |
 | C20 | Add the retirement task to `SPRINT-2027.1.1.md` and `SPRINT-2027.1.3.md` |
-| C16, C17 | Add the deferred functions to `SPRINT-2027.1.3.md` |
 | C19 | Add View spending to `SPRINT-2026.4.3.md` |
-| C21 | Add the general policy engine to `SPRINT-2027.2.2.md` |
 | DN-5 | Replace `<APP-CODE>` in the draft FRDs (for example `REQ-IAM-…` for application 06) |
-| C21 | Add the [SUM] agent controls and the two 04.05 functions as P0 to `SPRINT-2027.1.2.md` |
 | C13 | Apply the per-deployable container rules in `deployment/` and the architecture docs when the pipelines are built |
 | Sources | Add `EIS_Platform_Summary.docx` to `docs/01-business/source-documents/` as **[SUM]**, and list it in that folder's README |
-| C31 | Update `SPRINT-2026.4.1.md` (add 05), `SPRINT-2026.4.2.md` (add 13a, 15a; remove 05), and the "Sprint" field on application pages 05, 13, 15 |
-| C32, C33, C34, C35 | Create FRDs `product-lifecycle`, `plan-management`, `member-lifecycle`, `group-management` (Approved); add to `SPRINT-2026.4.1.md` scope |
-| C34, C35 | Add Invite/Create user (05.03.01.01/.02) and 05.04.02 Projects to `SPRINT-2026.4.2.md` as carry-over |
+
+**Done (2026-09-26), no longer follow-up:** C31 (sprint pages 2026.4.1 through 2027.2.2, and the "Sprint" field on application pages 02, 03, 04, 05, 10, 11, 12, 13, 15, all updated to the corrected sequence — this superseded the older "C21: add the general policy engine to `SPRINT-2027.2.2.md`" and "C16, C17: add the deferred functions to `SPRINT-2027.1.3.md`" rows, and the "C21: add the agent controls to `SPRINT-2027.1.2.md`" row, which are now folded into C31's own sprint pages); C32–C35 (FRDs written and Approved, sprint 2026.4.1 built, carry-over recorded on `SPRINT-2026.4.2.md`).

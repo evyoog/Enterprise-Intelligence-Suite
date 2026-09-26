@@ -8,7 +8,7 @@
 | Description | Discovery, evaluation, comparison and checkout ([PO] Table 1, [WB:Application Summary]) |
 | Product | EIS (PaaS) |
 | PI – CY Quarter | 2027.1 ([PO] "eVyoog EIS - Roadmap Initiatives") |
-| Sprint | [2027.1.3](../sprints/SPRINT-2027.1.3.md) (1–31 Mar 2027, [DN-2](../open-decisions.md#dn-2-sprint-scope-length-and-dates)) |
+| Sprint | Split ([C31](../open-decisions.md#c31)): 03a Discovery & checkout in [2027.1.2](../sprints/SPRINT-2027.1.2.md) (1–28 Feb 2027); 03b Trials & reviews in [2027.1.3](../sprints/SPRINT-2027.1.3.md) (1–31 Mar 2027) |
 | Capabilities / features / functions | 4 / 7 / 27 ([WB]) |
 | Application status | Not specified |
 

@@ -15,7 +15,7 @@
 
 | Application ID | Code | Application | Roadmap item | Source |
 |---|---|---|---|---|
-| 15 | `APP-GOV` | [Administration & Governance](../applications/15-administration-governance.md) | (whole application) | [PO] "eVyoog EIS - Roadmap Initiatives" |
+| 15c | `APP-GOV` (part) | [Administration & Governance](../applications/15-administration-governance.md) | Regional Operations only (15.05) | [PO], scope split by [C31](../open-decisions.md#c31) |
 
 > **Commitment ([DN-2](../open-decisions.md#dn-2-sprint-scope-length-and-dates)):** this sprint commits the P0 (MVP) capabilities of its applications and treats P1 capabilities as stretch scope. Anything not finished is recorded as carry-over on the next sprint page.
 
@@ -23,47 +23,41 @@
 
 | Change | Decision and scope | FRD | Requirement |
 |---|---|---|---|
-| Added | [C21](../open-decisions.md#c21) General policy engine, delivered with Policy Management (15.02), where its requirements are defined. Moved from sprint [2026.3.3](SPRINT-2026.3.3.md) (06.02.02) | - | - |
+| Superseded | [C21](../open-decisions.md#c21)'s general policy engine (06.02.02/15.02) is no longer here — [C31](../open-decisions.md#c31) moved 15b (Policy Management, Compliance) to [2027.1.3](SPRINT-2027.1.3.md) | - | - |
+| Split | [C31](../open-decisions.md#c31) 15 splits: 15a (Audit, Platform Administration) was built in [2026.4.2](SPRINT-2026.4.2.md); 15b (Policy, Compliance) was built in [2027.1.3](SPRINT-2027.1.3.md); 15c (Regional Operations) is here | - | - |
 
-## EIS 15 Administration & Governance
+## EIS 15c Administration & Governance: regional operations
 
-**Planned work ([PO] / [WB] description):** Platform configuration, policies, audit and compliance
+**Planned work:** Regional Operations — expanding to more regions, after the single-region platform is proven.
 
-Full breakdown with APIs, services, entities and events: [applications/15-administration-governance.md](../applications/15-administration-governance.md).
+Full breakdown: [applications/15-administration-governance.md](../applications/15-administration-governance.md).
 
 ### Capabilities, features and requirement candidates
 
 | Capability | Feature | Functions (requirement candidates from [WB:Functions]) | Priority | Commitment |
 |---|---|---|---|---|
-| [15.01 Platform Administration](../applications/15-administration-governance.md#1501-platform-administration) | 15.01.01 Platform Configuration | Configure platform; Configure languages; Configure currencies; Configure feature flags | Not specified | Not specified |
-| [15.01 Platform Administration](../applications/15-administration-governance.md#1501-platform-administration) | 15.01.02 Global Settings | Configure regions; Configure defaults; Manage templates | Not specified | Not specified |
-| [15.02 Policy Management](../applications/15-administration-governance.md#1502-policy-management) | 15.02.01 Policy Lifecycle | Create policy; Assign policy; Evaluate policy; Enforce policy; Manage exception | P1 | Stretch |
-| [15.03 Audit](../applications/15-administration-governance.md#1503-audit) | 15.03.01 Audit Logging | Record activity; Record login; Record configuration change; Record financial transaction | P0 | Commit |
-| [15.03 Audit](../applications/15-administration-governance.md#1503-audit) | 15.03.02 Audit Search | Search audit logs; Filter audit logs; Export audit logs | P0 | Commit |
-| [15.04 Compliance](../applications/15-administration-governance.md#1504-compliance) | 15.04.01 Compliance Controls | Define control; Map requirement; Collect evidence; Track remediation | P1 | Stretch |
-| [15.04 Compliance](../applications/15-administration-governance.md#1504-compliance) | 15.04.02 Data Governance | Classify data; Define retention; Apply retention | P1 | Stretch |
 | [15.05 Regional Operations](../applications/15-administration-governance.md#1505-regional-operations) | 15.05.01 Region Management | Create region; Configure region; Activate region; Suspend region | P1 | Stretch |
 | [15.05 Regional Operations](../applications/15-administration-governance.md#1505-regional-operations) | 15.05.02 Data Residency | Define residency policy; Validate residency; Report residency | P1 | Stretch |
 
 ### Dependencies
 
 - **Stated:** Not specified.
-- **Implied by [WB]** (confirm before planning):
-  - EVT-020 AuditRecorded is consumed by Compliance; MS-021 Audit Service stores immutable audit records (applications all; [WB:Events], [WB:Microservices])
-  - UJ-011 Regional Expansion (Regional Ops, Governance) (applications 02, 10; [WB:User Journeys])
+- **Implied by [WB]:** 15b Policy & compliance (2027.1.3) for the policy engine a region's residency rules plug into; 10 Service & Resource Management (2027.1.2) for what actually runs per region.
+- UJ-011 Regional Expansion (Regional Ops, Governance) (applications 02, 10; [WB:User Journeys])
 
 ### Expected deliverables
 
-- The P0 capabilities above ([DN-2](../open-decisions.md#dn-2-sprint-scope-length-and-dates)). Deliverables are otherwise Not specified in any source.
+- All-P1 (stretch) scope ([DN-2](../open-decisions.md#dn-2-sprint-scope-length-and-dates)). 15.01 Platform Administration and 15.03 Audit (15a) were already built in 2026.4.2; 15.02 Policy Management and 15.04 Compliance (15b) were already built in 2027.1.3 — see those sprint pages.
 
 ### Related code already in this repository
 
-Observed on branch `dev`, module level only: `backend/…/modules/audit`, `backend/…/modules/dashboard (OrganizationAuditLogController)`; `frontend/src/pages/admin/AdminAuditLogPage.tsx`.
+Observed on branch `dev`, module level only: `backend/…/modules/audit`, `backend/…/modules/dashboard (OrganizationAuditLogController)`; `frontend/src/pages/admin/AdminAuditLogPage.tsx` — this is 15a's audit work, built early in 2026.4.2, not 15c itself.
 
 ## Decisions affecting this sprint
 
 - [C3](../open-decisions.md#c3) The [PO] sprint order is authoritative; the MVP is complete at the end of sprint 2027.1.3.
 - [C4](../open-decisions.md#c4), [C5](../open-decisions.md#c5), [C6](../open-decisions.md#c6) MVP, priority and phase as shown above.
+- [C31](../open-decisions.md#c31) Corrected sprint sequence: only 15c (Regional Operations) remains in this sprint; 15a and 15b moved earlier.
 - Sprint goal, team, capacity and status are Not specified.
 
 Details: [open-decisions.md](../open-decisions.md).
