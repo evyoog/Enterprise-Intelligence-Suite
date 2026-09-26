@@ -19,15 +19,17 @@ An organization that requires MFA.
 3. Observe the response and the UI.
 
 ## Expected Result
-Login is refused with 403 and `organizationMfaRequired: true`.
+No session is issued. The response is 401 with `platformMfaEnrollmentRequired: true` and an `mfaEnrollmentChallengeId`, and the login dialog moves to authenticator set-up.
 
 ## Automated coverage
 - `backend/src/test/java/com/vyoog/eisplatform/modules/authorization/service/MfaPolicyServiceTest.java` — "orgRequiringMfaBlocksALoginThatDidNotUseOtp"
+- `backend/…/auth/service/SignInMfaGateTest.java` — "policyWithoutAuthenticatorAsksForSetUpOnPasswordAndFederatedSignIn"
+- `frontend/src/components/home/MfaSignInEnrollment.test.tsx` — "switches to set-up when the organization requires MFA, then shows the recovery codes once"
 
-**Manual check:** Sign in through `/auth/login` without OTP and check the 403 body has `organizationMfaRequired: true`.
+**Manual check:** Sign in through `/auth/login` without OTP and check the 401 body has `platformMfaEnrollmentRequired: true`.
 
 ## Actual Result
-The automated tests below passed on 2026-09-25; the manual check is not yet run.
+The automated tests below passed on 2026-09-26; the manual check is not yet run.
 
 ## Status
 Not Run

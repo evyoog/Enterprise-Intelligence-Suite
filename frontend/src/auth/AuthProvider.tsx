@@ -31,6 +31,8 @@ interface AuthState {
    * Platform MFA challenge — see `login`'s own doc and AuthModal for where
    * this is actually called. */
   verifyMfaChallenge: (challengeId: string, code: string) => Promise<string[]>
+  /** C29: finishes a sign-in by setting up an authenticator; resolves with roles and recovery codes. */
+  completeSignInEnrollment: (challengeId: string, code: string) => Promise<{ roles: string[]; recoveryCodes: string[] }>
   logout: () => void
   /** For the Launch button's plain-link case and any other caller that needs
    * the current token synchronously — a getter, not a reactive value, so
@@ -185,6 +187,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   }, [applyToken])
 
+  const completeSignInEnrollment = useCallback(async (challengeId: string, code: string) => {
+    setError(null)
+    try {
+      const result = await authApi.completeSignInEnrollment(challengeId, code)
+      applyToken(result.accessToken)
+      return { roles: extractClientRolesFromToken(result.accessToken), recoveryCodes: result.recoveryCodes }
+    } catch (e) {
+      setError(e instanceof ApiError ? e.message : 'Could not verify your code. Please try again.')
+      throw e
+    }
+  }, [applyToken])
+
   const logout = useCallback(() => {
     setError(null)
     // Real logout: ends the actual Keycloak session server-side (not just
@@ -202,7 +216,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     <AuthContext.Provider
       value={{
         user, isAuthenticated: !!user, isAdmin, isBootstrapping, error,
-        login, verifyMfaChallenge, logout, getAccessToken,
+        login, verifyMfaChallenge, completeSignInEnrollment, logout, getAccessToken,
       }}
     >
       {children}

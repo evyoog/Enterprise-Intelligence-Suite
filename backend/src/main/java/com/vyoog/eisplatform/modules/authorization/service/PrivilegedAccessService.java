@@ -331,6 +331,23 @@ public class PrivilegedAccessService {
             .toList();
     }
 
+    /** REQ-IAM-004.7: the organization's currently active (approved, unexpired)
+     * ORGANIZATION-scope grants, so an approver can revoke one early. */
+    public List<PrivilegedAccessRequestDto> listActiveForOrganization(Long organizationId) {
+        return requestRepository.findByScopeAndOrganizationIdAndStatusAndExpiresAtAfterOrderByExpiresAtAsc(
+                RoleScope.ORGANIZATION, organizationId, PrivilegedAccessStatus.APPROVED, Instant.now()).stream()
+            .map(this::toDto)
+            .toList();
+    }
+
+    /** REQ-IAM-004.7: currently active PLATFORM-scope grants. */
+    public List<PrivilegedAccessRequestDto> listActiveForPlatform() {
+        return requestRepository.findByScopeAndStatusAndExpiresAtAfterOrderByExpiresAtAsc(
+                RoleScope.PLATFORM, PrivilegedAccessStatus.APPROVED, Instant.now()).stream()
+            .map(this::toDto)
+            .toList();
+    }
+
     public List<PrivilegedAccessRequestDto> listPendingForPlatform() {
         return requestRepository.findByScopeAndStatusOrderByRequestedAtDesc(RoleScope.PLATFORM, PrivilegedAccessStatus.PENDING).stream()
             .map(this::toDto)
@@ -372,7 +389,9 @@ public class PrivilegedAccessService {
             request.getDecidedByKeycloakSub(),
             request.getDecisionNote(),
             request.getExpiresAt(),
-            auditTrail
+            auditTrail,
+            request.getRequesterCustomerId() == null ? null
+                : customerRepository.findById(request.getRequesterCustomerId()).map(c -> c.getEmail()).orElse(null)
         );
     }
 }

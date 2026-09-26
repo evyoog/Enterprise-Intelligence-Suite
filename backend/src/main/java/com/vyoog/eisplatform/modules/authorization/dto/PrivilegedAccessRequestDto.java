@@ -25,6 +25,9 @@ public record PrivilegedAccessRequestDto(
     String decidedByKeycloakSub,
     String decisionNote,
     Instant expiresAt,
-    List<PrivilegedAccessAuditEntryDto> auditTrail
+    List<PrivilegedAccessAuditEntryDto> auditTrail,
+    /** REQ-IAM-004.7: so an approver can see whose request or grant this is.
+     * Null when the requester has no customer account (a platform admin). */
+    String requesterEmail
 ) {
 }

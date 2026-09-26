@@ -32,6 +32,8 @@ export const myPrivilegedAccessApi = {
 // equivalent is platformPrivilegedAccessApi.
 export const organizationPrivilegedAccessApi = {
   listPending: () => apiRequest<PrivilegedAccessRequest[]>('/organization/me/privileged-access/pending'),
+  // REQ-IAM-004.7
+  listActive: () => apiRequest<PrivilegedAccessRequest[]>('/organization/me/privileged-access/active'),
   approve: (id: number, note?: string) =>
     apiRequest<PrivilegedAccessRequest>(`/organization/me/privileged-access/${id}/approve`, decision(note)),
   reject: (id: number, note?: string) =>

@@ -25,6 +25,24 @@ spring:
   # jwk-set-uri (not just issuer-uri) is required here — with only issuer-uri, Spring
   # would eagerly hit the real OIDC discovery endpoint at context startup. The JWK set
   # itself is fetched lazily on first token decode, so a fake URL never gets called.
+  # Never reach a real mail server from tests (application.yml defaults to a
+  # real SMTP account). Port 1 on localhost refuses at once, so a notification
+  # email fails fast and is logged instead of waiting on a network timeout.
+  mail:
+    host: localhost
+    port: 1
+    username:
+    password:
+    properties:
+      mail:
+        smtp:
+          auth: false
+          starttls:
+            enable: false
+          connectiontimeout: 1000
+          timeout: 1000
+          writetimeout: 1000
+
   security:
     oauth2:
       resourceserver:

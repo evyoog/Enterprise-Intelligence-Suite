@@ -6,6 +6,7 @@ import com.vyoog.eisplatform.modules.authorization.dto.PrivilegedAccessRequestDt
 import com.vyoog.eisplatform.modules.authorization.model.RoleScope;
 import com.vyoog.eisplatform.modules.authorization.service.AuthorizationService;
 import com.vyoog.eisplatform.modules.audit.service.AuditService;
+import com.vyoog.eisplatform.modules.auth.service.PlatformMfaService;
 import com.vyoog.eisplatform.modules.authorization.service.PrivilegedAccessService;
 import com.vyoog.eisplatform.modules.notification.model.NotificationCategory;
 import com.vyoog.eisplatform.modules.notification.model.NotificationSeverity;
@@ -49,6 +50,7 @@ public class OrganizationSelfService {
     private final CustomerRepository customerRepository;
     private final AuthorizationService authorizationService;
     private final PrivilegedAccessService privilegedAccessService;
+    private final PlatformMfaService platformMfaService;
     private final NotificationService notificationService;
     private final AuditService auditService;
 
@@ -226,6 +228,15 @@ public class OrganizationSelfService {
         );
     }
 
+    /** C30: an organization admin (MANAGE_USERS, same organization only)
+     * resets a member's two-factor authentication. See PlatformMfaService#resetByAdmin. */
+    @Transactional
+    public void resetMemberMfa(Long callerCustomerId, Long targetMemberId) {
+        MemberAccess access = requirePermissionOnMember(callerCustomerId, targetMemberId, "MANAGE_USERS");
+        platformMfaService.resetByAdmin(access.target().getCustomerId(), null, callerCustomerId, null,
+            access.caller().getOrganizationId());
+    }
+
     public List<SubscriptionDto> listMyOrgSubscriptions(Long customerId) {
         OrganizationMember member = resolveMembership(customerId);
         return subscriptionRepository.findByOwnerOrganizationId(member.getOrganizationId()).stream()
@@ -357,6 +368,12 @@ public class OrganizationSelfService {
     public List<PrivilegedAccessRequestDto> listPendingPrivilegedAccess(Long customerId) {
         OrganizationMember member = requirePermission(customerId, "MANAGE_PRIVILEGED_ACCESS");
         return privilegedAccessService.listPendingForOrganization(member.getOrganizationId());
+    }
+
+    /** REQ-IAM-004.7: same permission as reviewing pending requests. */
+    public List<PrivilegedAccessRequestDto> listActivePrivilegedAccess(Long customerId) {
+        OrganizationMember member = requirePermission(customerId, "MANAGE_PRIVILEGED_ACCESS");
+        return privilegedAccessService.listActiveForOrganization(member.getOrganizationId());
     }
 
     public PrivilegedAccessRequestDto approvePrivilegedAccess(Long customerId, String approverKeycloakSub, Long requestId, String note) {

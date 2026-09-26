@@ -69,6 +69,14 @@ public class OrganizationController {
         return organizationSelfService.changeMemberRole(customer.getId(), memberId, request.orgRole());
     }
 
+    /** C30: reset a member's two-factor authentication (MANAGE_USERS, same organization). */
+    @PostMapping("/members/{memberId}/mfa/reset")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void resetMemberMfa(@AuthenticationPrincipal Jwt jwt, @PathVariable Long memberId) {
+        Customer customer = currentCustomerResolver.resolve(jwt);
+        organizationSelfService.resetMemberMfa(customer.getId(), memberId);
+    }
+
     @GetMapping("/products")
     public List<OrgProductAccessDto> myOrgProducts(@AuthenticationPrincipal Jwt jwt) {
         Customer customer = currentCustomerResolver.resolve(jwt);
@@ -122,6 +130,13 @@ public class OrganizationController {
     public List<PrivilegedAccessRequestDto> pendingPrivilegedAccess(@AuthenticationPrincipal Jwt jwt) {
         Customer customer = currentCustomerResolver.resolve(jwt);
         return organizationSelfService.listPendingPrivilegedAccess(customer.getId());
+    }
+
+    /** REQ-IAM-004.7: active grants, so an organization admin can revoke one early. */
+    @GetMapping("/privileged-access/active")
+    public List<PrivilegedAccessRequestDto> activePrivilegedAccess(@AuthenticationPrincipal Jwt jwt) {
+        Customer customer = currentCustomerResolver.resolve(jwt);
+        return organizationSelfService.listActivePrivilegedAccess(customer.getId());
     }
 
     @PostMapping("/privileged-access/{id}/approve")

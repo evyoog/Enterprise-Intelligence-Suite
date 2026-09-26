@@ -5,6 +5,7 @@ import { ApiError } from '../../api/client'
 import type { PrivilegedAccessRequest } from '../../api/platformPrivilegedAccessApi'
 import { organizationPrivilegedAccessApi } from '../../api/privilegedAccessApi'
 import { useLocalePreference } from '../../theming/LocalePreferenceProvider'
+import { ActiveGrantsList } from '../security/ActiveGrantsList'
 
 type Decision = 'approve' | 'reject' | 'revoke'
 
@@ -24,6 +25,8 @@ export function OrganizationPrivilegedAccessCard() {
   const [error, setError] = useState<string | null>(null)
   const [notes, setNotes] = useState<Record<number, string>>({})
   const [busyId, setBusyId] = useState<number | null>(null)
+  // Bumped after a decision so the active-grants list below picks up an approval.
+  const [refreshKey, setRefreshKey] = useState(0)
 
   const load = useCallback(() => {
     organizationPrivilegedAccessApi.listPending()
@@ -42,6 +45,7 @@ export function OrganizationPrivilegedAccessCard() {
     try {
       await organizationPrivilegedAccessApi[decision](id, notes[id] || undefined)
       load()
+      setRefreshKey((k) => k + 1)
     } catch (e) {
       setError(e instanceof ApiError ? e.message : t('privilegedAccess.actionError'))
     } finally {
@@ -93,6 +97,16 @@ export function OrganizationPrivilegedAccessCard() {
           </Box>
         </Box>
       ))}
+      {requests !== null && (
+        <Box sx={{ mt: 3 }}>
+          <ActiveGrantsList
+            load={organizationPrivilegedAccessApi.listActive}
+            revoke={organizationPrivilegedAccessApi.revoke}
+            refreshKey={refreshKey}
+            headingId="org-pam-active-title"
+          />
+        </Box>
+      )}
     </Paper>
   )
 }

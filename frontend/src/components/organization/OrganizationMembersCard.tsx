@@ -1,10 +1,11 @@
 import { useEffect, useState, type HTMLAttributes } from 'react'
 import { useTranslation } from 'react-i18next'
 import {
-  Alert, MenuItem, Paper, Table, TableBody, TableCell, TableHead, TableRow, TextField, Typography,
+  Alert, Button, MenuItem, Paper, Table, TableBody, TableCell, TableHead, TableRow, TextField, Typography,
 } from '@mui/material'
 import { ApiError } from '../../api/client'
 import { organizationApi, type OrgMember } from '../../api/registrationApi'
+import { ResetMfaDialog } from '../security/ResetMfaDialog'
 
 const ROLES: OrgMember['orgRole'][] = ['ORG_ADMIN', 'MEMBER']
 
@@ -20,6 +21,9 @@ export function OrganizationMembersCard() {
   const [hidden, setHidden] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [savingId, setSavingId] = useState<number | null>(null)
+  // C30: the member whose two-factor authentication is being reset.
+  const [resetTarget, setResetTarget] = useState<OrgMember | null>(null)
+  const [notice, setNotice] = useState<string | null>(null)
 
   useEffect(() => {
     organizationApi.listMyOrgUsers()
@@ -54,6 +58,14 @@ export function OrganizationMembersCard() {
         {t('orgSettings.membersTitle')}
       </Typography>
       {error && <Alert severity="error" sx={{ mb: 1.5 }}>{error}</Alert>}
+      {notice && <Alert severity="success" sx={{ mb: 1.5 }} onClose={() => setNotice(null)}>{notice}</Alert>}
+      <ResetMfaDialog
+        open={resetTarget !== null}
+        name={resetTarget ? displayName(resetTarget) : undefined}
+        onConfirm={() => organizationApi.resetMemberMfa(resetTarget!.organizationMemberId)}
+        onClose={() => setResetTarget(null)}
+        onDone={(who) => { setResetTarget(null); setNotice(t('mfaReset.done', { name: who })) }}
+      />
       {members && (
         <Table size="small">
           <TableHead>
@@ -62,11 +74,12 @@ export function OrganizationMembersCard() {
               <TableCell>{t('orgSettings.email')}</TableCell>
               <TableCell>{t('orgSettings.status')}</TableCell>
               <TableCell>{t('orgSettings.role')}</TableCell>
+              <TableCell>{t('mfaReset.column')}</TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
             {members.length === 0 && (
-              <TableRow><TableCell colSpan={4} sx={{ color: 'text.secondary' }}>{t('orgSettings.noMembers')}</TableCell></TableRow>
+              <TableRow><TableCell colSpan={5} sx={{ color: 'text.secondary' }}>{t('orgSettings.noMembers')}</TableCell></TableRow>
             )}
             {members.map((member) => (
               <TableRow key={member.organizationMemberId}>
@@ -86,6 +99,17 @@ export function OrganizationMembersCard() {
                       <MenuItem key={role} value={role}>{t(`orgSettings.roles.${role}`)}</MenuItem>
                     ))}
                   </TextField>
+                </TableCell>
+                <TableCell>
+                  <Button
+                    size="small"
+                    variant="text"
+                    color="error"
+                    aria-label={t('mfaReset.buttonFor', { name: displayName(member) })}
+                    onClick={() => setResetTarget(member)}
+                  >
+                    {t('mfaReset.button')}
+                  </Button>
                 </TableCell>
               </TableRow>
             ))}

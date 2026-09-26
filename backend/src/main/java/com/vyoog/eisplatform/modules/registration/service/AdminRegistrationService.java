@@ -4,6 +4,7 @@ import com.vyoog.eisplatform.common.exception.DuplicateResourceException;
 import com.vyoog.eisplatform.common.exception.ResourceNotFoundException;
 import com.vyoog.eisplatform.modules.audit.service.AuditService;
 import com.vyoog.eisplatform.modules.auth.service.KeycloakAdminClient;
+import com.vyoog.eisplatform.modules.auth.service.PlatformMfaService;
 import com.vyoog.eisplatform.modules.registration.dto.CustomerAdminDto;
 import com.vyoog.eisplatform.modules.registration.dto.OrganizationAdminDto;
 import com.vyoog.eisplatform.modules.registration.dto.OrganizationDto;
@@ -50,6 +51,7 @@ public class AdminRegistrationService {
     private final OrganizationMemberRepository memberRepository;
     private final AuditService auditService;
     private final KeycloakAdminClient keycloakAdminClient;
+    private final PlatformMfaService platformMfaService;
 
     public List<PendingProvisioningDto> listPendingProvisioning() {
         return customerRepository.findByKeycloakSubIsNullAndStatusNot(RegistrationStatus.PENDING_EMAIL_VERIFICATION)
@@ -291,6 +293,17 @@ public class AdminRegistrationService {
         auditService.recordSuccess(auditAction, actor.keycloakSub(), actor.customerId(), actor.email(),
             "Organization", org.getId().toString(), org.getId(), detail);
         return new OrganizationLifecycleResultDto(toAdminDto(org), updated, notUpdated);
+    }
+
+    /** C30: a platform admin resets anyone's two-factor authentication, found
+     * by email. See PlatformMfaService#resetByAdmin for what is removed. */
+    @Transactional
+    public void resetMfaByEmail(String email, Actor actor) {
+        Customer target = customerRepository.findByEmailIgnoreCase(email.trim())
+            .orElseThrow(() -> new ResourceNotFoundException("No account uses that email address."));
+        Long organizationId = memberRepository.findFirstByCustomerIdAndStatus(target.getId(), MembershipStatus.ACTIVE)
+            .map(OrganizationMember::getOrganizationId).orElse(null);
+        platformMfaService.resetByAdmin(target.getId(), actor.keycloakSub(), actor.customerId(), actor.email(), organizationId);
     }
 
     private Organization findOrganization(Long organizationId) {

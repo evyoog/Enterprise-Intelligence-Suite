@@ -11,10 +11,12 @@ const listPending = vi.fn()
 const approve = vi.fn()
 const reject = vi.fn()
 const revoke = vi.fn()
+const listActive = vi.fn()
 
 vi.mock('../../api/privilegedAccessApi', () => ({
   organizationPrivilegedAccessApi: {
     listPending: () => listPending(),
+    listActive: () => listActive(),
     approve: (id: number, note?: string) => approve(id, note),
     reject: (id: number, note?: string) => reject(id, note),
     revoke: (id: number, note?: string) => revoke(id, note),
@@ -29,7 +31,8 @@ const pending = {
 // REQ-IAM-004 acceptance criteria AC-4, AC-5 (UI), AC-6, AC-10.
 describe('OrganizationPrivilegedAccessCard', () => {
   beforeEach(() => {
-    for (const m of [listPending, approve, reject, revoke]) m.mockReset()
+    for (const m of [listPending, approve, reject, revoke, listActive]) m.mockReset()
+    listActive.mockResolvedValue([])
   })
 
   it('approves a pending request with a note and reloads', async () => {
@@ -65,5 +68,19 @@ describe('OrganizationPrivilegedAccessCard', () => {
     const { container } = renderWithProviders(<OrganizationPrivilegedAccessCard />)
     await screen.findByText('MANAGE_USERS')
     expect(await axe(container)).toHaveNoViolations()
+  })
+
+  // REQ-IAM-004.7 (sprint audit 2026-09-26): revoke an active grant early.
+  it('lists active grants with who holds them and revokes one early', async () => {
+    const active = { ...pending, id: 50, status: 'APPROVED', effectiveStatus: 'APPROVED', expiresAt: '2026-09-26T12:00:00Z', requesterEmail: 'sam@example.com' }
+    listPending.mockResolvedValue([])
+    listActive.mockResolvedValueOnce([active]).mockResolvedValueOnce([])
+    revoke.mockResolvedValue({ ...active, status: 'REVOKED', effectiveStatus: 'REVOKED' })
+    renderWithProviders(<OrganizationPrivilegedAccessCard />)
+
+    expect(await screen.findByText(/Requested by sam@example.com/)).toBeInTheDocument()
+    await userEvent.setup().click(screen.getByRole('button', { name: 'Revoke MANAGE_USERS for sam@example.com' }))
+    expect(revoke).toHaveBeenCalledWith(50, undefined)
+    expect(await screen.findByText('No active grants.')).toBeInTheDocument()
   })
 })

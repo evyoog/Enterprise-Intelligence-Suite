@@ -235,6 +235,53 @@ class PrivilegedAccessServiceTest {
     }
 
     // ------------------------------------------------------------------
+    // REQ-IAM-004.7 (sprint audit 2026-09-26): approvers see active grants
+    // ------------------------------------------------------------------
+
+    @Test
+    void activeGrantsAreListedForTheirOwnScopeUntilRevokedOrExpired() {
+        Organization org = newOrganization();
+        Organization otherOrg = newOrganization();
+        var admin = organizationMemberService.addMember(org.getId(), newCustomer("active-admin@test-org.example").getId(), OrgRole.ORG_ADMIN);
+        Customer adminCustomer = customerRepository.findById(admin.getCustomerId()).orElseThrow();
+        var member = organizationMemberService.addMember(org.getId(), newCustomer("active-member@test-org.example").getId(), OrgRole.MEMBER);
+        Customer memberCustomer = customerRepository.findById(member.getCustomerId()).orElseThrow();
+
+        PrivilegedAccessRequestDto pending = privilegedAccessService.request(
+            memberCustomer.getKeycloakSub(), memberCustomer.getId(), "MANAGE_USERS", "cover", 60);
+        assertThat(privilegedAccessService.listActiveForOrganization(org.getId())).extracting(PrivilegedAccessRequestDto::id)
+            .doesNotContain(pending.id());
+
+        privilegedAccessService.approve(adminCustomer.getKeycloakSub(), pending.id(), RoleScope.ORGANIZATION, org.getId(), null);
+        assertThat(privilegedAccessService.listActiveForOrganization(org.getId())).extracting(PrivilegedAccessRequestDto::id)
+            .contains(pending.id());
+        assertThat(privilegedAccessService.listActiveForOrganization(otherOrg.getId())).extracting(PrivilegedAccessRequestDto::id)
+            .doesNotContain(pending.id());
+        assertThat(privilegedAccessService.listActiveForPlatform()).extracting(PrivilegedAccessRequestDto::id)
+            .doesNotContain(pending.id());
+
+        privilegedAccessService.revoke(adminCustomer.getKeycloakSub(), pending.id(), RoleScope.ORGANIZATION, org.getId(), "done early");
+        assertThat(privilegedAccessService.listActiveForOrganization(org.getId())).extracting(PrivilegedAccessRequestDto::id)
+            .doesNotContain(pending.id());
+        assertThat(privilegedAccessService.hasActiveOrganizationGrant(memberCustomer.getId(), org.getId(), "MANAGE_USERS")).isFalse();
+    }
+
+    @Test
+    void expiredPlatformGrantsAreNotListedAsActive() {
+        Customer requester = newCustomer("active-platform-requester@test-org.example");
+        Customer approver = newCustomer("active-platform-approver@test-org.example");
+        PrivilegedAccessRequestDto created = privilegedAccessService.request(
+            requester.getKeycloakSub(), requester.getId(), "MANAGE_CATALOG", "fix a listing", 15);
+        privilegedAccessService.approve(approver.getKeycloakSub(), created.id(), RoleScope.PLATFORM, null, null);
+        assertThat(privilegedAccessService.listActiveForPlatform()).extracting(PrivilegedAccessRequestDto::id).contains(created.id());
+
+        PrivilegedAccessRequest raw = requestRepository.findById(created.id()).orElseThrow();
+        raw.setExpiresAt(Instant.now().minus(1, ChronoUnit.MINUTES));
+        requestRepository.save(raw);
+        assertThat(privilegedAccessService.listActiveForPlatform()).extracting(PrivilegedAccessRequestDto::id).doesNotContain(created.id());
+    }
+
+    // ------------------------------------------------------------------
     // Decision C24 (REQ-IAM-004): requestable-permissions list
     // ------------------------------------------------------------------
 

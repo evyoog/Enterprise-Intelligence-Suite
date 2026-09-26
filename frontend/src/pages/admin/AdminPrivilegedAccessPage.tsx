@@ -3,6 +3,7 @@ import { Box, Button, Chip, CircularProgress, Paper, TextField, Typography } fro
 import { ApiError } from '../../api/client'
 import { platformPrivilegedAccessApi, type PrivilegedAccessRequest } from '../../api/platformPrivilegedAccessApi'
 import { PageHeader } from '../../components/layout/PageHeader'
+import { ActiveGrantsList } from '../../components/security/ActiveGrantsList'
 
 /**
  * "/admin/privileged-access" — the backend (PlatformPrivilegedAccessController,
@@ -16,6 +17,8 @@ export function AdminPrivilegedAccessPage() {
   const [error, setError] = useState<string | null>(null)
   const [notes, setNotes] = useState<Record<number, string>>({})
   const [busyId, setBusyId] = useState<number | null>(null)
+  // Bumped after a decision so the active-grants list picks up an approval.
+  const [refreshKey, setRefreshKey] = useState(0)
 
   const load = () => {
     platformPrivilegedAccessApi.listPending()
@@ -30,7 +33,7 @@ export function AdminPrivilegedAccessPage() {
     const note = notes[id]
     const call = decision === 'approve' ? platformPrivilegedAccessApi.approve : platformPrivilegedAccessApi.reject
     call(id, note)
-      .then(load)
+      .then(() => { load(); setRefreshKey((k) => k + 1) })
       .catch((e) => setError(e instanceof ApiError ? e.message : 'Could not record this decision.'))
       .finally(() => setBusyId(null))
   }
@@ -82,6 +85,16 @@ export function AdminPrivilegedAccessPage() {
           </Box>
         </Paper>
       ))}
+
+      {/* REQ-IAM-004.7: early revocation of an approved PLATFORM-scope grant. */}
+      <Paper variant="outlined" sx={{ p: 2.5, mt: 3 }}>
+        <ActiveGrantsList
+          load={platformPrivilegedAccessApi.listActive}
+          revoke={platformPrivilegedAccessApi.revoke}
+          refreshKey={refreshKey}
+          headingId="platform-pam-active-title"
+        />
+      </Paper>
     </>
   )
 }

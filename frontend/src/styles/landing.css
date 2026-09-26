@@ -451,3 +451,17 @@ html { scroll-behavior: smooth; }
   .vyoog-landing .footer-grid > div:first-child { grid-column: 1 / -1; }
   .vyoog-landing .hero-bento { grid-template-columns: 1fr; grid-template-areas: "preview" "stat" "cats" "cta"; }
 }
+
+/* C29: recovery codes shown once after setting up an authenticator at sign-in. */
+.vyoog-landing .recovery-codes {
+  list-style: none;
+  padding: 0;
+  margin: 12px 0 16px;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 6px;
+}
+.vyoog-landing .recovery-codes code {
+  font-size: 13px;
+  letter-spacing: 0.04em;
+}

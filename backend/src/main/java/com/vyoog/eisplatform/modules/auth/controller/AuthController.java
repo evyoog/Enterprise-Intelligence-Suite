@@ -1,12 +1,15 @@
 package com.vyoog.eisplatform.modules.auth.controller;
 
 import com.vyoog.eisplatform.common.exception.InvalidCredentialsException;
-import com.vyoog.eisplatform.common.exception.OrganizationMfaRequiredException;
 import com.vyoog.eisplatform.common.exception.PlatformMfaChallengeRequiredException;
+import com.vyoog.eisplatform.common.exception.PlatformMfaEnrollmentRequiredException;
 import com.vyoog.eisplatform.common.util.JwtPayloadUtil;
 import com.vyoog.eisplatform.modules.audit.service.AuditService;
 import com.vyoog.eisplatform.modules.auth.dto.LoginRequest;
+import com.vyoog.eisplatform.modules.auth.dto.MfaEnrollResponse;
+import com.vyoog.eisplatform.modules.auth.dto.MfaEnrollmentChallengeRequest;
 import com.vyoog.eisplatform.modules.auth.dto.MfaLoginVerifyRequest;
+import com.vyoog.eisplatform.modules.auth.dto.SignInEnrollmentResponse;
 import com.vyoog.eisplatform.modules.auth.dto.TokenResponse;
 import com.vyoog.eisplatform.modules.auth.service.ImpersonationExchangeService;
 import com.vyoog.eisplatform.modules.auth.service.InternalSsoClient;
@@ -14,8 +17,9 @@ import com.vyoog.eisplatform.modules.auth.service.KeycloakPasswordGrantService;
 import com.vyoog.eisplatform.modules.auth.service.KeycloakPasswordGrantService.TokenResult;
 import com.vyoog.eisplatform.modules.auth.service.PlatformMfaService;
 import com.vyoog.eisplatform.modules.auth.service.SessionCookieService;
+import com.vyoog.eisplatform.modules.auth.service.SignInMfaGate;
+import com.vyoog.eisplatform.modules.auth.model.MfaChallengeKind;
 import com.vyoog.eisplatform.modules.auth.service.SsoBridgeSessionService;
-import com.vyoog.eisplatform.modules.authorization.service.MfaPolicyService;
 import com.vyoog.eisplatform.modules.registration.model.Customer;
 import com.vyoog.eisplatform.modules.registration.service.CurrentCustomerResolver;
 import jakarta.servlet.http.HttpServletResponse;
@@ -39,7 +43,7 @@ public class AuthController {
     private final ImpersonationExchangeService impersonationExchangeService;
     private final SsoBridgeSessionService bridgeSessionService;
     private final InternalSsoClient internalSsoClient;
-    private final MfaPolicyService mfaPolicyService;
+    private final SignInMfaGate signInMfaGate;
     private final PlatformMfaService platformMfaService;
     private final CurrentCustomerResolver currentCustomerResolver;
     private final AuditService auditService;
@@ -52,7 +56,7 @@ public class AuthController {
             ImpersonationExchangeService impersonationExchangeService,
             SsoBridgeSessionService bridgeSessionService,
             InternalSsoClient internalSsoClient,
-            MfaPolicyService mfaPolicyService,
+            SignInMfaGate signInMfaGate,
             PlatformMfaService platformMfaService,
             CurrentCustomerResolver currentCustomerResolver,
             AuditService auditService,
@@ -63,7 +67,7 @@ public class AuthController {
         this.impersonationExchangeService = impersonationExchangeService;
         this.bridgeSessionService = bridgeSessionService;
         this.internalSsoClient = internalSsoClient;
-        this.mfaPolicyService = mfaPolicyService;
+        this.signInMfaGate = signInMfaGate;
         this.platformMfaService = platformMfaService;
         this.currentCustomerResolver = currentCustomerResolver;
         this.auditService = auditService;
@@ -115,15 +119,11 @@ public class AuthController {
         boolean legacyMfaVerified = amr.contains("otp");
         Long customerId = currentCustomerResolver.resolveByKeycloakSub(sub).map(Customer::getId).orElse(null);
 
-        if (customerId != null && platformMfaService.isEnabledFor(customerId)) {
-            String challengeId = platformMfaService.createLoginChallenge(customerId, sub, result.accessToken(), result.refreshToken());
-            throw new PlatformMfaChallengeRequiredException("This account requires a verification code.", challengeId);
-        }
-
-        if (!mfaPolicyService.isMfaSatisfied(sub, amr)) {
-            auditService.recordFailure("LOGIN_FAILURE", request.email(), "Organization requires MFA, session was not MFA-verified");
-            throw new OrganizationMfaRequiredException(
-                "Your organization requires multi-factor authentication. Set up an authenticator app on your account, then sign in again.");
+        // C29: an authenticator code, or authenticator set-up when the
+        // organization requires MFA and the member has none yet.
+        var step = signInMfaGate.check(customerId, sub, amr, false, result.accessToken(), result.refreshToken());
+        if (step.isPresent()) {
+            throw pendingStepException(step.get());
         }
 
         return finalizeSession(response, sub, customerId, request.email(), result.accessToken(), result.refreshToken(),
@@ -142,7 +142,36 @@ public class AuthController {
         PlatformMfaService.LoginChallengeResult result = platformMfaService.verifyLoginChallenge(request.challengeId(), request.code());
         long expiresInSeconds = expiresInSecondsOf(result.accessToken());
         return finalizeSession(response, result.keycloakSub(), result.customerId(), null,
-            result.accessToken(), result.refreshToken(), expiresInSeconds, true);
+            result.accessToken(), result.refreshToken(), expiresInSeconds, true, result.impersonated());
+    }
+
+    /** C29: first half of setting up an authenticator during sign-in — returns
+     * the QR code and manual key for the held ENROLL challenge. No password:
+     * the user has just signed in. */
+    @PostMapping("/mfa/enroll/start")
+    public MfaEnrollResponse startSignInEnrollment(@Valid @RequestBody MfaEnrollmentChallengeRequest request) {
+        return platformMfaService.startChallengeEnrollment(request.challengeId());
+    }
+
+    /** C29: second half — a valid first code enables the authenticator and
+     * only then turns the held sign-in into a session. */
+    @PostMapping("/mfa/enroll/complete")
+    public SignInEnrollmentResponse completeSignInEnrollment(@Valid @RequestBody MfaLoginVerifyRequest request,
+                                                             HttpServletResponse response) {
+        PlatformMfaService.ChallengeEnrollmentResult result =
+            platformMfaService.completeChallengeEnrollment(request.challengeId(), request.code());
+        var login = result.login();
+        TokenResponse token = finalizeSession(response, login.keycloakSub(), login.customerId(), null,
+            login.accessToken(), login.refreshToken(), expiresInSecondsOf(login.accessToken()), true, login.impersonated());
+        return new SignInEnrollmentResponse(token.accessToken(), token.expiresInSeconds(), token.mfaVerified(), result.recoveryCodes());
+    }
+
+    private static RuntimeException pendingStepException(SignInMfaGate.PendingStep step) {
+        return step.kind() == MfaChallengeKind.ENROLL
+            ? new PlatformMfaEnrollmentRequiredException(
+                "Your organization requires two-factor authentication. Set up an authenticator app to finish signing in.",
+                step.challengeId())
+            : new PlatformMfaChallengeRequiredException("This account requires a verification code.", step.challengeId());
     }
 
     /** The one place a session actually becomes real: sets both cookies,
@@ -156,7 +185,15 @@ public class AuthController {
      * call site reaches here. */
     private TokenResponse finalizeSession(HttpServletResponse response, String sub, Long customerId, String email,
                                            String accessToken, String refreshToken, long expiresInSeconds, boolean mfaVerified) {
-        sessionCookieService.finalizeBrowserSession(response, sub, refreshToken, false);
+        return finalizeSession(response, sub, customerId, email, accessToken, refreshToken, expiresInSeconds, mfaVerified, false);
+    }
+
+    /** {@code impersonated}: the tokens came from a token exchange (a SAML or
+     * OIDC sign-in parked on an MFA challenge), see SessionCookieService. */
+    private TokenResponse finalizeSession(HttpServletResponse response, String sub, Long customerId, String email,
+                                           String accessToken, String refreshToken, long expiresInSeconds, boolean mfaVerified,
+                                           boolean impersonated) {
+        sessionCookieService.finalizeBrowserSession(response, sub, refreshToken, impersonated);
 
         auditService.recordSuccess("LOGIN_SUCCESS", sub, customerId, email, "Customer", sub, null, null);
 

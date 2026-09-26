@@ -22,11 +22,15 @@ export interface PrivilegedAccessRequest {
   decisionNote?: string
   expiresAt?: string
   auditTrail: PrivilegedAccessAuditEntry[]
+  /** Null when the requester has no customer account. */
+  requesterEmail?: string | null
 }
 
 // Matches PlatformPrivilegedAccessController — ADMIN-only (MANAGE_PRIVILEGED_ACCESS).
 export const platformPrivilegedAccessApi = {
   listPending: () => apiRequest<PrivilegedAccessRequest[]>('/admin/privileged-access/pending'),
+  // REQ-IAM-004.7: approved, unexpired grants — so one can be revoked early.
+  listActive: () => apiRequest<PrivilegedAccessRequest[]>('/admin/privileged-access/active'),
 
   approve: (id: number, note?: string) =>
     apiRequest<PrivilegedAccessRequest>(`/admin/privileged-access/${id}/approve`, {

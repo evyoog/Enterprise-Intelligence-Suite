@@ -9,6 +9,8 @@ import com.vyoog.eisplatform.modules.audit.service.AuditService;
 import com.vyoog.eisplatform.modules.auth.service.ImpersonationExchangeService;
 import com.vyoog.eisplatform.modules.auth.service.KeycloakAdminClient;
 import com.vyoog.eisplatform.modules.auth.service.SessionCookieService;
+import com.vyoog.eisplatform.modules.auth.service.SignInMfaGate;
+import com.vyoog.eisplatform.modules.auth.model.MfaChallengeKind;
 import com.vyoog.eisplatform.modules.federation.dto.SsoCheckResponseDto;
 import com.vyoog.eisplatform.modules.federation.model.SamlExternalIdentity;
 import com.vyoog.eisplatform.modules.federation.model.SamlIdentityProvider;
@@ -108,6 +110,7 @@ public class SamlAuthenticationService {
     private final KeycloakAdminClient keycloakAdminClient;
     private final ImpersonationExchangeService impersonationExchangeService;
     private final SessionCookieService sessionCookieService;
+    private final SignInMfaGate signInMfaGate;
     private final AuditService auditService;
     private final SecureRandom random = new SecureRandom();
 
@@ -282,6 +285,21 @@ public class SamlAuthenticationService {
 
         var tokenResult = impersonationExchangeService.exchangeForUser(customer.getKeycloakSub(), ownClientId)
             .orElseThrow(() -> new SamlLoginException("Could not create a session for this account"));
+
+        // C29: the organization MFA policy applies to federated sign-in too.
+        // The session is held until the member enters (or first sets up) their
+        // authenticator code in the web app, which picks up the opaque id.
+        var step = signInMfaGate.check(customer.getId(), customer.getKeycloakSub(), List.of(), true,
+            tokenResult.accessToken(), tokenResult.refreshToken());
+        if (step.isPresent()) {
+            auditService.recordSuccess("SAML_LOGIN_MFA_PENDING", customer.getKeycloakSub(), customer.getId(), email,
+                "Customer", customer.getKeycloakSub(), organizationId,
+                "Signed in via SAML identity provider \"" + provider.getName() + "\"; waiting for "
+                    + (step.get().kind() == MfaChallengeKind.ENROLL ? "authenticator set-up" : "authenticator code"));
+            String param = step.get().kind() == MfaChallengeKind.ENROLL ? "mfaEnroll" : "mfaChallenge";
+            return frontendUrl + "/?" + param + "=" + URLEncoder.encode(step.get().challengeId(), StandardCharsets.UTF_8);
+        }
+
         sessionCookieService.finalizeBrowserSession(response, customer.getKeycloakSub(), tokenResult.refreshToken(), true);
 
         auditService.recordSuccess("SAML_LOGIN_SUCCESS", customer.getKeycloakSub(), customer.getId(), email,

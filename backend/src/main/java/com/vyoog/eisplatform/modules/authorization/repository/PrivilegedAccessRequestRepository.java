@@ -30,4 +30,11 @@ public interface PrivilegedAccessRequestRepository extends JpaRepository<Privile
         String requesterKeycloakSub, RoleScope scope, String permissionName, PrivilegedAccessStatus status, Instant now);
 
     Optional<PrivilegedAccessRequest> findByIdAndScope(Long id, RoleScope scope);
+
+    /** REQ-IAM-004.7: approved grants that have not expired yet, soonest expiry first. */
+    List<PrivilegedAccessRequest> findByScopeAndOrganizationIdAndStatusAndExpiresAtAfterOrderByExpiresAtAsc(
+        RoleScope scope, Long organizationId, PrivilegedAccessStatus status, Instant now);
+
+    List<PrivilegedAccessRequest> findByScopeAndStatusAndExpiresAtAfterOrderByExpiresAtAsc(
+        RoleScope scope, PrivilegedAccessStatus status, Instant now);
 }

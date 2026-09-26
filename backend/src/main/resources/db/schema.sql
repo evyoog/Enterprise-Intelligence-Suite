@@ -138,7 +138,12 @@ CREATE TABLE mfa_login_challenge (
     refresh_token TEXT NOT NULL,
     attempts INT NOT NULL DEFAULT 0,
     created_at TIMESTAMP NOT NULL DEFAULT now(),
-    expires_at TIMESTAMP NOT NULL
+    expires_at TIMESTAMP NOT NULL,
+    -- C29 (2026-09-26): VERIFY (enter a code) or ENROLL (set up an
+    -- authenticator during sign-in); impersonated = held tokens came from a
+    -- SAML/OIDC token exchange. See migration V002.
+    kind VARCHAR(10) NOT NULL DEFAULT 'VERIFY' CHECK (kind IN ('VERIFY', 'ENROLL')),
+    impersonated BOOLEAN NOT NULL DEFAULT false
 );
 
 -- A registering company. parent_organization_id is NEVER settable by public

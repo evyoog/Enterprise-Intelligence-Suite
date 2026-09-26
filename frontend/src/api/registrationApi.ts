@@ -150,6 +150,9 @@ export const organizationApi = {
   // REQ-IAM-002 — requires MANAGE_USERS on the target member (enforced server-side).
   changeMemberRole: (memberId: number, orgRole: OrgMember['orgRole']) =>
     apiRequest<OrgMember>(`/organization/me/members/${memberId}/role`, { method: 'PATCH', body: JSON.stringify({ orgRole }) }),
+  // C30: reset a member's two-factor authentication (MANAGE_USERS, same organization).
+  resetMemberMfa: (memberId: number) =>
+    apiRequest<undefined>(`/organization/me/members/${memberId}/mfa/reset`, { method: 'POST' }),
   listMyOrgProducts: () => apiRequest<OrgProductAccess[]>('/organization/me/products'),
   listMyOrgSubscription: () => apiRequest<Subscription[]>('/organization/me/subscription'),
 }

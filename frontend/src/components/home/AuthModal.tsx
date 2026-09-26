@@ -5,6 +5,7 @@ import { X } from 'lucide-react'
 import { ApiError } from '../../api/client'
 import { samlLoginApi } from '../../api/samlApi'
 import { useAuth } from '../../auth/AuthProvider'
+import { MfaSignInEnrollment } from './MfaSignInEnrollment'
 import '../../styles/landing.css'
 
 export type AuthMode = 'login' | null
@@ -17,6 +18,9 @@ interface AuthModalProps {
   // AuthModalContext) — opens straight into the SSO step showing that error,
   // rather than the normal email/password form.
   initialSsoError?: string | null
+  // C29: set when a SAML sign-in redirected back with ?mfaChallenge= or
+  // ?mfaEnroll= (see AuthModalContext) — opens straight into that step.
+  initialMfaStep?: { kind: 'verify' | 'enroll'; challengeId: string } | null
 }
 
 const FOCUSABLE_SELECTOR = 'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
@@ -33,7 +37,7 @@ const FOCUSABLE_SELECTOR = 'button, [href], input, select, textarea, [tabindex]:
  * opened it on close) — previously the only accessibility touch here was one
  * aria-label on the close button.
  */
-export function AuthModal({ mode, onClose, initialSsoError }: AuthModalProps) {
+export function AuthModal({ mode, onClose, initialSsoError, initialMfaStep }: AuthModalProps) {
   const auth = useAuth()
   const navigate = useNavigate()
   const { t } = useTranslation()
@@ -62,6 +66,17 @@ export function AuthModal({ mode, onClose, initialSsoError }: AuthModalProps) {
   // by resubmitting email+password.
   const [platformMfaChallengeId, setPlatformMfaChallengeId] = useState<string | null>(null)
   const [platformMfaCode, setPlatformMfaCode] = useState('')
+  // C29: the organization requires MFA and this member has no authenticator
+  // yet — set one up before the held sign-in becomes a session.
+  const [enrollChallengeId, setEnrollChallengeId] = useState<string | null>(null)
+  // Adjust state when a new SAML hand-off arrives (React's "reset state on
+  // prop change" pattern, rather than an effect).
+  const [seenMfaStep, setSeenMfaStep] = useState<AuthModalProps['initialMfaStep']>(null)
+  if (initialMfaStep && initialMfaStep !== seenMfaStep) {
+    setSeenMfaStep(initialMfaStep)
+    if (initialMfaStep.kind === 'enroll') setEnrollChallengeId(initialMfaStep.challengeId)
+    else setPlatformMfaChallengeId(initialMfaStep.challengeId)
+  }
 
   const dialogRef = useRef<HTMLDivElement>(null)
   const previouslyFocused = useRef<HTMLElement | null>(null)
@@ -76,6 +91,7 @@ export function AuthModal({ mode, onClose, initialSsoError }: AuthModalProps) {
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [mode])
+
 
   useEffect(() => {
     if (initialSsoError) {
@@ -93,6 +109,7 @@ export function AuthModal({ mode, onClose, initialSsoError }: AuthModalProps) {
     setMfaStep(false)
     setPlatformMfaChallengeId(null)
     setPlatformMfaCode('')
+    setEnrollChallengeId(null)
     setFormError(null)
     setSsoStep(false)
     setOrgCode('')
@@ -151,7 +168,11 @@ export function AuthModal({ mode, onClose, initialSsoError }: AuthModalProps) {
       const roles = await auth.login(email, password, mfaStep ? totp : undefined)
       afterLogin(roles)
     } catch (err) {
-      if (err instanceof ApiError && err.detail?.platformMfaRequired && typeof err.detail.mfaChallengeId === 'string') {
+      if (err instanceof ApiError && err.detail?.platformMfaEnrollmentRequired
+          && typeof err.detail.mfaEnrollmentChallengeId === 'string') {
+        setEnrollChallengeId(err.detail.mfaEnrollmentChallengeId)
+        setFormError(null)
+      } else if (err instanceof ApiError && err.detail?.platformMfaRequired && typeof err.detail.mfaChallengeId === 'string') {
         setPlatformMfaChallengeId(err.detail.mfaChallengeId)
         setFormError(null)
       } else if (err instanceof ApiError && err.detail?.mfaRequired) {
@@ -208,12 +229,18 @@ export function AuthModal({ mode, onClose, initialSsoError }: AuthModalProps) {
           <div className="section-label">SIGN IN</div>
           <h2 id="auth-modal-title">{t('auth.welcomeBack')}</h2>
           <p>
-            {ssoStep
+            {enrollChallengeId
+              ? t('auth.enrollSubtitle')
+              : ssoStep
               ? t('auth.ssoSubtitle')
               : platformMfaChallengeId ? t('auth.platformMfaSubtitle') : mfaStep ? t('auth.mfaSubtitle') : t('auth.signInSubtitle')}
           </p>
 
-          {ssoStep && (
+          {enrollChallengeId && (
+            <MfaSignInEnrollment challengeId={enrollChallengeId} onDone={afterLogin} onCancel={reset} />
+          )}
+
+          {!enrollChallengeId && ssoStep && (
             <form onSubmit={handleSsoSubmit}>
               <div className="field">
                 <label htmlFor="auth-org-code">{t('auth.organizationCode')}</label>
@@ -243,7 +270,7 @@ export function AuthModal({ mode, onClose, initialSsoError }: AuthModalProps) {
             </form>
           )}
 
-          {!ssoStep && (
+          {!enrollChallengeId && !ssoStep && (
           <form onSubmit={handleLogin}>
             {!mfaStep && !platformMfaChallengeId && (
               <>
@@ -343,7 +370,7 @@ export function AuthModal({ mode, onClose, initialSsoError }: AuthModalProps) {
           </form>
           )}
 
-          {!ssoStep && !mfaStep && !platformMfaChallengeId && (
+          {!enrollChallengeId && !ssoStep && !mfaStep && !platformMfaChallengeId && (
             <div className="switch">
               <button type="button" onClick={() => { setSsoStep(true); setFormError(null) }}>
                 {t('auth.useOrganizationSso')}
@@ -351,7 +378,7 @@ export function AuthModal({ mode, onClose, initialSsoError }: AuthModalProps) {
             </div>
           )}
 
-          {!ssoStep && !mfaStep && !platformMfaChallengeId && (
+          {!enrollChallengeId && !ssoStep && !mfaStep && !platformMfaChallengeId && (
             <div className="switch">
               {t('auth.noAccount')}{' '}
               <button type="button" onClick={() => { onClose(); reset(); navigate('/register') }}>{t('auth.createOne')}</button>

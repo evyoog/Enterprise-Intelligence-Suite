@@ -38,7 +38,17 @@
     "organizationCode": "Código de la organización",
     "ssoContinue": "Continuar",
     "ssoChecking": "Comprobando…",
-    "ssoNotAvailable": "El inicio de sesión único no está configurado para ese código de organización."
+    "ssoNotAvailable": "El inicio de sesión único no está configurado para ese código de organización.",
+    "enrollSubtitle": "Su organización exige la autenticación en dos pasos. Escanee el código QR con una aplicación de autenticación y escriba el código de 6 dígitos para terminar de iniciar sesión.",
+    "enrollQrAlt": "Código QR para su aplicación de autenticación",
+    "enrollManualKey": "¿No puede escanearlo? Escriba esta clave:",
+    "enrollSubmit": "Verificar e iniciar sesión",
+    "enrollStartError": "No se pudo iniciar la configuración del autenticador. Vuelva a iniciar sesión.",
+    "enrollVerifyError": "No se pudo verificar el código. Inténtelo de nuevo.",
+    "enrollDone": "La autenticación en dos pasos está configurada.",
+    "recoveryCodesHint": "Guarde estos códigos de recuperación en un lugar seguro. Cada uno funciona una vez si pierde su autenticador. No se volverán a mostrar.",
+    "recoveryCodesLabel": "Códigos de recuperación",
+    "enrollContinue": "Ya los guardé, continuar"
   },
   "theme": {
     "light": "Claro",
@@ -165,7 +175,13 @@
     "scope": {
       "PLATFORM": "Plataforma",
       "ORGANIZATION": "Organización"
-    }
+    },
+    "activeTitle": "Accesos activos",
+    "noActive": "No hay accesos activos.",
+    "requestedBy": "Solicitado por {{email}}",
+    "unknownRequester": "una cuenta de plataforma",
+    "revokeGrant": "Revocar {{permission}} para {{email}}",
+    "pendingTitle": "Solicitudes pendientes"
   },
   "adminRbac": {
     "rolesTitle": "Roles",
@@ -309,5 +325,19 @@
     },
     "catalogTitle": "Catálogo de productos",
     "catalogSubtitle": "Busque y filtre los productos disponibles en la plataforma."
+  },
+  "mfaReset": {
+    "column": "Dos pasos",
+    "button": "Restablecer 2FA",
+    "buttonFor": "Restablecer la autenticación en dos pasos de {{name}}",
+    "title": "¿Restablecer la autenticación en dos pasos de {{name}}?",
+    "titleByEmail": "Restablecer la autenticación en dos pasos de un usuario",
+    "body": "Se eliminan su aplicación de autenticación y sus códigos de recuperación, y se cancela cualquier inicio de sesión que espere un código. Se le notifica y el restablecimiento queda en el registro de auditoría. Si su organización exige la autenticación en dos pasos, configurará un nuevo autenticador la próxima vez que inicie sesión.",
+    "email": "Correo del usuario",
+    "cancel": "Cancelar",
+    "confirm": "Restablecer",
+    "done": "Se restableció la autenticación en dos pasos de {{name}}.",
+    "error": "No se pudo restablecer la autenticación en dos pasos.",
+    "openByEmail": "Restablecer 2FA de un usuario"
   }
 }

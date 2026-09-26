@@ -15,6 +15,7 @@ import { ApiError } from '../../api/client'
 import { OrganizationEditDialog } from '../../components/admin/OrganizationEditDialog'
 import { OrganizationLifecycleDialog, type LifecycleTarget } from '../../components/admin/OrganizationLifecycleDialog'
 import { PageHeader } from '../../components/layout/PageHeader'
+import { ResetMfaDialog } from '../../components/security/ResetMfaDialog'
 
 type TabKey = 'organizations' | 'individuals' | 'pending'
 
@@ -23,11 +24,30 @@ type TabKey = 'organizations' | 'individuals' | 'pending'
  * standalone individual, plus the manual Keycloak-linking bridge this phase
  * relies on instead of automatic provisioning. */
 export function RegistrationsAdminPage() {
+  const { t } = useTranslation()
   const [tab, setTab] = useState<TabKey>('organizations')
+  // C30: a platform admin resets anyone's two-factor authentication by email.
+  const [resetOpen, setResetOpen] = useState(false)
+  const [resetNotice, setResetNotice] = useState<string | null>(null)
 
   return (
     <>
-      <PageHeader title="Registrations" subtitle="Every organization and individual that has registered with Vyoog." />
+      <PageHeader
+        title="Registrations"
+        subtitle="Every organization and individual that has registered with Vyoog."
+        action={(
+          <Button variant="outlined" color="error" size="small" onClick={() => setResetOpen(true)}>
+            {t('mfaReset.openByEmail')}
+          </Button>
+        )}
+      />
+      {resetNotice && <Alert severity="success" sx={{ mb: 2 }} onClose={() => setResetNotice(null)}>{resetNotice}</Alert>}
+      <ResetMfaDialog
+        open={resetOpen}
+        onConfirm={(email) => adminRegistrationApi.resetMfa(email ?? '')}
+        onClose={() => setResetOpen(false)}
+        onDone={(who) => { setResetOpen(false); setResetNotice(t('mfaReset.done', { name: who })) }}
+      />
 
       <Tabs value={tab} onChange={(_, v) => setTab(v)} sx={{ mb: 3, borderBottom: '1px solid', borderColor: 'divider' }}>
         <Tab value="organizations" label="Organizations" />

@@ -38,7 +38,17 @@
     "organizationCode": "Organization code",
     "ssoContinue": "Continue",
     "ssoChecking": "Checking…",
-    "ssoNotAvailable": "Single sign-on isn't set up for that organization code."
+    "ssoNotAvailable": "Single sign-on isn't set up for that organization code.",
+    "enrollSubtitle": "Your organization requires two-factor authentication. Scan the QR code with an authenticator app, then enter the 6-digit code to finish signing in.",
+    "enrollQrAlt": "QR code for your authenticator app",
+    "enrollManualKey": "Can't scan it? Enter this key:",
+    "enrollSubmit": "Verify and sign in",
+    "enrollStartError": "Could not start authenticator set-up. Please sign in again.",
+    "enrollVerifyError": "Could not verify your code. Please try again.",
+    "enrollDone": "Two-factor authentication is set up.",
+    "recoveryCodesHint": "Save these recovery codes somewhere safe. Each one works once if you lose your authenticator. They won't be shown again.",
+    "recoveryCodesLabel": "Recovery codes",
+    "enrollContinue": "I've saved them, continue"
   },
   "theme": {
     "light": "Light",
@@ -165,7 +175,13 @@
     "scope": {
       "PLATFORM": "Platform",
       "ORGANIZATION": "Organization"
-    }
+    },
+    "activeTitle": "Active grants",
+    "noActive": "No active grants.",
+    "requestedBy": "Requested by {{email}}",
+    "unknownRequester": "a platform account",
+    "revokeGrant": "Revoke {{permission}} for {{email}}",
+    "pendingTitle": "Pending requests"
   },
   "adminRbac": {
     "rolesTitle": "Roles",
@@ -309,5 +325,19 @@
     },
     "catalogTitle": "Product catalog",
     "catalogSubtitle": "Search and filter the products available on the platform."
+  },
+  "mfaReset": {
+    "column": "Two-factor",
+    "button": "Reset 2FA",
+    "buttonFor": "Reset two-factor authentication for {{name}}",
+    "title": "Reset two-factor authentication for {{name}}?",
+    "titleByEmail": "Reset a user's two-factor authentication",
+    "body": "This removes their authenticator app and recovery codes and signs them out of any sign-in waiting for a code. They are notified, and the reset is recorded in the audit log. If their organization requires two-factor authentication, they set up a new authenticator the next time they sign in.",
+    "email": "User's email address",
+    "cancel": "Cancel",
+    "confirm": "Reset two-factor",
+    "done": "Two-factor authentication was reset for {{name}}.",
+    "error": "Could not reset two-factor authentication.",
+    "openByEmail": "Reset a user's 2FA"
   }
 }

@@ -113,6 +113,9 @@ export const adminRegistrationApi = {
       method: 'PATCH',
       body: JSON.stringify({ licensedSeats }),
     }),
+  // C30: reset any account's two-factor authentication, by email.
+  resetMfa: (email: string) =>
+    apiRequest<undefined>('/admin/registrations/mfa-reset', { method: 'POST', body: JSON.stringify({ email }) }),
   // REQ-TEN-001 — AdminRegistrationController#updateOrganization.
   updateOrganization: (organizationId: number, payload: UpdateOrganizationPayload) =>
     apiRequest<OrganizationAdmin>(`/admin/registrations/organizations/${organizationId}`, {
