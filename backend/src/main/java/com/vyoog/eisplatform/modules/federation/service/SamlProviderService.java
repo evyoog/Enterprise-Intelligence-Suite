@@ -10,6 +10,7 @@ import com.vyoog.eisplatform.common.exception.ResourceNotFoundException;
 import com.vyoog.eisplatform.modules.audit.service.AuditService;
 import com.vyoog.eisplatform.modules.federation.dto.*;
 import com.vyoog.eisplatform.modules.federation.model.SamlIdentityProvider;
+import com.vyoog.eisplatform.modules.federation.repository.OidcIdentityProviderRepository;
 import com.vyoog.eisplatform.modules.federation.repository.SamlIdentityProviderRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
@@ -53,6 +54,7 @@ import java.util.Map;
 public class SamlProviderService {
 
     private final SamlIdentityProviderRepository repository;
+    private final OidcIdentityProviderRepository oidcProviderRepository;
     private final AuditService auditService;
     private final HttpClient httpClient = HttpClient.newBuilder().connectTimeout(Duration.ofSeconds(5)).build();
 
@@ -128,6 +130,12 @@ public class SamlProviderService {
                     existing.setUpdatedAt(Instant.now());
                     repository.saveAndFlush(existing);
                 });
+            // C27: one enabled provider per organization across SAML and OIDC.
+            oidcProviderRepository.findByOrganizationIdAndEnabledTrue(organizationId).ifPresent(oidc -> {
+                oidc.setEnabled(false);
+                oidc.setUpdatedAt(Instant.now());
+                oidcProviderRepository.saveAndFlush(oidc);
+            });
         }
         provider.setEnabled(enabled);
         provider.setUpdatedAt(Instant.now());

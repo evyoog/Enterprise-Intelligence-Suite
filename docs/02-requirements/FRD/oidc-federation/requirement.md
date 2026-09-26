@@ -12,7 +12,7 @@
 | Application | [06 Identity & Access Management](../../../01-business/roadmap/applications/06-identity-access-management.md) |
 | Application code | `APP-IAM` ([DN-5](../../../01-business/roadmap/open-decisions.md#dn-5-application-codes)) |
 | Priority | P0: the application is MVP scope ([C4](../../../01-business/roadmap/open-decisions.md#c4), [C5](../../../01-business/roadmap/open-decisions.md#c5)) |
-| AI required | No. This feature makes no use of AI (proposed; confirmed when the FRD is approved, C12) |
+| AI required | No |
 
 ## Source functions
 Workbook functions from the sprint and application pages that this FRD covers:

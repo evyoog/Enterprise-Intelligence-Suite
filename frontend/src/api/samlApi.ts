@@ -32,6 +32,8 @@ export interface SsoCheckResult {
   available: boolean
   organizationId: number | null
   organizationName: string | null
+  /** REQ-IAM-006: which sign-in to start. */
+  protocol?: 'SAML' | 'OIDC' | null
 }
 
 // ORG_ADMIN self-service Identity Federation — always the caller's own
@@ -58,5 +60,6 @@ export const samlLoginApi = {
   // A real top-level navigation, never fetch — the backend responds with an
   // actual HTTP redirect straight to the organization's own identity
   // provider (see SamlLoginController).
-  loginInitUrl: (organizationId: number) => apiUrl(`/saml/${organizationId}/login-init`),
+  loginInitUrl: (organizationId: number, protocol: SsoCheckResult['protocol'] = 'SAML') =>
+    apiUrl(protocol === 'OIDC' ? `/oidc/${organizationId}/login-init` : `/saml/${organizationId}/login-init`),
 }

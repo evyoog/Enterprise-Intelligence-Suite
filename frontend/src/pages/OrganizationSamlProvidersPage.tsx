@@ -9,6 +9,7 @@ import { ApiError, resolveAssetUrl } from '../api/client'
 import { samlApi, type SamlProvider, type SamlProviderTestResult } from '../api/samlApi'
 import { organizationApi } from '../api/registrationApi'
 import { PageHeader } from '../components/layout/PageHeader'
+import { OidcProvidersSection } from '../components/federation/OidcProvidersSection'
 
 /** 'keep' exists only when editing: change the name, leave the connection details as they are. */
 type EntryMode = 'metadata' | 'manual' | 'keep'
@@ -39,6 +40,9 @@ export function OrganizationSamlProvidersPage() {
 
   const [testResults, setTestResults] = useState<Record<number, SamlProviderTestResult>>({})
   const [testingId, setTestingId] = useState<number | null>(null)
+  // REQ-IAM-006: enabling SAML disables an enabled OIDC provider, so the
+  // OIDC section reloads after a SAML toggle (and SAML reloads after an OIDC one).
+  const [oidcRefresh, setOidcRefresh] = useState(0)
 
   const load = () => {
     samlApi.list().then(setProviders).catch((e) => setLoadError(e instanceof ApiError ? e.message : 'Could not load SAML providers.'))
@@ -111,6 +115,7 @@ export function OrganizationSamlProvidersPage() {
       if (provider.enabled) await samlApi.disable(provider.id)
       else await samlApi.enable(provider.id)
       load()
+      setOidcRefresh((k) => k + 1)
     } catch (e) {
       setLoadError(e instanceof ApiError ? e.message : 'Could not update this provider.')
     }
@@ -267,6 +272,8 @@ export function OrganizationSamlProvidersPage() {
             </Box>
           </Paper>
         )}
+
+        <OidcProvidersSection refreshKey={oidcRefresh} onChanged={load} />
       </Container>
     </Box>
   )

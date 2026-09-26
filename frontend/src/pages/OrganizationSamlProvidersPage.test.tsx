@@ -17,6 +17,7 @@ vi.mock('../api/samlApi', () => ({
     create: vi.fn(), enable: vi.fn(), disable: vi.fn(), test: vi.fn(), remove: vi.fn(),
   },
 }))
+vi.mock('../api/oidcApi', () => ({ oidcApi: { list: vi.fn().mockResolvedValue([]) } }))
 vi.mock('../api/registrationApi', () => ({
   organizationApi: { getMyOrganization: vi.fn().mockResolvedValue({ id: 1 }) },
 }))

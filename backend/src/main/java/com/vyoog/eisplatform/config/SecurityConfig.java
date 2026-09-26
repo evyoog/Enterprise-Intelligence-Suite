@@ -106,6 +106,9 @@ public class SecurityConfig {
                 .requestMatchers(HttpMethod.GET, "/saml/sso-check").permitAll()
                 .requestMatchers(HttpMethod.GET, "/saml/*/login-init").permitAll()
                 .requestMatchers(HttpMethod.POST, "/saml/*/acs").permitAll()
+                // REQ-IAM-006 (C27): OIDC sign-in navigations, before any session exists.
+                .requestMatchers(HttpMethod.GET, "/oidc/*/login-init").permitAll()
+                .requestMatchers(HttpMethod.GET, "/oidc/*/callback").permitAll()
                 // Guarded by its own shared-secret header check inside the controller,
                 // not JWT — this is a backend-to-backend call from PMS's own backend,
                 // which has no Keycloak-issued bearer token of its own to present here.

@@ -5,35 +5,27 @@ import com.onelogin.saml2.authn.SamlResponse;
 import com.onelogin.saml2.settings.Saml2Settings;
 import com.onelogin.saml2.settings.SettingsBuilder;
 import com.onelogin.saml2.util.Util;
-import com.vyoog.eisplatform.modules.audit.service.AuditService;
-import com.vyoog.eisplatform.modules.auth.service.ImpersonationExchangeService;
-import com.vyoog.eisplatform.modules.auth.service.KeycloakAdminClient;
 import com.vyoog.eisplatform.modules.auth.service.SessionCookieService;
-import com.vyoog.eisplatform.modules.auth.service.SignInMfaGate;
-import com.vyoog.eisplatform.modules.auth.model.MfaChallengeKind;
 import com.vyoog.eisplatform.modules.federation.dto.SsoCheckResponseDto;
 import com.vyoog.eisplatform.modules.federation.model.SamlExternalIdentity;
 import com.vyoog.eisplatform.modules.federation.model.SamlIdentityProvider;
 import com.vyoog.eisplatform.modules.federation.model.SamlLoginRequest;
+import com.vyoog.eisplatform.modules.federation.repository.OidcIdentityProviderRepository;
 import com.vyoog.eisplatform.modules.federation.repository.SamlExternalIdentityRepository;
 import com.vyoog.eisplatform.modules.federation.repository.SamlIdentityProviderRepository;
 import com.vyoog.eisplatform.modules.federation.repository.SamlLoginRequestRepository;
 import com.vyoog.eisplatform.modules.registration.model.*;
 import com.vyoog.eisplatform.modules.registration.repository.CustomerRepository;
-import com.vyoog.eisplatform.modules.registration.repository.OrganizationMemberRepository;
 import com.vyoog.eisplatform.modules.registration.repository.OrganizationRepository;
-import com.vyoog.eisplatform.modules.registration.service.OrganizationMemberService;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.w3c.dom.Document;
 
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
-import java.security.SecureRandom;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.HashMap;
@@ -100,25 +92,15 @@ public class SamlAuthenticationService {
         "displayname", "name", "cn");
 
     private final SamlIdentityProviderRepository identityProviderRepository;
+    private final OidcIdentityProviderRepository oidcProviderRepository;
     private final SamlExternalIdentityRepository externalIdentityRepository;
     private final SamlLoginRequestRepository loginRequestRepository;
     private final SamlProviderService samlProviderService;
     private final OrganizationRepository organizationRepository;
     private final CustomerRepository customerRepository;
-    private final OrganizationMemberRepository organizationMemberRepository;
-    private final OrganizationMemberService organizationMemberService;
-    private final KeycloakAdminClient keycloakAdminClient;
-    private final ImpersonationExchangeService impersonationExchangeService;
-    private final SessionCookieService sessionCookieService;
-    private final SignInMfaGate signInMfaGate;
-    private final AuditService auditService;
-    private final SecureRandom random = new SecureRandom();
+    private final FederatedAccountService federatedAccountService;
 
-    @Value("${app.frontend-url}")
-    private String frontendUrl;
 
-    @Value("${vyoog.keycloak.ropc-client-id}")
-    private String ownClientId;
 
     /** Public, pre-login lookup the SPA calls (via {@code fetch}) before
      * navigating anywhere — see {@link SsoCheckResponseDto}'s own javadoc.
@@ -128,12 +110,21 @@ public class SamlAuthenticationService {
     @Transactional(readOnly = true)
     public SsoCheckResponseDto checkSso(String organizationCode) {
         if (organizationCode == null || organizationCode.isBlank()) {
-            return new SsoCheckResponseDto(false, null, null);
+            return new SsoCheckResponseDto(false, null, null, null);
         }
+        // REQ-IAM-006 (C27): at most one SAML or OIDC provider is enabled, so
+        // the protocol tells the web app which sign-in to start.
         return organizationRepository.findByCodeIgnoreCase(organizationCode)
-            .flatMap(org -> identityProviderRepository.findByOrganizationIdAndEnabledTrue(org.getId())
-                .map(provider -> new SsoCheckResponseDto(true, org.getId(), org.getName())))
-            .orElseGet(() -> new SsoCheckResponseDto(false, null, null));
+            .map(org -> {
+                if (identityProviderRepository.findByOrganizationIdAndEnabledTrue(org.getId()).isPresent()) {
+                    return new SsoCheckResponseDto(true, org.getId(), org.getName(), "SAML");
+                }
+                if (oidcProviderRepository.findByOrganizationIdAndEnabledTrue(org.getId()).isPresent()) {
+                    return new SsoCheckResponseDto(true, org.getId(), org.getName(), "OIDC");
+                }
+                return new SsoCheckResponseDto(false, null, null, null);
+            })
+            .orElseGet(() -> new SsoCheckResponseDto(false, null, null, null));
     }
 
     /**
@@ -283,30 +274,9 @@ public class SamlAuthenticationService {
 
         Customer customer = resolveOrProvisionCustomer(organization, provider, nameId, email, firstName, lastName);
 
-        var tokenResult = impersonationExchangeService.exchangeForUser(customer.getKeycloakSub(), ownClientId)
-            .orElseThrow(() -> new SamlLoginException("Could not create a session for this account"));
-
-        // C29: the organization MFA policy applies to federated sign-in too.
-        // The session is held until the member enters (or first sets up) their
-        // authenticator code in the web app, which picks up the opaque id.
-        var step = signInMfaGate.check(customer.getId(), customer.getKeycloakSub(), List.of(), true,
-            tokenResult.accessToken(), tokenResult.refreshToken());
-        if (step.isPresent()) {
-            auditService.recordSuccess("SAML_LOGIN_MFA_PENDING", customer.getKeycloakSub(), customer.getId(), email,
-                "Customer", customer.getKeycloakSub(), organizationId,
-                "Signed in via SAML identity provider \"" + provider.getName() + "\"; waiting for "
-                    + (step.get().kind() == MfaChallengeKind.ENROLL ? "authenticator set-up" : "authenticator code"));
-            String param = step.get().kind() == MfaChallengeKind.ENROLL ? "mfaEnroll" : "mfaChallenge";
-            return frontendUrl + "/?" + param + "=" + URLEncoder.encode(step.get().challengeId(), StandardCharsets.UTF_8);
-        }
-
-        sessionCookieService.finalizeBrowserSession(response, customer.getKeycloakSub(), tokenResult.refreshToken(), true);
-
-        auditService.recordSuccess("SAML_LOGIN_SUCCESS", customer.getKeycloakSub(), customer.getId(), email,
-            "Customer", customer.getKeycloakSub(), organizationId,
-            "Signed in via SAML identity provider \"" + provider.getName() + "\"");
-
-        return frontendUrl;
+        return federatedAccountService.finishSignIn(customer, organizationId, email,
+            "Signed in via SAML identity provider \"" + provider.getName() + "\"", "SAML_LOGIN_SUCCESS", response,
+            SamlLoginException::new);
     }
 
     /**
@@ -328,36 +298,11 @@ public class SamlAuthenticationService {
             identity.setEmail(email);
             identity.setLastLoginAt(Instant.now());
             externalIdentityRepository.save(identity);
-            ensureActiveMembership(organization.getId(), customer.getId());
+            federatedAccountService.ensureActiveMembership(organization.getId(), customer.getId(), SamlLoginException::new);
             return customer;
         }
 
-        Customer customer = customerRepository.findByEmailIgnoreCase(email).orElse(null);
-        if (customer != null) {
-            if (customer.getKeycloakSub() == null || customer.getKeycloakSub().isBlank()) {
-                throw new SamlLoginException(
-                    "An account already exists for this email but has not finished setup. "
-                        + "Please complete that registration first, or contact your administrator.");
-            }
-        } else {
-            String password = generateRandomPassword();
-            // enabled=true immediately, unlike registration's disabled-until-
-            // email-verified pattern (see KeycloakAdminClient#createUser) —
-            // a validated SAML assertion from the org's own trusted IdP IS
-            // the verification here.
-            Optional<String> keycloakSub = keycloakAdminClient.createUser(email, firstName, lastName, password, true);
-            if (keycloakSub.isEmpty()) {
-                throw new SamlLoginException("Could not create your account right now. Please try again shortly.");
-            }
-            customer = new Customer();
-            customer.setEmail(email);
-            customer.setFirstName(firstName);
-            customer.setLastName(lastName);
-            customer.setCountry(organization.getCountry());
-            customer.setStatus(RegistrationStatus.COMPLETED);
-            customer.setKeycloakSub(keycloakSub.get());
-            customer = customerRepository.save(customer);
-        }
+        Customer customer = federatedAccountService.linkOrProvision(organization, email, firstName, lastName, SamlLoginException::new);
 
         SamlExternalIdentity identity = new SamlExternalIdentity();
         identity.setOrganizationId(organization.getId());
@@ -369,31 +314,8 @@ public class SamlAuthenticationService {
         identity.setLastLoginAt(Instant.now());
         externalIdentityRepository.save(identity);
 
-        ensureActiveMembership(organization.getId(), customer.getId());
+        federatedAccountService.ensureActiveMembership(organization.getId(), customer.getId(), SamlLoginException::new);
         return customer;
-    }
-
-    /**
-     * Deliberately never grants {@link OrgRole#ORG_ADMIN} — a SAML-authenticated
-     * member always starts as (or must already be) a plain {@link OrgRole#MEMBER};
-     * no SAML attribute or group claim is ever consulted to decide organization
-     * administrator access (this platform's own explicit anti-privilege-escalation
-     * requirement for Identity Federation). A membership already marked
-     * INACTIVE (deliberately removed by an org admin) is treated as access
-     * denied rather than silently reactivated — an org's own IdP account
-     * still being enabled doesn't override that removal.
-     */
-    private void ensureActiveMembership(Long organizationId, Long customerId) {
-        Optional<OrganizationMember> existing =
-            organizationMemberRepository.findByOrganizationIdAndCustomerId(organizationId, customerId);
-        if (existing.isPresent()) {
-            if (existing.get().getStatus() != MembershipStatus.ACTIVE) {
-                throw new SamlLoginException(
-                    "Your membership in this organization has been deactivated. Contact your administrator.");
-            }
-            return;
-        }
-        organizationMemberService.addMember(organizationId, customerId, OrgRole.MEMBER);
     }
 
     private Saml2Settings buildSettings(Long organizationId, SamlIdentityProvider provider) {
@@ -434,15 +356,5 @@ public class SamlAuthenticationService {
             }
         }
         return null;
-    }
-
-    /** Never disclosed anywhere — this account only ever authenticates via
-     * SSO (see this method's one caller). 32 random bytes, base64-encoded,
-     * comfortably satisfies both this app's own {@code PasswordPolicy} floor
-     * and any realm-level Keycloak password policy. */
-    private String generateRandomPassword() {
-        byte[] bytes = new byte[32];
-        random.nextBytes(bytes);
-        return java.util.Base64.getEncoder().encodeToString(bytes) + "Aa1!";
     }
 }

@@ -126,7 +126,7 @@ export function AuthModal({ mode, onClose, initialSsoError, initialMfaStep }: Au
         // A real navigation, not a fetch — the backend responds with an
         // actual redirect straight to the organization's own identity
         // provider (see samlLoginApi.loginInitUrl's own doc).
-        window.location.href = samlLoginApi.loginInitUrl(result.organizationId)
+        window.location.href = samlLoginApi.loginInitUrl(result.organizationId, result.protocol)
         return
       }
       setSsoError(t('auth.ssoNotAvailable'))
