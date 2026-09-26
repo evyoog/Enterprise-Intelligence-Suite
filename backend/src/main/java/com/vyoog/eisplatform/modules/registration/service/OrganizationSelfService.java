@@ -14,6 +14,8 @@ import com.vyoog.eisplatform.modules.notification.service.NotificationService;
 import com.vyoog.eisplatform.modules.product.model.Product;
 import com.vyoog.eisplatform.modules.product.model.ProductStatus;
 import com.vyoog.eisplatform.modules.product.repository.ProductRepository;
+import com.vyoog.eisplatform.modules.registration.dto.GroupDto;
+import com.vyoog.eisplatform.modules.registration.dto.MemberStatusAction;
 import com.vyoog.eisplatform.modules.registration.dto.OrgMemberDto;
 import com.vyoog.eisplatform.modules.registration.dto.OrgProductAccessDto;
 import com.vyoog.eisplatform.modules.registration.dto.OrganizationDto;
@@ -27,6 +29,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.Instant;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 /**
@@ -43,6 +46,8 @@ public class OrganizationSelfService {
 
     private final OrganizationRepository organizationRepository;
     private final OrganizationMemberRepository memberRepository;
+    private final OrganizationGroupRepository groupRepository;
+    private final OrganizationGroupMemberRepository groupMemberRepository;
     private final OrganizationProductAccessRepository accessRepository;
     private final ProductSubscriptionRepository subscriptionRepository;
     private final ProductRepository productRepository;
@@ -163,19 +168,21 @@ public class OrganizationSelfService {
     public List<OrgMemberDto> listMyOrgUsers(Long customerId) {
         OrganizationMember caller = requirePermission(customerId, "MANAGE_USERS");
         return memberRepository.findByOrganizationId(caller.getOrganizationId()).stream()
-            .map(member -> {
-                var customer = customerRepository.findById(member.getCustomerId()).orElse(null);
-                return new OrgMemberDto(
-                    member.getId(),
-                    member.getCustomerId(),
-                    customer == null ? null : customer.getFirstName(),
-                    customer == null ? null : customer.getLastName(),
-                    customer == null ? null : customer.getEmail(),
-                    member.getOrgRole(),
-                    member.getStatus()
-                );
-            })
+            .map(member -> toDto(member, customerRepository.findById(member.getCustomerId()).orElse(null)))
             .toList();
+    }
+
+    private static OrgMemberDto toDto(OrganizationMember member, Customer customer) {
+        return new OrgMemberDto(
+            member.getId(),
+            member.getCustomerId(),
+            customer == null ? null : customer.getFirstName(),
+            customer == null ? null : customer.getLastName(),
+            customer == null ? null : customer.getEmail(),
+            member.getOrgRole(),
+            member.getStatus(),
+            member.getLastReviewedAt()
+        );
     }
 
     /**
@@ -218,14 +225,63 @@ public class OrganizationSelfService {
             "OrganizationMember", String.valueOf(target.getId()), access.caller().getOrganizationId(),
             "Changed member " + target.getId() + "'s role to " + newRole);
 
-        var customer = customerRepository.findById(target.getCustomerId()).orElse(null);
-        return new OrgMemberDto(
-            target.getId(), target.getCustomerId(),
-            customer == null ? null : customer.getFirstName(),
-            customer == null ? null : customer.getLastName(),
-            customer == null ? null : customer.getEmail(),
-            target.getOrgRole(), target.getStatus()
-        );
+        return toDto(target, customerRepository.findById(target.getCustomerId()).orElse(null));
+    }
+
+    /**
+     * 05.03.01 User Lifecycle (sprint 2026.4.1): activate/suspend/remove an
+     * existing member. Same last-admin guard as {@link #changeMemberRole} —
+     * an organization can never be left with zero active ORG_ADMINs by any
+     * of these three actions either.
+     */
+    @Transactional
+    public OrgMemberDto changeMemberStatus(Long callerCustomerId, Long targetMemberId, MemberStatusAction action) {
+        MemberAccess access = requirePermissionOnMember(callerCustomerId, targetMemberId, "MANAGE_USERS");
+        OrganizationMember target = access.target();
+
+        if (action != MemberStatusAction.REACTIVATE && target.getOrgRole() == OrgRole.ORG_ADMIN) {
+            long activeAdmins = memberRepository.countByOrganizationIdAndOrgRoleAndStatus(
+                access.caller().getOrganizationId(), OrgRole.ORG_ADMIN, MembershipStatus.ACTIVE);
+            if (activeAdmins <= 1) {
+                throw new IllegalArgumentException("Cannot suspend or remove the organization's last administrator.");
+            }
+        }
+
+        OrganizationMember updated = switch (action) {
+            case SUSPEND -> organizationMemberService.suspendMember(target.getId());
+            case REACTIVATE -> organizationMemberService.reactivateMember(target.getId());
+            case REMOVE -> {
+                organizationMemberService.removeMember(target.getId());
+                yield memberRepository.findById(target.getId()).orElseThrow();
+            }
+        };
+
+        customerRepository.findById(updated.getCustomerId()).ifPresent(targetCustomer ->
+            notificationService.notify(targetCustomer.getId(), targetCustomer.getEmail(),
+                NotificationCategory.ORGANIZATION, NotificationSeverity.INFO,
+                "Your organization membership changed",
+                "Your membership status is now " + updated.getStatus() + "."));
+        auditService.recordSuccess("MEMBER_STATUS_CHANGED", null, callerCustomerId, null,
+            "OrganizationMember", String.valueOf(updated.getId()), access.caller().getOrganizationId(),
+            "Set member " + updated.getId() + "'s status to " + updated.getStatus() + " (" + action + ")");
+
+        return toDto(updated, customerRepository.findById(updated.getCustomerId()).orElse(null));
+    }
+
+    /** 05.03.02 Review access (sprint 2026.4.1): an admin confirms this
+     * member's current role and access are still correct. Just a
+     * timestamped record — it changes nothing about the member itself. */
+    @Transactional
+    public OrgMemberDto reviewMemberAccess(Long callerCustomerId, Long targetMemberId) {
+        MemberAccess access = requirePermissionOnMember(callerCustomerId, targetMemberId, "MANAGE_USERS");
+        OrganizationMember target = access.target();
+        target.setLastReviewedAt(Instant.now());
+        target.setLastReviewedByCustomerId(callerCustomerId);
+        memberRepository.save(target);
+        auditService.recordSuccess("MEMBER_ACCESS_REVIEWED", null, callerCustomerId, null,
+            "OrganizationMember", String.valueOf(target.getId()), access.caller().getOrganizationId(),
+            "Reviewed member " + target.getId() + "'s access");
+        return toDto(target, customerRepository.findById(target.getCustomerId()).orElse(null));
     }
 
     /** C30: an organization admin (MANAGE_USERS, same organization only)
@@ -466,5 +522,97 @@ public class OrganizationSelfService {
      * same check as {@link #requireOrganizationManagement}. */
     public Long requireBusinessDashboardAccess(Long customerId) {
         return requireOrganizationManagement(customerId);
+    }
+
+    // ------------------------------------------------------------------
+    // 05.04.01 Groups (sprint 2026.4.1)
+    // ------------------------------------------------------------------
+
+    private GroupDto toGroupDto(OrganizationGroup group) {
+        List<OrgMemberDto> members = groupMemberRepository.findByGroupId(group.getId()).stream()
+            .map(gm -> memberRepository.findById(gm.getOrganizationMemberId()))
+            .flatMap(Optional::stream)
+            .map(m -> toDto(m, customerRepository.findById(m.getCustomerId()).orElse(null)))
+            .toList();
+        return new GroupDto(group.getId(), group.getName(), members);
+    }
+
+    public List<GroupDto> listMyOrgGroups(Long customerId) {
+        OrganizationMember caller = requirePermission(customerId, "MANAGE_USERS");
+        return groupRepository.findByOrganizationId(caller.getOrganizationId()).stream()
+            .map(this::toGroupDto)
+            .toList();
+    }
+
+    @Transactional
+    public GroupDto createGroup(Long customerId, String name) {
+        OrganizationMember caller = requirePermission(customerId, "MANAGE_USERS");
+        OrganizationGroup group = new OrganizationGroup();
+        group.setOrganizationId(caller.getOrganizationId());
+        group.setName(name);
+        group = groupRepository.save(group);
+        auditService.recordSuccess("GROUP_CREATED", null, customerId, null,
+            "OrganizationGroup", group.getId().toString(), caller.getOrganizationId(), "Created group " + name);
+        return toGroupDto(group);
+    }
+
+    private OrganizationGroup requireGroupInCallersOrganization(Long callerCustomerId, Long groupId) {
+        OrganizationMember caller = resolveMembership(callerCustomerId);
+        OrganizationGroup group = groupRepository.findById(groupId)
+            .orElseThrow(() -> new ResourceNotFoundException("Group not found"));
+        if (!group.organizationId().equals(caller.getOrganizationId())) {
+            // Same reasoning as requirePermissionOnMember: one generic
+            // "not found", not a distinct "wrong organization" message.
+            throw new ResourceNotFoundException("Group not found");
+        }
+        return group;
+    }
+
+    @Transactional
+    public void deleteGroup(Long customerId, Long groupId) {
+        requirePermission(customerId, "MANAGE_USERS");
+        OrganizationGroup group = requireGroupInCallersOrganization(customerId, groupId);
+        groupMemberRepository.deleteByGroupId(group.getId());
+        groupRepository.delete(group);
+        auditService.recordSuccess("GROUP_DELETED", null, customerId, null,
+            "OrganizationGroup", groupId.toString(), group.organizationId(), "Deleted group " + group.getName());
+    }
+
+    /** 05.04.01.02 Add member / 05.03.02.02 Assign group. Refuses a member
+     * of a different organization the same way requirePermissionOnMember does. */
+    @Transactional
+    public GroupDto addGroupMember(Long customerId, Long groupId, Long organizationMemberId) {
+        requirePermission(customerId, "MANAGE_USERS");
+        OrganizationGroup group = requireGroupInCallersOrganization(customerId, groupId);
+        OrganizationMember target = memberRepository.findById(organizationMemberId)
+            .orElseThrow(() -> new ResourceNotFoundException("Member not found"));
+        if (!target.getOrganizationId().equals(group.organizationId())) {
+            throw new ResourceNotFoundException("Member not found");
+        }
+        if (groupMemberRepository.findByGroupIdAndOrganizationMemberId(groupId, organizationMemberId).isEmpty()) {
+            OrganizationGroupMember gm = new OrganizationGroupMember();
+            gm.setGroupId(groupId);
+            gm.setOrganizationMemberId(organizationMemberId);
+            groupMemberRepository.save(gm);
+            auditService.recordSuccess("GROUP_MEMBER_ADDED", null, customerId, null,
+                "OrganizationGroup", groupId.toString(), group.organizationId(),
+                "Added member " + organizationMemberId + " to group " + group.getName());
+        }
+        return toGroupDto(group);
+    }
+
+    /** 05.04.01.03 Remove member. */
+    @Transactional
+    public GroupDto removeGroupMember(Long customerId, Long groupId, Long organizationMemberId) {
+        requirePermission(customerId, "MANAGE_USERS");
+        OrganizationGroup group = requireGroupInCallersOrganization(customerId, groupId);
+        groupMemberRepository.findByGroupIdAndOrganizationMemberId(groupId, organizationMemberId)
+            .ifPresent(gm -> {
+                groupMemberRepository.delete(gm);
+                auditService.recordSuccess("GROUP_MEMBER_REMOVED", null, customerId, null,
+                    "OrganizationGroup", groupId.toString(), group.organizationId(),
+                    "Removed member " + organizationMemberId + " from group " + group.getName());
+            });
+        return toGroupDto(group);
     }
 }

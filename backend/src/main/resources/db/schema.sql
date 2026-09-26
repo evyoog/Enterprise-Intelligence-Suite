@@ -8,8 +8,20 @@ CREATE TABLE products (
     category VARCHAR(255),
     status VARCHAR(20) NOT NULL DEFAULT 'ACTIVE',
     sso_connected BOOLEAN NOT NULL DEFAULT false,
+    -- 02.01 Product Lifecycle & Structure (sprint 2026.4.1, V006).
+    version INT NOT NULL DEFAULT 1,
+    parent_product_id BIGINT REFERENCES products(id),
+    variant_label VARCHAR(100),
     created_at TIMESTAMP NOT NULL DEFAULT now(),
     updated_at TIMESTAMP NOT NULL DEFAULT now()
+);
+
+-- 02.01.02.03 Define dependencies (sprint 2026.4.1, V006). Advisory only —
+-- see Product#dependsOn's own javadoc.
+CREATE TABLE product_dependencies (
+    product_id BIGINT NOT NULL REFERENCES products(id) ON DELETE CASCADE,
+    depends_on_product_id BIGINT NOT NULL REFERENCES products(id) ON DELETE CASCADE,
+    PRIMARY KEY (product_id, depends_on_product_id)
 );
 
 CREATE TABLE product_plans (
@@ -18,7 +30,14 @@ CREATE TABLE product_plans (
     name VARCHAR(100) NOT NULL,
     price NUMERIC(12, 2) NOT NULL,
     billing_period VARCHAR(20) NOT NULL,
-    sort_order INT
+    sort_order INT,
+    -- 02.03 Plan Management (sprint 2026.4.1, V006).
+    currency VARCHAR(10) NOT NULL DEFAULT 'USD',
+    usage_limit INT,
+    included_features VARCHAR(1000),
+    usage_price NUMERIC(12, 4),
+    tier_pricing VARCHAR(500),
+    overage_charge NUMERIC(12, 4)
 );
 
 CREATE INDEX idx_product_plans_product_id ON product_plans (product_id);
@@ -256,7 +275,26 @@ CREATE TABLE organization_member (
     status VARCHAR(20) NOT NULL DEFAULT 'ACTIVE',
     joined_at TIMESTAMP NOT NULL DEFAULT now(),
     deactivated_at TIMESTAMP,
+    -- 05.03.02.03 Review access (sprint 2026.4.1, V006).
+    last_reviewed_at TIMESTAMP,
+    last_reviewed_by_customer_id BIGINT REFERENCES customer(id),
     UNIQUE (organization_id, customer_id)
+);
+
+-- 05.04.01 Groups (sprint 2026.4.1, V006).
+CREATE TABLE organization_group (
+    id BIGSERIAL PRIMARY KEY,
+    organization_id BIGINT NOT NULL REFERENCES organization(id) ON DELETE CASCADE,
+    name VARCHAR(150) NOT NULL,
+    created_at TIMESTAMP NOT NULL DEFAULT now()
+);
+
+CREATE TABLE organization_group_member (
+    id BIGSERIAL PRIMARY KEY,
+    group_id BIGINT NOT NULL REFERENCES organization_group(id) ON DELETE CASCADE,
+    organization_member_id BIGINT NOT NULL REFERENCES organization_member(id) ON DELETE CASCADE,
+    added_at TIMESTAMP NOT NULL DEFAULT now(),
+    UNIQUE (group_id, organization_member_id)
 );
 CREATE INDEX idx_org_member_org ON organization_member (organization_id);
 CREATE INDEX idx_org_member_customer ON organization_member (customer_id);

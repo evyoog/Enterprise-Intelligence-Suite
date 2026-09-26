@@ -74,6 +74,38 @@ public class Product {
     @OneToMany(mappedBy = "product", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     private List<ProductPlan> plans = new ArrayList<>();
 
+    /** 02.01.01.03 Version product (sprint 2026.4.1): a plain revision
+     * counter, incremented on every {@code updateProduct} call after
+     * creation — see ProductService. Not a full content-versioning history
+     * (no past revision is kept), just a visible "this has changed N times"
+     * count, shown read-only in the admin UI. */
+    @Column(nullable = false)
+    private Integer version = 1;
+
+    /** 02.01.02.01 Define product hierarchy (sprint 2026.4.1): the product
+     * this one is a child of, if any — self-referential, no separate
+     * hierarchy table. Null for a top-level product. */
+    @Column(name = "parent_product_id")
+    private Long parentProductId;
+
+    /** 02.01.02.02 Define variants (sprint 2026.4.1): set alongside
+     * {@link #parentProductId} to distinguish sibling variants of the same
+     * parent (e.g. "Enterprise", "SMB"). Meaningless without a parent. */
+    @Column(name = "variant_label", length = 100)
+    private String variantLabel;
+
+    /** 02.01.02.03 Define dependencies (sprint 2026.4.1): other products this
+     * one requires — advisory only (nothing today blocks subscribing to this
+     * product without the dependency; see the product-lifecycle FRD's
+     * business rules for what enforces it later, in 09 Orders). */
+    @ManyToMany(fetch = FetchType.LAZY)
+    @JoinTable(
+        name = "product_dependencies",
+        joinColumns = @JoinColumn(name = "product_id"),
+        inverseJoinColumns = @JoinColumn(name = "depends_on_product_id")
+    )
+    private Set<Product> dependsOn = new HashSet<>();
+
     @CreatedDate
     @Column(updatable = false)
     private Instant createdAt;

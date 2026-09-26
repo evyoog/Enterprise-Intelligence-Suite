@@ -11,6 +11,7 @@ import com.vyoog.eisplatform.modules.product.dto.ProductDto;
 import com.vyoog.eisplatform.modules.product.dto.ProductSearchFacetsDto;
 import com.vyoog.eisplatform.modules.product.dto.ProductSearchResponse;
 import com.vyoog.eisplatform.modules.product.mapper.ProductMapper;
+import com.vyoog.eisplatform.modules.product.model.Currency;
 import com.vyoog.eisplatform.modules.product.model.Product;
 import com.vyoog.eisplatform.modules.product.model.ProductPlan;
 import com.vyoog.eisplatform.modules.product.model.ProductStatus;
@@ -34,7 +35,7 @@ import java.util.stream.Collectors;
 /**
  * Class-level @Transactional(readOnly = true): Product.plans is lazy-loaded, and
  * the mapper walks it while building each ProductDto — that happens in the
- * .map(productMapper::toDto) below, which runs AFTER the repository call itself
+ * .map(this::toDtoWithDependencies) below, which runs AFTER the repository call itself
  * returns. Without an open transaction spanning that mapping step too, touching
  * product.getPlans() there would throw LazyInitializationException. createProduct
  * overrides back to a writable transaction since readOnly=true would reject its
@@ -58,23 +59,41 @@ public class ProductService {
             : new HashSet<>(platformRepository.findAllById(platformIds));
     }
 
+    /** 02.01.02.03 Define dependencies (sprint 2026.4.1) — same reason as
+     * resolvePlatforms above. Refuses a product depending on itself. */
+    private Set<Product> resolveDependencies(Long productId, List<Long> dependsOnProductIds) {
+        if (dependsOnProductIds == null || dependsOnProductIds.isEmpty()) {
+            return new HashSet<>();
+        }
+        if (productId != null && dependsOnProductIds.contains(productId)) {
+            throw new IllegalArgumentException("A product cannot depend on itself.");
+        }
+        return new HashSet<>(productRepository.findAllById(dependsOnProductIds));
+    }
+
+    private ProductDto toDtoWithDependencies(Product product) {
+        ProductDto dto = productMapper.toDto(product);
+        dto.setDependsOnProductIds(product.getDependsOn().stream().map(Product::getId).sorted().toList());
+        return dto;
+    }
+
     /** Public storefront listing — ACTIVE products only. */
     public List<ProductDto> listProducts() {
         return productRepository.findByStatus(ProductStatus.ACTIVE).stream()
-            .map(productMapper::toDto)
+            .map(this::toDtoWithDependencies)
             .toList();
     }
 
     /** Admin listing — every product regardless of status. */
     public List<ProductDto> listAllProducts() {
         return productRepository.findAll().stream()
-            .map(productMapper::toDto)
+            .map(this::toDtoWithDependencies)
             .toList();
     }
 
     public ProductDto getProduct(Long id) {
         return productRepository.findById(id)
-            .map(productMapper::toDto)
+            .map(this::toDtoWithDependencies)
             .orElseThrow(() -> new ResourceNotFoundException("Product not found: " + id));
     }
 
@@ -103,7 +122,7 @@ public class ProductService {
         }
 
         List<ProductDto> items = productRepository.findAll(spec, resolveSort(sortBy, sortDir)).stream()
-            .map(productMapper::toDto)
+            .map(this::toDtoWithDependencies)
             .toList();
 
         List<Product> facetScope = includeInactive
@@ -152,6 +171,18 @@ public class ProductService {
         return new ProductSearchFacetsDto(categories, platforms);
     }
 
+    /** MapStruct maps a null request.currency() straight through to
+     * plan.currency = null, overriding the entity's own USD default (a
+     * generated setter is always called, even with null) — same reason
+     * createProduct/updateProduct re-apply the ProductStatus default below. */
+    private void applyPlanDefaults(List<ProductPlan> plans) {
+        plans.forEach(plan -> {
+            if (plan.getCurrency() == null) {
+                plan.setCurrency(Currency.USD);
+            }
+        });
+    }
+
     @Transactional
     public ProductDto createProduct(ProductCreateRequest request) {
         Product product = productMapper.toEntity(request);
@@ -165,12 +196,14 @@ public class ProductService {
             product.setPlans(new ArrayList<>());
         }
         product.setPlatforms(resolvePlatforms(request.platformIds()));
+        product.setDependsOn(resolveDependencies(null, request.dependsOnProductIds()));
+        applyPlanDefaults(product.getPlans());
         // mappedBy = "product" on Product.plans means ProductPlan owns the FK —
         // JPA needs it set on each child before save(), or it has nothing to
         // persist a product_id from.
         product.getPlans().forEach(plan -> plan.setProduct(product));
         Product saved = productRepository.save(product);
-        return productMapper.toDto(saved);
+        return toDtoWithDependencies(saved);
     }
 
     /**
@@ -196,16 +229,48 @@ public class ProductService {
         product.setStatus(request.status() != null ? request.status() : ProductStatus.ACTIVE);
         product.setSsoConnected(request.ssoConnected() != null && request.ssoConnected());
         product.setPlatforms(resolvePlatforms(request.platformIds()));
+        product.setParentProductId(request.parentProductId());
+        product.setVariantLabel(request.variantLabel());
+        product.setDependsOn(resolveDependencies(id, request.dependsOnProductIds()));
+        // 02.01.01.03 Version product: every update after creation counts as
+        // a new revision — see Product#version's own javadoc.
+        product.setVersion((product.getVersion() == null ? 1 : product.getVersion()) + 1);
 
         product.getPlans().clear();
         List<ProductPlan> newPlans = request.plans() == null
             ? List.of()
             : request.plans().stream().map(productMapper::toEntity).toList();
+        applyPlanDefaults(newPlans);
         newPlans.forEach(plan -> plan.setProduct(product));
         product.getPlans().addAll(newPlans);
 
         Product saved = productRepository.save(product);
-        return productMapper.toDto(saved);
+        return toDtoWithDependencies(saved);
+    }
+
+    /** 02.01.01.04 Publish product (sprint 2026.4.1): a named action for
+     * moving a product (draft/INACTIVE, or a previously RETIRED one) onto
+     * the public storefront — equivalent to updateProduct with
+     * status=ACTIVE, but doesn't require re-sending the rest of the form. */
+    @Transactional
+    public ProductDto publishProduct(Long id) {
+        Product product = productRepository.findById(id)
+            .orElseThrow(() -> new ResourceNotFoundException("Product not found: " + id));
+        product.setStatus(ProductStatus.ACTIVE);
+        return toDtoWithDependencies(productRepository.save(product));
+    }
+
+    /** 02.01.01.05 Retire product (sprint 2026.4.1): pulls it off the
+     * storefront and blocks new subscriptions (see SubscriptionService#subscribe,
+     * which already only offers ACTIVE products) without touching existing
+     * subscriptions, product access or usage history the way deleteProduct's
+     * usage guards would require. Reversible via {@link #publishProduct}. */
+    @Transactional
+    public ProductDto retireProduct(Long id) {
+        Product product = productRepository.findById(id)
+            .orElseThrow(() -> new ResourceNotFoundException("Product not found: " + id));
+        product.setStatus(ProductStatus.RETIRED);
+        return toDtoWithDependencies(productRepository.save(product));
     }
 
     /**

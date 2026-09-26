@@ -177,5 +177,5 @@ Not specified in any source. Under [DN-2](../open-decisions.md#dn-2-sprint-scope
 
 Observed on branch `dev`. This is a module-level mapping, not a verified function-by-function implementation status.
 
-- Backend: `backend/src/main/java/com/vyoog/eisplatform/modules/product`, `backend/src/main/java/com/vyoog/eisplatform/modules/platform`
-- Frontend: `frontend/src/pages/ProductsPage.tsx`, `frontend/src/pages/admin/AdminProductsPage.tsx`, `frontend/src/pages/admin/EditProductPage.tsx`, `frontend/src/pages/admin/PlatformsListPage.tsx`, `frontend/src/pages/admin/EditPlatformPage.tsx`
+- Backend: `backend/src/main/java/com/vyoog/eisplatform/modules/product` (version/hierarchy/dependencies, plan pricing fields — [product-lifecycle](../../../02-requirements/FRD/product-lifecycle/requirement.md), [plan-management](../../../02-requirements/FRD/plan-management/requirement.md)), `backend/src/main/java/com/vyoog/eisplatform/modules/platform`
+- Frontend: `frontend/src/pages/ProductsPage.tsx`, `frontend/src/pages/admin/AdminProductsPage.tsx`, `frontend/src/pages/admin/EditProductPage.tsx`, `frontend/src/components/admin/ProductForm.tsx`, `frontend/src/pages/admin/PlatformsListPage.tsx`, `frontend/src/pages/admin/EditPlatformPage.tsx`

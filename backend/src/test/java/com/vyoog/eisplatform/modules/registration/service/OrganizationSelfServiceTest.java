@@ -1,6 +1,10 @@
 package com.vyoog.eisplatform.modules.registration.service;
 
 import com.vyoog.eisplatform.common.exception.ForbiddenException;
+import com.vyoog.eisplatform.common.exception.ResourceNotFoundException;
+import com.vyoog.eisplatform.modules.registration.dto.GroupDto;
+import com.vyoog.eisplatform.modules.registration.dto.MemberStatusAction;
+import com.vyoog.eisplatform.modules.registration.dto.OrgMemberDto;
 import com.vyoog.eisplatform.modules.product.model.Product;
 import com.vyoog.eisplatform.modules.product.repository.ProductRepository;
 import com.vyoog.eisplatform.modules.registration.model.*;
@@ -237,5 +241,138 @@ class OrganizationSelfServiceTest {
 
         assertThatThrownBy(() -> organizationSelfService.changeMemberRole(adminA.getCustomerId(), memberB.getId(), OrgRole.ORG_ADMIN))
             .isInstanceOf(ForbiddenException.class);
+    }
+
+    // ------------------------------------------------------------------
+    // 05.03.01 User Lifecycle, 05.03.02 Review access (sprint 2026.4.1)
+    // ------------------------------------------------------------------
+
+    @Test
+    void orgAdminCanSuspendThenReactivateATeammate() {
+        Organization org = newOrganization();
+        var admin = organizationMemberService.addMember(org.getId(), newCustomer("suspend-admin@test-org.example").getId(), OrgRole.ORG_ADMIN);
+        var teammate = organizationMemberService.addMember(org.getId(), newCustomer("suspend-teammate@test-org.example").getId(), OrgRole.MEMBER);
+
+        var suspended = organizationSelfService.changeMemberStatus(admin.getCustomerId(), teammate.getId(), MemberStatusAction.SUSPEND);
+        assertThat(suspended.status()).isEqualTo(MembershipStatus.SUSPENDED);
+
+        var reactivated = organizationSelfService.changeMemberStatus(admin.getCustomerId(), teammate.getId(), MemberStatusAction.REACTIVATE);
+        assertThat(reactivated.status()).isEqualTo(MembershipStatus.ACTIVE);
+    }
+
+    @Test
+    void suspendedMemberLosesSelfServiceImmediately() {
+        Organization org = newOrganization();
+        var admin = organizationMemberService.addMember(org.getId(), newCustomer("lockout-admin@test-org.example").getId(), OrgRole.ORG_ADMIN);
+        var teammate = organizationMemberService.addMember(org.getId(), newCustomer("lockout-teammate@test-org.example").getId(), OrgRole.MEMBER);
+
+        organizationSelfService.changeMemberStatus(admin.getCustomerId(), teammate.getId(), MemberStatusAction.SUSPEND);
+
+        assertThatThrownBy(() -> organizationSelfService.getMyOrganization(teammate.getCustomerId()))
+            .isInstanceOf(com.vyoog.eisplatform.common.exception.ResourceNotFoundException.class);
+    }
+
+    @Test
+    void removedMemberCannotBeReactivated() {
+        Organization org = newOrganization();
+        var admin = organizationMemberService.addMember(org.getId(), newCustomer("remove-admin@test-org.example").getId(), OrgRole.ORG_ADMIN);
+        var teammate = organizationMemberService.addMember(org.getId(), newCustomer("remove-teammate@test-org.example").getId(), OrgRole.MEMBER);
+
+        organizationSelfService.changeMemberStatus(admin.getCustomerId(), teammate.getId(), MemberStatusAction.REMOVE);
+
+        assertThatThrownBy(() -> organizationSelfService.changeMemberStatus(admin.getCustomerId(), teammate.getId(), MemberStatusAction.REACTIVATE))
+            .isInstanceOf(IllegalArgumentException.class);
+    }
+
+    @Test
+    void cannotSuspendOrRemoveTheOrganizationsLastAdmin() {
+        Organization org = newOrganization();
+        var onlyAdmin = organizationMemberService.addMember(org.getId(), newCustomer("only-admin-suspend@test-org.example").getId(), OrgRole.ORG_ADMIN);
+
+        assertThatThrownBy(() -> organizationSelfService.changeMemberStatus(onlyAdmin.getCustomerId(), onlyAdmin.getId(), MemberStatusAction.SUSPEND))
+            .isInstanceOf(IllegalArgumentException.class);
+        assertThatThrownBy(() -> organizationSelfService.changeMemberStatus(onlyAdmin.getCustomerId(), onlyAdmin.getId(), MemberStatusAction.REMOVE))
+            .isInstanceOf(IllegalArgumentException.class);
+    }
+
+    @Test
+    void reactivatingAMemberRespectsTheSeatLimit() {
+        Organization org = newOrganization();
+        org.setLicensedSeats(2);
+        organizationRepository.save(org);
+        var admin = organizationMemberService.addMember(org.getId(), newCustomer("seat-admin@test-org.example").getId(), OrgRole.ORG_ADMIN);
+        var teammate = organizationMemberService.addMember(org.getId(), newCustomer("seat-teammate@test-org.example").getId(), OrgRole.MEMBER);
+        organizationSelfService.changeMemberStatus(admin.getCustomerId(), teammate.getId(), MemberStatusAction.SUSPEND);
+
+        // Seats are lowered after the suspension frees one — an org shrinking
+        // its plan is allowed (see OrganizationMemberService#isOverLimit's own
+        // javadoc), so now only the admin's own seat is left.
+        org.setLicensedSeats(1);
+        organizationRepository.save(org);
+
+        assertThatThrownBy(() -> organizationSelfService.changeMemberStatus(admin.getCustomerId(), teammate.getId(), MemberStatusAction.REACTIVATE))
+            .isInstanceOf(com.vyoog.eisplatform.common.exception.SeatLimitExceededException.class);
+    }
+
+    @Test
+    void orgAdminCanRecordAnAccessReview() {
+        Organization org = newOrganization();
+        var admin = organizationMemberService.addMember(org.getId(), newCustomer("review-admin@test-org.example").getId(), OrgRole.ORG_ADMIN);
+        var teammate = organizationMemberService.addMember(org.getId(), newCustomer("review-teammate@test-org.example").getId(), OrgRole.MEMBER);
+
+        var result = organizationSelfService.reviewMemberAccess(admin.getCustomerId(), teammate.getId());
+
+        assertThat(result.lastReviewedAt()).isNotNull();
+    }
+
+    // ------------------------------------------------------------------
+    // 05.04.01 Groups (sprint 2026.4.1)
+    // ------------------------------------------------------------------
+
+    @Test
+    void orgAdminCanCreateAGroupAndAddOrRemoveMembers() {
+        Organization org = newOrganization();
+        var admin = organizationMemberService.addMember(org.getId(), newCustomer("group-admin@test-org.example").getId(), OrgRole.ORG_ADMIN);
+        var teammate = organizationMemberService.addMember(org.getId(), newCustomer("group-teammate@test-org.example").getId(), OrgRole.MEMBER);
+
+        var group = organizationSelfService.createGroup(admin.getCustomerId(), "Engineering");
+        assertThat(group.name()).isEqualTo("Engineering");
+        assertThat(group.members()).isEmpty();
+
+        var withMember = organizationSelfService.addGroupMember(admin.getCustomerId(), group.id(), teammate.getId());
+        assertThat(withMember.members()).extracting(OrgMemberDto::organizationMemberId).containsExactly(teammate.getId());
+
+        // Adding the same member twice does not duplicate the row.
+        organizationSelfService.addGroupMember(admin.getCustomerId(), group.id(), teammate.getId());
+        assertThat(organizationSelfService.listMyOrgGroups(admin.getCustomerId()))
+            .filteredOn(g -> g.id().equals(group.id()))
+            .flatExtracting(GroupDto::members)
+            .hasSize(1);
+
+        var withoutMember = organizationSelfService.removeGroupMember(admin.getCustomerId(), group.id(), teammate.getId());
+        assertThat(withoutMember.members()).isEmpty();
+    }
+
+    @Test
+    void cannotAddAMemberOfAnotherOrganizationToAGroup() {
+        Organization orgA = newOrganization();
+        Organization orgB = newOrganization();
+        var adminA = organizationMemberService.addMember(orgA.getId(), newCustomer("group-cross-admin-a@test-org.example").getId(), OrgRole.ORG_ADMIN);
+        var memberB = organizationMemberService.addMember(orgB.getId(), newCustomer("group-cross-member-b@test-org.example").getId(), OrgRole.MEMBER);
+        var group = organizationSelfService.createGroup(adminA.getCustomerId(), "Cross-org test");
+
+        assertThatThrownBy(() -> organizationSelfService.addGroupMember(adminA.getCustomerId(), group.id(), memberB.getId()))
+            .isInstanceOf(ResourceNotFoundException.class);
+    }
+
+    @Test
+    void deletingAGroupRemovesItFromTheListing() {
+        Organization org = newOrganization();
+        var admin = organizationMemberService.addMember(org.getId(), newCustomer("group-delete-admin@test-org.example").getId(), OrgRole.ORG_ADMIN);
+        var group = organizationSelfService.createGroup(admin.getCustomerId(), "Temporary");
+
+        organizationSelfService.deleteGroup(admin.getCustomerId(), group.id());
+
+        assertThat(organizationSelfService.listMyOrgGroups(admin.getCustomerId())).isEmpty();
     }
 }

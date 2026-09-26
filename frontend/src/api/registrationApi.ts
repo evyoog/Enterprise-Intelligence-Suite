@@ -95,8 +95,13 @@ export interface OrgMember {
   lastName?: string
   email?: string
   orgRole: 'ORG_ADMIN' | 'MEMBER'
-  status: 'ACTIVE' | 'INACTIVE'
+  status: 'ACTIVE' | 'SUSPENDED' | 'INACTIVE'
+  /** 05.03.02 Review access (sprint 2026.4.1) — set once an admin has confirmed
+   * this member's role and access, undefined if never reviewed. */
+  lastReviewedAt?: string
 }
+
+export type MemberStatusAction = 'SUSPEND' | 'REACTIVATE' | 'REMOVE'
 
 export interface Organization {
   id: number
@@ -153,6 +158,12 @@ export const organizationApi = {
   // C30: reset a member's two-factor authentication (MANAGE_USERS, same organization).
   resetMemberMfa: (memberId: number) =>
     apiRequest<undefined>(`/organization/me/members/${memberId}/mfa/reset`, { method: 'POST' }),
+  // 05.03.01 User Lifecycle (sprint 2026.4.1) — suspend/reactivate/remove.
+  changeMemberStatus: (memberId: number, action: MemberStatusAction) =>
+    apiRequest<OrgMember>(`/organization/me/members/${memberId}/status`, { method: 'PATCH', body: JSON.stringify({ action }) }),
+  // 05.03.02 Review access (sprint 2026.4.1).
+  reviewMemberAccess: (memberId: number) =>
+    apiRequest<OrgMember>(`/organization/me/members/${memberId}/access-review`, { method: 'POST' }),
   listMyOrgProducts: () => apiRequest<OrgProductAccess[]>('/organization/me/products'),
   listMyOrgSubscription: () => apiRequest<Subscription[]>('/organization/me/subscription'),
 }

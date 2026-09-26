@@ -195,6 +195,36 @@ Raised from the sprint 2026.3.3 development plan.
 ### C30
 **Decision (product owner, 2026-09-26):** Recover MFA (06.01.02.03). Organization admins may reset MFA for members of their own organization; platform admins may reset it for anyone. Every reset is audited and the user is notified.
 
+### C31
+**Decision (product owner, 2026-09-26):** Adopt the corrected sprint sequence from the shared roadmap analysis, in place of the original [PO] order:
+- **2026.4.1** commits 02 Catalog **and** 05 Tenant (05 pulled forward from 2026.4.2).
+- **2026.4.2** commits 13a Gateway & Events (API Management, Event Platform — pulled forward from 2027.1.1) and 15a Audit & Platform Administration (pulled forward from 2027.2.2).
+- 2026.4.3 (07 Subscriptions, 08 Billing) is unchanged.
+- 13b Connectors, 09 Orders, 11a Knowledge base and 16 Analytics move to 2027.1.1 (from 2027.1.1/2027.1.3, now consolidated).
+- 10 Services, 03a Discovery & checkout, 12a Human support and 04a Agent platform move to 2027.1.2.
+- 01b Portal live data, 04b Customer AI agents, 03b Trials & reviews, 11b Learning & certs and 15b Policy & compliance move to 2027.1.3.
+- 14 Partners stays 2027.2.1; 15c Regional operations stays 2027.2.2.
+**Reason:** the analysis found 2027.1.3 badly overloaded (over 80 open functions) under the original order, and 05 Tenant's organization-lifecycle piece was already pulled into 2026.3.3 (C25), so the rest of 05 belongs alongside it rather than in a separate sprint. **Reconciles with C21:** the general policy engine (06.02.02, beyond the MFA policy) stays in 2027.2.2 as C21 decided; only Platform Administration/Audit (15a) moves to 2026.4.2, not Policy Management.
+
+### C32
+**Decision (product owner, 2026-09-26):** 02.01 Product Lifecycle & Structure (sprint 2026.4.1).
+- **Version product:** a plain revision counter on each product, incremented on every update after creation. Not a full content-versioning history (no past revision is kept).
+- **Publish / Retire product:** two new named actions, in addition to the existing ACTIVE/INACTIVE toggle on the edit form. RETIRED is a new, distinct product status: pulled off the storefront and blocked from new subscriptions (existing subscriptions and access untouched), reversible by publishing again.
+- **Product hierarchy / variants:** a product may have a parent product (self-referential; a variant is a sibling product under the same parent with its own `variantLabel`, e.g. "Enterprise"). No separate hierarchy or variant entity.
+- **Dependencies:** advisory only — a product can list other products it depends on. Nothing today enforces the dependency at subscribe time (09 Orders, a later sprint, may enforce it).
+
+### C33
+**Decision (product owner, 2026-09-26):** 02.03 Plan Management (sprint 2026.4.1). Each plan gains: a currency (fixed set USD/EUR/GBP/INR — no exchange-rate or multi-currency billing engine exists; 08 Billing, a later sprint, may add one), a usage limit and included-features text, a usage price (per unit beyond the limit) and an overage charge (per unit over the limit), and a free-text tier-pricing description. A real tiered-pricing/metering **engine** is out of scope — these are data fields shown on the plan card, not enforced anywhere yet.
+
+### C34
+**Decision (product owner, 2026-09-26):** 05.03 User Management (sprint 2026.4.1).
+- **Activate / Suspend / Remove** (05.03.01.03–.05) are built as three actions on an existing member: Suspend frees the seat and blocks sign-in but is reversible; Remove (the existing "remove member") is one-way, matching the existing REST semantics; Activate reactivates a Suspended member, subject to the seat limit.
+- **Invite user / Create user** (05.03.01.01/.02) are **not** built this sprint: they need a new identity-creation flow (an invited person has no Customer row yet), which risks colliding with the existing registration and admin-provisioning flows within this sprint's time. Carried to 2026.4.2 — see the follow-up table below.
+- **Review access** (05.03.02.03): a lightweight "reviewed by/at" stamp on each member, set by an explicit admin action. Not a scheduled or forced periodic review — this sprint only adds the record-keeping primitive.
+
+### C35
+**Decision (product owner, 2026-09-26):** 05.04.01 Groups (sprint 2026.4.1). A group is a named grouping of an organization's own members (e.g. "Engineering"), with add/remove member actions. It carries no permissions or product access of its own — that is still `OrgRole` and per-product access grants. 05.04.02 Projects is **not** built this sprint (carried to 2026.4.2 — see the follow-up table): "assign resources" needs a resource model this platform does not have yet outside of per-product access, and deciding what a Project's "resources" are needs more scoping than this sprint has time for.
+
 ### DN-2 Sprint scope, length and dates
 **Decision:**
 - **Sprint length:** sprints are **calendar months**. Sprint `.1`, `.2` and `.3` are the first, second and third months of the PI's calendar quarter. Example: 2026.3.3 = 1–30 Sep 2026; 2026.4.1 = 1–31 Oct 2026.
@@ -263,3 +293,6 @@ These documents are **not** changed by this file. Update them to match:
 | C21 | Add the [SUM] agent controls and the two 04.05 functions as P0 to `SPRINT-2027.1.2.md` |
 | C13 | Apply the per-deployable container rules in `deployment/` and the architecture docs when the pipelines are built |
 | Sources | Add `EIS_Platform_Summary.docx` to `docs/01-business/source-documents/` as **[SUM]**, and list it in that folder's README |
+| C31 | Update `SPRINT-2026.4.1.md` (add 05), `SPRINT-2026.4.2.md` (add 13a, 15a; remove 05), and the "Sprint" field on application pages 05, 13, 15 |
+| C32, C33, C34, C35 | Create FRDs `product-lifecycle`, `plan-management`, `member-lifecycle`, `group-management` (Approved); add to `SPRINT-2026.4.1.md` scope |
+| C34, C35 | Add Invite/Create user (05.03.01.01/.02) and 05.04.02 Projects to `SPRINT-2026.4.2.md` as carry-over |

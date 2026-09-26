@@ -91,6 +91,19 @@ public class ProductController {
         return ResponseEntity.noContent().build();
     }
 
+    // 02.01.01.04 Publish product (sprint 2026.4.1). ADMIN-only — enforced by
+    // SecurityConfig (explicit rule, since this isn't the exact-path POST /products).
+    @PostMapping("/{id}/publish")
+    public ProductDto publishProduct(@PathVariable Long id) {
+        return productService.publishProduct(id);
+    }
+
+    // 02.01.01.05 Retire product (sprint 2026.4.1). ADMIN-only — enforced by SecurityConfig.
+    @PostMapping("/{id}/retire")
+    public ProductDto retireProduct(@PathVariable Long id) {
+        return productService.retireProduct(id);
+    }
+
     // ADMIN-only — enforced by SecurityConfig.
     @PostMapping("/images")
     public Map<String, String> uploadImage(@RequestParam("file") MultipartFile file) {

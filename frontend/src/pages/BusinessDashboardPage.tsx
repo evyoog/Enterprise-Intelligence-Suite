@@ -9,6 +9,7 @@ import { ApiError } from '../api/client'
 import { businessDashboardApi, type BusinessDashboard } from '../api/businessDashboardApi'
 import { PageHeader } from '../components/layout/PageHeader'
 import { OrganizationMfaPolicyCard } from '../components/organization/OrganizationMfaPolicyCard'
+import { OrganizationGroupsCard } from '../components/organization/OrganizationGroupsCard'
 import { OrganizationMembersCard } from '../components/organization/OrganizationMembersCard'
 import { OrganizationPrivilegedAccessCard } from '../components/organization/OrganizationPrivilegedAccessCard'
 import { useLocalePreference } from '../theming/LocalePreferenceProvider'
@@ -200,6 +201,7 @@ export function BusinessDashboardPage() {
             <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
               <OrganizationMfaPolicyCard />
               <OrganizationMembersCard />
+              <OrganizationGroupsCard />
               <OrganizationPrivilegedAccessCard />
             </Box>
           </>

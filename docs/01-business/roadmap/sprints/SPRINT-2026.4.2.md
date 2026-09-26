@@ -15,15 +15,21 @@
 
 | Application ID | Code | Application | Roadmap item | Source |
 |---|---|---|---|---|
-| 05 | `APP-TEN` | [Customer / Tenant Management](../applications/05-customer-tenant-management.md) | (whole application) | [PO] "eVyoog EIS - Roadmap Initiatives" |
+| 05 | `APP-TEN` | [Customer / Tenant Management](../applications/05-customer-tenant-management.md) | Carry-over only: 05.02 Tenant Lifecycle, 05.03.01 Invite/Create user, 05.04.02 Projects (see [C31](../open-decisions.md#c31)) | [PO] "eVyoog EIS - Roadmap Initiatives" |
+| 13a | `APP-INT` (part) | Gateway & Events (API Management 13.01, Event Platform 13.03) | [C31](../open-decisions.md#c31): pulled forward from 2027.1.1 |
+| 15a | `APP-GOV` (part) | Audit & Platform Administration (15.01 Platform Administration, 15.03 Audit) | [C31](../open-decisions.md#c31): pulled forward from 2027.2.2 |
 
 > **Commitment ([DN-2](../open-decisions.md#dn-2-sprint-scope-length-and-dates)):** this sprint commits the P0 (MVP) capabilities of its applications and treats P1 capabilities as stretch scope. Anything not finished is recorded as carry-over on the next sprint page.
+>
+> **13a and 15a scope tables are not yet written up on this page** — that is follow-up work for when this sprint starts (see `open-decisions.md`'s "Follow-up updates required" table). 15.03 Audit Logging/Search were already built early, in sprint 2026.3.3 (`docs/02-requirements/FRD/_` — see the 2026.3.3 sprint page's own audit trail work); what remains here is mainly 15.01 Platform Administration and 13.01/13.03.
 
 ## Scope changes from decisions
 
 | Change | Decision and scope | FRD | Requirement |
 |---|---|---|---|
 | Pulled forward | [C25](../open-decisions.md#c25) 05.01.01.02–.05 (update, suspend, activate, soft close organization) were built early in sprint [2026.3.3](SPRINT-2026.3.3.md). 05.01.01.01 Create organization stays in this sprint | [organization-lifecycle](../../../02-requirements/FRD/organization-lifecycle/requirement.md) | REQ-TEN-001 |
+| Pulled back | [C31](../open-decisions.md#c31) Most of 05 (05.02, 05.03.01.03–.05, 05.03.02, 05.04.01) moved to [2026.4.1](SPRINT-2026.4.1.md). Only Invite/Create user (05.03.01.01/.02) and Projects (05.04.02) stay here, as carry-over from that sprint ([C34](../open-decisions.md#c34), [C35](../open-decisions.md#c35)) | [member-lifecycle](../../../02-requirements/FRD/member-lifecycle/requirement.md), [group-management](../../../02-requirements/FRD/group-management/requirement.md) | REQ-TEN-002, REQ-TEN-003 |
+| Pulled forward | [C31](../open-decisions.md#c31) 13a Gateway & Events (from 2027.1.1) and 15a Audit & Platform Administration (from 2027.2.2) added to this sprint | - | - |
 
 ## EIS 05 Customer / Tenant Management
 

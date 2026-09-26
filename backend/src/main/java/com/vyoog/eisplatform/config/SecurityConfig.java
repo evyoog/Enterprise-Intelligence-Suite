@@ -74,6 +74,11 @@ public class SecurityConfig {
                 // here directly with a valid non-admin token if this rule weren't here.
                 .requestMatchers(HttpMethod.POST, "/products/images").access(permissions.platformPermission("MANAGE_CATALOG"))
                 .requestMatchers(HttpMethod.POST, "/products").access(permissions.platformPermission("MANAGE_CATALOG"))
+                // 02.01.01 Product Lifecycle (sprint 2026.4.1) — publish/retire.
+                // Neither is the exact-path POST /products above, so each needs
+                // its own explicit rule, same reasoning as DELETE /products/** below.
+                .requestMatchers(HttpMethod.POST, "/products/*/publish", "/products/*/retire")
+                    .access(permissions.platformPermission("MANAGE_CATALOG"))
                 .requestMatchers(HttpMethod.PUT, "/products/**").access(permissions.platformPermission("MANAGE_CATALOG"))
                 // Without this explicit rule, DELETE /products/{id} would fall
                 // through to the generic authenticated() catch-all below and be

@@ -4,6 +4,9 @@ import com.vyoog.eisplatform.modules.authorization.dto.PrivilegedAccessDecisionR
 import com.vyoog.eisplatform.modules.authorization.dto.PrivilegedAccessRequestDto;
 import com.vyoog.eisplatform.modules.registration.dto.AssignProductAccessRequest;
 import com.vyoog.eisplatform.modules.registration.dto.ChangeMemberRoleRequest;
+import com.vyoog.eisplatform.modules.registration.dto.ChangeMemberStatusRequest;
+import com.vyoog.eisplatform.modules.registration.dto.CreateGroupRequest;
+import com.vyoog.eisplatform.modules.registration.dto.GroupDto;
 import com.vyoog.eisplatform.modules.registration.dto.OrgMemberDto;
 import com.vyoog.eisplatform.modules.registration.dto.OrgProductAccessDto;
 import com.vyoog.eisplatform.modules.registration.dto.OrganizationDto;
@@ -75,6 +78,24 @@ public class OrganizationController {
     public void resetMemberMfa(@AuthenticationPrincipal Jwt jwt, @PathVariable Long memberId) {
         Customer customer = currentCustomerResolver.resolve(jwt);
         organizationSelfService.resetMemberMfa(customer.getId(), memberId);
+    }
+
+    /** 05.03.01 User Lifecycle (sprint 2026.4.1) — suspend, reactivate or
+     * remove a member (MANAGE_USERS, same organization). */
+    @PatchMapping("/members/{memberId}/status")
+    public OrgMemberDto changeMemberStatus(
+            @AuthenticationPrincipal Jwt jwt,
+            @PathVariable Long memberId,
+            @Valid @RequestBody ChangeMemberStatusRequest request) {
+        Customer customer = currentCustomerResolver.resolve(jwt);
+        return organizationSelfService.changeMemberStatus(customer.getId(), memberId, request.action());
+    }
+
+    /** 05.03.02 Review access (sprint 2026.4.1) — MANAGE_USERS, same organization. */
+    @PostMapping("/members/{memberId}/access-review")
+    public OrgMemberDto reviewMemberAccess(@AuthenticationPrincipal Jwt jwt, @PathVariable Long memberId) {
+        Customer customer = currentCustomerResolver.resolve(jwt);
+        return organizationSelfService.reviewMemberAccess(customer.getId(), memberId);
     }
 
     @GetMapping("/products")
@@ -161,5 +182,38 @@ public class OrganizationController {
             @RequestBody(required = false) PrivilegedAccessDecisionRequest body) {
         Customer customer = currentCustomerResolver.resolve(jwt);
         return organizationSelfService.revokePrivilegedAccess(customer.getId(), jwt.getSubject(), id, body == null ? null : body.note());
+    }
+
+    // 05.04.01 Groups (sprint 2026.4.1) — MANAGE_USERS, same organization only.
+
+    @GetMapping("/groups")
+    public List<GroupDto> myOrgGroups(@AuthenticationPrincipal Jwt jwt) {
+        Customer customer = currentCustomerResolver.resolve(jwt);
+        return organizationSelfService.listMyOrgGroups(customer.getId());
+    }
+
+    @PostMapping("/groups")
+    public GroupDto createGroup(@AuthenticationPrincipal Jwt jwt, @Valid @RequestBody CreateGroupRequest request) {
+        Customer customer = currentCustomerResolver.resolve(jwt);
+        return organizationSelfService.createGroup(customer.getId(), request.name());
+    }
+
+    @DeleteMapping("/groups/{groupId}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void deleteGroup(@AuthenticationPrincipal Jwt jwt, @PathVariable Long groupId) {
+        Customer customer = currentCustomerResolver.resolve(jwt);
+        organizationSelfService.deleteGroup(customer.getId(), groupId);
+    }
+
+    @PostMapping("/groups/{groupId}/members/{memberId}")
+    public GroupDto addGroupMember(@AuthenticationPrincipal Jwt jwt, @PathVariable Long groupId, @PathVariable Long memberId) {
+        Customer customer = currentCustomerResolver.resolve(jwt);
+        return organizationSelfService.addGroupMember(customer.getId(), groupId, memberId);
+    }
+
+    @DeleteMapping("/groups/{groupId}/members/{memberId}")
+    public GroupDto removeGroupMember(@AuthenticationPrincipal Jwt jwt, @PathVariable Long groupId, @PathVariable Long memberId) {
+        Customer customer = currentCustomerResolver.resolve(jwt);
+        return organizationSelfService.removeGroupMember(customer.getId(), groupId, memberId);
     }
 }

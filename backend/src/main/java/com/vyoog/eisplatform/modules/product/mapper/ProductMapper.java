@@ -16,12 +16,18 @@ import org.mapstruct.Mapping;
 @Mapper(uses = PlatformMapper.class)
 public interface ProductMapper {
 
+    // dependsOnProductIds: same reason as platforms below — Product.dependsOn
+    // (Set<Product>) needs a manual (Set<Product> -> List<Long> of id) walk,
+    // simplest done by hand alongside the mapper call in ProductService.
+    @Mapping(target = "dependsOnProductIds", ignore = true)
     ProductDto toDto(Product product);
 
-    // request.platformIds() (List<Long>) has no automatic path to
-    // Product.platforms (Set<Platform>) — that needs a repository lookup, done
-    // manually in ProductService — so this field is left for it to set.
+    // request.platformIds()/dependsOnProductIds() (List<Long>) have no
+    // automatic path to Product.platforms/dependsOn (Set<...>) — those need a
+    // repository lookup, done manually in ProductService — so both fields are
+    // left for it to set.
     @Mapping(target = "platforms", ignore = true)
+    @Mapping(target = "dependsOn", ignore = true)
     Product toEntity(ProductCreateRequest request);
 
     // Declaring these lets MapStruct auto-generate the List<ProductPlan> <->

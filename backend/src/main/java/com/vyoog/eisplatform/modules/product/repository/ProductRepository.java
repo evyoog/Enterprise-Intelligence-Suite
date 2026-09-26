@@ -4,6 +4,8 @@ import com.vyoog.eisplatform.modules.product.model.Product;
 import com.vyoog.eisplatform.modules.product.model.ProductStatus;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 
 import java.util.List;
 
@@ -13,4 +15,14 @@ import java.util.List;
 public interface ProductRepository extends JpaRepository<Product, Long>, JpaSpecificationExecutor<Product> {
 
     List<Product> findByStatus(ProductStatus status);
+
+    /** 02.01.02.01 Define product hierarchy — used by ProductStructureUsageGuard
+     * to block deleting a product that other products still list as their parent. */
+    boolean existsByParentProductId(Long parentProductId);
+
+    /** 02.01.02.03 Define dependencies — same reason, for the other direction
+     * of the relationship (Product.dependsOn has no "owning side" query method
+     * Spring Data can derive, so this is hand-written JPQL). */
+    @Query("select count(p) > 0 from Product p join p.dependsOn d where d.id = :productId")
+    boolean existsAsDependencyOf(@Param("productId") Long productId);
 }

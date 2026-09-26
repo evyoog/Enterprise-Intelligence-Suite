@@ -147,8 +147,38 @@
       "ORG_ADMIN": "Administrador de la organización",
       "MEMBER": "Miembro"
     },
+    "statuses": {
+      "ACTIVE": "Activo",
+      "SUSPENDED": "Suspendido",
+      "INACTIVE": "Eliminado"
+    },
+    "actions": "Acciones",
+    "suspend": "Suspender",
+    "reactivate": "Reactivar",
+    "remove": "Eliminar",
+    "review": "Revisar",
+    "reviewedOn": "Revisado el {{date}}",
+    "neverReviewed": "Nunca revisado",
+    "statusSaveError": "No se pudo cambiar el estado de este miembro.",
+    "reviewSaveError": "No se pudo registrar esta revisión.",
+    "confirmRemove": "¿Eliminar a {{name}} de esta organización? Esto no se puede deshacer desde aquí.",
     "approvalsTitle": "Aprobaciones de acceso privilegiado",
     "noPending": "No hay solicitudes pendientes."
+  },
+  "groups": {
+    "title": "Grupos",
+    "newGroupName": "Nombre del nuevo grupo",
+    "create": "Crear grupo",
+    "createError": "No se pudo crear este grupo.",
+    "deleteGroup": "Eliminar",
+    "deleteError": "No se pudo eliminar este grupo.",
+    "noGroups": "Aún no hay grupos.",
+    "noMembers": "Aún no hay miembros en este grupo.",
+    "addMember": "Añadir miembro",
+    "add": "Añadir",
+    "addMemberError": "No se pudo añadir a este miembro.",
+    "removeMemberError": "No se pudo quitar a este miembro.",
+    "loadError": "No se pudo cargar esta sección."
   },
   "privilegedAccess": {
     "title": "Acceso elevado",

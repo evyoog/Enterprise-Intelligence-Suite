@@ -10,6 +10,7 @@ import com.vyoog.eisplatform.modules.product.dto.ProductDto;
 import com.vyoog.eisplatform.modules.product.dto.ProductPlanCreateRequest;
 import com.vyoog.eisplatform.modules.product.dto.ProductSearchResponse;
 import com.vyoog.eisplatform.modules.product.model.BillingPeriod;
+import com.vyoog.eisplatform.modules.product.model.Currency;
 import com.vyoog.eisplatform.modules.product.model.ProductStatus;
 import com.vyoog.eisplatform.modules.registration.model.Customer;
 import com.vyoog.eisplatform.modules.registration.model.ProductSubscription;
@@ -44,6 +45,24 @@ class ProductServiceTest {
     @Autowired
     private PlatformService platformService;
 
+    // Test-only positional-argument helpers: ProductCreateRequest/
+    // ProductPlanCreateRequest gained new trailing fields (02.01 Product
+    // Structure, 02.03 Plan Management, sprint 2026.4.1) that every existing
+    // test here doesn't care about — these keep every call site below at its
+    // original arity instead of adding "null, null, null" everywhere.
+    private static ProductCreateRequest req(
+            String name, String description, BigDecimal price, String imageUrl, String launchUrl,
+            String category, ProductStatus status, Boolean ssoConnected, List<Long> platformIds,
+            List<ProductPlanCreateRequest> plans) {
+        return new ProductCreateRequest(
+            name, description, price, imageUrl, launchUrl, category, status, ssoConnected, platformIds, plans,
+            null, null, null);
+    }
+
+    private static ProductPlanCreateRequest planReq(String name, BigDecimal price, BillingPeriod billingPeriod, Integer sortOrder) {
+        return new ProductPlanCreateRequest(name, price, billingPeriod, sortOrder, null, null, null, null, null, null);
+    }
+
     // Regression test for a real NPE: MapStruct maps a null request.plans() to
     // product.plans = null (not the entity's default empty list), and
     // createProduct() used to call product.getPlans().forEach(...) unconditionally
@@ -51,7 +70,7 @@ class ProductServiceTest {
     // every single request until this was fixed.
     @Test
     void createProductWithNoPlansDoesNotThrow() {
-        ProductCreateRequest request = new ProductCreateRequest(
+        ProductCreateRequest request = req(
             "No-tier product", null, new BigDecimal("9.99"), null, null, null, null, null, null, null);
 
         ProductDto created = productService.createProduct(request);
@@ -62,9 +81,9 @@ class ProductServiceTest {
 
     @Test
     void createProductWithPlansSavesEachOne() {
-        ProductCreateRequest request = new ProductCreateRequest(
+        ProductCreateRequest request = req(
             "Tiered product", null, new BigDecimal("0"), null, null, null, null, null, null,
-            List.of(new ProductPlanCreateRequest("Basic", new BigDecimal("10.00"), BillingPeriod.MONTHLY, 1)));
+            List.of(planReq("Basic", new BigDecimal("10.00"), BillingPeriod.MONTHLY, 1)));
 
         ProductDto created = productService.createProduct(request);
 
@@ -74,10 +93,10 @@ class ProductServiceTest {
 
     @Test
     void updateProductChangesScalarFields() {
-        ProductDto created = productService.createProduct(new ProductCreateRequest(
+        ProductDto created = productService.createProduct(req(
             "Original name", "Original description", new BigDecimal("9.99"), null, null, null, null, null, null, null));
 
-        ProductDto updated = productService.updateProduct(created.getId(), new ProductCreateRequest(
+        ProductDto updated = productService.updateProduct(created.getId(), req(
             "Updated name", "Updated description", new BigDecimal("19.99"), null,
             "https://example.com/launch", "Updated category", ProductStatus.INACTIVE, null, null, null));
 
@@ -95,18 +114,18 @@ class ProductServiceTest {
     // not leave the old tiers dangling because null wasn't handled.
     @Test
     void updateProductReplacesPlansEntirely() {
-        ProductDto created = productService.createProduct(new ProductCreateRequest(
+        ProductDto created = productService.createProduct(req(
             "Tiered product", null, new BigDecimal("0"), null, null, null, null, null, null,
-            List.of(new ProductPlanCreateRequest("Basic", new BigDecimal("10.00"), BillingPeriod.MONTHLY, 1))));
+            List.of(planReq("Basic", new BigDecimal("10.00"), BillingPeriod.MONTHLY, 1))));
 
-        ProductDto updated = productService.updateProduct(created.getId(), new ProductCreateRequest(
+        ProductDto updated = productService.updateProduct(created.getId(), req(
             "Tiered product", null, new BigDecimal("0"), null, null, null, null, null, null,
-            List.of(new ProductPlanCreateRequest("Pro", new BigDecimal("25.00"), BillingPeriod.YEARLY, 1))));
+            List.of(planReq("Pro", new BigDecimal("25.00"), BillingPeriod.YEARLY, 1))));
 
         assertThat(updated.getPlans()).hasSize(1);
         assertThat(updated.getPlans().get(0).getName()).isEqualTo("Pro");
 
-        ProductDto clearedOfPlans = productService.updateProduct(created.getId(), new ProductCreateRequest(
+        ProductDto clearedOfPlans = productService.updateProduct(created.getId(), req(
             "Tiered product", null, new BigDecimal("5.00"), null, null, null, null, null, null, null));
 
         assertThat(clearedOfPlans.getPlans()).isEmpty();
@@ -114,14 +133,14 @@ class ProductServiceTest {
 
     @Test
     void updateProductThrowsWhenNotFound() {
-        assertThatThrownBy(() -> productService.updateProduct(-1L, new ProductCreateRequest(
+        assertThatThrownBy(() -> productService.updateProduct(-1L, req(
             "Doesn't matter", null, new BigDecimal("1.00"), null, null, null, null, null, null, null)))
             .isInstanceOf(ResourceNotFoundException.class);
     }
 
     @Test
     void deleteProductRemovesItFromTheListing() {
-        ProductDto created = productService.createProduct(new ProductCreateRequest(
+        ProductDto created = productService.createProduct(req(
             "To delete", null, new BigDecimal("1.00"), null, null, null, null, null, null, null));
 
         productService.deleteProduct(created.getId());
@@ -142,7 +161,7 @@ class ProductServiceTest {
     // clean, actionable error rather than either a raw 500 or a silent no-op.
     @Test
     void deleteProductWithAnExistingSubscriptionIsBlocked() {
-        ProductDto created = productService.createProduct(new ProductCreateRequest(
+        ProductDto created = productService.createProduct(req(
             "Subscribed product", null, new BigDecimal("1.00"), null, null, null, null, null, null, null));
 
         Customer customer = new Customer();
@@ -174,7 +193,7 @@ class ProductServiceTest {
     @Test
     void searchProductsMatchesNameDescriptionOrCategory() {
         String tag = "searchtag" + System.nanoTime();
-        productService.createProduct(new ProductCreateRequest(
+        productService.createProduct(req(
             "Product " + tag, "A totally unrelated description", new BigDecimal("1.00"),
             null, null, null, null, null, null, null));
 
@@ -186,9 +205,9 @@ class ProductServiceTest {
     @Test
     void searchProductsFiltersByCategory() {
         String tag = "cattag" + System.nanoTime();
-        productService.createProduct(new ProductCreateRequest(
+        productService.createProduct(req(
             "In category " + tag, null, new BigDecimal("1.00"), null, null, tag, null, null, null, null));
-        productService.createProduct(new ProductCreateRequest(
+        productService.createProduct(req(
             "Not in category " + tag, null, new BigDecimal("1.00"), null, null, "other-" + tag, null, null, null, null));
 
         ProductSearchResponse response = productService.searchProducts(null, tag, null, null, null, false);
@@ -202,9 +221,9 @@ class ProductServiceTest {
     void searchProductsFiltersByPlatform() {
         String tag = "platformtag" + System.nanoTime();
         PlatformDto platform = platformService.createPlatform(new PlatformCreateRequest("Platform " + tag, null, null));
-        ProductDto onPlatform = productService.createProduct(new ProductCreateRequest(
+        ProductDto onPlatform = productService.createProduct(req(
             "On platform " + tag, null, new BigDecimal("1.00"), null, null, null, null, null, List.of(platform.getId()), null));
-        productService.createProduct(new ProductCreateRequest(
+        productService.createProduct(req(
             "Off platform " + tag, null, new BigDecimal("1.00"), null, null, null, null, null, null, null));
 
         ProductSearchResponse response = productService.searchProducts(tag, null, platform.getId(), null, null, false);
@@ -215,7 +234,7 @@ class ProductServiceTest {
     @Test
     void searchProductsExcludesInactiveUnlessIncludeInactive() {
         String tag = "inactivetag" + System.nanoTime();
-        productService.createProduct(new ProductCreateRequest(
+        productService.createProduct(req(
             "Inactive " + tag, null, new BigDecimal("1.00"), null, null, null, ProductStatus.INACTIVE, null, null, null));
 
         ProductSearchResponse publicResponse = productService.searchProducts(tag, null, null, null, null, false);
@@ -228,9 +247,9 @@ class ProductServiceTest {
     @Test
     void searchProductsSortsByPriceWithinTaggedResults() {
         String tag = "sorttag" + System.nanoTime();
-        productService.createProduct(new ProductCreateRequest(
+        productService.createProduct(req(
             "Cheap " + tag, null, new BigDecimal("5.00"), null, null, tag, null, null, null, null));
-        productService.createProduct(new ProductCreateRequest(
+        productService.createProduct(req(
             "Pricey " + tag, null, new BigDecimal("50.00"), null, null, tag, null, null, null, null));
 
         ProductSearchResponse ascending = productService.searchProducts(null, tag, null, "price", "asc", false);
@@ -245,7 +264,7 @@ class ProductServiceTest {
     @Test
     void searchProductsFacetsIncludeThisTestsOwnCategory() {
         String tag = "facettag" + System.nanoTime();
-        productService.createProduct(new ProductCreateRequest(
+        productService.createProduct(req(
             "Faceted " + tag, null, new BigDecimal("1.00"), null, null, tag, null, null, null, null));
 
         ProductSearchResponse response = productService.searchProducts(null, null, null, null, null, false);
@@ -255,5 +274,129 @@ class ProductServiceTest {
                 assertThat(facet.category()).isEqualTo(tag);
                 assertThat(facet.count()).isEqualTo(1);
             });
+    }
+
+    // ------------------------------------------------------------------
+    // 02.01 Product Lifecycle & Structure (sprint 2026.4.1)
+    // ------------------------------------------------------------------
+
+    @Test
+    void everyUpdateAfterCreationIncrementsVersion() {
+        ProductDto created = productService.createProduct(
+            req("Versioned", null, new BigDecimal("1.00"), null, null, null, null, null, null, null));
+        assertThat(created.getVersion()).isEqualTo(1);
+
+        ProductDto updatedOnce = productService.updateProduct(created.getId(),
+            req("Versioned", null, new BigDecimal("2.00"), null, null, null, null, null, null, null));
+        ProductDto updatedTwice = productService.updateProduct(created.getId(),
+            req("Versioned", null, new BigDecimal("3.00"), null, null, null, null, null, null, null));
+
+        assertThat(updatedOnce.getVersion()).isEqualTo(2);
+        assertThat(updatedTwice.getVersion()).isEqualTo(3);
+    }
+
+    @Test
+    void publishAndRetireChangeStatusAndAreReversible() {
+        ProductDto created = productService.createProduct(
+            req("Publishable", null, new BigDecimal("1.00"), null, null, null, ProductStatus.INACTIVE, null, null, null));
+        assertThat(created.getStatus()).isEqualTo(ProductStatus.INACTIVE);
+
+        ProductDto published = productService.publishProduct(created.getId());
+        assertThat(published.getStatus()).isEqualTo(ProductStatus.ACTIVE);
+
+        ProductDto retired = productService.retireProduct(created.getId());
+        assertThat(retired.getStatus()).isEqualTo(ProductStatus.RETIRED);
+        // Retiring must not remove it from the admin catalog or affect other fields.
+        assertThat(productService.getProduct(created.getId()).getName()).isEqualTo("Publishable");
+
+        ProductDto republished = productService.publishProduct(created.getId());
+        assertThat(republished.getStatus()).isEqualTo(ProductStatus.ACTIVE);
+    }
+
+    @Test
+    void aRetiredProductIsExcludedFromThePublicStorefront() {
+        ProductDto created = productService.createProduct(
+            req("Retired product " + System.nanoTime(), null, new BigDecimal("1.00"), null, null, null, null, null, null, null));
+        productService.retireProduct(created.getId());
+
+        assertThat(productService.listProducts()).extracting(ProductDto::getId).doesNotContain(created.getId());
+        assertThat(productService.listAllProducts()).extracting(ProductDto::getId).contains(created.getId());
+    }
+
+    @Test
+    void dependenciesAreSavedAndReturned() {
+        ProductDto dependency = productService.createProduct(
+            req("Dependency", null, new BigDecimal("1.00"), null, null, null, null, null, null, null));
+        ProductDto created = productService.createProduct(new ProductCreateRequest(
+            "Depends on it", null, new BigDecimal("1.00"), null, null, null, null, null, null, null,
+            null, null, List.of(dependency.getId())));
+
+        assertThat(created.getDependsOnProductIds()).containsExactly(dependency.getId());
+    }
+
+    @Test
+    void aProductCannotDependOnItself() {
+        ProductDto created = productService.createProduct(
+            req("Self", null, new BigDecimal("1.00"), null, null, null, null, null, null, null));
+
+        assertThatThrownBy(() -> productService.updateProduct(created.getId(), new ProductCreateRequest(
+            "Self", null, new BigDecimal("1.00"), null, null, null, null, null, null, null,
+            null, null, List.of(created.getId()))))
+            .isInstanceOf(IllegalArgumentException.class);
+    }
+
+    @Test
+    void hierarchyAndVariantLabelAreSaved() {
+        ProductDto parent = productService.createProduct(
+            req("Parent", null, new BigDecimal("1.00"), null, null, null, null, null, null, null));
+        ProductDto variant = productService.createProduct(new ProductCreateRequest(
+            "Enterprise variant", null, new BigDecimal("1.00"), null, null, null, null, null, null, null,
+            parent.getId(), "Enterprise", null));
+
+        assertThat(variant.getParentProductId()).isEqualTo(parent.getId());
+        assertThat(variant.getVariantLabel()).isEqualTo("Enterprise");
+    }
+
+    @Test
+    void deletingAParentProductIsBlockedWhileAChildExists() {
+        ProductDto parent = productService.createProduct(
+            req("Parent to delete", null, new BigDecimal("1.00"), null, null, null, null, null, null, null));
+        productService.createProduct(new ProductCreateRequest(
+            "Child", null, new BigDecimal("1.00"), null, null, null, null, null, null, null,
+            parent.getId(), null, null));
+
+        assertThatThrownBy(() -> productService.deleteProduct(parent.getId()))
+            .isInstanceOf(ProductInUseException.class);
+    }
+
+    // ------------------------------------------------------------------
+    // 02.03 Plan Management (sprint 2026.4.1)
+    // ------------------------------------------------------------------
+
+    @Test
+    void planDefaultsToUsdCurrencyWhenNotSent() {
+        ProductDto created = productService.createProduct(
+            req("Priced product", null, new BigDecimal("0"), null, null, null, null, null, null,
+                List.of(planReq("Basic", new BigDecimal("10.00"), BillingPeriod.MONTHLY, 1))));
+
+        assertThat(created.getPlans().get(0).getCurrency()).isEqualTo(Currency.USD);
+    }
+
+    @Test
+    void planPricingFieldsAreSavedAndReturned() {
+        ProductPlanCreateRequest plan = new ProductPlanCreateRequest(
+            "Pro", new BigDecimal("49.00"), BillingPeriod.MONTHLY, 1, Currency.EUR,
+            1000, "SSO, 5 seats, priority support", new BigDecimal("0.02"),
+            "1-1000 calls included, $0.02/call after", new BigDecimal("0.05"));
+        ProductDto created = productService.createProduct(
+            req("Metered product", null, new BigDecimal("0"), null, null, null, null, null, null, List.of(plan)));
+
+        var saved = created.getPlans().get(0);
+        assertThat(saved.getCurrency()).isEqualTo(Currency.EUR);
+        assertThat(saved.getUsageLimit()).isEqualTo(1000);
+        assertThat(saved.getIncludedFeatures()).isEqualTo("SSO, 5 seats, priority support");
+        assertThat(saved.getUsagePrice()).isEqualByComparingTo("0.02");
+        assertThat(saved.getTierPricing()).isEqualTo("1-1000 calls included, $0.02/call after");
+        assertThat(saved.getOverageCharge()).isEqualByComparingTo("0.05");
     }
 }

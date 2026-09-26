@@ -1,7 +1,8 @@
 import { apiRequest } from './client'
 
-export type ProductStatus = 'ACTIVE' | 'INACTIVE'
+export type ProductStatus = 'ACTIVE' | 'INACTIVE' | 'RETIRED'
 export type BillingPeriod = 'MONTHLY' | 'YEARLY' | 'ONE_TIME'
+export type Currency = 'USD' | 'EUR' | 'GBP' | 'INR'
 
 export interface ProductPlan {
   id: number
@@ -9,6 +10,13 @@ export interface ProductPlan {
   price: number
   billingPeriod: BillingPeriod
   sortOrder?: number
+  // 02.03 Plan Management (sprint 2026.4.1).
+  currency: Currency
+  usageLimit?: number
+  includedFeatures?: string
+  usagePrice?: number
+  tierPricing?: string
+  overageCharge?: number
 }
 
 export interface ProductPlanInput {
@@ -16,6 +24,12 @@ export interface ProductPlanInput {
   price: number
   billingPeriod: BillingPeriod
   sortOrder?: number
+  currency?: Currency
+  usageLimit?: number
+  includedFeatures?: string
+  usagePrice?: number
+  tierPricing?: string
+  overageCharge?: number
 }
 
 /** The slice of a Platform embedded on a Product — just enough for a "belongs to" chip. */
@@ -40,6 +54,11 @@ export interface Product {
   /** Which high-level platform(s) (e.g. Thittam) this app is assigned to. */
   platforms: PlatformSummary[]
   plans: ProductPlan[]
+  // 02.01 Product Lifecycle & Structure (sprint 2026.4.1).
+  version: number
+  parentProductId?: number
+  variantLabel?: string
+  dependsOnProductIds: number[]
 }
 
 export interface ProductCreateRequest {
@@ -53,6 +72,9 @@ export interface ProductCreateRequest {
   ssoConnected?: boolean
   platformIds?: number[]
   plans?: ProductPlanInput[]
+  parentProductId?: number
+  variantLabel?: string
+  dependsOnProductIds?: number[]
 }
 
 export interface CategoryFacet {
@@ -131,6 +153,12 @@ export const productsApi = {
   // (surfaced as an ApiError) if the product has any real subscription/access/
   // favorite/usage history — set status to INACTIVE instead in that case.
   delete: (id: number) => apiRequest<undefined>(`/products/${id}`, { method: 'DELETE' }),
+
+  // 02.01.01.04 Publish product (sprint 2026.4.1) — ADMIN-only.
+  publish: (id: number) => apiRequest<Product>(`/products/${id}/publish`, { method: 'POST' }),
+
+  // 02.01.01.05 Retire product (sprint 2026.4.1) — ADMIN-only. Reversible via `publish`.
+  retire: (id: number) => apiRequest<Product>(`/products/${id}/retire`, { method: 'POST' }),
 
   // Phase 17 — matches ProductController#searchProducts. Public, ACTIVE-only
   // (same visibility as `list`), but with a real backend query, category/

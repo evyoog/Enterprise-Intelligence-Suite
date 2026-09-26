@@ -147,8 +147,38 @@
       "ORG_ADMIN": "Organization admin",
       "MEMBER": "Member"
     },
+    "statuses": {
+      "ACTIVE": "Active",
+      "SUSPENDED": "Suspended",
+      "INACTIVE": "Removed"
+    },
+    "actions": "Actions",
+    "suspend": "Suspend",
+    "reactivate": "Reactivate",
+    "remove": "Remove",
+    "review": "Review",
+    "reviewedOn": "Reviewed {{date}}",
+    "neverReviewed": "Never reviewed",
+    "statusSaveError": "Could not change this member's status.",
+    "reviewSaveError": "Could not record this review.",
+    "confirmRemove": "Remove {{name}} from this organization? This cannot be undone from here.",
     "approvalsTitle": "Privileged access approvals",
     "noPending": "No pending requests."
+  },
+  "groups": {
+    "title": "Groups",
+    "newGroupName": "New group name",
+    "create": "Create group",
+    "createError": "Could not create this group.",
+    "deleteGroup": "Delete",
+    "deleteError": "Could not delete this group.",
+    "noGroups": "No groups yet.",
+    "noMembers": "No members in this group yet.",
+    "addMember": "Add member",
+    "add": "Add",
+    "addMemberError": "Could not add this member.",
+    "removeMemberError": "Could not remove this member.",
+    "loadError": "Could not load this section."
   },
   "privilegedAccess": {
     "title": "Elevated access",
