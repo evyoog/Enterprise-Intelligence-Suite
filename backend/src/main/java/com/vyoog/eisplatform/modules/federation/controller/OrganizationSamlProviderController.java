@@ -68,6 +68,13 @@ public class OrganizationSamlProviderController {
         return samlProviderService.test(organizationId, id);
     }
 
+    /** REQ-IAM-007 (C28). */
+    @PutMapping("/{id}/claim-mapping")
+    public SamlProviderDto updateClaimMapping(@AuthenticationPrincipal Jwt jwt, @PathVariable Long id,
+                                              @Valid @RequestBody ClaimMappingDto request) {
+        return samlProviderService.updateClaimMapping(requireOrgId(jwt), id, request);
+    }
+
     @DeleteMapping("/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void delete(@AuthenticationPrincipal Jwt jwt, @PathVariable Long id) {

@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next'
 import { Alert, Box, Button, Chip, Paper, TextField, Typography } from '@mui/material'
 import { ApiError } from '../../api/client'
 import { oidcApi, type OidcProvider, type OidcProviderPayload, type OidcProviderTestResult } from '../../api/oidcApi'
+import { ClaimMappingDialog } from './ClaimMappingDialog'
 
 const EMPTY: OidcProviderPayload = { name: '', issuerUrl: '', clientId: '', clientSecret: '', scopes: 'openid email profile' }
 
@@ -22,6 +23,7 @@ export function OidcProvidersSection({ refreshKey = 0, onChanged }: { refreshKey
   const [saving, setSaving] = useState(false)
   const [tests, setTests] = useState<Record<number, OidcProviderTestResult>>({})
   const [busyId, setBusyId] = useState<number | null>(null)
+  const [mappingFor, setMappingFor] = useState<OidcProvider | null>(null)
 
   const load = useCallback(() => {
     oidcApi.list()
@@ -113,6 +115,9 @@ export function OidcProvidersSection({ refreshKey = 0, onChanged }: { refreshKey
               <Button size="small" disabled={busyId === p.id} aria-label={t('oidc.editLabel', { name: p.name })} onClick={() => openEdit(p)}>
                 {t('oidc.edit')}
               </Button>
+              <Button size="small" disabled={busyId === p.id} aria-label={t('claimMapping.openFor', { name: p.name })} onClick={() => setMappingFor(p)}>
+                {t('claimMapping.open')}
+              </Button>
               <Button size="small" color="error" disabled={busyId === p.id} aria-label={t('oidc.deleteLabel', { name: p.name })}
                 onClick={() => run(p.id, () => oidcApi.remove(p.id))}>
                 {t('oidc.delete')}
@@ -126,6 +131,15 @@ export function OidcProvidersSection({ refreshKey = 0, onChanged }: { refreshKey
           )}
         </Paper>
       ))}
+
+      <ClaimMappingDialog
+        open={mappingFor !== null}
+        providerName={mappingFor?.name ?? ''}
+        protocol="OIDC"
+        initial={mappingFor?.claimMapping}
+        onSave={async (mapping) => { await oidcApi.updateClaimMapping(mappingFor!.id, mapping); load() }}
+        onClose={() => setMappingFor(null)}
+      />
 
       {form && (
         <Paper variant="outlined" sx={{ p: 2.5, mt: 2 }} component="form" aria-label={editingId !== null ? t('oidc.editTitle') : t('oidc.addTitle')}

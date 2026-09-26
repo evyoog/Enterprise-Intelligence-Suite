@@ -1,4 +1,5 @@
 import { apiRequest, apiUrl } from './client'
+import type { ClaimMapping } from './claimMapping'
 
 export interface SamlProvider {
   id: number
@@ -12,6 +13,8 @@ export interface SamlProvider {
   enabled: boolean
   createdAt: string
   updatedAt: string
+  /** REQ-IAM-007 */
+  claimMapping?: ClaimMapping | null
 }
 
 export interface CreateSamlProviderPayload {
@@ -48,6 +51,9 @@ export const samlApi = {
   disable: (id: number) => apiRequest<SamlProvider>(`/organization/me/saml-providers/${id}/disable`, { method: 'POST' }),
   test: (id: number) => apiRequest<SamlProviderTestResult>(`/organization/me/saml-providers/${id}/test`, { method: 'POST' }),
   remove: (id: number) => apiRequest<undefined>(`/organization/me/saml-providers/${id}`, { method: 'DELETE' }),
+  // REQ-IAM-007 (C28)
+  updateClaimMapping: (id: number, mapping: ClaimMapping) =>
+    apiRequest<SamlProvider>(`/organization/me/saml-providers/${id}/claim-mapping`, { method: 'PUT', body: JSON.stringify(mapping) }),
 }
 
 // Phase 5 (2026.3.3): the actual SAML login flow — public, pre-login (no

@@ -1,11 +1,14 @@
 package com.vyoog.eisplatform.modules.federation.service;
 
+import com.vyoog.eisplatform.common.exception.ForbiddenException;
 import com.vyoog.eisplatform.common.exception.ResourceNotFoundException;
 import com.vyoog.eisplatform.modules.audit.service.AuditService;
 import com.vyoog.eisplatform.modules.auth.service.TotpSecretCipher;
+import com.vyoog.eisplatform.modules.federation.dto.ClaimMappingDto;
 import com.vyoog.eisplatform.modules.federation.dto.OidcProviderDto;
 import com.vyoog.eisplatform.modules.federation.dto.OidcProviderRequest;
 import com.vyoog.eisplatform.modules.federation.dto.OidcProviderTestResultDto;
+import com.vyoog.eisplatform.modules.federation.model.ClaimMapping;
 import com.vyoog.eisplatform.modules.federation.model.OidcIdentityProvider;
 import com.vyoog.eisplatform.modules.federation.repository.OidcIdentityProviderRepository;
 import com.vyoog.eisplatform.modules.federation.repository.SamlIdentityProviderRepository;
@@ -179,15 +182,34 @@ public class OidcProviderService {
         }
     }
 
+    /** Same as SamlProviderService: 404 for an unknown id, 403 for another
+     * organization's provider (never confirming it exists there). */
     OidcIdentityProvider findOwnedOrThrow(Long organizationId, Long id) {
-        return repository.findById(id)
-            .filter(p -> p.getOrganizationId().equals(organizationId))
+        OidcIdentityProvider provider = repository.findById(id)
             .orElseThrow(() -> new ResourceNotFoundException("OIDC provider not found"));
+        if (!provider.getOrganizationId().equals(organizationId)) {
+            throw new ForbiddenException("You do not have permission to do this");
+        }
+        return provider;
     }
 
     private OidcProviderDto toDto(OidcIdentityProvider p) {
         return new OidcProviderDto(p.getId(), p.getName(), p.getIssuerUrl(), p.getClientId(),
             p.getEncryptedClientSecret() != null, p.getScopes(), p.isEnabled(), redirectUri(p.getOrganizationId()),
-            p.getCreatedAt(), p.getUpdatedAt());
+            p.getCreatedAt(), p.getUpdatedAt(), ClaimMapping.orEmpty(p.getClaimMapping()).toDto());
+    }
+
+    /** REQ-IAM-007 (C28): replace the provider's claim mapping; blank = default. */
+    @Transactional
+    public OidcProviderDto updateClaimMapping(Long organizationId, Long id, ClaimMappingDto request) {
+        OidcIdentityProvider provider = findOwnedOrThrow(organizationId, id);
+        ClaimMapping mapping = ClaimMapping.orEmpty(provider.getClaimMapping());
+        mapping.apply(request);
+        provider.setClaimMapping(mapping);
+        provider.setUpdatedAt(Instant.now());
+        provider = repository.save(provider);
+        auditService.recordSuccess("OIDC_CLAIM_MAPPING_UPDATED", null, null, null, "OidcIdentityProvider",
+            String.valueOf(id), organizationId, null);
+        return toDto(provider);
     }
 }

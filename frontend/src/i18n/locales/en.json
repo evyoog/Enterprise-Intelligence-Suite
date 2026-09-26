@@ -437,5 +437,23 @@
     "save": "Save",
     "saving": "Saving…",
     "cancel": "Cancel"
+  },
+  "claimMapping": {
+    "open": "Claim mapping",
+    "openFor": "Claim mapping for {{name}}",
+    "title": "Claim mapping — {{name}}",
+    "bodySaml": "Which SAML attribute supplies each detail. Leave a field blank to use the defaults. A name you set is tried first, then the defaults.",
+    "bodyOidc": "Which ID-token claim supplies each detail. Leave a field blank to use the defaults. A name you set is tried first, then the defaults.",
+    "fields": {
+      "email": "Email",
+      "firstName": "First name",
+      "lastName": "Last name",
+      "displayName": "Display name"
+    },
+    "defaults": "Defaults: {{names}}",
+    "reset": "Reset to defaults",
+    "cancel": "Cancel",
+    "save": "Save",
+    "saveError": "Could not save the claim mapping."
   }
 }

@@ -48,4 +48,8 @@ public class OidcIdentityProvider {
 
     @Column(name = "updated_at", nullable = false)
     private Instant updatedAt;
+
+    /** REQ-IAM-007 (C28): optional attribute / claim names, tried before the defaults. */
+    @Embedded
+    private ClaimMapping claimMapping = new ClaimMapping();
 }

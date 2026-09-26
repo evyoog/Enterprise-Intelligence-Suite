@@ -7,6 +7,7 @@ import com.onelogin.saml2.settings.SettingsBuilder;
 import com.onelogin.saml2.util.Util;
 import com.vyoog.eisplatform.modules.auth.service.SessionCookieService;
 import com.vyoog.eisplatform.modules.federation.dto.SsoCheckResponseDto;
+import com.vyoog.eisplatform.modules.federation.model.ClaimMapping;
 import com.vyoog.eisplatform.modules.federation.model.SamlExternalIdentity;
 import com.vyoog.eisplatform.modules.federation.model.SamlIdentityProvider;
 import com.vyoog.eisplatform.modules.federation.model.SamlLoginRequest;
@@ -248,7 +249,10 @@ public class SamlAuthenticationService {
             throw new SamlLoginException("The SAML assertion did not include a NameID");
         }
 
-        String email = firstAttribute(attributes, EMAIL_ATTRIBUTES);
+        // REQ-IAM-007 (C28): a configured attribute name is tried first, then
+        // the defaults; the fallbacks below stay fixed.
+        ClaimMapping mapping = ClaimMapping.orEmpty(provider.getClaimMapping());
+        String email = firstAttribute(attributes, ClaimMapping.tryFirst(mapping.getEmail(), EMAIL_ATTRIBUTES));
         if ((email == null || email.isBlank()) && nameId.contains("@")) {
             email = nameId;
         }
@@ -259,15 +263,15 @@ public class SamlAuthenticationService {
                     + "or use the emailAddress NameID format");
         }
 
-        String firstName = firstAttribute(attributes, FIRST_NAME_ATTRIBUTES);
+        String firstName = firstAttribute(attributes, ClaimMapping.tryFirst(mapping.getFirstName(), FIRST_NAME_ATTRIBUTES));
         if (firstName == null || firstName.isBlank()) {
-            firstName = firstAttribute(attributes, DISPLAY_NAME_ATTRIBUTES);
+            firstName = firstAttribute(attributes, ClaimMapping.tryFirst(mapping.getDisplayName(), DISPLAY_NAME_ATTRIBUTES));
         }
         if (firstName == null || firstName.isBlank()) {
             int at = email.indexOf('@');
             firstName = at > 0 ? email.substring(0, at) : email;
         }
-        String lastName = firstAttribute(attributes, LAST_NAME_ATTRIBUTES);
+        String lastName = firstAttribute(attributes, ClaimMapping.tryFirst(mapping.getLastName(), LAST_NAME_ATTRIBUTES));
         if (lastName == null || lastName.isBlank()) {
             lastName = "SSO User";
         }
@@ -342,11 +346,13 @@ public class SamlAuthenticationService {
         if (attributes == null) {
             return null;
         }
-        for (Map.Entry<String, List<String>> entry : attributes.entrySet()) {
-            if (entry.getKey() == null || entry.getValue() == null || entry.getValue().isEmpty()) {
-                continue;
-            }
-            for (String candidate : candidateNames) {
+        // Candidates in order of preference (REQ-IAM-007: a configured name
+        // first, then the defaults), each matched case-insensitively.
+        for (String candidate : candidateNames) {
+            for (Map.Entry<String, List<String>> entry : attributes.entrySet()) {
+                if (entry.getKey() == null || entry.getValue() == null || entry.getValue().isEmpty()) {
+                    continue;
+                }
                 if (entry.getKey().equalsIgnoreCase(candidate)) {
                     String value = entry.getValue().get(0);
                     if (value != null && !value.isBlank()) {

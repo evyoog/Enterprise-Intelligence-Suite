@@ -1,5 +1,6 @@
 package com.vyoog.eisplatform.modules.federation.controller;
 
+import com.vyoog.eisplatform.modules.federation.dto.ClaimMappingDto;
 import com.vyoog.eisplatform.modules.federation.dto.OidcProviderDto;
 import com.vyoog.eisplatform.modules.federation.dto.OidcProviderRequest;
 import com.vyoog.eisplatform.modules.federation.dto.OidcProviderTestResultDto;
@@ -59,6 +60,13 @@ public class OrganizationOidcProviderController {
     @PostMapping("/{id}/test")
     public OidcProviderTestResultDto test(@AuthenticationPrincipal Jwt jwt, @PathVariable Long id) {
         return oidcProviderService.test(requireOrgId(jwt), id);
+    }
+
+    /** REQ-IAM-007 (C28). */
+    @PutMapping("/{id}/claim-mapping")
+    public OidcProviderDto updateClaimMapping(@AuthenticationPrincipal Jwt jwt, @PathVariable Long id,
+                                              @Valid @RequestBody ClaimMappingDto request) {
+        return oidcProviderService.updateClaimMapping(requireOrgId(jwt), id, request);
     }
 
     @DeleteMapping("/{id}")

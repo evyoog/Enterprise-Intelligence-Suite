@@ -20,6 +20,8 @@ public record SamlProviderDto(
     boolean certificateExpired,
     boolean enabled,
     Instant createdAt,
-    Instant updatedAt
+    Instant updatedAt,
+    /** REQ-IAM-007: configured names; blank = default. */
+    ClaimMappingDto claimMapping
 ) {
 }

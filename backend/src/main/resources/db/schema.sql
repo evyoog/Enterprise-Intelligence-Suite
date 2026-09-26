@@ -564,3 +564,17 @@ CREATE TABLE oidc_external_identity (
     last_login_at TIMESTAMP,
     UNIQUE (organization_id, issuer, subject)
 );
+
+-- REQ-IAM-007 claim mapping (sprint 2026.3.3, decisions C23/C28): optional
+-- attribute / claim names per provider, tried before the defaults.
+-- See migration V005.
+ALTER TABLE saml_identity_provider
+    ADD COLUMN email_claim VARCHAR(255),
+    ADD COLUMN first_name_claim VARCHAR(255),
+    ADD COLUMN last_name_claim VARCHAR(255),
+    ADD COLUMN display_name_claim VARCHAR(255);
+ALTER TABLE oidc_identity_provider
+    ADD COLUMN email_claim VARCHAR(255),
+    ADD COLUMN first_name_claim VARCHAR(255),
+    ADD COLUMN last_name_claim VARCHAR(255),
+    ADD COLUMN display_name_claim VARCHAR(255);

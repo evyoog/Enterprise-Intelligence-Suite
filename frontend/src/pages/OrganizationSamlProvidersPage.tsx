@@ -10,6 +10,7 @@ import { samlApi, type SamlProvider, type SamlProviderTestResult } from '../api/
 import { organizationApi } from '../api/registrationApi'
 import { PageHeader } from '../components/layout/PageHeader'
 import { OidcProvidersSection } from '../components/federation/OidcProvidersSection'
+import { ClaimMappingDialog } from '../components/federation/ClaimMappingDialog'
 
 /** 'keep' exists only when editing: change the name, leave the connection details as they are. */
 type EntryMode = 'metadata' | 'manual' | 'keep'
@@ -43,6 +44,8 @@ export function OrganizationSamlProvidersPage() {
   // REQ-IAM-006: enabling SAML disables an enabled OIDC provider, so the
   // OIDC section reloads after a SAML toggle (and SAML reloads after an OIDC one).
   const [oidcRefresh, setOidcRefresh] = useState(0)
+  // REQ-IAM-007: the provider whose claim mapping is being edited.
+  const [mappingFor, setMappingFor] = useState<SamlProvider | null>(null)
 
   const load = () => {
     samlApi.list().then(setProviders).catch((e) => setLoadError(e instanceof ApiError ? e.message : 'Could not load SAML providers.'))
@@ -199,6 +202,10 @@ export function OrganizationSamlProvidersPage() {
                     >
                       {t('saml.edit')}
                     </Button>
+                    <Button size="small" variant="text" aria-label={t('claimMapping.openFor', { name: provider.name })}
+                      onClick={() => setMappingFor(provider)}>
+                      {t('claimMapping.open')}
+                    </Button>
                   </Box>
                   {testResults[provider.id] && (
                     <Box sx={{ mt: 1.5 }}>
@@ -272,6 +279,15 @@ export function OrganizationSamlProvidersPage() {
             </Box>
           </Paper>
         )}
+
+        <ClaimMappingDialog
+          open={mappingFor !== null}
+          providerName={mappingFor?.name ?? ''}
+          protocol="SAML"
+          initial={mappingFor?.claimMapping}
+          onSave={async (mapping) => { await samlApi.updateClaimMapping(mappingFor!.id, mapping); load() }}
+          onClose={() => setMappingFor(null)}
+        />
 
         <OidcProvidersSection refreshKey={oidcRefresh} onChanged={load} />
       </Container>

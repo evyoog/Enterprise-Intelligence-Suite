@@ -437,5 +437,23 @@
     "save": "Guardar",
     "saving": "Guardando…",
     "cancel": "Cancelar"
+  },
+  "claimMapping": {
+    "open": "Asignación de atributos",
+    "openFor": "Asignación de atributos de {{name}}",
+    "title": "Asignación de atributos — {{name}}",
+    "bodySaml": "Qué atributo SAML aporta cada dato. Deje un campo vacío para usar los valores predeterminados. Un nombre que indique se prueba primero y después los predeterminados.",
+    "bodyOidc": "Qué claim del token de ID aporta cada dato. Deje un campo vacío para usar los valores predeterminados. Un nombre que indique se prueba primero y después los predeterminados.",
+    "fields": {
+      "email": "Correo",
+      "firstName": "Nombre",
+      "lastName": "Apellido",
+      "displayName": "Nombre visible"
+    },
+    "defaults": "Predeterminados: {{names}}",
+    "reset": "Restablecer predeterminados",
+    "cancel": "Cancelar",
+    "save": "Guardar",
+    "saveError": "No se pudo guardar la asignación."
   }
 }

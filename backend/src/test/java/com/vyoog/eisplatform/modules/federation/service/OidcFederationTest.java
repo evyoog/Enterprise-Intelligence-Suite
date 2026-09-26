@@ -133,7 +133,9 @@ class OidcFederationTest {
         assertThatThrownBy(() -> providerService.create(org.getId(),
             new OidcProviderRequest("x", FakeOidcProviderClient.ISSUER, CLIENT_ID, "s", "email profile"))).hasMessageContaining("openid");
         Long id = providerService.create(org.getId(), request("s")).id();
-        assertThatThrownBy(() -> providerService.setEnabled(org(false).getId(), id, true)).isInstanceOf(ResourceNotFoundException.class);
+        assertThatThrownBy(() -> providerService.setEnabled(org(false).getId(), id, true))
+            .isInstanceOf(com.vyoog.eisplatform.common.exception.ForbiddenException.class);
+        assertThatThrownBy(() -> providerService.setEnabled(org.getId(), -1L, true)).isInstanceOf(ResourceNotFoundException.class);
     }
 
     @Test

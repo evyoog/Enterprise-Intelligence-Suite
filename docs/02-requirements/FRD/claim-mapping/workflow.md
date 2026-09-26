@@ -1,14 +1,10 @@
-# Workflow — Configurable Claim Mapping
+# Workflow — Claim Mapping
 
-## States
 ```mermaid
-stateDiagram-v2
-    [*] --> DefaultMapping: provider created
-    DefaultMapping --> CustomMapping: administrator sets a mapping
-    CustomMapping --> DefaultMapping: administrator clears the mapping (Not specified)
+flowchart LR
+  A["Attribute / claim set\nfrom the IdP"] --> B{"Configured name\npresent and not blank?"}
+  B -- yes --> V["Use it"]
+  B -- no --> C{"A default name\npresent?"}
+  C -- yes --> V
+  C -- no --> D["Fixed fallback\n(NameID, display name,\nemail local part, SSO User)"]
 ```
-
-## Transitions
-| From | To | Actor | Condition / rule | Side effects (notifications, audit) |
-|---|---|---|---|---|
-| Default mapping | Custom mapping | Organization administrator | Not specified | Not specified |

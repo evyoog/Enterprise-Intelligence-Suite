@@ -1,5 +1,6 @@
 package com.vyoog.eisplatform.modules.federation.service;
 
+import com.vyoog.eisplatform.modules.federation.model.ClaimMapping;
 import com.vyoog.eisplatform.modules.federation.model.OidcExternalIdentity;
 import com.vyoog.eisplatform.modules.federation.model.OidcIdentityProvider;
 import com.vyoog.eisplatform.modules.federation.model.OidcLoginRequest;
@@ -24,6 +25,7 @@ import java.time.Duration;
 import java.time.Instant;
 import java.util.Base64;
 import java.util.Collection;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
@@ -144,13 +146,19 @@ public class OidcAuthenticationService {
             throw new OidcLoginException("The ID token did not include a subject");
         }
 
-        String email = stringClaim(claims, "email");
+        // REQ-IAM-007 (C28): a configured claim is tried first, then the OIDC
+        // defaults (email, given_name, family_name, name); fallbacks stay fixed.
+        ClaimMapping mapping = ClaimMapping.orEmpty(provider.getClaimMapping());
+        String email = firstClaim(claims, ClaimMapping.tryFirst(mapping.getEmail(), List.of("email")));
         if (email == null || email.isBlank()) {
             throw new OidcLoginException("Could not determine an email address for this identity — "
                 + "configure your identity provider to include the email claim");
         }
-        String firstName = firstNonBlank(stringClaim(claims, "given_name"), stringClaim(claims, "name"), localPart(email));
-        String lastName = firstNonBlank(stringClaim(claims, "family_name"), "SSO User");
+        String firstName = firstNonBlank(
+            firstClaim(claims, ClaimMapping.tryFirst(mapping.getFirstName(), List.of("given_name"))),
+            firstClaim(claims, ClaimMapping.tryFirst(mapping.getDisplayName(), List.of("name"))),
+            localPart(email));
+        String lastName = firstNonBlank(firstClaim(claims, ClaimMapping.tryFirst(mapping.getLastName(), List.of("family_name"))), "SSO User");
 
         Customer customer = resolveOrProvision(organization, discovery.issuer(), subject, email, firstName, lastName);
         return federatedAccountService.finishSignIn(customer, organizationId, email,
@@ -207,6 +215,16 @@ public class OidcAuthenticationService {
     private static String stringClaim(Map<String, Object> claims, String name) {
         Object value = claims.get(name);
         return value == null ? null : String.valueOf(value);
+    }
+
+    private static String firstClaim(Map<String, Object> claims, List<String> names) {
+        for (String name : names) {
+            String value = stringClaim(claims, name);
+            if (value != null && !value.isBlank()) {
+                return value;
+            }
+        }
+        return null;
     }
 
     private static String firstNonBlank(String... values) {

@@ -14,6 +14,8 @@ public record OidcProviderDto(
     boolean enabled,
     String redirectUri,
     Instant createdAt,
-    Instant updatedAt
+    Instant updatedAt,
+    /** REQ-IAM-007: configured names; blank = default. */
+    ClaimMappingDto claimMapping
 ) {
 }
