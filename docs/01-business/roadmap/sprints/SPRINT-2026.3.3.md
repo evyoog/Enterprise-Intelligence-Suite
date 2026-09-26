@@ -34,6 +34,11 @@
 | Deferred | [C18](../open-decisions.md#c18) Send SMS (01.04.02) is deferred until an SMS provider and rules are specified in a new FRD (no sprint assigned). Email and in-app notifications satisfy 01.04.02 here | - | - |
 | Deferred | [C19](../open-decisions.md#c19) View spending (01.02.01) moves to sprint [2026.4.3](SPRINT-2026.4.3.md). The dashboard keeps its "not available" note | - | - |
 | Pulled forward | [C25](../open-decisions.md#c25) Organization Lifecycle 05.01.01.02–.05 (update, suspend, activate, soft close) on `/admin/registrations`, from sprint [2026.4.2](SPRINT-2026.4.2.md) | [organization-lifecycle](../../../02-requirements/FRD/organization-lifecycle/requirement.md) | REQ-TEN-001 |
+| Decided | [C26](../open-decisions.md#c26) Service status page: status values, visibility (status for all, incident details for purchased products), `MANAGE_SERVICE_STATUS`, `app.status-page.enabled`, `/status` and `/admin/service-status` | [service-status-page](../../../02-requirements/FRD/service-status-page/requirement.md) | REQ-PRT-001 |
+| Decided | [C27](../open-decisions.md#c27) OIDC federation: provider fields, SAML-style sign-in, encrypted secret, one enabled SAML or OIDC provider per organization | [oidc-federation](../../../02-requirements/FRD/oidc-federation/requirement.md) | REQ-IAM-006 |
+| Decided | [C28](../open-decisions.md#c28) Claim mapping: OIDC defaults, configured name tried first, fixed fallbacks | [claim-mapping](../../../02-requirements/FRD/claim-mapping/requirement.md) | REQ-IAM-007 |
+| Added | [C29](../open-decisions.md#c29) Organization MFA policy also on SAML/OIDC sign-in; members without an authenticator set one up during sign-in (06.02.02) | [organization-mfa-policy](../../../02-requirements/FRD/organization-mfa-policy/requirement.md) | REQ-IAM-001 |
+| Added | [C30](../open-decisions.md#c30) Recover MFA: organization admins reset their members' MFA, platform admins anyone's (06.01.02) | [mfa-recovery](../../../02-requirements/FRD/mfa-recovery/requirement.md) | REQ-IAM-008 |
 
 ## FRDs for this sprint
 
@@ -50,6 +55,7 @@ Build starts only when the FRD is Approved ([DN-4](../open-decisions.md#dn-4-bus
 | [claim-mapping](../../../02-requirements/FRD/claim-mapping/requirement.md) | REQ-IAM-007 | 06.04.01 | Approved |
 | [service-status-page](../../../02-requirements/FRD/service-status-page/requirement.md) | REQ-PRT-001 | 01.02.02 | Approved |
 | [organization-lifecycle](../../../02-requirements/FRD/organization-lifecycle/requirement.md) | REQ-TEN-001 | 05.01.01 | Approved |
+| [mfa-recovery](../../../02-requirements/FRD/mfa-recovery/requirement.md) | REQ-IAM-008 | 06.01.02 | Approved |
 
 ## EIS 01 Enterprise Intelligence Suite
 
@@ -81,7 +87,7 @@ Full breakdown with APIs, services, entities and events: [applications/01-enterp
 
 ### Related code already in this repository
 
-Observed on branch `dev`, module level only: `backend/…/modules/dashboard`, `backend/…/modules/notification`, `backend/…/modules/preference`; `frontend/src/pages/HomePage.tsx`, `frontend/src/pages/BusinessDashboardPage.tsx`, `frontend/src/pages/PreferencesPage.tsx`, `frontend/src/components/layout/NotificationBell.tsx`, `frontend/src/components/layout/SiteNavbar.tsx`.
+Observed on branch `dev`, module level only: `backend/…/modules/dashboard`, `backend/…/modules/notification`, `backend/…/modules/preference`, `backend/…/modules/servicestatus`; `frontend/src/pages/HomePage.tsx`, `frontend/src/pages/BusinessDashboardPage.tsx`, `frontend/src/pages/PreferencesPage.tsx`, `frontend/src/components/layout/NotificationBell.tsx`, `frontend/src/components/layout/SiteNavbar.tsx`, `frontend/src/components/layout/AppShell.tsx`, `frontend/src/components/layout/appNavigation.ts`, `frontend/src/pages/ServiceStatusPage.tsx`, `frontend/src/pages/admin/ServiceStatusAdminPage.tsx`, `frontend/src/api/serviceStatusApi.ts`.
 
 ## EIS 06 Identity & Access Management
 
@@ -113,7 +119,7 @@ Full breakdown with APIs, services, entities and events: [applications/06-identi
 
 ### Related code already in this repository
 
-Observed on branch `dev`, module level only: `backend/…/modules/auth`, `backend/…/modules/authorization`, `backend/…/modules/federation`; `frontend/src/pages/SecuritySettingsPage.tsx`, `frontend/src/pages/OrganizationSamlProvidersPage.tsx`, `frontend/src/pages/ForgotPasswordPage.tsx`, `frontend/src/pages/ResetPasswordPage.tsx`, `frontend/src/pages/admin/AdminPrivilegedAccessPage.tsx`, `frontend/src/auth/`, `frontend/src/components/organization/`, `frontend/src/components/security/PrivilegedAccessRequestsCard.tsx`, `frontend/src/pages/admin/RolesAdminPage.tsx`, `frontend/src/pages/admin/PermissionsAdminPage.tsx`, `frontend/src/api/rolesApi.ts`, `frontend/src/api/permissionsApi.ts`, `frontend/src/api/privilegedAccessApi.ts`.
+Observed on branch `dev`, module level only: `backend/…/modules/auth`, `backend/…/modules/authorization`, `backend/…/modules/federation`; `frontend/src/pages/SecuritySettingsPage.tsx`, `frontend/src/pages/OrganizationSamlProvidersPage.tsx`, `frontend/src/pages/ForgotPasswordPage.tsx`, `frontend/src/pages/ResetPasswordPage.tsx`, `frontend/src/pages/admin/AdminPrivilegedAccessPage.tsx`, `frontend/src/auth/`, `frontend/src/components/home/AuthModal.tsx`, `frontend/src/components/home/MfaSignInEnrollment.tsx`, `frontend/src/components/organization/`, `frontend/src/components/security/`, `frontend/src/components/federation/`, `frontend/src/pages/admin/RolesAdminPage.tsx`, `frontend/src/pages/admin/PermissionsAdminPage.tsx`, `frontend/src/api/rolesApi.ts`, `frontend/src/api/permissionsApi.ts`, `frontend/src/api/privilegedAccessApi.ts`, `frontend/src/api/oidcApi.ts`, `frontend/src/api/samlApi.ts`.
 
 ## Decisions affecting this sprint
 

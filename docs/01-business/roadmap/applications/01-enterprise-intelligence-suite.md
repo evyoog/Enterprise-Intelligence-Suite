@@ -144,5 +144,5 @@ Not specified in any source. Under [DN-2](../open-decisions.md#dn-2-sprint-scope
 
 Observed on branch `dev`. This is a module-level mapping, not a verified function-by-function implementation status.
 
-- Backend: `backend/src/main/java/com/vyoog/eisplatform/modules/dashboard`, `backend/src/main/java/com/vyoog/eisplatform/modules/notification`, `backend/src/main/java/com/vyoog/eisplatform/modules/preference`
-- Frontend: `frontend/src/pages/HomePage.tsx`, `frontend/src/pages/BusinessDashboardPage.tsx`, `frontend/src/pages/PreferencesPage.tsx`, `frontend/src/components/layout/NotificationBell.tsx`, `frontend/src/components/layout/SiteNavbar.tsx`
+- Backend: `backend/src/main/java/com/vyoog/eisplatform/modules/dashboard`, `backend/src/main/java/com/vyoog/eisplatform/modules/notification`, `backend/src/main/java/com/vyoog/eisplatform/modules/preference`, `backend/src/main/java/com/vyoog/eisplatform/modules/servicestatus`
+- Frontend: `frontend/src/pages/HomePage.tsx`, `frontend/src/pages/BusinessDashboardPage.tsx`, `frontend/src/pages/PreferencesPage.tsx`, `frontend/src/components/layout/NotificationBell.tsx`, `frontend/src/components/layout/SiteNavbar.tsx`, `frontend/src/components/layout/AppShell.tsx`, `frontend/src/components/layout/appNavigation.ts`, `frontend/src/pages/ServiceStatusPage.tsx`, `frontend/src/pages/admin/ServiceStatusAdminPage.tsx`, `frontend/src/api/serviceStatusApi.ts`
