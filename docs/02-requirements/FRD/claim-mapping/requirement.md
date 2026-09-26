@@ -41,8 +41,8 @@ Claim mapping becomes configurable per identity provider, for both SAML and OIDC
 - FRD [`saml-federation`](../saml-federation/requirement.md) and FRD [`oidc-federation`](../oidc-federation/requirement.md).
 - Current fixed mapping in `SamlAuthenticationService`.
 
-## Open questions
-- Default OIDC claim names: Not specified (there is no OIDC code yet).
-- Whether a configured name replaces the default list or is tried first: Not specified.
-- Whether the fallbacks in business rule 3 remain fixed or become configurable: Not specified.
-- API shape (for example, fields on the provider create and update requests): Not specified.
+## Decisions ([C28](../../../01-business/roadmap/open-decisions.md#c28), product owner, 2026-09-26)
+The open questions are resolved:
+- Default OIDC claims: `email`, `given_name`, `family_name`, `name`.
+- A configured name is tried first, then the defaults.
+- Fallbacks stay fixed (not configurable).

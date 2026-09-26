@@ -43,6 +43,11 @@ Raised from the sprint 2026.3.3 development plan.
 | C23 | 06.04.01 Map claims (configurable per provider) | The current fixed attribute mapping works. Configurable mapping is Not specified | Decided 2026-09-25 ([record](#c23)) |
 | C24 | 06.03.01 Request elevated access: how the requester chooses the permission | The backend accepts any permission name that some role grants, but there is no endpoint listing requestable permissions for a regular user (`GET /me/permissions` returns only the caller's own). The UI control is Not specified. Blocks the request form in FRD `privileged-access` | Decided 2026-09-25 ([record](#c24)) |
 | C25 | 05.01.01 Organization Lifecycle on `/admin/registrations`: meaning of delete, scope, create, timing | Sprint 2026.4.2 scope with no FRD; "delete" vs the roadmap's "Close organization" was Not specified | Decided 2026-09-25 ([record](#c25)) |
+| C26 | 01.02.02 Service status page (REQ-PRT-001): status values, visibility, posting permission, setting, placement | The five open questions in FRD `service-status-page` | Decided 2026-09-26 ([record](#c26)) |
+| C27 | 06.04.01 Configure OIDC (REQ-IAM-006): provider fields, login flow, secret storage, one-provider rule, paths | The open questions in FRD `oidc-federation` | Decided 2026-09-26 ([record](#c27)) |
+| C28 | 06.04.01 Map claims (REQ-IAM-007): OIDC defaults, order, fallbacks | The open questions in FRD `claim-mapping` | Decided 2026-09-26 ([record](#c28)) |
+| C29 | 06.02.02 Organization MFA policy on SAML sign-in, and members with no authenticator | Found in the 2026-09-26 sprint audit: SAML sign-in skipped the policy; SAML users have no known password, so they could not enrol | Decided 2026-09-26 ([record](#c29)) |
+| C30 | 06.01.02 Recover MFA: who may reset another user's MFA | Recovery codes were the only path; admin reset was Not specified | Decided 2026-09-26 ([record](#c30)) |
 
 ## Decisions needed
 1. **C2 and C3:** confirm the MVP and the order of applications. → Decided 2026-09-25: see [C2](#c2) and [C3](#c3).
@@ -159,6 +164,36 @@ Raised from the sprint 2026.3.3 development plan.
 ### C25
 **Decision (product owner, 2026-09-25):** On `/admin/registrations`, platform administrators get **edit, suspend, activate and close for organizations only**. **Close is a soft close**: the organization's status becomes CLOSED, data and audit history are kept, active members' Keycloak logins are disabled and their sessions ended, and it can be activated again. **No create** from the admin page: organizations still come only from self-registration. No hard delete. Individual customers are unchanged. 05.01.01.02–.05 are **pulled forward from 2026.4.2** and built in 2026.3.3; 05.01.01.01 Create organization stays in 2026.4.2.
 **Conditions:** FRD [`organization-lifecycle`](../../02-requirements/FRD/organization-lifecycle/requirement.md) (REQ-TEN-001), approved the same day.
+
+### C26
+**Decision (product owner, 2026-09-26):** Service status page (REQ-PRT-001).
+- **Status values:** Operational, Degraded, Partial outage, Major outage, Maintenance.
+- **Visibility:** every signed-in customer sees the status of every product. Incident details (title, message, times) open only for products the customer's organization or account has purchased.
+- **Posting:** a new platform permission `MANAGE_SERVICE_STATUS`, granted to the `ADMIN` role.
+- **Setting:** `app.status-page.enabled`, on by default.
+- **Placement:** `/status` in the signed-in sidebar, linked from the dashboard's Service Health card; the admin screen is `/admin/service-status`.
+
+### C27
+**Decision (product owner, 2026-09-26):** OIDC federation (REQ-IAM-006).
+- **Provider fields:** name, issuer (discovery) URL, client ID, client secret, scopes (default `openid email profile`).
+- **Login flow:** the same as SAML. The user enters their organization code, the platform redirects to the provider, and the callback creates the normal platform session. New users join as `MEMBER`.
+- **Client secret:** encrypted with the existing TOTP-secret encryption (`TotpSecretCipher`, AES-GCM) and never returned after saving.
+- **One enabled provider per organization, across SAML and OIDC together.**
+- **Endpoints:** `/organization/me/oidc-providers`, mirroring the SAML paths.
+
+### C28
+**Decision (product owner, 2026-09-26):** Claim mapping (REQ-IAM-007).
+- **Default OIDC claims:** `email`, `given_name`, `family_name`, `name`.
+- **Order:** a configured name is tried first, then the defaults.
+- **Fallbacks** (email-style NameID, display name, email local part, "SSO User") stay fixed, not configurable.
+
+### C29
+**Decision (product owner, 2026-09-26):** Organization MFA policy (REQ-IAM-001) on federated sign-in.
+- After a SAML (and OIDC) sign-in, a member of an organization that requires MFA must also pass the platform's own authenticator-app step.
+- A member who has not set up an authenticator yet enrols **during sign-in**: sign-in pauses on the QR set-up step, and the session is issued only after a valid code. No password is asked, because the user has just signed in. This applies to password sign-in as well.
+
+### C30
+**Decision (product owner, 2026-09-26):** Recover MFA (06.01.02.03). Organization admins may reset MFA for members of their own organization; platform admins may reset it for anyone. Every reset is audited and the user is notified.
 
 ### DN-2 Sprint scope, length and dates
 **Decision:**

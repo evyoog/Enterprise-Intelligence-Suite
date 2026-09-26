@@ -45,9 +45,10 @@ A simple interim status page. Platform administrators post per-product status an
 - Existing product catalog (products the status refers to).
 - Retirement tasks in sprints [2027.1.1](../../../01-business/roadmap/sprints/SPRINT-2027.1.1.md) and [2027.1.3](../../../01-business/roadmap/sprints/SPRINT-2027.1.3.md) ([C20](../../../01-business/roadmap/open-decisions.md#c20)).
 
-## Open questions
-- Status values: Not specified ([C20](../../../01-business/roadmap/open-decisions.md#c20) says they are defined in this FRD).
-- Visibility: which customers see which status or incident is Not specified.
-- Which platform permission allows posting (for example an existing one or a new one): Not specified.
-- Name and default of the on/off configuration setting: Not specified.
-- Where the page appears in the UI (route, and whether the dashboard links to it): Not specified.
+## Decisions ([C26](../../../01-business/roadmap/open-decisions.md#c26), product owner, 2026-09-26)
+The open questions are resolved:
+- Status values: Operational, Degraded, Partial outage, Major outage, Maintenance.
+- Visibility: every signed-in customer sees every product's status; incident details only for purchased products.
+- Posting permission: new platform permission `MANAGE_SERVICE_STATUS`, granted to `ADMIN`.
+- Setting: `app.status-page.enabled`, on by default.
+- Placement: `/status` in the signed-in sidebar, linked from the dashboard Service Health card; admin screen `/admin/service-status`.
