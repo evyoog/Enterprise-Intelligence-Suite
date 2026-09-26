@@ -10,9 +10,13 @@ spring:
     # username: ${DB_USER:postgres}
     # password: ${DB_PASSWORD:root}
     # Live DB (shared RDS — vyg-pms/vyg-requirement also use this)
-    url: jdbc:postgresql://vyg-batch-1.cgtfswn9milw.ap-south-1.rds.amazonaws.com:5432/vygmicroservice?currentSchema=eis_platform,public
-    username: ${DB_USER:postgres}
-    password: ${DB_PASSWORD:vygpost23}
+    # url: jdbc:postgresql://vyg-batch-1.cgtfswn9milw.ap-south-1.rds.amazonaws.com:5432/vygmicroservice?currentSchema=eis_platform,public
+    # username: ${DB_USER:postgres}
+    # password: ${DB_PASSWORD:vygpost23}
+    # sandbox db for testing (shared RDS)
+    url: jdbc:postgresql://vyg-batch-1.cgtfswn9milw.ap-south-1.rds.amazonaws.com:5432/sandbox?currentSchema=eis_platform,public
+    username: ${DB_USER:sandboxadmin}
+    password: ${DB_PASSWORD:vyg@2011}
     driver-class-name: org.postgresql.Driver
     hikari:
       connection-timeout: 20000
