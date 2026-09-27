@@ -59,6 +59,31 @@ CREATE TABLE product_platforms (
     PRIMARY KEY (product_id, platform_id)
 );
 
+-- 15.01 Platform Administration (sprint 2026.4.2). Seeded from the fixed
+-- Currency enum — see PlatformCurrency's own javadoc; enable/disable only.
+CREATE TABLE platform_currency (
+    code VARCHAR(10) PRIMARY KEY,
+    name VARCHAR(100) NOT NULL,
+    enabled BOOLEAN NOT NULL DEFAULT true
+);
+
+-- 15.01.02 Configure regions; 05.02.01.03 Assign region (organization.region_id
+-- below) — freely admin-defined, not a fixed geography list.
+CREATE TABLE platform_region (
+    id BIGSERIAL PRIMARY KEY,
+    code VARCHAR(50) NOT NULL UNIQUE,
+    name VARCHAR(150) NOT NULL,
+    enabled BOOLEAN NOT NULL DEFAULT true
+);
+
+-- 15.01.01 Configure feature flags — runtime, admin-toggleable, distinct
+-- from a Spring config property. See PlatformFeatureFlag's own javadoc.
+CREATE TABLE platform_feature_flag (
+    flag_key VARCHAR(100) PRIMARY KEY,
+    enabled BOOLEAN NOT NULL DEFAULT true,
+    description VARCHAR(500)
+);
+
 CREATE TABLE sso_bridge_session (
     id VARCHAR(64) PRIMARY KEY,
     keycloak_sub VARCHAR(255) NOT NULL,
@@ -202,6 +227,9 @@ CREATE TABLE organization (
     -- from the registration status above. See migration V001.
     lifecycle_status VARCHAR(20) NOT NULL DEFAULT 'ACTIVE'
         CHECK (lifecycle_status IN ('ACTIVE', 'SUSPENDED', 'CLOSED')),
+    -- 05.02 Tenant Lifecycle (sprint 2026.4.2, carried from 2026.4.1).
+    region_id BIGINT REFERENCES platform_region(id),
+    allow_seat_overage BOOLEAN NOT NULL DEFAULT false,
     created_at TIMESTAMP NOT NULL DEFAULT now(),
     updated_at TIMESTAMP NOT NULL DEFAULT now()
 );

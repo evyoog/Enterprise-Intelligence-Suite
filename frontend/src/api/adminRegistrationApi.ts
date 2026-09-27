@@ -42,6 +42,10 @@ export interface OrganizationAdmin {
   adminEmail?: string
   adminKeycloakLinked: boolean
   createdAt?: string
+  // 05.02 Tenant Lifecycle (sprint 2026.4.2, carried from 2026.4.1).
+  regionId?: number
+  regionName?: string
+  allowSeatOverage: boolean
 }
 
 // REQ-TEN-001: platform-admin lifecycle, separate from the registration status.
@@ -70,6 +74,8 @@ export interface UpdateOrganizationPayload {
   billingCountry?: string
   billingState?: string
   billingCity?: string
+  regionId?: number
+  allowSeatOverage: boolean
 }
 
 export interface OrganizationLifecycleResult {

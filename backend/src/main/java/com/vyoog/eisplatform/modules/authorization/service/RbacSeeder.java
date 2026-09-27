@@ -57,7 +57,9 @@ public class RbacSeeder implements ApplicationRunner {
         "ADMIN", List.of("MANAGE_CATALOG", "MANAGE_REGISTRATIONS", "MANAGE_PRIVILEGED_ACCESS", "VIEW_AUDIT_LOG",
             "MANAGE_ROLES", "MANAGE_PERMISSIONS",
             // C26 (2026-09-26): posting the interim service status page (REQ-PRT-001).
-            "MANAGE_SERVICE_STATUS")
+            "MANAGE_SERVICE_STATUS",
+            // 15.01 Platform Administration (sprint 2026.4.2): currencies, regions, feature flags.
+            "MANAGE_PLATFORM_SETTINGS")
     );
 
     private static final Map<String, List<String>> ORGANIZATION_ROLES = Map.of(

@@ -1,7 +1,8 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import {
-  Alert, Box, Button, Checkbox, Dialog, DialogActions, DialogContent, DialogTitle, FormControlLabel, TextField,
+  Alert, Box, Button, Checkbox, Dialog, DialogActions, DialogContent, DialogTitle, FormControlLabel, MenuItem,
+  TextField, Typography,
 } from '@mui/material'
 import {
   adminRegistrationApi,
@@ -9,8 +10,9 @@ import {
   type UpdateOrganizationPayload,
 } from '../../api/adminRegistrationApi'
 import { ApiError } from '../../api/client'
+import { platformAdministrationApi, type PlatformRegion } from '../../api/platformAdministrationApi'
 
-type TextKey = Exclude<keyof UpdateOrganizationPayload, 'billingSameAsAddress'>
+type TextKey = Exclude<keyof UpdateOrganizationPayload, 'billingSameAsAddress' | 'allowSeatOverage' | 'regionId'>
 
 const REQUIRED: TextKey[] = ['name', 'businessEmail', 'country']
 const DETAIL_FIELDS: TextKey[] = [
@@ -27,6 +29,8 @@ function toPayload(org: OrganizationAdmin): UpdateOrganizationPayload {
     companyRegistrationNumber: org.companyRegistrationNumber ?? '', taxVatNumber: org.taxVatNumber ?? '',
     billingSameAsAddress: org.billingSameAsAddress, billingAddress: org.billingAddress ?? '',
     billingCountry: org.billingCountry ?? '', billingState: org.billingState ?? '', billingCity: org.billingCity ?? '',
+    // 05.02 Tenant Lifecycle (sprint 2026.4.2, carried from 2026.4.1).
+    regionId: org.regionId, allowSeatOverage: org.allowSeatOverage,
   }
 }
 
@@ -55,6 +59,12 @@ function EditForm({ organization, onClose, onSaved }: {
   const [form, setForm] = useState<UpdateOrganizationPayload>(() => toPayload(organization))
   const [error, setError] = useState<string | null>(null)
   const [saving, setSaving] = useState(false)
+  // 05.02 Tenant Lifecycle (sprint 2026.4.2, carried from 2026.4.1).
+  const [regions, setRegions] = useState<PlatformRegion[]>([])
+
+  useEffect(() => {
+    platformAdministrationApi.listRegions().then(setRegions).catch(() => setRegions([]))
+  }, [])
 
   const set = (key: TextKey) => (e: React.ChangeEvent<HTMLInputElement>) =>
     setForm((f) => ({ ...f, [key]: e.target.value }))
@@ -108,6 +118,34 @@ function EditForm({ organization, onClose, onSaved }: {
             {BILLING_FIELDS.map(field)}
           </Box>
         )}
+
+        <Typography variant="subtitle2" sx={{ fontWeight: 700, mt: 3, mb: 1 }}>
+          Tenant lifecycle
+        </Typography>
+        <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr' }, gap: 2 }}>
+          <TextField
+            select
+            size="small"
+            label="Region"
+            value={form.regionId ?? ''}
+            onChange={(e) => setForm((f) => ({ ...f, regionId: e.target.value === '' ? undefined : Number(e.target.value) }))}
+          >
+            <MenuItem value="">Not assigned</MenuItem>
+            {regions.map((r) => (
+              <MenuItem key={r.id} value={r.id}>{r.name}</MenuItem>
+            ))}
+          </TextField>
+        </Box>
+        <FormControlLabel
+          sx={{ mt: 1 }}
+          control={(
+            <Checkbox
+              checked={form.allowSeatOverage}
+              onChange={(e) => setForm((f) => ({ ...f, allowSeatOverage: e.target.checked }))}
+            />
+          )}
+          label="Allow seats beyond the licensed limit"
+        />
       </DialogContent>
       <DialogActions>
         <Button onClick={onClose} disabled={saving}>{t('adminOrgLifecycle.cancel')}</Button>

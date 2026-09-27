@@ -48,10 +48,14 @@ class LayeredArchitectureTest {
         // - ..modules.servicestatus.. (REQ-PRT-001, 2026-09-26) reads the same
         //   catalog to list the products whose status is posted — again no
         //   duplicate catalog.
+        // - ..modules.administration.. (15.01 Platform Administration, sprint
+        //   2026.4.2) seeds PlatformCurrency rows from the existing Currency
+        //   enum (PlatformAdministrationSeeder) — reusing the fixed currency
+        //   set, not defining a second one.
         ArchRule rule = classes().that().resideInAPackage("..modules.product..")
             .should().onlyHaveDependentClassesThat().resideInAnyPackage(
                 "..modules.product..", "..modules.platform..", "..modules.registration..", "..modules.dashboard..",
-                "..modules.servicestatus..",
+                "..modules.servicestatus..", "..modules.administration..",
                 "com.vyoog.eisplatform", "..config.."
             );
 

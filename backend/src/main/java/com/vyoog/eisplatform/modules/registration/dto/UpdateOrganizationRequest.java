@@ -31,6 +31,11 @@ public record UpdateOrganizationRequest(
     @Size(max = 500) String billingAddress,
     @Size(max = 100) String billingCountry,
     @Size(max = 100) String billingState,
-    @Size(max = 100) String billingCity
+    @Size(max = 100) String billingCity,
+    // 05.02.01.03 Assign region, 05.02.01.05 Configure tenant policies
+    // (sprint 2026.4.2, carried from 2026.4.1). Null regionId clears the
+    // assignment (top-level/unassigned).
+    Long regionId,
+    boolean allowSeatOverage
 ) {
 }

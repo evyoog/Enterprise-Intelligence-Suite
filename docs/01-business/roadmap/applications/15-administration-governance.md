@@ -169,5 +169,5 @@ Not specified in any source. Under [DN-2](../open-decisions.md#dn-2-sprint-scope
 
 Observed on branch `dev`. This is a module-level mapping, not a verified function-by-function implementation status.
 
-- Backend: `backend/src/main/java/com/vyoog/eisplatform/modules/audit`, `backend/src/main/java/com/vyoog/eisplatform/modules/dashboard (OrganizationAuditLogController)`
-- Frontend: `frontend/src/pages/admin/AdminAuditLogPage.tsx`
+- Backend: `backend/src/main/java/com/vyoog/eisplatform/modules/audit`, `backend/src/main/java/com/vyoog/eisplatform/modules/dashboard (OrganizationAuditLogController)`, `backend/src/main/java/com/vyoog/eisplatform/modules/administration` (currencies, regions, feature flags — [platform-administration](../../../02-requirements/FRD/platform-administration/requirement.md))
+- Frontend: `frontend/src/pages/admin/AdminAuditLogPage.tsx`, `frontend/src/pages/admin/settings/CommonSettingsPage.tsx`

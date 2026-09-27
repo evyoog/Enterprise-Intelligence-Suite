@@ -13,4 +13,8 @@ public interface OrganizationRepository extends JpaRepository<Organization, Long
     Optional<Organization> findByCodeIgnoreCase(@Param("code") String code);
 
     boolean existsByCodeIgnoreCase(String code);
+
+    /** 05.02.01.03 Assign region — used by OrganizationRegionUsageGuard to
+     * block deleting a region still assigned to an organization. */
+    boolean existsByRegionId(Long regionId);
 }

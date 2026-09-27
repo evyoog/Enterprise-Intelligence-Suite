@@ -225,6 +225,21 @@ Raised from the sprint 2026.3.3 development plan.
 ### C35
 **Decision (product owner, 2026-09-26):** 05.04.01 Groups (sprint 2026.4.1). A group is a named grouping of an organization's own members (e.g. "Engineering"), with add/remove member actions. It carries no permissions or product access of its own — that is still `OrgRole` and per-product access grants. 05.04.02 Projects is **not** built this sprint (carried to 2026.4.2 — see the follow-up table): "assign resources" needs a resource model this platform does not have yet outside of per-product access, and deciding what a Project's "resources" are needs more scoping than this sprint has time for.
 
+### C36
+**Decision (product owner, 2026-09-27):** 15.01 Platform Administration (sprint 2026.4.2).
+- **Configure currencies:** enable/disable only, on the fixed set already introduced by C33 (USD/EUR/GBP/INR). Disabling one only narrows the plan editor's currency choices; it does not touch a plan that already uses it, and no currency conversion or billing behavior is added.
+- **Configure regions:** freely admin-defined (code + name), not a fixed geography list — nothing in any source specifies which regions this platform must support. This is the list 05.02.01.03 Assign region (C37) reads from.
+- **Configure feature flags:** a runtime, admin-toggleable key/enabled/description row, distinct from a Spring config property fixed at deploy time. "groups_enabled" (05.04.01 Groups, built in 2026.3.3/2026.4.1) is the first real flag, seeded true so nothing already built stops working; toggling it off hides Groups for every organization.
+- **Configure languages:** read-only — a language only appears if this platform actually ships translated strings for it (today: en, es). There is no add/remove; a "language" with no translation behind it would just show blank or English text under a foreign-language label.
+- **Configure defaults and Manage templates** (15.01.02) are **not** built this sprint — see the follow-up table.
+
+### C37
+**Decision (product owner, 2026-09-27):** 05.02 Tenant Lifecycle (sprint 2026.4.2, carried from 2026.4.1).
+- **Create tenant / Configure tenant** (05.02.01.01/.02): satisfied by the existing organization registration and admin-edit flows — "tenant" in this platform **is** the Organization (C25's model); there is no separate tenant entity or creation step.
+- **Assign region** (05.02.01.03): a platform admin sets an organization's region from the list C36 introduces, on the same admin-edit form as the rest of REQ-TEN-001.
+- **Configure isolation** (05.02.01.04): satisfied by the platform's existing architecture — every table is scoped by `organization_id`, enforced throughout (see `OrganizationSelfService#resolveMembership` and every `requirePermissionOnMember`-style check). No new capability is needed; this is a documentation-only decision.
+- **Configure tenant policies** (05.02.01.05): one real policy this sprint — `allowSeatOverage`, a platform-admin-only flag on the organization that bypasses the licensed-seat check when true. Further policies (if any) are Not specified and are not invented here.
+
 ### DN-2 Sprint scope, length and dates
 **Decision:**
 - **Sprint length:** sprints are **calendar months**. Sprint `.1`, `.2` and `.3` are the first, second and third months of the PI's calendar quarter. Example: 2026.3.3 = 1–30 Sep 2026; 2026.4.1 = 1–31 Oct 2026.
@@ -290,5 +305,7 @@ These documents are **not** changed by this file. Update them to match:
 | DN-5 | Replace `<APP-CODE>` in the draft FRDs (for example `REQ-IAM-…` for application 06) |
 | C13 | Apply the per-deployable container rules in `deployment/` and the architecture docs when the pipelines are built |
 | Sources | Add `EIS_Platform_Summary.docx` to `docs/01-business/source-documents/` as **[SUM]**, and list it in that folder's README |
+| C36, C37 | Create FRDs `platform-administration`, `tenant-lifecycle` (Approved); add to `SPRINT-2026.4.2.md` scope |
+| C34, C35 | Invite/Create user (05.03.01.01/.02) and 05.04.02 Projects, carried again from 2026.4.2 — not built this sprint either; still pending a decision on the identity-creation flow and the Project resource model |
 
 **Done (2026-09-26), no longer follow-up:** C31 (sprint pages 2026.4.1 through 2027.2.2, and the "Sprint" field on application pages 02, 03, 04, 05, 10, 11, 12, 13, 15, all updated to the corrected sequence — this superseded the older "C21: add the general policy engine to `SPRINT-2027.2.2.md`" and "C16, C17: add the deferred functions to `SPRINT-2027.1.3.md`" rows, and the "C21: add the agent controls to `SPRINT-2027.1.2.md`" row, which are now folded into C31's own sprint pages); C32–C35 (FRDs written and Approved, sprint 2026.4.1 built, carry-over recorded on `SPRINT-2026.4.2.md`).

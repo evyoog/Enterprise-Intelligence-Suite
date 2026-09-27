@@ -129,6 +129,8 @@ public class SecurityConfig {
                 .requestMatchers("/admin/registrations/**").access(permissions.platformPermission("MANAGE_REGISTRATIONS"))
                 // C26 (REQ-PRT-001): posting product status and incidents.
                 .requestMatchers("/admin/service-status/**").access(permissions.platformPermission("MANAGE_SERVICE_STATUS"))
+                // 15.01 Platform Administration (sprint 2026.4.2): currencies, regions, feature flags.
+                .requestMatchers("/admin/platform-settings/**").access(permissions.platformPermission("MANAGE_PLATFORM_SETTINGS"))
                 // Phase 6 (PAM): approving/rejecting/revoking PLATFORM-scope
                 // privileged-access requests — its own permission, distinct
                 // from both MANAGE_CATALOG and MANAGE_REGISTRATIONS, since

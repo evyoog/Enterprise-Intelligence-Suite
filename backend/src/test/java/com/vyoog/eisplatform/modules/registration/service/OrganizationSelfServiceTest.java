@@ -2,6 +2,9 @@ package com.vyoog.eisplatform.modules.registration.service;
 
 import com.vyoog.eisplatform.common.exception.ForbiddenException;
 import com.vyoog.eisplatform.common.exception.ResourceNotFoundException;
+import com.vyoog.eisplatform.modules.administration.dto.CreateFeatureFlagRequest;
+import com.vyoog.eisplatform.modules.administration.dto.UpdateFeatureFlagRequest;
+import com.vyoog.eisplatform.modules.administration.service.PlatformAdministrationService;
 import com.vyoog.eisplatform.modules.registration.dto.GroupDto;
 import com.vyoog.eisplatform.modules.registration.dto.MemberStatusAction;
 import com.vyoog.eisplatform.modules.registration.dto.OrgMemberDto;
@@ -36,6 +39,8 @@ class OrganizationSelfServiceTest {
     private OrganizationSelfService organizationSelfService;
     @Autowired
     private OrganizationMemberService organizationMemberService;
+    @Autowired
+    private PlatformAdministrationService platformAdministrationService;
     @Autowired
     private OrganizationRepository organizationRepository;
     @Autowired
@@ -374,5 +379,60 @@ class OrganizationSelfServiceTest {
         organizationSelfService.deleteGroup(admin.getCustomerId(), group.id());
 
         assertThat(organizationSelfService.listMyOrgGroups(admin.getCustomerId())).isEmpty();
+    }
+
+    // ------------------------------------------------------------------
+    // 15.01.01 Configure feature flags (sprint 2026.4.2): "groups_enabled"
+    // ------------------------------------------------------------------
+
+    @Test
+    void groupsAreUnreachableWhileTheFeatureFlagIsDisabled() {
+        Organization org = newOrganization();
+        var admin = organizationMemberService.addMember(org.getId(), newCustomer("flag-admin@test-org.example").getId(), OrgRole.ORG_ADMIN);
+        organizationSelfService.createGroup(admin.getCustomerId(), "Before disabling");
+
+        platformAdministrationService.updateFeatureFlag("groups_enabled", new UpdateFeatureFlagRequest(false, null), "test-admin");
+        try {
+            assertThatThrownBy(() -> organizationSelfService.listMyOrgGroups(admin.getCustomerId()))
+                .isInstanceOf(ForbiddenException.class);
+            assertThatThrownBy(() -> organizationSelfService.createGroup(admin.getCustomerId(), "While disabled"))
+                .isInstanceOf(ForbiddenException.class);
+        } finally {
+            platformAdministrationService.updateFeatureFlag("groups_enabled", new UpdateFeatureFlagRequest(true, null), "test-admin");
+        }
+
+        assertThat(organizationSelfService.listMyOrgGroups(admin.getCustomerId())).hasSize(1);
+    }
+
+    // ------------------------------------------------------------------
+    // 05.02.01.05 Configure tenant policies (sprint 2026.4.2, carried from
+    // 2026.4.1): allowSeatOverage
+    // ------------------------------------------------------------------
+
+    @Test
+    void allowSeatOverageBypassesTheSeatLimit() {
+        Organization org = newOrganization();
+        org.setLicensedSeats(1);
+        org.setAllowSeatOverage(true);
+        organizationRepository.save(org);
+
+        organizationMemberService.addMember(org.getId(), newCustomer("overage-admin@test-org.example").getId(), OrgRole.ORG_ADMIN);
+        var teammate = organizationMemberService.addMember(org.getId(), newCustomer("overage-teammate@test-org.example").getId(), OrgRole.MEMBER);
+
+        assertThat(teammate.getId()).isNotNull();
+        assertThat(organizationMemberService.isOverLimit(org.getId())).isTrue();
+    }
+
+    @Test
+    void seatOverageIsRefusedWhenTheOrganizationDoesNotAllowIt() {
+        Organization org = newOrganization();
+        org.setLicensedSeats(1);
+        organizationRepository.save(org);
+
+        organizationMemberService.addMember(org.getId(), newCustomer("no-overage-admin@test-org.example").getId(), OrgRole.ORG_ADMIN);
+
+        assertThatThrownBy(() -> organizationMemberService.addMember(
+            org.getId(), newCustomer("no-overage-teammate@test-org.example").getId(), OrgRole.MEMBER))
+            .isInstanceOf(com.vyoog.eisplatform.common.exception.SeatLimitExceededException.class);
     }
 }

@@ -2,6 +2,7 @@ package com.vyoog.eisplatform.modules.registration.service;
 
 import com.vyoog.eisplatform.common.exception.DuplicateResourceException;
 import com.vyoog.eisplatform.common.exception.ResourceNotFoundException;
+import com.vyoog.eisplatform.modules.administration.repository.PlatformRegionRepository;
 import com.vyoog.eisplatform.modules.audit.service.AuditService;
 import com.vyoog.eisplatform.modules.auth.service.KeycloakAdminClient;
 import com.vyoog.eisplatform.modules.auth.service.PlatformMfaService;
@@ -52,6 +53,7 @@ public class AdminRegistrationService {
     private final AuditService auditService;
     private final KeycloakAdminClient keycloakAdminClient;
     private final PlatformMfaService platformMfaService;
+    private final PlatformRegionRepository regionRepository;
 
     public List<PendingProvisioningDto> listPendingProvisioning() {
         return customerRepository.findByKeycloakSubIsNullAndStatusNot(RegistrationStatus.PENDING_EMAIL_VERIFICATION)
@@ -89,6 +91,9 @@ public class AdminRegistrationService {
             .flatMap(m -> customerRepository.findById(m.getCustomerId()))
             .orElse(null);
 
+        String regionName = org.getRegionId() == null ? null
+            : regionRepository.findById(org.getRegionId()).map(r -> r.getName()).orElse(null);
+
         return new OrganizationAdminDto(
             org.getId(), org.getName(), org.getCode(), org.getType(), org.getIndustry(), org.getWebsite(),
             org.getBusinessEmail(), org.getPhone(), org.getCountry(), org.getState(), org.getCity(), org.getAddress(),
@@ -99,7 +104,8 @@ public class AdminRegistrationService {
             admin == null ? null : admin.getLastName(),
             admin == null ? null : admin.getEmail(),
             admin != null && admin.getKeycloakSub() != null,
-            org.getCreatedAt()
+            org.getCreatedAt(),
+            org.getRegionId(), regionName, org.isAllowSeatOverage()
         );
     }
 
@@ -214,6 +220,14 @@ public class AdminRegistrationService {
         org.setBillingCountry(request.billingSameAsAddress() ? null : blankToNull(request.billingCountry()));
         org.setBillingState(request.billingSameAsAddress() ? null : blankToNull(request.billingState()));
         org.setBillingCity(request.billingSameAsAddress() ? null : blankToNull(request.billingCity()));
+        // 05.02.01.03 Assign region, 05.02.01.05 Configure tenant policies
+        // (sprint 2026.4.2, carried from 2026.4.1): platform-admin-only, like
+        // every other field this method edits.
+        if (request.regionId() != null && !regionRepository.existsById(request.regionId())) {
+            throw new ResourceNotFoundException("Region not found: " + request.regionId());
+        }
+        org.setRegionId(request.regionId());
+        org.setAllowSeatOverage(request.allowSeatOverage());
         org = organizationRepository.save(org);
         auditService.recordSuccess("ORGANIZATION_UPDATED", actor.keycloakSub(), actor.customerId(), actor.email(),
             "Organization", organizationId.toString(), organizationId, "Organization details updated");

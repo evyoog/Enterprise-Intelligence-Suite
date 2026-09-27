@@ -2,6 +2,8 @@ package com.vyoog.eisplatform.modules.registration.service;
 
 import com.vyoog.eisplatform.common.exception.ForbiddenException;
 import com.vyoog.eisplatform.common.exception.ResourceNotFoundException;
+import com.vyoog.eisplatform.modules.administration.model.PlatformRegion;
+import com.vyoog.eisplatform.modules.administration.repository.PlatformRegionRepository;
 import com.vyoog.eisplatform.modules.audit.repository.AuditLogRepository;
 import com.vyoog.eisplatform.modules.auth.service.FakeKeycloakAdminClient;
 import com.vyoog.eisplatform.modules.auth.service.KeycloakAdminClient;
@@ -52,6 +54,7 @@ class AdminOrganizationLifecycleTest {
     @Autowired private CustomerRepository customerRepository;
     @Autowired private AuditLogRepository auditLogRepository;
     @Autowired private KeycloakAdminClient keycloakAdminClient;
+    @Autowired private PlatformRegionRepository regionRepository;
 
     private FakeKeycloakAdminClient keycloak() {
         return (FakeKeycloakAdminClient) keycloakAdminClient;
@@ -86,9 +89,13 @@ class AdminOrganizationLifecycleTest {
     }
 
     private UpdateOrganizationRequest update(String name, boolean billingSame) {
+        return update(name, billingSame, null, false);
+    }
+
+    private UpdateOrganizationRequest update(String name, boolean billingSame, Long regionId, boolean allowSeatOverage) {
         return new UpdateOrganizationRequest(name, "Private", "Software", " ", "new@lifecycle.example", "+91 1",
             "India", "TN", "Chennai", "1 Main St", "GST1", null, null, null,
-            billingSame, "Billing St", "India", "TN", "Chennai");
+            billingSame, "Billing St", "India", "TN", "Chennai", regionId, allowSeatOverage);
     }
 
     @Test
@@ -209,6 +216,31 @@ class AdminOrganizationLifecycleTest {
             assertThat(log.getAction()).isEqualTo("ORGANIZATION_UPDATED");
             assertThat(log.getOrganizationId()).isEqualTo(org.getId());
         });
+    }
+
+    // 05.02 Tenant Lifecycle (sprint 2026.4.2, carried from 2026.4.1).
+
+    @Test
+    void updateCanAssignARegionAndSetTheSeatOveragePolicy() {
+        Organization org = newOrganization(RegistrationStatus.COMPLETED);
+        PlatformRegion region = new PlatformRegion();
+        region.setCode("region-" + System.nanoTime());
+        region.setName("Test Region");
+        region = regionRepository.save(region);
+
+        var updated = service.updateOrganization(org.getId(), update("Renamed Org", true, region.getId(), true), PLATFORM_ADMIN);
+
+        assertThat(updated.regionId()).isEqualTo(region.getId());
+        assertThat(updated.regionName()).isEqualTo("Test Region");
+        assertThat(updated.allowSeatOverage()).isTrue();
+    }
+
+    @Test
+    void assigningAnUnknownRegionIsRefused() {
+        Organization org = newOrganization(RegistrationStatus.COMPLETED);
+
+        assertThatThrownBy(() -> service.updateOrganization(org.getId(), update("Renamed Org", true, -1L, false), PLATFORM_ADMIN))
+            .isInstanceOf(ResourceNotFoundException.class);
     }
 
     @Test

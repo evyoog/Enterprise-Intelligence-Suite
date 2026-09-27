@@ -2,6 +2,7 @@ package com.vyoog.eisplatform.modules.registration.service;
 
 import com.vyoog.eisplatform.common.exception.ForbiddenException;
 import com.vyoog.eisplatform.common.exception.ResourceNotFoundException;
+import com.vyoog.eisplatform.modules.administration.service.PlatformFeatureFlagService;
 import com.vyoog.eisplatform.modules.authorization.dto.PrivilegedAccessRequestDto;
 import com.vyoog.eisplatform.modules.authorization.model.RoleScope;
 import com.vyoog.eisplatform.modules.authorization.service.AuthorizationService;
@@ -58,6 +59,7 @@ public class OrganizationSelfService {
     private final PlatformMfaService platformMfaService;
     private final NotificationService notificationService;
     private final AuditService auditService;
+    private final PlatformFeatureFlagService featureFlagService;
 
     /** Phase 16: a plain, non-throwing "does this customer belong to any
      * organization at all" check — for callers like DashboardService that
@@ -537,7 +539,19 @@ public class OrganizationSelfService {
         return new GroupDto(group.getId(), group.getName(), members);
     }
 
+    /** 15.01.01 Configure feature flags (sprint 2026.4.2): "groups_enabled",
+     * checked before MANAGE_USERS itself — same "one generic refusal" reason
+     * as {@link #requirePermissionOnMember}, and it hides the whole
+     * OrganizationGroupsCard the same way a 403 from a missing permission
+     * already does (see that component's own 403/404-hides handling). */
+    private void requireGroupsEnabled() {
+        if (!featureFlagService.isEnabled("groups_enabled")) {
+            throw new ForbiddenException("You do not have permission to do this");
+        }
+    }
+
     public List<GroupDto> listMyOrgGroups(Long customerId) {
+        requireGroupsEnabled();
         OrganizationMember caller = requirePermission(customerId, "MANAGE_USERS");
         return groupRepository.findByOrganizationId(caller.getOrganizationId()).stream()
             .map(this::toGroupDto)
@@ -546,6 +560,7 @@ public class OrganizationSelfService {
 
     @Transactional
     public GroupDto createGroup(Long customerId, String name) {
+        requireGroupsEnabled();
         OrganizationMember caller = requirePermission(customerId, "MANAGE_USERS");
         OrganizationGroup group = new OrganizationGroup();
         group.setOrganizationId(caller.getOrganizationId());
@@ -570,6 +585,7 @@ public class OrganizationSelfService {
 
     @Transactional
     public void deleteGroup(Long customerId, Long groupId) {
+        requireGroupsEnabled();
         requirePermission(customerId, "MANAGE_USERS");
         OrganizationGroup group = requireGroupInCallersOrganization(customerId, groupId);
         groupMemberRepository.deleteByGroupId(group.getId());
@@ -582,6 +598,7 @@ public class OrganizationSelfService {
      * of a different organization the same way requirePermissionOnMember does. */
     @Transactional
     public GroupDto addGroupMember(Long customerId, Long groupId, Long organizationMemberId) {
+        requireGroupsEnabled();
         requirePermission(customerId, "MANAGE_USERS");
         OrganizationGroup group = requireGroupInCallersOrganization(customerId, groupId);
         OrganizationMember target = memberRepository.findById(organizationMemberId)
@@ -604,6 +621,7 @@ public class OrganizationSelfService {
     /** 05.04.01.03 Remove member. */
     @Transactional
     public GroupDto removeGroupMember(Long customerId, Long groupId, Long organizationMemberId) {
+        requireGroupsEnabled();
         requirePermission(customerId, "MANAGE_USERS");
         OrganizationGroup group = requireGroupInCallersOrganization(customerId, groupId);
         groupMemberRepository.findByGroupIdAndOrganizationMemberId(groupId, organizationMemberId)

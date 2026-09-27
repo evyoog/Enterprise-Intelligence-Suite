@@ -37,6 +37,12 @@ public class OrganizationMemberService {
     public void assertSeatAvailable(Long organizationId) {
         Organization organization = organizationRepository.findById(organizationId)
             .orElseThrow(() -> new ResourceNotFoundException("Organization not found"));
+        // 05.02.01.05 Configure tenant policies (sprint 2026.4.2, carried from
+        // 2026.4.1): a platform-admin-only override, set on the organization
+        // itself — see Organization#allowSeatOverage's own javadoc.
+        if (organization.isAllowSeatOverage()) {
+            return;
+        }
         long activeCount = memberRepository.countByOrganizationIdAndStatus(organizationId, MembershipStatus.ACTIVE);
         if (activeCount >= organization.getLicensedSeats()) {
             throw new SeatLimitExceededException(

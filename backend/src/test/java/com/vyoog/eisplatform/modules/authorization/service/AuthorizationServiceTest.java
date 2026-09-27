@@ -40,9 +40,10 @@ class AuthorizationServiceTest {
         // Phase 3 (2026.3.3): MANAGE_ROLES/MANAGE_PERMISSIONS joined the
         // ADMIN role's seeded set — RBAC administration itself.
         // C26 (2026-09-26): MANAGE_SERVICE_STATUS, posting the service status page.
+        // 15.01 Platform Administration (sprint 2026.4.2): MANAGE_PLATFORM_SETTINGS.
         assertThat(authorizationService.listPlatformPermissions(Set.of("ROLE_ADMIN")))
             .containsExactlyInAnyOrder("MANAGE_CATALOG", "MANAGE_REGISTRATIONS", "MANAGE_PRIVILEGED_ACCESS", "VIEW_AUDIT_LOG",
-                "MANAGE_ROLES", "MANAGE_PERMISSIONS", "MANAGE_SERVICE_STATUS");
+                "MANAGE_ROLES", "MANAGE_PERMISSIONS", "MANAGE_SERVICE_STATUS", "MANAGE_PLATFORM_SETTINGS");
     }
 
     @Test
