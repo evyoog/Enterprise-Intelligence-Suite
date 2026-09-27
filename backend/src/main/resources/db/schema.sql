@@ -352,6 +352,8 @@ CREATE TABLE product_subscription (
     owner_customer_id BIGINT REFERENCES customer(id),
     owner_organization_id BIGINT REFERENCES organization(id),
     status VARCHAR(30) NOT NULL DEFAULT 'PENDING_SUBSCRIPTION',
+    -- 07.01.02 Subscription Changes (sprint 2026.4.3).
+    plan_id BIGINT REFERENCES product_plans(id),
     started_at TIMESTAMP,
     expires_at TIMESTAMP,
     created_at TIMESTAMP NOT NULL DEFAULT now(),

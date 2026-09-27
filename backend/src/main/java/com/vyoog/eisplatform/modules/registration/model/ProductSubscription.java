@@ -40,6 +40,15 @@ public class ProductSubscription {
     @Column(name = "owner_organization_id")
     private Long ownerOrganizationId;
 
+    /** 07.01.02 Subscription Changes (sprint 2026.4.3): which of the
+     * product's pricing tiers (see {@code product_plans}) this subscription
+     * is on — null means the product's flat, un-tiered price (see
+     * Product#price's own javadoc). Not a JPA relationship (no need to load
+     * a plan's full row here) — see SubscriptionService#changePlan for the
+     * one place this is validated against the subscription's own product. */
+    @Column(name = "plan_id")
+    private Long planId;
+
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 30)
     private SubscriptionStatus status = SubscriptionStatus.PENDING_SUBSCRIPTION;

@@ -13,7 +13,9 @@ import com.vyoog.eisplatform.modules.notification.model.NotificationCategory;
 import com.vyoog.eisplatform.modules.notification.model.NotificationSeverity;
 import com.vyoog.eisplatform.modules.notification.service.NotificationService;
 import com.vyoog.eisplatform.modules.product.model.Product;
+import com.vyoog.eisplatform.modules.product.model.ProductPlan;
 import com.vyoog.eisplatform.modules.product.model.ProductStatus;
+import com.vyoog.eisplatform.modules.product.repository.ProductPlanRepository;
 import com.vyoog.eisplatform.modules.product.repository.ProductRepository;
 import com.vyoog.eisplatform.modules.registration.dto.GroupDto;
 import com.vyoog.eisplatform.modules.registration.dto.MemberStatusAction;
@@ -52,6 +54,7 @@ public class OrganizationSelfService {
     private final OrganizationProductAccessRepository accessRepository;
     private final ProductSubscriptionRepository subscriptionRepository;
     private final ProductRepository productRepository;
+    private final ProductPlanRepository productPlanRepository;
     private final OrganizationMemberService organizationMemberService;
     private final CustomerRepository customerRepository;
     private final AuthorizationService authorizationService;
@@ -304,7 +307,10 @@ public class OrganizationSelfService {
                 productRepository.findById(subscription.getProductId()).map(Product::getName).orElse("Unknown product"),
                 subscription.getStatus(),
                 subscription.getStartedAt(),
-                subscription.getExpiresAt()
+                subscription.getExpiresAt(),
+                subscription.getPlanId(),
+                subscription.getPlanId() == null ? null
+                    : productPlanRepository.findById(subscription.getPlanId()).map(ProductPlan::getName).orElse(null)
             ))
             .toList();
     }

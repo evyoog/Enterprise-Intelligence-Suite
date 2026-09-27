@@ -485,5 +485,35 @@
     "cancel": "Cancel",
     "save": "Save",
     "saveError": "Could not save the claim mapping."
+  },
+  "subscriptions": {
+    "title": "Your subscriptions",
+    "subtitle": "Suspend, reactivate, cancel, renew, or change plan on any subscription you own.",
+    "backToDashboard": "Back to dashboard",
+    "noSubscriptions": "You have no subscriptions yet.",
+    "plan": "Plan",
+    "noPlan": "Flat price (no plan)",
+    "expires": "Expires {{date}}",
+    "neverExpires": "No expiry set",
+    "status": {
+      "PENDING_SUBSCRIPTION": "Pending",
+      "ACTIVE": "Active",
+      "SUSPENDED": "Suspended",
+      "CANCELLED": "Cancelled",
+      "EXPIRED": "Expired"
+    },
+    "actions": {
+      "suspend": "Suspend",
+      "reactivate": "Reactivate",
+      "cancel": "Cancel subscription",
+      "renew": "Renew",
+      "changePlan": "Change plan"
+    },
+    "changePlanDialog": {
+      "title": "Change plan for {{product}}",
+      "planLabel": "Plan",
+      "save": "Save"
+    },
+    "confirmCancel": "This permanently cancels your subscription to {{product}}. Continue?"
   }
 }

@@ -3,6 +3,7 @@ import { BrowserRouter, Navigate, Outlet, Route, Routes } from 'react-router-dom
 import { HomePage } from './pages/HomePage'
 import { ProductsPage } from './pages/ProductsPage'
 import { MyProductsPage } from './pages/MyProductsPage'
+import { MySubscriptionsPage } from './pages/MySubscriptionsPage'
 import { BusinessDashboardPage } from './pages/BusinessDashboardPage'
 import { SecuritySettingsPage } from './pages/SecuritySettingsPage'
 import { PreferencesPage } from './pages/PreferencesPage'
@@ -93,6 +94,7 @@ function MainApp() {
               doc on why preferences stay reachable signed out. */}
           <Route path="/account/preferences" element={<PreferencesPage />} />
           <Route path="/my/products" element={<RequireAuth><MyProductsPage /></RequireAuth>} />
+          <Route path="/my/subscriptions" element={<RequireAuth><MySubscriptionsPage /></RequireAuth>} />
           <Route path="/organization/business-dashboard" element={<RequireAuth><BusinessDashboardPage /></RequireAuth>} />
           <Route path="/account/security" element={<RequireAuth><SecuritySettingsPage /></RequireAuth>} />
           <Route path="/organization/identity-federation" element={<RequireAuth><OrganizationSamlProvidersPage /></RequireAuth>} />

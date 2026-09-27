@@ -485,5 +485,35 @@
     "cancel": "Cancelar",
     "save": "Guardar",
     "saveError": "No se pudo guardar la asignación."
+  },
+  "subscriptions": {
+    "title": "Tus suscripciones",
+    "subtitle": "Suspende, reactiva, cancela, renueva o cambia de plan en cualquier suscripción que tengas.",
+    "backToDashboard": "Volver al panel",
+    "noSubscriptions": "Todavía no tienes suscripciones.",
+    "plan": "Plan",
+    "noPlan": "Precio fijo (sin plan)",
+    "expires": "Vence el {{date}}",
+    "neverExpires": "Sin fecha de vencimiento",
+    "status": {
+      "PENDING_SUBSCRIPTION": "Pendiente",
+      "ACTIVE": "Activa",
+      "SUSPENDED": "Suspendida",
+      "CANCELLED": "Cancelada",
+      "EXPIRED": "Vencida"
+    },
+    "actions": {
+      "suspend": "Suspender",
+      "reactivate": "Reactivar",
+      "cancel": "Cancelar suscripción",
+      "renew": "Renovar",
+      "changePlan": "Cambiar plan"
+    },
+    "changePlanDialog": {
+      "title": "Cambiar plan de {{product}}",
+      "planLabel": "Plan",
+      "save": "Guardar"
+    },
+    "confirmCancel": "Esto cancela permanentemente tu suscripción a {{product}}. ¿Continuar?"
   }
 }

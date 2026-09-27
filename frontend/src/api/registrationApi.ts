@@ -9,7 +9,7 @@ export type RegistrationStatus =
   | 'CANCELLED'
   | 'EXPIRED'
 
-export type SubscriptionStatus = 'PENDING_SUBSCRIPTION' | 'ACTIVE' | 'CANCELLED' | 'EXPIRED'
+export type SubscriptionStatus = 'PENDING_SUBSCRIPTION' | 'ACTIVE' | 'SUSPENDED' | 'CANCELLED' | 'EXPIRED'
 
 // Only `name`, `businessEmail`, `gstin`, `phone`, and `firstAdmin.{email,
 // password,confirmPassword}` are ever actually collected by the real
@@ -86,6 +86,9 @@ export interface Subscription {
   status: SubscriptionStatus
   startedAt?: string
   expiresAt?: string
+  /** 07.01.02 Change plan (sprint 2026.4.3) — null means the product's flat price. */
+  planId?: number
+  planName?: string
 }
 
 export interface OrgMember {
@@ -143,6 +146,18 @@ export const myProductsApi = {
   listSubscriptions: () => apiRequest<Subscription[]>('/me/subscriptions'),
   subscribe: (productId: number) =>
     apiRequest<Subscription>('/me/subscriptions', { method: 'POST', body: JSON.stringify({ productId }) }),
+  // 07.01.01 Suspend/Reactivate/Cancel, 07.04.01 Renew (sprint 2026.4.3).
+  suspend: (subscriptionId: number) =>
+    apiRequest<Subscription>(`/me/subscriptions/${subscriptionId}/suspend`, { method: 'POST' }),
+  reactivate: (subscriptionId: number) =>
+    apiRequest<Subscription>(`/me/subscriptions/${subscriptionId}/reactivate`, { method: 'POST' }),
+  cancel: (subscriptionId: number) =>
+    apiRequest<Subscription>(`/me/subscriptions/${subscriptionId}/cancel`, { method: 'POST' }),
+  renew: (subscriptionId: number) =>
+    apiRequest<Subscription>(`/me/subscriptions/${subscriptionId}/renew`, { method: 'POST' }),
+  // 07.01.02 Change plan (sprint 2026.4.3) — null planId clears the plan.
+  changePlan: (subscriptionId: number, planId: number | null) =>
+    apiRequest<Subscription>(`/me/subscriptions/${subscriptionId}/plan`, { method: 'PATCH', body: JSON.stringify({ planId }) }),
 }
 
 // Authenticated — always scoped to the caller's own organization on the backend.

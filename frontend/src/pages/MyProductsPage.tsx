@@ -136,11 +136,16 @@ export function MyProductsPage() {
   return (
     <Box>
       <Container maxWidth="md" disableGutters sx={{ pb: 4 }}>
-        <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 3 }}>
+        <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 3, gap: 1, flexWrap: 'wrap' }}>
           <Typography variant="h4" sx={{ fontWeight: 700 }}>Your dashboard</Typography>
-          <Button startIcon={<Settings2 size={16} />} size="small" onClick={() => setCustomizing((v) => !v)}>
-            Customize
-          </Button>
+          <Box sx={{ display: 'flex', gap: 1 }}>
+            <Button component={RouterLink} to="/my/subscriptions" size="small" variant="outlined">
+              Manage subscriptions
+            </Button>
+            <Button startIcon={<Settings2 size={16} />} size="small" onClick={() => setCustomizing((v) => !v)}>
+              Customize
+            </Button>
+          </Box>
         </Box>
 
         {customizing && (

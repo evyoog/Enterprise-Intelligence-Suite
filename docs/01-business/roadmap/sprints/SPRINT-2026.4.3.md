@@ -25,6 +25,27 @@
 | Change | Decision and scope | FRD | Requirement |
 |---|---|---|---|
 | Added | [C19](../open-decisions.md#c19) View spending (01.02.01, application 01 Enterprise Intelligence Suite), delivered with Billing & Payments (08). Moved from sprint [2026.3.3](SPRINT-2026.3.3.md) | - | - |
+| Decided | [C38](../open-decisions.md#c38) Subscription Lifecycle: suspend/reactivate/cancel/renew/change-plan built for individual-customer subscriptions, plus a scheduled auto-expiry job. Change quantity/Schedule change, 07.02 Entitlement Management, 07.03 License & Quota Management, Schedule/Notify/Auto-renew, organization-owned-subscription actions, and all of 08 Billing & Payments carried further | [subscription-lifecycle](../../../02-requirements/FRD/subscription-lifecycle/requirement.md) | REQ-SUB-001 |
+
+### FRDs in this sprint
+
+| FRD | Requirement | Functions | Status |
+|---|---|---|---|
+| [subscription-lifecycle](../../../02-requirements/FRD/subscription-lifecycle/requirement.md) | REQ-SUB-001 | 07.01.01 (suspend, reactivate, cancel, renew — upgrade/downgrade folded into change plan), 07.01.02 (change plan only), 07.04.01 (process renewal only), 07.04.02 | Approved |
+
+### Progress (as of 2026-09-27)
+
+| Feature | Status | Note |
+|---|---|---|
+| 07.01.01 Subscription Lifecycle (suspend, reactivate, cancel, renew) | Done (this FRD's scope) | Create/Activate already existed; upgrade/downgrade folded into Change plan below |
+| 07.01.02 Subscription Changes (change plan) | Partly done | Change plan built; Change quantity, Schedule change not built — no quantity/scheduling model exists yet |
+| 07.02 Entitlement Management | Not started | Needs a scoping decision against the existing product-access model first ([C38](../open-decisions.md#c38)) |
+| 07.03 License & Quota Management | Not started | Same as above |
+| 07.04.01 Renewal & Lifecycle (process renewal) | Partly done | Process renewal built (extends term, no payment); Schedule/Notify/Auto-renew not built — no billing step exists to trigger from |
+| 07.04.02 Lifecycle (expire, reactivate subscription) | Done (this FRD's scope) | Hourly scheduled job; reactivate folded into renew |
+| 08 Billing & Payments (whole application) | Not started | Needs a payment-provider decision first ([C38](../open-decisions.md#c38)) |
+
+07.02, 07.03, the remaining 07.01.02/07.04.01 items, and all of 08 remain open, carried to a later sprint once the decisions above are made.
 
 ## EIS 07 Subscription & Entitlement Management
 
@@ -59,7 +80,7 @@ Full breakdown with APIs, services, entities and events: [applications/07-subscr
 
 ### Related code already in this repository
 
-Observed on branch `dev`, module level only: `backend/…/modules/registration (SubscriptionController, product access)`; `frontend/src/pages/MyProductsPage.tsx`.
+Observed on branch `dev`, module level only: `backend/…/modules/registration (SubscriptionController, SubscriptionService, SubscriptionExpiryJob, product access)`; `frontend/src/pages/MyProductsPage.tsx`, `frontend/src/pages/MySubscriptionsPage.tsx`.
 
 ## EIS 08 Billing & Payments
 
