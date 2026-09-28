@@ -56,7 +56,7 @@ class ProductServiceTest {
             List<ProductPlanCreateRequest> plans) {
         return new ProductCreateRequest(
             name, description, price, imageUrl, launchUrl, category, status, ssoConnected, platformIds, plans,
-            null, null, null);
+            null, null, null, null);
     }
 
     private static ProductPlanCreateRequest planReq(String name, BigDecimal price, BillingPeriod billingPeriod, Integer sortOrder) {
@@ -329,7 +329,7 @@ class ProductServiceTest {
             req("Dependency", null, new BigDecimal("1.00"), null, null, null, null, null, null, null));
         ProductDto created = productService.createProduct(new ProductCreateRequest(
             "Depends on it", null, new BigDecimal("1.00"), null, null, null, null, null, null, null,
-            null, null, List.of(dependency.getId())));
+            null, null, List.of(dependency.getId()), null));
 
         assertThat(created.getDependsOnProductIds()).containsExactly(dependency.getId());
     }
@@ -341,7 +341,7 @@ class ProductServiceTest {
 
         assertThatThrownBy(() -> productService.updateProduct(created.getId(), new ProductCreateRequest(
             "Self", null, new BigDecimal("1.00"), null, null, null, null, null, null, null,
-            null, null, List.of(created.getId()))))
+            null, null, List.of(created.getId()), null)))
             .isInstanceOf(IllegalArgumentException.class);
     }
 
@@ -351,7 +351,7 @@ class ProductServiceTest {
             req("Parent", null, new BigDecimal("1.00"), null, null, null, null, null, null, null));
         ProductDto variant = productService.createProduct(new ProductCreateRequest(
             "Enterprise variant", null, new BigDecimal("1.00"), null, null, null, null, null, null, null,
-            parent.getId(), "Enterprise", null));
+            parent.getId(), "Enterprise", null, null));
 
         assertThat(variant.getParentProductId()).isEqualTo(parent.getId());
         assertThat(variant.getVariantLabel()).isEqualTo("Enterprise");
@@ -363,7 +363,7 @@ class ProductServiceTest {
             req("Parent to delete", null, new BigDecimal("1.00"), null, null, null, null, null, null, null));
         productService.createProduct(new ProductCreateRequest(
             "Child", null, new BigDecimal("1.00"), null, null, null, null, null, null, null,
-            parent.getId(), null, null));
+            parent.getId(), null, null, null));
 
         assertThatThrownBy(() -> productService.deleteProduct(parent.getId()))
             .isInstanceOf(ProductInUseException.class);

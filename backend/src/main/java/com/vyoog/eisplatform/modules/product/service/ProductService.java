@@ -228,6 +228,7 @@ public class ProductService {
         product.setCategory(request.category());
         product.setStatus(request.status() != null ? request.status() : ProductStatus.ACTIVE);
         product.setSsoConnected(request.ssoConnected() != null && request.ssoConnected());
+        product.setFeatured(request.featured() != null && request.featured());
         product.setPlatforms(resolvePlatforms(request.platformIds()));
         product.setParentProductId(request.parentProductId());
         product.setVariantLabel(request.variantLabel());

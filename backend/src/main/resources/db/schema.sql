@@ -8,6 +8,8 @@ CREATE TABLE products (
     category VARCHAR(255),
     status VARCHAR(20) NOT NULL DEFAULT 'ACTIVE',
     sso_connected BOOLEAN NOT NULL DEFAULT false,
+    -- 03.01.02 Show featured products (sprint 2027.1.2, V010).
+    featured BOOLEAN NOT NULL DEFAULT false,
     -- 02.01 Product Lifecycle & Structure (sprint 2026.4.1, V006).
     version INT NOT NULL DEFAULT 1,
     parent_product_id BIGINT REFERENCES products(id),
@@ -679,3 +681,24 @@ CREATE TABLE knowledge_article (
     updated_at TIMESTAMP NOT NULL DEFAULT now()
 );
 CREATE INDEX idx_knowledge_article_status ON knowledge_article (status);
+
+-- 12.01 Ticket Management (sprint 2027.1.2). Not AI-driven — see
+-- SupportTicket's own javadoc. See migration V010.
+CREATE TABLE support_ticket (
+    id BIGSERIAL PRIMARY KEY,
+    requested_by_customer_id BIGINT NOT NULL REFERENCES customer(id),
+    subject VARCHAR(200) NOT NULL,
+    description VARCHAR(4000) NOT NULL,
+    category VARCHAR(100),
+    priority VARCHAR(20) NOT NULL DEFAULT 'MEDIUM' CHECK (priority IN ('LOW', 'MEDIUM', 'HIGH', 'URGENT')),
+    status VARCHAR(20) NOT NULL DEFAULT 'OPEN'
+        CHECK (status IN ('OPEN', 'IN_PROGRESS', 'ESCALATED', 'RESOLVED', 'CLOSED')),
+    assigned_to_customer_id BIGINT REFERENCES customer(id),
+    resolution_note VARCHAR(2000),
+    resolved_at TIMESTAMP,
+    closed_at TIMESTAMP,
+    created_at TIMESTAMP NOT NULL DEFAULT now(),
+    updated_at TIMESTAMP NOT NULL DEFAULT now()
+);
+CREATE INDEX idx_support_ticket_requested_by ON support_ticket (requested_by_customer_id);
+CREATE INDEX idx_support_ticket_status ON support_ticket (status);

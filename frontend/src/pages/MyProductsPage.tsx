@@ -8,6 +8,7 @@ import { Link as RouterLink } from 'react-router-dom'
 import { ApiError } from '../api/client'
 import { dashboardApi, type Dashboard, type DashboardProduct } from '../api/dashboardApi'
 import { myProductsApi } from '../api/registrationApi'
+import { recommendationsApi, type Recommendations, type RecommendedProduct } from '../api/recommendationsApi'
 
 type ViewState =
   | { kind: 'loading' }
@@ -19,6 +20,7 @@ const WIDGET_LABELS: Record<string, string> = {
   alerts: 'Alerts',
   recentlyUsed: 'Recently used',
   favorites: 'Favorites',
+  recommendations: 'Recommended for you',
   products: 'All products',
 }
 const ALL_WIDGETS = Object.keys(WIDGET_LABELS)
@@ -38,6 +40,7 @@ export function MyProductsPage() {
   const [state, setState] = useState<ViewState>({ kind: 'loading' })
   const [subscribingId, setSubscribingId] = useState<number | null>(null)
   const [customizing, setCustomizing] = useState(false)
+  const [recommendations, setRecommendations] = useState<Recommendations | null>(null)
 
   const load = () => {
     setState({ kind: 'loading' })
@@ -47,6 +50,7 @@ export function MyProductsPage() {
   }
 
   useEffect(load, [])
+  useEffect(() => { recommendationsApi.get().then(setRecommendations).catch(() => setRecommendations({ featured: [], popular: [] })) }, [])
 
   if (state.kind === 'loading') {
     return (
@@ -199,6 +203,14 @@ export function MyProductsPage() {
           if (widget === 'favorites' && favorites.length > 0) {
             return <ProductRail key={widget} title="Favorites" products={favorites} onToggleFavorite={toggleFavorite} onLaunch={launch} isEntitled={isEntitled} />
           }
+          if (widget === 'recommendations' && recommendations && (recommendations.featured.length > 0 || recommendations.popular.length > 0)) {
+            return (
+              <Box key={widget}>
+                {recommendations.featured.length > 0 && <RecommendationRail title="Featured" products={recommendations.featured} />}
+                {recommendations.popular.length > 0 && <RecommendationRail title="Popular" products={recommendations.popular} />}
+              </Box>
+            )
+          }
           if (widget === 'products') {
             return (
               <Box key={widget} sx={{ mb: 3 }}>
@@ -250,6 +262,22 @@ function ProductRail({ title, products, onToggleFavorite, onLaunch, isEntitled }
             {isEntitled(product) && (
               <Button size="small" fullWidth sx={{ mt: 1 }} variant="outlined" onClick={() => onLaunch(product)}>Launch</Button>
             )}
+          </Paper>
+        ))}
+      </Box>
+    </Box>
+  )
+}
+
+function RecommendationRail({ title, products }: { title: string; products: RecommendedProduct[] }) {
+  return (
+    <Box sx={{ mb: 3 }}>
+      <Typography variant="h6" component="h5" sx={{ fontWeight: 700, mb: 1.5 }}>{title}</Typography>
+      <Box sx={{ display: 'flex', gap: 1.5, overflowX: 'auto', pb: 1 }}>
+        {products.map((product) => (
+          <Paper key={product.id} variant="outlined" sx={{ p: 1.5, minWidth: 200, flexShrink: 0 }}>
+            <Typography sx={{ fontWeight: 600, fontSize: 14 }} noWrap>{product.name}</Typography>
+            {product.category && <Typography variant="caption" sx={{ color: 'text.secondary' }}>{product.category}</Typography>}
           </Paper>
         ))}
       </Box>

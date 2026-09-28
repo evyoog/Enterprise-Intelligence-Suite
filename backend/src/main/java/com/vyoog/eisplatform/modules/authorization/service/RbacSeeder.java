@@ -62,7 +62,11 @@ public class RbacSeeder implements ApplicationRunner {
             "MANAGE_PLATFORM_SETTINGS",
             // 11.01 Knowledge Base (sprint 2027.1.1): its own permission — publishing
             // customer-facing knowledge content is distinct from catalog management.
-            "MANAGE_KNOWLEDGE_BASE")
+            "MANAGE_KNOWLEDGE_BASE",
+            // 12.01 Ticket Management (sprint 2027.1.2): its own permission —
+            // handling support tickets is a distinct responsibility from
+            // every other admin capability above.
+            "MANAGE_SUPPORT_TICKETS")
     );
 
     private static final Map<String, List<String>> ORGANIZATION_ROLES = Map.of(

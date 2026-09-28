@@ -31,6 +31,8 @@ import { ServiceStatusPage } from './pages/ServiceStatusPage'
 import { OrganizationOrdersPage } from './pages/OrganizationOrdersPage'
 import { KnowledgeBasePage } from './pages/KnowledgeBasePage'
 import { AdminKnowledgeBasePage } from './pages/admin/AdminKnowledgeBasePage'
+import { MyTicketsPage } from './pages/MyTicketsPage'
+import { AdminSupportTicketsPage } from './pages/admin/AdminSupportTicketsPage'
 import { RequireAdmin } from './components/routing/RequireAdmin'
 import { RequireAuth } from './components/routing/RequireAuth'
 import { AuthAwareLayout, PublicOnly } from './components/layout/AppShell'
@@ -107,6 +109,8 @@ function MainApp() {
           <Route path="/knowledge-base" element={<KnowledgeBasePage />} />
           {/* 09 Order & Provisioning Management (sprint 2027.1.1): organization purchasing only. */}
           <Route path="/organization/orders" element={<RequireAuth><OrganizationOrdersPage /></RequireAuth>} />
+          {/* 12.01 Ticket Management (sprint 2027.1.2): any authenticated customer. */}
+          <Route path="/support/tickets" element={<RequireAuth><MyTicketsPage /></RequireAuth>} />
 
           {/* "settings" is a category (see the sidebar's expandable Settings
               group), so a bare /admin/settings visit redirects to its first
@@ -132,6 +136,7 @@ function MainApp() {
             <Route path="permissions" element={<PermissionsAdminPage />} />
             <Route path="service-status" element={<ServiceStatusAdminPage />} />
             <Route path="knowledge-base" element={<AdminKnowledgeBasePage />} />
+            <Route path="support/tickets" element={<AdminSupportTicketsPage />} />
           </Route>
         </Route>
       </Routes>

@@ -2,6 +2,7 @@ import type { ComponentType } from 'react'
 import {
   Building2, KeyRound, LayoutDashboard, LayoutGrid, Layers, Package, ScrollText, Settings, ShieldCheck,
   SlidersHorizontal, Store, UserCheck, UserCog, UsersRound, Palette, Boxes, Activity, ClipboardList, BookOpen,
+  LifeBuoy,
 } from 'lucide-react'
 import type { MyPermissions } from '../../api/myPermissionsApi'
 
@@ -63,6 +64,10 @@ export function buildAppNavigation({ isAdmin, permissions }: NavAccess): AppNavS
   workspace.push({ key: 'serviceStatus', labelKey: 'serviceStatus', to: '/status', icon: Activity })
   // 11.01 Knowledge Base (sprint 2027.1.1): public reads, same as the catalog above.
   workspace.push({ key: 'knowledgeBase', labelKey: 'knowledgeBase', to: '/knowledge-base', icon: BookOpen })
+  // 12.01 Ticket Management (sprint 2027.1.2): any authenticated customer.
+  if (hasCustomerWorkspace) {
+    workspace.push({ key: 'support', labelKey: 'support', to: '/support/tickets', icon: LifeBuoy })
+  }
 
   const organizationItems: AppNavItem[] = []
   if (organization('MANAGE_ORGANIZATION')) {
@@ -92,6 +97,9 @@ export function buildAppNavigation({ isAdmin, permissions }: NavAccess): AppNavS
   }
   if (platform('MANAGE_KNOWLEDGE_BASE')) {
     admin.push({ key: 'adminKnowledgeBase', labelKey: 'knowledgeBase', to: '/admin/knowledge-base', icon: BookOpen })
+  }
+  if (platform('MANAGE_SUPPORT_TICKETS')) {
+    admin.push({ key: 'adminSupportTickets', labelKey: 'support', to: '/admin/support/tickets', icon: LifeBuoy })
   }
   if (platform('MANAGE_CATALOG')) {
     admin.push({

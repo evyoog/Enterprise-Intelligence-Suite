@@ -51,6 +51,8 @@ export interface Product {
   status: ProductStatus
   /** Admin-set — whether this app is wired into the Vyoog SSO bridge. */
   ssoConnected: boolean
+  /** 03.01.02 Show featured products (sprint 2027.1.2) — admin-set. */
+  featured: boolean
   /** Which high-level platform(s) (e.g. Thittam) this app is assigned to. */
   platforms: PlatformSummary[]
   plans: ProductPlan[]
@@ -70,6 +72,7 @@ export interface ProductCreateRequest {
   category?: string
   status?: ProductStatus
   ssoConnected?: boolean
+  featured?: boolean
   platformIds?: number[]
   plans?: ProductPlanInput[]
   parentProductId?: number

@@ -140,5 +140,12 @@ Not specified in any source. Under [DN-2](../open-decisions.md#dn-2-sprint-scope
 | Feature FRD | `docs/02-requirements/FRD/<feature>/` (copy `_template/`) | See the sprint page for FRDs in progress |
 | Requirement | `REQ-SUP-<NNN>` inside the FRD | Approved FRD required before build ([DN-4](../open-decisions.md#dn-4-business-rules-and-acceptance-criteria)) |
 | Business rules | `docs/03-business-rules/` and `FRD/<feature>/business-rules.md` | Per FRD |
-| Test cases | `test-cases/functional/<feature>/TC-SUP-<NNN>.md` | Not created |
+| Test cases | `test-cases/functional/ticket-management/TC-SUP-001..005.md` | Created ([REQ-SUP-001](../../../02-requirements/FRD/ticket-management/requirement.md), sprint 2027.1.2, 12.01.01 only) |
 | NFRs | [WB:Non-Functional Requirements] NFR-001 to NFR-014 (platform-wide) | See [EIS-document-analysis.md](../EIS-document-analysis.md) section 2.17 |
+
+## Related code already in this repository
+
+Observed on branch `dev`. This is a module-level mapping, not a verified function-by-function implementation status.
+
+- Backend: `backend/src/main/java/com/vyoog/eisplatform/modules/support (SupportTicket, SupportTicketService, SupportTicketController, AdminSupportTicketController — 12.01.01 only)`
+- Frontend: `frontend/src/pages/MyTicketsPage.tsx`, `frontend/src/pages/admin/AdminSupportTicketsPage.tsx`

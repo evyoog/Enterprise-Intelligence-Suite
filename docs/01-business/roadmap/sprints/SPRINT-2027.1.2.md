@@ -33,6 +33,33 @@
 | Moved in | [C31](../open-decisions.md#c31) 10 Service & Resource Management moves here from 2027.1.1 (service instances are created by provisioning, which is built there, so they can't be managed in that same sprint) | - | - |
 | Moved in | [C31](../open-decisions.md#c31) 03a Discovery & checkout moves here from 2027.1.3 (checkout should close the buy/pay/provision loop before AI agents start recommending products) | - | - |
 | Moved in | [C31](../open-decisions.md#c31) 12a Human support moves here from 2027.1.3 (the AI support agent, 04b, escalates to people, so human ticketing must exist first) | - | - |
+| Decided | [C40](../open-decisions.md#c40) Recommendations (03.01.02): rule-based featured flag + existing launch-count usage data, no AI/ML model | [product-recommendations](../../../02-requirements/FRD/product-recommendations/requirement.md) | REQ-MKT-001 |
+| Decided | [C40](../open-decisions.md#c40) Ticket Management (12.01.01) built, human-operated (not AI-driven); 12.03 SLA Management and 12.04 Incident & Problem Management not built | [ticket-management](../../../02-requirements/FRD/ticket-management/requirement.md) | REQ-SUP-001 |
+| Not built | [C40](../open-decisions.md#c40) 03.03 Marketplace Checkout: needs a product-options/discount data model no source specifies — carried further |
+| Not built | [C40](../open-decisions.md#c40) 04a AI Agent Orchestration (whole application, including the C21/C4 additions above): needs an agent/LLM framework decision — carried further |
+| Not built | [C40](../open-decisions.md#c40) 10 Service & Resource Management (whole application, including the C20 retirement task): P1/stretch, no real infrastructure to manage yet — carried further |
+
+### FRDs in this sprint
+
+| FRD | Requirement | Functions | Status |
+|---|---|---|---|
+| [product-recommendations](../../../02-requirements/FRD/product-recommendations/requirement.md) | REQ-MKT-001 | 03.01.02 (03.01.01 already satisfied by existing catalog search) | Approved |
+| [ticket-management](../../../02-requirements/FRD/ticket-management/requirement.md) | REQ-SUP-001 | 12.01.01 | Approved |
+
+### Progress (as of 2026-09-28)
+
+| Feature | Status | Note |
+|---|---|---|
+| 03.01.01 Catalog Browsing | Done (pre-existing) | Browse/search/filter/sort already built (Phase 17), before this sprint |
+| 03.01.02 Recommendations | Done (this FRD's scope) | Featured flag + popularity from existing usage data, no AI/ML model |
+| 03.03 Marketplace Checkout | Not started | Carried — needs a product-options/discount data model first ([C40](../open-decisions.md#c40)) |
+| 04a AI Agent Orchestration (whole application) | Not started | Carried — needs an agent/LLM framework decision first ([C40](../open-decisions.md#c40)) |
+| 10 Service & Resource Management (whole application) | Not started | Carried — P1/stretch, no infrastructure to manage; the [C20](../open-decisions.md#c20) retirement task still can't land |
+| 12.01.01 Ticket Management | Done (this FRD's scope) | Human-operated, not AI-driven |
+| 12.03 SLA Management | Not started | Carried — needs its own SLA-policy data model first ([C40](../open-decisions.md#c40)) |
+| 12.04 Incident & Problem Management | Not started | Carried — needs a decided relationship to the existing `service_incident` table first ([C40](../open-decisions.md#c40)) |
+
+03.03, 04a, 10, 12.03 and 12.04 remain open for this sprint, each carried to a later sprint once the decision it needs is made.
 
 ## EIS 04a AI Advisor & Agent Platform: agent orchestration foundation
 

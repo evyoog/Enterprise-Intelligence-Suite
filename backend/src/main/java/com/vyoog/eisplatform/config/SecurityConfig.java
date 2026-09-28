@@ -127,6 +127,10 @@ public class SecurityConfig {
                 // product knowledge before they buy, signed in or not.
                 .requestMatchers(HttpMethod.GET, "/knowledge-base/**").permitAll()
                 .requestMatchers("/admin/knowledge-base/**").access(permissions.platformPermission("MANAGE_KNOWLEDGE_BASE"))
+                // 12.01 Ticket Management (sprint 2027.1.2): admin ticket actions.
+                // Creating/tracking a customer's own tickets is covered by the
+                // existing "/me/**" rule below.
+                .requestMatchers("/admin/support/**").access(permissions.platformPermission("MANAGE_SUPPORT_TICKETS"))
                 // Platform-admin-only registration/provisioning actions — requires the
                 // MANAGE_REGISTRATIONS permission (same "ADMIN" JWT authority qualifies
                 // today, see RbacSeeder, but this is now a distinct, separately

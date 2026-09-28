@@ -354,7 +354,8 @@
       "preferences": "Preferences",
       "serviceStatus": "Service status",
       "orders": "Orders",
-      "knowledgeBase": "Knowledge base"
+      "knowledgeBase": "Knowledge base",
+      "support": "Support"
     },
     "catalogTitle": "Product catalog",
     "catalogSubtitle": "Search and filter the products available on the platform."
@@ -567,6 +568,44 @@
         "PUBLISHED": "Published"
       },
       "version": "v{{version}}"
+    }
+  },
+  "support": {
+    "myTickets": {
+      "title": "Support",
+      "subtitle": "Create a ticket, or check the status of one you already sent.",
+      "newTicket": {
+        "title": "New ticket",
+        "subject": "Subject",
+        "description": "Description",
+        "submit": "Submit ticket"
+      },
+      "list": "Your tickets",
+      "noTickets": "You have not created any tickets yet.",
+      "status": {
+        "OPEN": "Open",
+        "IN_PROGRESS": "In progress",
+        "ESCALATED": "Escalated",
+        "RESOLVED": "Resolved",
+        "CLOSED": "Closed"
+      }
+    },
+    "admin": {
+      "title": "Support tickets",
+      "category": "Category",
+      "priority": "Priority",
+      "assignTo": "Assign to (customer id)",
+      "save": "Save",
+      "escalate": "Escalate",
+      "resolve": "Resolve",
+      "resolutionNote": "Resolution note",
+      "close": "Close",
+      "priorityLevel": {
+        "LOW": "Low",
+        "MEDIUM": "Medium",
+        "HIGH": "High",
+        "URGENT": "Urgent"
+      }
     }
   }
 }

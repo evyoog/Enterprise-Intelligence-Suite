@@ -354,7 +354,8 @@
       "preferences": "Preferencias",
       "serviceStatus": "Estado del servicio",
       "orders": "Pedidos",
-      "knowledgeBase": "Base de conocimiento"
+      "knowledgeBase": "Base de conocimiento",
+      "support": "Soporte"
     },
     "catalogTitle": "Catálogo de productos",
     "catalogSubtitle": "Busque y filtre los productos disponibles en la plataforma."
@@ -567,6 +568,44 @@
         "PUBLISHED": "Publicado"
       },
       "version": "v{{version}}"
+    }
+  },
+  "support": {
+    "myTickets": {
+      "title": "Soporte",
+      "subtitle": "Crea un ticket o consulta el estado de uno que ya enviaste.",
+      "newTicket": {
+        "title": "Nuevo ticket",
+        "subject": "Asunto",
+        "description": "Descripción",
+        "submit": "Enviar ticket"
+      },
+      "list": "Tus tickets",
+      "noTickets": "Todavía no has creado ningún ticket.",
+      "status": {
+        "OPEN": "Abierto",
+        "IN_PROGRESS": "En curso",
+        "ESCALATED": "Escalado",
+        "RESOLVED": "Resuelto",
+        "CLOSED": "Cerrado"
+      }
+    },
+    "admin": {
+      "title": "Tickets de soporte",
+      "category": "Categoría",
+      "priority": "Prioridad",
+      "assignTo": "Asignar a (id de cliente)",
+      "save": "Guardar",
+      "escalate": "Escalar",
+      "resolve": "Resolver",
+      "resolutionNote": "Nota de resolución",
+      "close": "Cerrar",
+      "priorityLevel": {
+        "LOW": "Baja",
+        "MEDIUM": "Media",
+        "HIGH": "Alta",
+        "URGENT": "Urgente"
+      }
     }
   }
 }

@@ -59,6 +59,12 @@ public class Product {
     @Column(nullable = false)
     private boolean ssoConnected = false;
 
+    /** 03.01.02 Show featured products (sprint 2027.1.2): admin-set, not
+     * auto-computed — see {@code RecommendationService} for how this
+     * combines with launch-count-based "popular" products. */
+    @Column(nullable = false)
+    private boolean featured = false;
+
     /** Which high-level platform(s) (e.g. Thittam) this app is shown under.
      * Many-to-many: the same app can be assigned to more than one platform. */
     @ManyToMany(fetch = FetchType.LAZY)

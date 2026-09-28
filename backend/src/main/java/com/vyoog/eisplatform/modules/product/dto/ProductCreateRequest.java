@@ -36,6 +36,9 @@ public record ProductCreateRequest(
     String variantLabel,
     // Other products this one requires — resolved to entities in
     // ProductService (needs a repository lookup), same reason as platformIds.
-    List<Long> dependsOnProductIds
+    List<Long> dependsOnProductIds,
+    // 03.01.02 Show featured products (sprint 2027.1.2). Null defaults to
+    // false, same reason as ssoConnected above.
+    Boolean featured
 ) {
 }

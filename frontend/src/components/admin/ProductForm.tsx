@@ -99,6 +99,7 @@ export function ProductForm({
   // for. This switch still only ever toggles ACTIVE <-> INACTIVE.
   const wasRetired = initialProduct?.status === 'RETIRED'
   const [ssoConnected, setSsoConnected] = useState(initialProduct?.ssoConnected ?? false)
+  const [featured, setFeatured] = useState(initialProduct?.featured ?? false)
   const [platforms, setPlatforms] = useState<Platform[]>([])
   const [platformIds, setPlatformIds] = useState<number[]>(
     initialProduct?.platforms.map((p) => p.id) ?? []
@@ -177,6 +178,7 @@ export function ProductForm({
       category: category.trim() || undefined,
       status: wasRetired ? 'RETIRED' : (active ? 'ACTIVE' : 'INACTIVE'),
       ssoConnected,
+      featured,
       platformIds,
       plans: tiers.length > 0
         ? tiers.map((t, i) => ({
@@ -301,6 +303,16 @@ export function ProductForm({
           <Typography variant="body2" sx={{ color: 'text.secondary', ml: 1.5, mt: -0.5 }}>
             Turn this on once the app's own backend has the SSO bridge wired up — it just
             controls the badge shown on this app's card, it doesn't configure anything itself.
+          </Typography>
+        </Box>
+
+        <Box>
+          <FormControlLabel
+            control={<Switch checked={featured} onChange={(e) => setFeatured(e.target.checked)} />}
+            label="Featured"
+          />
+          <Typography variant="body2" sx={{ color: 'text.secondary', ml: 1.5, mt: -0.5 }}>
+            Shows this product in the "Featured" recommendations rail on the customer dashboard.
           </Typography>
         </Box>
 
