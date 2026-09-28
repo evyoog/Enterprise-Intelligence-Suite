@@ -357,7 +357,9 @@
       "knowledgeBase": "Base de conocimiento",
       "support": "Soporte",
       "search": "Buscar",
-      "reviews": "Reseñas"
+      "reviews": "Reseñas",
+      "becomeAPartner": "Conviértete en socio",
+      "partners": "Socios"
     },
     "catalogTitle": "Catálogo de productos",
     "catalogSubtitle": "Busque y filtre los productos disponibles en la plataforma."
@@ -638,6 +640,46 @@
         "PENDING": "Pendiente",
         "APPROVED": "Aprobada",
         "REJECTED": "Rechazada"
+      }
+    }
+  },
+  "partners": {
+    "apply": {
+      "title": "Conviértete en socio",
+      "subtitle": "Solicita convertirte en proveedor en la plataforma eVyoog.",
+      "companyName": "Nombre de la empresa",
+      "contactName": "Nombre de contacto",
+      "contactEmail": "Correo de contacto",
+      "description": "Cuéntanos sobre tu empresa (opcional)",
+      "submit": "Enviar solicitud",
+      "submitted": "Gracias — tu solicitud ha sido enviada y ahora está en revisión.",
+      "reviewNotice": "Un administrador de la plataforma verificará y aprobará tu solicitud antes de activarte como socio.",
+      "error": "No se pudo enviar tu solicitud. Inténtalo de nuevo."
+    },
+    "admin": {
+      "title": "Socios",
+      "none": "Todavía no hay solicitudes de proveedor.",
+      "verify": "Verificar",
+      "approve": "Aprobar",
+      "activate": "Activar",
+      "reject": "Rechazar",
+      "status": {
+        "REGISTERED": "Registrado",
+        "VERIFIED": "Verificado",
+        "APPROVED": "Aprobado",
+        "ACTIVE": "Activo",
+        "REJECTED": "Rechazado"
+      },
+      "contract": {
+        "title": "Contrato",
+        "terms": "Términos",
+        "startDate": "Fecha de inicio",
+        "endDate": "Fecha de fin",
+        "save": "Guardar contrato",
+        "status": {
+          "ACTIVE": "Activo",
+          "EXPIRED": "Vencido"
+        }
       }
     }
   }

@@ -26,6 +26,28 @@
 | Change | Decision and scope | FRD | Requirement |
 |---|---|---|---|
 | Unchanged | [C31](../open-decisions.md#c31) 14 Partners stays in this sprint. Its dependencies (03a Checkout, 08 Billing, 13b Connectors, 15b Policy & compliance) all land earlier under the corrected sequence | - | - |
+| Decided | [C42](../open-decisions.md#c42) 14.01 Provider Onboarding built: Register (public, no account required), Verify/Approve/Activate (three separate admin gates, `MANAGE_PARTNERS`), and Contracts (create/edit terms, scheduled auto-expiry — same pattern as 07.04.01) | [provider-onboarding](../../../02-requirements/FRD/provider-onboarding/requirement.md) | REQ-PTR-001 |
+| Not built | [C42](../open-decisions.md#c42) 14.02 Publisher Management — `Product` has no publisher/owner field anywhere in this codebase; needs its own ownership-model decision |
+| Not built | [C42](../open-decisions.md#c42) 14.03 Revenue Sharing (Commission, Payouts) — needs Billing (08), still not built (same gap as C38) |
+| Not built | [C42](../open-decisions.md#c42) 14.04 Partner Operations — unprioritized in any source; needs a Partner Manager role/identity decision |
+
+### FRDs in this sprint
+
+| FRD | Requirement | Functions | Status |
+|---|---|---|---|
+| [provider-onboarding](../../../02-requirements/FRD/provider-onboarding/requirement.md) | REQ-PTR-001 | 14.01.01, 14.01.02 | Approved |
+
+### Progress (as of 2026-09-28)
+
+| Feature | Status | Note |
+|---|---|---|
+| 14.01.01 Provider Lifecycle | Done | Register (public)/Verify/Approve/Activate/Reject, each its own admin decision |
+| 14.01.02 Contracts | Done | Create/edit terms (one upsert), track expiration (scheduled job) |
+| 14.02 Publisher Management | Not started | Carried — needs a product-ownership/publisher model |
+| 14.03 Revenue Sharing | Not started | Carried — needs Billing (08), still not built |
+| 14.04 Partner Operations | Not started | Carried — needs a Partner Manager role/identity decision |
+
+14.02, 14.03 and 14.04 remain open for this sprint, each carried to a later one once the decision it needs is made.
 
 ## EIS 14 Partner & Provider Management
 

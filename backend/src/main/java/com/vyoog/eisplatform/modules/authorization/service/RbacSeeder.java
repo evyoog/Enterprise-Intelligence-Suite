@@ -69,7 +69,13 @@ public class RbacSeeder implements ApplicationRunner {
             "MANAGE_SUPPORT_TICKETS",
             // 03.04 Reviews & Ratings (sprint 2027.1.3): moderating customer
             // reviews is its own permission, distinct from catalog management.
-            "MANAGE_REVIEWS")
+            "MANAGE_REVIEWS",
+            // 14.01 Provider Onboarding (sprint 2027.2.1): verifying/approving/
+            // activating a provider and managing its contract is its own
+            // permission — a distinct, sensitive responsibility from every
+            // other admin capability above (it commits the platform to a
+            // business relationship with an external party).
+            "MANAGE_PARTNERS")
     );
 
     private static final Map<String, List<String>> ORGANIZATION_ROLES = Map.of(

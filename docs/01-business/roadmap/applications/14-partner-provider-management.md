@@ -135,5 +135,11 @@ Not specified in any source. Under [DN-2](../open-decisions.md#dn-2-sprint-scope
 | Feature FRD | `docs/02-requirements/FRD/<feature>/` (copy `_template/`) | See the sprint page for FRDs in progress |
 | Requirement | `REQ-PTR-<NNN>` inside the FRD | Approved FRD required before build ([DN-4](../open-decisions.md#dn-4-business-rules-and-acceptance-criteria)) |
 | Business rules | `docs/03-business-rules/` and `FRD/<feature>/business-rules.md` | Per FRD |
-| Test cases | `test-cases/functional/<feature>/TC-PTR-<NNN>.md` | Not created |
+| Test cases | `test-cases/functional/<feature>/TC-PTR-<NNN>.md` | Created for `provider-onboarding` (TC-PTR-001..006) |
 | NFRs | [WB:Non-Functional Requirements] NFR-001 to NFR-014 (platform-wide) | See [EIS-document-analysis.md](../EIS-document-analysis.md) section 2.17 |
+
+## Related code already in this repository
+
+- `backend/src/main/java/com/vyoog/eisplatform/modules/partner/` — Provider/PartnerContract lifecycle (14.01 Provider Onboarding, sprint 2027.2.1, [C42](../open-decisions.md#c42))
+- `frontend/src/pages/ProviderApplicationPage.tsx` — public application form (`/partners/apply`)
+- `frontend/src/pages/admin/AdminPartnersPage.tsx`, `AdminPartnerDetailPage.tsx` — admin moderation and contract management (`/admin/partners`)

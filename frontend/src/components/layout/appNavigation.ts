@@ -2,7 +2,7 @@ import type { ComponentType } from 'react'
 import {
   Building2, KeyRound, LayoutDashboard, LayoutGrid, Layers, Package, ScrollText, Settings, ShieldCheck,
   SlidersHorizontal, Store, UserCheck, UserCog, UsersRound, Palette, Boxes, Activity, ClipboardList, BookOpen,
-  LifeBuoy, Search, Star,
+  LifeBuoy, Search, Star, Handshake,
 } from 'lucide-react'
 import type { MyPermissions } from '../../api/myPermissionsApi'
 
@@ -70,6 +70,9 @@ export function buildAppNavigation({ isAdmin, permissions }: NavAccess): AppNavS
   }
   // 01.03 Global Search (sprint 2027.1.3): public, same as the catalog above.
   workspace.push({ key: 'search', labelKey: 'search', to: '/search', icon: Search })
+  // 14.01.01.01 Register provider (sprint 2027.2.1): public — a prospective
+  // partner applies before it has any Vyoog identity, same as /register.
+  workspace.push({ key: 'becomeAPartner', labelKey: 'becomeAPartner', to: '/partners/apply', icon: Handshake })
 
   const organizationItems: AppNavItem[] = []
   if (organization('MANAGE_ORGANIZATION')) {
@@ -105,6 +108,9 @@ export function buildAppNavigation({ isAdmin, permissions }: NavAccess): AppNavS
   }
   if (platform('MANAGE_REVIEWS')) {
     admin.push({ key: 'adminReviews', labelKey: 'reviews', to: '/admin/reviews', icon: Star })
+  }
+  if (platform('MANAGE_PARTNERS')) {
+    admin.push({ key: 'adminPartners', labelKey: 'partners', to: '/admin/partners', icon: Handshake })
   }
   if (platform('MANAGE_CATALOG')) {
     admin.push({

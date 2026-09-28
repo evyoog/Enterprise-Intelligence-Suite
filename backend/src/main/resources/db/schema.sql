@@ -719,3 +719,33 @@ CREATE TABLE product_review (
     UNIQUE (product_id, customer_id)
 );
 CREATE INDEX idx_product_review_product_status ON product_review (product_id, status);
+
+-- 14.01 Provider Onboarding (sprint 2027.2.1, C42). A provider applies
+-- before it has any Vyoog identity — no FK to customer/organization, same
+-- reasoning as the pre-login registration flow. See migration V012.
+CREATE TABLE provider (
+    id BIGSERIAL PRIMARY KEY,
+    name VARCHAR(255) NOT NULL,
+    contact_name VARCHAR(255) NOT NULL,
+    contact_email VARCHAR(255) NOT NULL,
+    description VARCHAR(2000),
+    status VARCHAR(20) NOT NULL DEFAULT 'REGISTERED'
+        CHECK (status IN ('REGISTERED', 'VERIFIED', 'APPROVED', 'ACTIVE', 'REJECTED')),
+    created_at TIMESTAMP NOT NULL DEFAULT now(),
+    updated_at TIMESTAMP NOT NULL DEFAULT now()
+);
+
+-- 14.01.02 Contracts. One contract per provider — Create/Manage terms are
+-- the same upsert (see PartnerContract's own javadoc); Track expiration is
+-- the scheduled ContractExpiryJob flipping status, not computed on read.
+CREATE TABLE partner_contract (
+    id BIGSERIAL PRIMARY KEY,
+    provider_id BIGINT NOT NULL UNIQUE REFERENCES provider(id) ON DELETE CASCADE,
+    terms VARCHAR(4000) NOT NULL,
+    start_date DATE NOT NULL,
+    end_date DATE NOT NULL,
+    status VARCHAR(20) NOT NULL DEFAULT 'ACTIVE' CHECK (status IN ('ACTIVE', 'EXPIRED')),
+    created_at TIMESTAMP NOT NULL DEFAULT now(),
+    updated_at TIMESTAMP NOT NULL DEFAULT now()
+);
+CREATE INDEX idx_partner_contract_status_end_date ON partner_contract (status, end_date);

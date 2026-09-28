@@ -357,7 +357,9 @@
       "knowledgeBase": "Knowledge base",
       "support": "Support",
       "search": "Search",
-      "reviews": "Reviews"
+      "reviews": "Reviews",
+      "becomeAPartner": "Become a partner",
+      "partners": "Partners"
     },
     "catalogTitle": "Product catalog",
     "catalogSubtitle": "Search and filter the products available on the platform."
@@ -638,6 +640,46 @@
         "PENDING": "Pending",
         "APPROVED": "Approved",
         "REJECTED": "Rejected"
+      }
+    }
+  },
+  "partners": {
+    "apply": {
+      "title": "Become a partner",
+      "subtitle": "Apply to become a provider on the eVyoog platform.",
+      "companyName": "Company name",
+      "contactName": "Contact name",
+      "contactEmail": "Contact email",
+      "description": "Tell us about your company (optional)",
+      "submit": "Submit application",
+      "submitted": "Thanks — your application has been submitted and is now under review.",
+      "reviewNotice": "A platform admin will verify and approve your application before you're activated as a partner.",
+      "error": "Could not submit your application. Please try again."
+    },
+    "admin": {
+      "title": "Partners",
+      "none": "No provider applications yet.",
+      "verify": "Verify",
+      "approve": "Approve",
+      "activate": "Activate",
+      "reject": "Reject",
+      "status": {
+        "REGISTERED": "Registered",
+        "VERIFIED": "Verified",
+        "APPROVED": "Approved",
+        "ACTIVE": "Active",
+        "REJECTED": "Rejected"
+      },
+      "contract": {
+        "title": "Contract",
+        "terms": "Terms",
+        "startDate": "Start date",
+        "endDate": "End date",
+        "save": "Save contract",
+        "status": {
+          "ACTIVE": "Active",
+          "EXPIRED": "Expired"
+        }
       }
     }
   }

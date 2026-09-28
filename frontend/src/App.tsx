@@ -36,6 +36,9 @@ import { AdminSupportTicketsPage } from './pages/admin/AdminSupportTicketsPage'
 import { GlobalSearchPage } from './pages/GlobalSearchPage'
 import { ProductDetailPage } from './pages/ProductDetailPage'
 import { AdminReviewsPage } from './pages/admin/AdminReviewsPage'
+import { ProviderApplicationPage } from './pages/ProviderApplicationPage'
+import { AdminPartnersPage } from './pages/admin/AdminPartnersPage'
+import { AdminPartnerDetailPage } from './pages/admin/AdminPartnerDetailPage'
 import { RequireAdmin } from './components/routing/RequireAdmin'
 import { RequireAuth } from './components/routing/RequireAuth'
 import { AuthAwareLayout, PublicOnly } from './components/layout/AppShell'
@@ -102,6 +105,8 @@ function MainApp() {
           <Route path="/products/:id" element={<ProductDetailPage />} />
           {/* 01.03 Global Search (sprint 2027.1.3): public; ticket results need a sign-in. */}
           <Route path="/search" element={<GlobalSearchPage />} />
+          {/* 14.01.01.01 Register provider (sprint 2027.2.1): public, no Vyoog account required. */}
+          <Route path="/partners/apply" element={<ProviderApplicationPage />} />
           {/* Deliberately NOT behind RequireAuth — see that component's own
               doc on why preferences stay reachable signed out. */}
           <Route path="/account/preferences" element={<PreferencesPage />} />
@@ -145,6 +150,8 @@ function MainApp() {
             <Route path="knowledge-base" element={<AdminKnowledgeBasePage />} />
             <Route path="support/tickets" element={<AdminSupportTicketsPage />} />
             <Route path="reviews" element={<AdminReviewsPage />} />
+            <Route path="partners" element={<AdminPartnersPage />} />
+            <Route path="partners/:id" element={<AdminPartnerDetailPage />} />
           </Route>
         </Route>
       </Routes>

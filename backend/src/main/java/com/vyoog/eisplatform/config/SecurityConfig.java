@@ -142,6 +142,13 @@ public class SecurityConfig {
                 // GET /products/** permitAll rule above; submitting/reading the
                 // caller's own review is covered by the existing /me/** rule.
                 .requestMatchers("/admin/reviews/**").access(permissions.platformPermission("MANAGE_REVIEWS"))
+                // 14.01 Provider Onboarding (sprint 2027.2.1): a prospective
+                // partner applies before it has any Vyoog identity — same
+                // reasoning as /register/** above, so it's public, not
+                // /me/**. Verify/approve/activate/reject and contract
+                // management are platform-admin-only.
+                .requestMatchers(HttpMethod.POST, "/partners/apply").permitAll()
+                .requestMatchers("/admin/partners/**").access(permissions.platformPermission("MANAGE_PARTNERS"))
                 // Platform-admin-only registration/provisioning actions — requires the
                 // MANAGE_REGISTRATIONS permission (same "ADMIN" JWT authority qualifies
                 // today, see RbacSeeder, but this is now a distinct, separately
