@@ -119,6 +119,8 @@ AI required: decided in the feature FRD ([C12](../open-decisions.md#c12)). [WB:F
 
 ### Feature 15.05.01 Region Management
 
+**Already satisfied ([C43](../open-decisions.md#c43), 2027.2.2):** `PlatformAdministrationService`'s existing region CRUD (`REQ-GOV-001.2`, built sprint 2026.4.2) already covers all four functions below — Create/Configure region via `createRegion`/`updateRegion`'s rename, Activate/Suspend region via that same `updateRegion` call's `enabled` toggle. No new module was built for this sprint's own slot.
+
 AI required: decided in the feature FRD ([C12](../open-decisions.md#c12)). [WB:Features] flag, informational only: No.
 
 | Function ID | Function (requirement candidate) | MVP | Priority | Phase | AI ([WB], info) | Actor | Suggested API | Primary API | Microservice | Entity | Event | Journey |
@@ -129,6 +131,8 @@ AI required: decided in the feature FRD ([C12](../open-decisions.md#c12)). [WB:F
 | 15.05.01.04 | Suspend region | No | Phase 3 | P1 | No | Platform Service | `/regional-operations/suspend-region` | - | Audit Service | AuditEvent | AuditRecorded | UJ-005 Provision Service |
 
 ### Feature 15.05.02 Data Residency
+
+**Not built ([C43](../open-decisions.md#c43), 2027.2.2):** needs the general policy engine (15.02, [C41](../open-decisions.md#c41), still unresolved) to define a "residency policy" against, and 10 Service & Resource Management ([C40](../open-decisions.md#c40), still not built) to actually have a per-region resource to validate or report residency for. Carried, with no further sprint scheduled.
 
 AI required: decided in the feature FRD ([C12](../open-decisions.md#c12)). [WB:Features] flag, informational only: No.
 
@@ -169,5 +173,5 @@ Not specified in any source. Under [DN-2](../open-decisions.md#dn-2-sprint-scope
 
 Observed on branch `dev`. This is a module-level mapping, not a verified function-by-function implementation status.
 
-- Backend: `backend/src/main/java/com/vyoog/eisplatform/modules/audit`, `backend/src/main/java/com/vyoog/eisplatform/modules/dashboard (OrganizationAuditLogController)`, `backend/src/main/java/com/vyoog/eisplatform/modules/administration` (currencies, regions, feature flags — [platform-administration](../../../02-requirements/FRD/platform-administration/requirement.md))
+- Backend: `backend/src/main/java/com/vyoog/eisplatform/modules/audit`, `backend/src/main/java/com/vyoog/eisplatform/modules/dashboard (OrganizationAuditLogController)`, `backend/src/main/java/com/vyoog/eisplatform/modules/administration` (currencies, regions, feature flags — [platform-administration](../../../02-requirements/FRD/platform-administration/requirement.md); its region CRUD also satisfies 15.05.01 Region Management, [C43](../open-decisions.md#c43))
 - Frontend: `frontend/src/pages/admin/AdminAuditLogPage.tsx`, `frontend/src/pages/admin/settings/CommonSettingsPage.tsx`

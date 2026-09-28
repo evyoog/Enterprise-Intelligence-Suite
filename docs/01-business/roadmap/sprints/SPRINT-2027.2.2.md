@@ -24,7 +24,9 @@
 | Change | Decision and scope | FRD | Requirement |
 |---|---|---|---|
 | Superseded | [C21](../open-decisions.md#c21)'s general policy engine (06.02.02/15.02) is no longer here — [C31](../open-decisions.md#c31) moved 15b (Policy Management, Compliance) to [2027.1.3](SPRINT-2027.1.3.md) | - | - |
-| Split | [C31](../open-decisions.md#c31) 15 splits: 15a (Audit, Platform Administration) was built in [2026.4.2](SPRINT-2026.4.2.md); 15b (Policy, Compliance) was built in [2027.1.3](SPRINT-2027.1.3.md); 15c (Regional Operations) is here | - | - |
+| Split | [C31](../open-decisions.md#c31) 15 splits: 15a (Audit, Platform Administration) was built in [2026.4.2](SPRINT-2026.4.2.md); 15b (Policy, Compliance) was nominally here too but [C41](../open-decisions.md#c41) carried it, still unresolved; 15c (Regional Operations) is here | - | - |
+| Already satisfied | [C43](../open-decisions.md#c43) 15.05.01 Region Management — `PlatformAdministrationService`'s existing region CRUD (`REQ-GOV-001.2`, built [2026.4.2](SPRINT-2026.4.2.md)) already covers Create/Configure/Activate/Suspend region; nothing new to build | [platform-administration](../../../02-requirements/FRD/platform-administration/requirement.md) | REQ-GOV-001 |
+| Not built | [C43](../open-decisions.md#c43) 15.05.02 Data Residency — needs the same unresolved general policy-engine decision ([C41](../open-decisions.md#c41)) and 10 Service & Resource Management ([C40](../open-decisions.md#c40)), neither of which this sprint has a new basis to resolve |
 
 ## EIS 15c Administration & Governance: regional operations
 
@@ -47,17 +49,27 @@ Full breakdown: [applications/15-administration-governance.md](../applications/1
 
 ### Expected deliverables
 
-- All-P1 (stretch) scope ([DN-2](../open-decisions.md#dn-2-sprint-scope-length-and-dates)). 15.01 Platform Administration and 15.03 Audit (15a) were already built in 2026.4.2; 15.02 Policy Management and 15.04 Compliance (15b) were already built in 2027.1.3 — see those sprint pages.
+- All-P1 (stretch) scope ([DN-2](../open-decisions.md#dn-2-sprint-scope-length-and-dates)). 15.01 Platform Administration and 15.03 Audit (15a) were already built in 2026.4.2. 15.02 Policy Management and 15.04 Compliance (15b) were nominally scheduled in 2027.1.3 but [C41](../open-decisions.md#c41) carried them, still unresolved.
+
+### Progress (as of 2026-09-28)
+
+| Feature | Status | Note |
+|---|---|---|
+| 15.05.01 Region Management | Done (pre-existing) | Already satisfied by `PlatformAdministrationService`'s region CRUD, built 2026.4.2 (REQ-GOV-001.2) — see [C43](../open-decisions.md#c43) |
+| 15.05.02 Data Residency | Not started | Carried — needs the general policy engine (15b, C41) and 10 Service & Resource Management (C40), neither resolved |
+
+This is the last sprint in the corrected sequence ([C31](../open-decisions.md#c31)). Every item this roadmap still carries — 15.05.02 here, plus 01.03.01.02, 03.02, 04b/12.02, 11b, 15b itself (C41), and 14.02/14.03/14.04 (C42) — waits on one of a small number of named, still-undecided prerequisites (an embeddings/vector-store decision, an agent/LLM framework choice, a general policy-engine decision, real service/resource infrastructure, a product-ownership model, a billing engine, or a partner-identity/role decision), not on any remaining sprint slot.
 
 ### Related code already in this repository
 
-Observed on branch `dev`, module level only: `backend/…/modules/audit`, `backend/…/modules/dashboard (OrganizationAuditLogController)`; `frontend/src/pages/admin/AdminAuditLogPage.tsx` — this is 15a's audit work, built early in 2026.4.2, not 15c itself.
+Observed on branch `dev`, module level only: `backend/…/modules/audit`, `backend/…/modules/dashboard (OrganizationAuditLogController)`; `frontend/src/pages/admin/AdminAuditLogPage.tsx` — this is 15a's audit work, built early in 2026.4.2, not 15c itself. 15.05.01 Region Management (15c's own scope) is satisfied by `backend/…/modules/administration` (`PlatformAdministrationService`, `PlatformRegionRepository`) and `frontend/src/pages/admin/settings/CommonSettingsPage.tsx` — see [C43](../open-decisions.md#c43).
 
 ## Decisions affecting this sprint
 
 - [C3](../open-decisions.md#c3) The [PO] sprint order is authoritative; the MVP is complete at the end of sprint 2027.1.3.
 - [C4](../open-decisions.md#c4), [C5](../open-decisions.md#c5), [C6](../open-decisions.md#c6) MVP, priority and phase as shown above.
 - [C31](../open-decisions.md#c31) Corrected sprint sequence: only 15c (Regional Operations) remains in this sprint; 15a and 15b moved earlier.
+- [C43](../open-decisions.md#c43) 15.05.01 already satisfied; 15.05.02 not built, pending the general policy-engine and Service & Resource Management gaps.
 - Sprint goal, team, capacity and status are Not specified.
 
 Details: [open-decisions.md](../open-decisions.md).
