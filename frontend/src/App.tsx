@@ -33,6 +33,9 @@ import { KnowledgeBasePage } from './pages/KnowledgeBasePage'
 import { AdminKnowledgeBasePage } from './pages/admin/AdminKnowledgeBasePage'
 import { MyTicketsPage } from './pages/MyTicketsPage'
 import { AdminSupportTicketsPage } from './pages/admin/AdminSupportTicketsPage'
+import { GlobalSearchPage } from './pages/GlobalSearchPage'
+import { ProductDetailPage } from './pages/ProductDetailPage'
+import { AdminReviewsPage } from './pages/admin/AdminReviewsPage'
 import { RequireAdmin } from './components/routing/RequireAdmin'
 import { RequireAuth } from './components/routing/RequireAuth'
 import { AuthAwareLayout, PublicOnly } from './components/layout/AppShell'
@@ -95,6 +98,10 @@ function MainApp() {
             anyone else back to "/". */}
         <Route element={<AuthAwareLayout />}>
           <Route path="/products" element={<ProductsPage />} />
+          {/* 03.04 Reviews & Ratings (sprint 2027.1.3): public product detail. */}
+          <Route path="/products/:id" element={<ProductDetailPage />} />
+          {/* 01.03 Global Search (sprint 2027.1.3): public; ticket results need a sign-in. */}
+          <Route path="/search" element={<GlobalSearchPage />} />
           {/* Deliberately NOT behind RequireAuth — see that component's own
               doc on why preferences stay reachable signed out. */}
           <Route path="/account/preferences" element={<PreferencesPage />} />
@@ -137,6 +144,7 @@ function MainApp() {
             <Route path="service-status" element={<ServiceStatusAdminPage />} />
             <Route path="knowledge-base" element={<AdminKnowledgeBasePage />} />
             <Route path="support/tickets" element={<AdminSupportTicketsPage />} />
+            <Route path="reviews" element={<AdminReviewsPage />} />
           </Route>
         </Route>
       </Routes>

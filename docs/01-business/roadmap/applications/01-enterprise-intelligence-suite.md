@@ -137,12 +137,12 @@ Not specified in any source. Under [DN-2](../open-decisions.md#dn-2-sprint-scope
 | Feature FRD | `docs/02-requirements/FRD/<feature>/` (copy `_template/`) | See the sprint page for FRDs in progress |
 | Requirement | `REQ-PRT-<NNN>` inside the FRD | Approved FRD required before build ([DN-4](../open-decisions.md#dn-4-business-rules-and-acceptance-criteria)) |
 | Business rules | `docs/03-business-rules/` and `FRD/<feature>/business-rules.md` | Per FRD |
-| Test cases | `test-cases/functional/<feature>/TC-PRT-<NNN>.md` | Not created |
+| Test cases | `test-cases/functional/global-search/TC-PRT-001..004.md` | Created ([REQ-PRT-002](../../../02-requirements/FRD/global-search/requirement.md), sprint 2027.1.3, 01.03.01 minus semantic search) |
 | NFRs | [WB:Non-Functional Requirements] NFR-001 to NFR-014 (platform-wide) | See [EIS-document-analysis.md](../EIS-document-analysis.md) section 2.17 |
 
 ## Related code already in this repository
 
 Observed on branch `dev`. This is a module-level mapping, not a verified function-by-function implementation status.
 
-- Backend: `backend/src/main/java/com/vyoog/eisplatform/modules/dashboard`, `backend/src/main/java/com/vyoog/eisplatform/modules/notification`, `backend/src/main/java/com/vyoog/eisplatform/modules/preference`, `backend/src/main/java/com/vyoog/eisplatform/modules/servicestatus`
-- Frontend: `frontend/src/pages/HomePage.tsx`, `frontend/src/pages/BusinessDashboardPage.tsx`, `frontend/src/pages/PreferencesPage.tsx`, `frontend/src/components/layout/NotificationBell.tsx`, `frontend/src/components/layout/SiteNavbar.tsx`, `frontend/src/components/layout/AppShell.tsx`, `frontend/src/components/layout/appNavigation.ts`, `frontend/src/pages/ServiceStatusPage.tsx`, `frontend/src/pages/admin/ServiceStatusAdminPage.tsx`, `frontend/src/api/serviceStatusApi.ts`
+- Backend: `backend/src/main/java/com/vyoog/eisplatform/modules/dashboard`, `backend/src/main/java/com/vyoog/eisplatform/modules/notification`, `backend/src/main/java/com/vyoog/eisplatform/modules/preference`, `backend/src/main/java/com/vyoog/eisplatform/modules/servicestatus`, `backend/src/main/java/com/vyoog/eisplatform/modules/search` (GlobalSearchService — 01.03.01 only, no semantic search)
+- Frontend: `frontend/src/pages/HomePage.tsx`, `frontend/src/pages/BusinessDashboardPage.tsx`, `frontend/src/pages/PreferencesPage.tsx`, `frontend/src/components/layout/NotificationBell.tsx`, `frontend/src/components/layout/SiteNavbar.tsx`, `frontend/src/components/layout/AppShell.tsx`, `frontend/src/components/layout/appNavigation.ts`, `frontend/src/pages/ServiceStatusPage.tsx`, `frontend/src/pages/admin/ServiceStatusAdminPage.tsx`, `frontend/src/api/serviceStatusApi.ts`, `frontend/src/pages/GlobalSearchPage.tsx`

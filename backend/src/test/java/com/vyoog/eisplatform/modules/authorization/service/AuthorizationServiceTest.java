@@ -43,10 +43,11 @@ class AuthorizationServiceTest {
         // 15.01 Platform Administration (sprint 2026.4.2): MANAGE_PLATFORM_SETTINGS.
         // 11.01 Knowledge Base (sprint 2027.1.1): MANAGE_KNOWLEDGE_BASE.
         // 12.01 Ticket Management (sprint 2027.1.2): MANAGE_SUPPORT_TICKETS.
+        // 03.04 Reviews & Ratings (sprint 2027.1.3): MANAGE_REVIEWS.
         assertThat(authorizationService.listPlatformPermissions(Set.of("ROLE_ADMIN")))
             .containsExactlyInAnyOrder("MANAGE_CATALOG", "MANAGE_REGISTRATIONS", "MANAGE_PRIVILEGED_ACCESS", "VIEW_AUDIT_LOG",
                 "MANAGE_ROLES", "MANAGE_PERMISSIONS", "MANAGE_SERVICE_STATUS", "MANAGE_PLATFORM_SETTINGS", "MANAGE_KNOWLEDGE_BASE",
-                "MANAGE_SUPPORT_TICKETS");
+                "MANAGE_SUPPORT_TICKETS", "MANAGE_REVIEWS");
     }
 
     @Test

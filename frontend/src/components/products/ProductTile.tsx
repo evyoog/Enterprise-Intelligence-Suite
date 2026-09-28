@@ -123,6 +123,11 @@ export function ProductTile({ product, admin = false, showPlatformChips = true, 
               {product.category}
             </Typography>
           )}
+          {!admin && (
+            <Typography variant="caption" sx={{ display: 'block' }}>
+              <RouterLink to={`/products/${product.id}`} style={{ color: accent.fg }}>Reviews & ratings</RouterLink>
+            </Typography>
+          )}
         </Box>
       </Box>
 

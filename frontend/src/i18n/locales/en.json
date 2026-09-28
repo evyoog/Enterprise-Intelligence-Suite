@@ -355,7 +355,9 @@
       "serviceStatus": "Service status",
       "orders": "Orders",
       "knowledgeBase": "Knowledge base",
-      "support": "Support"
+      "support": "Support",
+      "search": "Search",
+      "reviews": "Reviews"
     },
     "catalogTitle": "Product catalog",
     "catalogSubtitle": "Search and filter the products available on the platform."
@@ -605,6 +607,37 @@
         "MEDIUM": "Medium",
         "HIGH": "High",
         "URGENT": "Urgent"
+      }
+    }
+  },
+  "search": {
+    "title": "Search",
+    "placeholder": "Search products, knowledge base and your tickets…",
+    "noResults": "Nothing matches your search yet.",
+    "products": "Products",
+    "knowledgeArticles": "Knowledge base",
+    "tickets": "Your tickets",
+    "filterAll": "All"
+  },
+  "reviews": {
+    "title": "Reviews & ratings",
+    "noReviews": "No reviews yet.",
+    "averageOf": "{{average}} out of 5 ({{count}} review{{plural}})",
+    "yourReview": {
+      "title": "Write a review",
+      "rating": "Rating",
+      "comment": "Comment (optional)",
+      "submit": "Submit review",
+      "pendingNotice": "Your review is pending approval and is not yet shown publicly."
+    },
+    "admin": {
+      "title": "Moderate reviews",
+      "approve": "Approve",
+      "reject": "Reject",
+      "status": {
+        "PENDING": "Pending",
+        "APPROVED": "Approved",
+        "REJECTED": "Rejected"
       }
     }
   }

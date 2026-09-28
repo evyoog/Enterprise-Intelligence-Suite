@@ -2,7 +2,7 @@ import type { ComponentType } from 'react'
 import {
   Building2, KeyRound, LayoutDashboard, LayoutGrid, Layers, Package, ScrollText, Settings, ShieldCheck,
   SlidersHorizontal, Store, UserCheck, UserCog, UsersRound, Palette, Boxes, Activity, ClipboardList, BookOpen,
-  LifeBuoy,
+  LifeBuoy, Search, Star,
 } from 'lucide-react'
 import type { MyPermissions } from '../../api/myPermissionsApi'
 
@@ -68,6 +68,8 @@ export function buildAppNavigation({ isAdmin, permissions }: NavAccess): AppNavS
   if (hasCustomerWorkspace) {
     workspace.push({ key: 'support', labelKey: 'support', to: '/support/tickets', icon: LifeBuoy })
   }
+  // 01.03 Global Search (sprint 2027.1.3): public, same as the catalog above.
+  workspace.push({ key: 'search', labelKey: 'search', to: '/search', icon: Search })
 
   const organizationItems: AppNavItem[] = []
   if (organization('MANAGE_ORGANIZATION')) {
@@ -100,6 +102,9 @@ export function buildAppNavigation({ isAdmin, permissions }: NavAccess): AppNavS
   }
   if (platform('MANAGE_SUPPORT_TICKETS')) {
     admin.push({ key: 'adminSupportTickets', labelKey: 'support', to: '/admin/support/tickets', icon: LifeBuoy })
+  }
+  if (platform('MANAGE_REVIEWS')) {
+    admin.push({ key: 'adminReviews', labelKey: 'reviews', to: '/admin/reviews', icon: Star })
   }
   if (platform('MANAGE_CATALOG')) {
     admin.push({

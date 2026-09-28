@@ -702,3 +702,20 @@ CREATE TABLE support_ticket (
 );
 CREATE INDEX idx_support_ticket_requested_by ON support_ticket (requested_by_customer_id);
 CREATE INDEX idx_support_ticket_status ON support_ticket (status);
+
+-- 03.04 Reviews & Ratings (sprint 2027.1.3). PENDING until an admin
+-- moderates it (MANAGE_REVIEWS) — never shown publicly or averaged before
+-- then. At most one review per (product, customer) — see ProductReview's
+-- own javadoc. See migration V011.
+CREATE TABLE product_review (
+    id BIGSERIAL PRIMARY KEY,
+    product_id BIGINT NOT NULL REFERENCES products(id) ON DELETE CASCADE,
+    customer_id BIGINT NOT NULL REFERENCES customer(id),
+    rating INT NOT NULL CHECK (rating BETWEEN 1 AND 5),
+    comment VARCHAR(2000),
+    status VARCHAR(20) NOT NULL DEFAULT 'PENDING' CHECK (status IN ('PENDING', 'APPROVED', 'REJECTED')),
+    created_at TIMESTAMP NOT NULL DEFAULT now(),
+    updated_at TIMESTAMP NOT NULL DEFAULT now(),
+    UNIQUE (product_id, customer_id)
+);
+CREATE INDEX idx_product_review_product_status ON product_review (product_id, status);

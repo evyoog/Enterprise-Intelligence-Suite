@@ -66,7 +66,10 @@ public class RbacSeeder implements ApplicationRunner {
             // 12.01 Ticket Management (sprint 2027.1.2): its own permission —
             // handling support tickets is a distinct responsibility from
             // every other admin capability above.
-            "MANAGE_SUPPORT_TICKETS")
+            "MANAGE_SUPPORT_TICKETS",
+            // 03.04 Reviews & Ratings (sprint 2027.1.3): moderating customer
+            // reviews is its own permission, distinct from catalog management.
+            "MANAGE_REVIEWS")
     );
 
     private static final Map<String, List<String>> ORGANIZATION_ROLES = Map.of(

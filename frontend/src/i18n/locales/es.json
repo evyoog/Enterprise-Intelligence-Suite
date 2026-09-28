@@ -355,7 +355,9 @@
       "serviceStatus": "Estado del servicio",
       "orders": "Pedidos",
       "knowledgeBase": "Base de conocimiento",
-      "support": "Soporte"
+      "support": "Soporte",
+      "search": "Buscar",
+      "reviews": "Reseñas"
     },
     "catalogTitle": "Catálogo de productos",
     "catalogSubtitle": "Busque y filtre los productos disponibles en la plataforma."
@@ -605,6 +607,37 @@
         "MEDIUM": "Media",
         "HIGH": "Alta",
         "URGENT": "Urgente"
+      }
+    }
+  },
+  "search": {
+    "title": "Buscar",
+    "placeholder": "Buscar productos, base de conocimiento y tus tickets…",
+    "noResults": "Nada coincide con tu búsqueda todavía.",
+    "products": "Productos",
+    "knowledgeArticles": "Base de conocimiento",
+    "tickets": "Tus tickets",
+    "filterAll": "Todo"
+  },
+  "reviews": {
+    "title": "Reseñas y calificaciones",
+    "noReviews": "Todavía no hay reseñas.",
+    "averageOf": "{{average}} de 5 ({{count}} reseña{{plural}})",
+    "yourReview": {
+      "title": "Escribe una reseña",
+      "rating": "Calificación",
+      "comment": "Comentario (opcional)",
+      "submit": "Enviar reseña",
+      "pendingNotice": "Tu reseña está pendiente de aprobación y todavía no se muestra públicamente."
+    },
+    "admin": {
+      "title": "Moderar reseñas",
+      "approve": "Aprobar",
+      "reject": "Rechazar",
+      "status": {
+        "PENDING": "Pendiente",
+        "APPROVED": "Aprobada",
+        "REJECTED": "Rechazada"
       }
     }
   }

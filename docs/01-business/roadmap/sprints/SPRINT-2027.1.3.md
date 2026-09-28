@@ -38,6 +38,35 @@
 | Split | [C31](../open-decisions.md#c31) 12 splits: 12a (human support) was built in [2027.1.2](SPRINT-2027.1.2.md); 12.02 AI Support ships here, with 04b, not as a separate slice | - | - |
 | Moved in | [C31](../open-decisions.md#c31) 15b Policy & Compliance moves here from 2027.2.2, so partner onboarding and listing review (14, 2027.2.1) have a policy engine to check against | - | - |
 | Retirement task, superseded | [C20](../open-decisions.md#c20)'s task to switch the interim status page's incidents to Incident & Problem Management (12.04) no longer applies here — 12.04 was built with 12a in [2027.1.2](SPRINT-2027.1.2.md) instead. Confirm the interim page can now be retired when 12a's incident feature actually ships | [service-status-page](../../../02-requirements/FRD/service-status-page/requirement.md) | REQ-PRT-001 |
+| Decided | [C41](../open-decisions.md#c41) Unified Search (01.03.01, minus semantic search): a new cross-entity keyword search over products, published knowledge articles and the caller's own tickets — the first place these three are combined | [global-search](../../../02-requirements/FRD/global-search/requirement.md) | REQ-PRT-002 |
+| Already satisfied | [C41](../open-decisions.md#c41) 01.02 Customer Dashboard's own "on live data" functions: `BusinessDashboardService` (built in earlier phases) already returns real organization/subscription/usage/service-health data — nothing new needed | - | - |
+| Decided | [C41](../open-decisions.md#c41) Reviews & Ratings (03.04.01) built; a new customer-facing product detail page hosts it | [product-reviews](../../../02-requirements/FRD/product-reviews/requirement.md) | REQ-MKT-002 |
+| Not built | [C41](../open-decisions.md#c41) 03.02 Product Evaluation (trials/demos/sandboxes) — needs 10 Service & Resource Management, still not built, to provision anything to trial against |
+| Not built | [C41](../open-decisions.md#c41) 04b Customer-facing AI agents and 12.02 AI Support — same agent/LLM framework gap 04a already carries |
+| Not built | [C41](../open-decisions.md#c41) 11b Learning & Certification — all P1/stretch, explicitly deferrable per this sprint's own note, no dependents |
+| Not built | [C41](../open-decisions.md#c41) 15b Policy Management & Compliance — 15.02's priority is Not specified in any source; needs its own general policy-engine scoping decision |
+
+### FRDs in this sprint
+
+| FRD | Requirement | Functions | Status |
+|---|---|---|---|
+| [global-search](../../../02-requirements/FRD/global-search/requirement.md) | REQ-PRT-002 | 01.03.01 (minus 01.03.01.02 semantic search) | Approved |
+| [product-reviews](../../../02-requirements/FRD/product-reviews/requirement.md) | REQ-MKT-002 | 03.04.01 | Approved |
+
+### Progress (as of 2026-09-28)
+
+| Feature | Status | Note |
+|---|---|---|
+| 01.02 Customer Dashboard | Done (pre-existing) | Already satisfied by `BusinessDashboardService`, built in earlier phases; "View spending" stays unavailable pending 08 Billing |
+| 01.03.01 Global Search | Partly done | Keyword/filter/sort/history built; semantic search carried — no embeddings/vector-store decision exists |
+| 03.02 Product Evaluation | Not started | Carried — needs 10 Service & Resource Management to provision anything to trial against |
+| 03.04.01 Reviews & Ratings | Done (this FRD's scope) | Submit/rate/moderate/view all built; new product detail page |
+| 04b Customer-facing AI agents (whole application) | Not started | Carried — same agent/LLM framework gap as 04a |
+| 12.02 AI Support | Not started | Carried — ships with 04b once that framework decision is made |
+| 11b Learning & Certification (whole application) | Not started | Carried — all P1/stretch, explicitly deferrable, no dependents |
+| 15b Policy Management & Compliance (whole application) | Not started | Carried — needs its own general policy-engine scoping decision |
+
+01.03.01.02, 03.02, 04b, 12.02, 11b and 15b remain open for this sprint, each carried to a later one once the decision it needs is made.
 
 ## EIS 01b Enterprise Intelligence Suite: dashboard and search on live data
 
