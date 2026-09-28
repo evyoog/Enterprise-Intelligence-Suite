@@ -352,7 +352,9 @@
       "settingsCommon": "Common",
       "security": "Security",
       "preferences": "Preferences",
-      "serviceStatus": "Service status"
+      "serviceStatus": "Service status",
+      "orders": "Orders",
+      "knowledgeBase": "Knowledge base"
     },
     "catalogTitle": "Product catalog",
     "catalogSubtitle": "Search and filter the products available on the platform."
@@ -515,5 +517,56 @@
       "save": "Save"
     },
     "confirmCancel": "This permanently cancels your subscription to {{product}}. Continue?"
+  },
+  "orders": {
+    "title": "Orders",
+    "subtitle": "Request a product for your organization, or review pending requests.",
+    "requestForm": {
+      "title": "Request a product",
+      "product": "Product",
+      "plan": "Plan (optional)",
+      "noPlan": "Flat price (no plan)",
+      "submit": "Submit request"
+    },
+    "myOrders": "My requests",
+    "noOrders": "You have not requested any products yet.",
+    "pending": {
+      "title": "Pending approvals",
+      "none": "No orders are waiting on your decision.",
+      "note": "Note (optional)",
+      "approve": "Approve",
+      "reject": "Reject"
+    },
+    "status": {
+      "SUBMITTED": "Awaiting approval",
+      "APPROVED": "Approved",
+      "REJECTED": "Rejected",
+      "CANCELLED": "Cancelled"
+    },
+    "requestedBy": "Requested by {{name}}",
+    "decidedBy": "Decided by {{name}}",
+    "cancel": "Cancel request"
+  },
+  "knowledgeBase": {
+    "title": "Knowledge base",
+    "subtitle": "Search articles about the products on this platform.",
+    "searchPlaceholder": "Search articles…",
+    "noResults": "No articles match your search.",
+    "back": "Back to knowledge base",
+    "admin": {
+      "title": "Knowledge base articles",
+      "newArticle": "New article",
+      "titleLabel": "Title",
+      "bodyLabel": "Body",
+      "save": "Save",
+      "publish": "Publish",
+      "unpublish": "Unpublish",
+      "delete": "Delete",
+      "status": {
+        "DRAFT": "Draft",
+        "PUBLISHED": "Published"
+      },
+      "version": "v{{version}}"
+    }
   }
 }

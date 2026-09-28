@@ -138,5 +138,12 @@ Not specified in any source. Under [DN-2](../open-decisions.md#dn-2-sprint-scope
 | Feature FRD | `docs/02-requirements/FRD/<feature>/` (copy `_template/`) | See the sprint page for FRDs in progress |
 | Requirement | `REQ-KNW-<NNN>` inside the FRD | Approved FRD required before build ([DN-4](../open-decisions.md#dn-4-business-rules-and-acceptance-criteria)) |
 | Business rules | `docs/03-business-rules/` and `FRD/<feature>/business-rules.md` | Per FRD |
-| Test cases | `test-cases/functional/<feature>/TC-KNW-<NNN>.md` | Not created |
+| Test cases | `test-cases/functional/knowledge-base/TC-KNW-001..006.md` | Created ([REQ-KNW-001](../../../02-requirements/FRD/knowledge-base/requirement.md), sprint 2027.1.1, 11.01.01 only) |
 | NFRs | [WB:Non-Functional Requirements] NFR-001 to NFR-014 (platform-wide) | See [EIS-document-analysis.md](../EIS-document-analysis.md) section 2.17 |
+
+## Related code already in this repository
+
+Observed on branch `dev`. This is a module-level mapping, not a verified function-by-function implementation status.
+
+- Backend: `backend/src/main/java/com/vyoog/eisplatform/modules/knowledgebase (KnowledgeArticle, KnowledgeArticleService, KnowledgeArticleController, AdminKnowledgeArticleController — 11.01.01 only, no AI indexing)`
+- Frontend: `frontend/src/pages/KnowledgeBasePage.tsx`, `frontend/src/pages/admin/AdminKnowledgeBasePage.tsx`

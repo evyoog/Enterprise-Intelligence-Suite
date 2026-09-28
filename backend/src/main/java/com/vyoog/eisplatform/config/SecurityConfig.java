@@ -122,6 +122,11 @@ public class SecurityConfig {
                 // product-catalog read are all pre-login by definition — nobody has a
                 // token yet at this point.
                 .requestMatchers("/register/**").permitAll()
+                // 11.01 Knowledge Base (sprint 2027.1.1): public reads, same
+                // reasoning as the product catalog above — a visitor needs
+                // product knowledge before they buy, signed in or not.
+                .requestMatchers(HttpMethod.GET, "/knowledge-base/**").permitAll()
+                .requestMatchers("/admin/knowledge-base/**").access(permissions.platformPermission("MANAGE_KNOWLEDGE_BASE"))
                 // Platform-admin-only registration/provisioning actions — requires the
                 // MANAGE_REGISTRATIONS permission (same "ADMIN" JWT authority qualifies
                 // today, see RbacSeeder, but this is now a distinct, separately

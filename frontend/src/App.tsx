@@ -28,6 +28,9 @@ import { RolesAdminPage } from './pages/admin/RolesAdminPage'
 import { PermissionsAdminPage } from './pages/admin/PermissionsAdminPage'
 import { ServiceStatusAdminPage } from './pages/admin/ServiceStatusAdminPage'
 import { ServiceStatusPage } from './pages/ServiceStatusPage'
+import { OrganizationOrdersPage } from './pages/OrganizationOrdersPage'
+import { KnowledgeBasePage } from './pages/KnowledgeBasePage'
+import { AdminKnowledgeBasePage } from './pages/admin/AdminKnowledgeBasePage'
 import { RequireAdmin } from './components/routing/RequireAdmin'
 import { RequireAuth } from './components/routing/RequireAuth'
 import { AuthAwareLayout, PublicOnly } from './components/layout/AppShell'
@@ -100,6 +103,10 @@ function MainApp() {
           <Route path="/organization/identity-federation" element={<RequireAuth><OrganizationSamlProvidersPage /></RequireAuth>} />
           {/* REQ-PRT-001 (C26): signed-in customers. */}
           <Route path="/status" element={<RequireAuth><ServiceStatusPage /></RequireAuth>} />
+          {/* 11.01 Knowledge Base (sprint 2027.1.1): public, same as /products above. */}
+          <Route path="/knowledge-base" element={<KnowledgeBasePage />} />
+          {/* 09 Order & Provisioning Management (sprint 2027.1.1): organization purchasing only. */}
+          <Route path="/organization/orders" element={<RequireAuth><OrganizationOrdersPage /></RequireAuth>} />
 
           {/* "settings" is a category (see the sidebar's expandable Settings
               group), so a bare /admin/settings visit redirects to its first
@@ -124,6 +131,7 @@ function MainApp() {
             <Route path="roles" element={<RolesAdminPage />} />
             <Route path="permissions" element={<PermissionsAdminPage />} />
             <Route path="service-status" element={<ServiceStatusAdminPage />} />
+            <Route path="knowledge-base" element={<AdminKnowledgeBasePage />} />
           </Route>
         </Route>
       </Routes>

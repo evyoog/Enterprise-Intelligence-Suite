@@ -59,11 +59,18 @@ public class RbacSeeder implements ApplicationRunner {
             // C26 (2026-09-26): posting the interim service status page (REQ-PRT-001).
             "MANAGE_SERVICE_STATUS",
             // 15.01 Platform Administration (sprint 2026.4.2): currencies, regions, feature flags.
-            "MANAGE_PLATFORM_SETTINGS")
+            "MANAGE_PLATFORM_SETTINGS",
+            // 11.01 Knowledge Base (sprint 2027.1.1): its own permission — publishing
+            // customer-facing knowledge content is distinct from catalog management.
+            "MANAGE_KNOWLEDGE_BASE")
     );
 
     private static final Map<String, List<String>> ORGANIZATION_ROLES = Map.of(
-        "ORG_ADMIN", List.of("MANAGE_ORGANIZATION", "MANAGE_USERS", "MANAGE_PRODUCT_ACCESS", "MANAGE_PRIVILEGED_ACCESS"),
+        // 09.04 Approval Management (sprint 2027.1.1): deciding a member's
+        // order is its own permission — distinct from MANAGE_PRODUCT_ACCESS
+        // (assigning ALREADY-purchased access to a member), since an order
+        // decision commits the organization to a new subscription.
+        "ORG_ADMIN", List.of("MANAGE_ORGANIZATION", "MANAGE_USERS", "MANAGE_PRODUCT_ACCESS", "MANAGE_PRIVILEGED_ACCESS", "MANAGE_ORDERS"),
         "MEMBER", List.of()
     );
 

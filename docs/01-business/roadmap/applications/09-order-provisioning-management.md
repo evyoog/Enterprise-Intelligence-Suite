@@ -125,5 +125,12 @@ Not specified in any source. Under [DN-2](../open-decisions.md#dn-2-sprint-scope
 | Feature FRD | `docs/02-requirements/FRD/<feature>/` (copy `_template/`) | See the sprint page for FRDs in progress |
 | Requirement | `REQ-ORD-<NNN>` inside the FRD | Approved FRD required before build ([DN-4](../open-decisions.md#dn-4-business-rules-and-acceptance-criteria)) |
 | Business rules | `docs/03-business-rules/` and `FRD/<feature>/business-rules.md` | Per FRD |
-| Test cases | `test-cases/functional/<feature>/TC-ORD-<NNN>.md` | Not created |
+| Test cases | `test-cases/functional/order-lifecycle/TC-ORD-001..008.md` | Created ([REQ-ORD-001](../../../02-requirements/FRD/order-lifecycle/requirement.md), sprint 2027.1.1) |
 | NFRs | [WB:Non-Functional Requirements] NFR-001 to NFR-014 (platform-wide) | See [EIS-document-analysis.md](../EIS-document-analysis.md) section 2.17 |
+
+## Related code already in this repository
+
+Observed on branch `dev`. This is a module-level mapping, not a verified function-by-function implementation status.
+
+- Backend: `backend/src/main/java/com/vyoog/eisplatform/modules/registration (Order, OrderService, OrderController — organization purchasing only; see REQ-ORD-001)`
+- Frontend: `frontend/src/pages/OrganizationOrdersPage.tsx`

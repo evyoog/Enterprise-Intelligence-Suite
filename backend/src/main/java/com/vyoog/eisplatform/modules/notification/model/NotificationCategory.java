@@ -8,5 +8,7 @@ public enum NotificationCategory {
     SUBSCRIPTION,
     ORGANIZATION,
     PRIVILEGED_ACCESS,
-    SYSTEM
+    SYSTEM,
+    /** 09 Order & Provisioning Management (sprint 2027.1.1): order submitted/approved/rejected. */
+    ORDER
 }

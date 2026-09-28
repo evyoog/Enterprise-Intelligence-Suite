@@ -1,7 +1,7 @@
 import type { ComponentType } from 'react'
 import {
   Building2, KeyRound, LayoutDashboard, LayoutGrid, Layers, Package, ScrollText, Settings, ShieldCheck,
-  SlidersHorizontal, Store, UserCheck, UserCog, UsersRound, Palette, Boxes, Activity,
+  SlidersHorizontal, Store, UserCheck, UserCog, UsersRound, Palette, Boxes, Activity, ClipboardList, BookOpen,
 } from 'lucide-react'
 import type { MyPermissions } from '../../api/myPermissionsApi'
 
@@ -61,10 +61,18 @@ export function buildAppNavigation({ isAdmin, permissions }: NavAccess): AppNavS
   workspace.push({ key: 'catalog', labelKey: 'catalog', to: '/products', icon: Store })
   // REQ-PRT-001 (C26): every signed-in user sees the status page.
   workspace.push({ key: 'serviceStatus', labelKey: 'serviceStatus', to: '/status', icon: Activity })
+  // 11.01 Knowledge Base (sprint 2027.1.1): public reads, same as the catalog above.
+  workspace.push({ key: 'knowledgeBase', labelKey: 'knowledgeBase', to: '/knowledge-base', icon: BookOpen })
 
   const organizationItems: AppNavItem[] = []
   if (organization('MANAGE_ORGANIZATION')) {
     organizationItems.push({ key: 'identityFederation', labelKey: 'identityFederation', to: '/organization/identity-federation', icon: Building2 })
+  }
+  // 09 Order & Provisioning Management (sprint 2027.1.1): any organization
+  // member may submit an order; MANAGE_ORDERS (ORG_ADMIN) also sees the
+  // pending-approvals section on the same page — see OrganizationOrdersPage.
+  if (inOrganization) {
+    organizationItems.push({ key: 'orders', labelKey: 'orders', to: '/organization/orders', icon: ClipboardList })
   }
 
   const admin: AppNavItem[] = []
@@ -81,6 +89,9 @@ export function buildAppNavigation({ isAdmin, permissions }: NavAccess): AppNavS
   if (platform('VIEW_AUDIT_LOG')) admin.push({ key: 'auditLog', labelKey: 'auditLog', to: '/admin/audit-log', icon: ScrollText })
   if (platform('MANAGE_SERVICE_STATUS')) {
     admin.push({ key: 'adminServiceStatus', labelKey: 'serviceStatus', to: '/admin/service-status', icon: Activity })
+  }
+  if (platform('MANAGE_KNOWLEDGE_BASE')) {
+    admin.push({ key: 'adminKnowledgeBase', labelKey: 'knowledgeBase', to: '/admin/knowledge-base', icon: BookOpen })
   }
   if (platform('MANAGE_CATALOG')) {
     admin.push({

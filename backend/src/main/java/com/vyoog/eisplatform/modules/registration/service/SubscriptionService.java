@@ -132,6 +132,39 @@ public class SubscriptionService {
         return toDto(subscription, product.getName());
     }
 
+    /** 09.02.01 Service Provisioning (sprint 2027.1.1): the organization
+     * equivalent of {@link #subscribe} — called by {@code OrderService} once
+     * an order is approved, never directly by a member (there is no
+     * self-serve organization-subscribe endpoint; every org subscription
+     * goes through an order). Unlike {@code subscribe}, this accepts a plan
+     * up front, since the order that triggers it already carries one. */
+    @Transactional
+    public SubscriptionDto subscribeOrganization(Long organizationId, Long productId, Long planId) {
+        Product product = productRepository.findById(productId)
+            .filter(p -> p.getStatus() == ProductStatus.ACTIVE)
+            .orElseThrow(() -> new ResourceNotFoundException("Product not found"));
+
+        ProductSubscription subscription = subscriptionRepository
+            .findByOwnerOrganizationIdAndProductId(organizationId, productId)
+            .orElseGet(() -> {
+                ProductSubscription created = new ProductSubscription();
+                created.setProductId(productId);
+                created.setOwnerType(RegistrationOwnerType.ORGANIZATION);
+                created.setOwnerOrganizationId(organizationId);
+                return created;
+            });
+        subscription.setStatus(SubscriptionStatus.ACTIVE);
+        subscription.setStartedAt(Instant.now());
+        subscription.setExpiresAt(null);
+        subscription.setPlanId(planId);
+        subscription = subscriptionRepository.save(subscription);
+
+        auditService.recordSuccess("SUBSCRIPTION_CREATED", null, null, null,
+            "ProductSubscription", productId.toString(), organizationId, "Organization subscribed to product " + productId);
+
+        return toDto(subscription, product.getName());
+    }
+
     private SubscriptionDto toDto(ProductSubscription subscription) {
         String productName = productRepository.findById(subscription.getProductId())
             .map(Product::getName)

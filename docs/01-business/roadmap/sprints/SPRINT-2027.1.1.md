@@ -30,6 +30,31 @@
 | Moved out | [C31](../open-decisions.md#c31) 10 Service & Resource Management moves to [2027.1.2](SPRINT-2027.1.2.md) (service instances are created by provisioning, which is built in this sprint, so they can't be managed in the same sprint that builds provisioning) | - | - |
 | Moved in | [C31](../open-decisions.md#c31) 11a Knowledge Base moves here from 2027.1.3 (customers need product knowledge before they buy, and both human support and AI agents answer from it) | - | - |
 | Split | [C31](../open-decisions.md#c31) 13 Integration & API Platform splits: 13a (API Management, Event Platform) moved to [2026.4.2](SPRINT-2026.4.2.md); 13b (Connectors, Webhooks) stays here | - | - |
+| Decided | [C39](../open-decisions.md#c39) Order Lifecycle (09.01), Provisioning folded into Approve (09.02), single-hop Approval (09.04): organization purchasing only — an individual customer's self-serve subscribe (07.01) is untouched. 09.03 Workflow Orchestration deliberately not built as a generic engine (one hard-coded process, no second consumer) | [order-lifecycle](../../../02-requirements/FRD/order-lifecycle/requirement.md) | REQ-ORD-001 |
+| Decided | [C39](../open-decisions.md#c39) Knowledge Articles (11.01.01) built; 11.01.02 AI Knowledge carried — no vector-store/embeddings decision exists | [knowledge-base](../../../02-requirements/FRD/knowledge-base/requirement.md) | REQ-KNW-001 |
+| Not built | [C39](../open-decisions.md#c39) 13b Connectors & Webhooks and 16 Analytics & Data Platform: both P1/stretch under C4/C5, and neither has a real consumer yet — carried further |
+
+### FRDs in this sprint
+
+| FRD | Requirement | Functions | Status |
+|---|---|---|---|
+| [order-lifecycle](../../../02-requirements/FRD/order-lifecycle/requirement.md) | REQ-ORD-001 | 09.01.01, 09.02.01 (folded into approval), 09.04.01 (single-hop) | Approved |
+| [knowledge-base](../../../02-requirements/FRD/knowledge-base/requirement.md) | REQ-KNW-001 | 11.01.01 (11.01.02 AI Knowledge carried) | Approved |
+
+### Progress (as of 2026-09-28)
+
+| Feature | Status | Note |
+|---|---|---|
+| 09.01.01 Order Lifecycle | Done (this FRD's scope) | Organization purchasing only; Create/Validate/Price/Submit folded into one action |
+| 09.02.01 Service Provisioning | Partly done | Provision/Activate folded into order approval; Configure/Suspend/Deprovision an existing org subscription not built (same gap C38 carries) |
+| 09.03 Workflow Orchestration | Not started, not planned as a generic engine | See [C39](../open-decisions.md#c39) — no second orchestrated process exists to justify one |
+| 09.04.01 Approvals | Partly done | Create/Approve/Reject built, single-hop; Route approval/Escalate not built — no multi-level chain defined |
+| 11.01.01 Knowledge Articles | Done (this FRD's scope) | Create/Edit/Publish/Search/Version, plain text search |
+| 11.01.02 AI Knowledge | Not started | Carried — needs a vector-store/embeddings-model decision first |
+| 13b Connectors & Webhooks | Not started | Carried — P1/stretch, no real consumer yet |
+| 16 Analytics & Data Platform | Not started | Carried — P1/stretch (16.03 has no priority given at all) |
+
+09.02.01's remaining items, 09.03, 09.04.01's remaining items, 11.01.02, 13b, and 16 remain open for this sprint, carried to a later one once the decisions [C39](../open-decisions.md#c39) names are made.
 
 ## EIS 09 Order & Provisioning Management
 

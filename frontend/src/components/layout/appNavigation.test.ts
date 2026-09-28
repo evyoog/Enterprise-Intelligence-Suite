@@ -10,19 +10,26 @@ describe('buildAppNavigation', () => {
       isAdmin: false,
       permissions: { platform: [], organization: ['MANAGE_ORGANIZATION', 'MANAGE_USERS'] },
     }))
-    expect(nav.workspace).toEqual(['dashboard', 'myProducts', 'catalog', 'serviceStatus'])
-    expect(nav.organization).toEqual(['identityFederation'])
+    expect(nav.workspace).toEqual(['dashboard', 'myProducts', 'catalog', 'serviceStatus', 'knowledgeBase'])
+    // 09 Order & Provisioning Management (sprint 2027.1.1): any organization
+    // member sees Orders, not just ORG_ADMIN.
+    expect(nav.organization).toEqual(['identityFederation', 'orders'])
     expect(nav.administration).toBeUndefined()
     expect(nav.account).toEqual(['security', 'preferences'])
   })
 
-  it('gives a plain member or an individual no business dashboard and no organization items', () => {
-    for (const organization of [['MANAGE_PRIVILEGED_ACCESS_SELF'], []]) {
-      const nav = keys(buildAppNavigation({ isAdmin: false, permissions: { platform: [], organization } }))
-      expect(nav.workspace).toEqual(['myProducts', 'catalog', 'serviceStatus'])
-      expect(nav.organization).toBeUndefined()
-      expect(nav.administration).toBeUndefined()
-    }
+  it('gives a plain member Orders but no other organization item, and no business dashboard', () => {
+    const nav = keys(buildAppNavigation({ isAdmin: false, permissions: { platform: [], organization: ['MANAGE_PRIVILEGED_ACCESS_SELF'] } }))
+    expect(nav.workspace).toEqual(['myProducts', 'catalog', 'serviceStatus', 'knowledgeBase'])
+    expect(nav.organization).toEqual(['orders'])
+    expect(nav.administration).toBeUndefined()
+  })
+
+  it('gives an individual (no organization at all) no organization items, business dashboard, or Orders', () => {
+    const nav = keys(buildAppNavigation({ isAdmin: false, permissions: { platform: [], organization: [] } }))
+    expect(nav.workspace).toEqual(['myProducts', 'catalog', 'serviceStatus', 'knowledgeBase'])
+    expect(nav.organization).toBeUndefined()
+    expect(nav.administration).toBeUndefined()
   })
 
   it('shows a platform admin only the admin items their platform permissions allow', () => {
@@ -31,13 +38,14 @@ describe('buildAppNavigation', () => {
       permissions: { platform: ['MANAGE_REGISTRATIONS', 'VIEW_AUDIT_LOG'], organization: [] },
     }))
     expect(nav.administration).toEqual(['registrations', 'auditLog'])
-    expect(nav.workspace).toEqual(['catalog', 'serviceStatus'])
+    expect(nav.workspace).toEqual(['catalog', 'serviceStatus', 'knowledgeBase'])
   })
 
   it('shows a platform admin the full admin menu while permissions are unknown', () => {
     const nav = keys(buildAppNavigation({ isAdmin: true, permissions: null }))
     expect(nav.administration).toEqual([
-      'platforms', 'apps', 'registrations', 'privilegedAccess', 'roles', 'permissions', 'auditLog', 'adminServiceStatus', 'settings',
+      'platforms', 'apps', 'registrations', 'privilegedAccess', 'roles', 'permissions', 'auditLog', 'adminServiceStatus',
+      'adminKnowledgeBase', 'settings',
     ])
   })
 

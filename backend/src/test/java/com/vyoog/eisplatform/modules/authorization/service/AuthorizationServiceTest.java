@@ -41,9 +41,10 @@ class AuthorizationServiceTest {
         // ADMIN role's seeded set — RBAC administration itself.
         // C26 (2026-09-26): MANAGE_SERVICE_STATUS, posting the service status page.
         // 15.01 Platform Administration (sprint 2026.4.2): MANAGE_PLATFORM_SETTINGS.
+        // 11.01 Knowledge Base (sprint 2027.1.1): MANAGE_KNOWLEDGE_BASE.
         assertThat(authorizationService.listPlatformPermissions(Set.of("ROLE_ADMIN")))
             .containsExactlyInAnyOrder("MANAGE_CATALOG", "MANAGE_REGISTRATIONS", "MANAGE_PRIVILEGED_ACCESS", "VIEW_AUDIT_LOG",
-                "MANAGE_ROLES", "MANAGE_PERMISSIONS", "MANAGE_SERVICE_STATUS", "MANAGE_PLATFORM_SETTINGS");
+                "MANAGE_ROLES", "MANAGE_PERMISSIONS", "MANAGE_SERVICE_STATUS", "MANAGE_PLATFORM_SETTINGS", "MANAGE_KNOWLEDGE_BASE");
     }
 
     @Test
@@ -59,8 +60,10 @@ class AuthorizationServiceTest {
         assertThat(authorizationService.hasOrganizationPermission(OrgRole.ORG_ADMIN, "MANAGE_PRODUCT_ACCESS")).isTrue();
         // Phase 6 (PAM): joined ORG_ADMIN's seeded set alongside the other three.
         assertThat(authorizationService.hasOrganizationPermission(OrgRole.ORG_ADMIN, "MANAGE_PRIVILEGED_ACCESS")).isTrue();
+        // 09.04 Approval Management (sprint 2027.1.1): MANAGE_ORDERS.
+        assertThat(authorizationService.hasOrganizationPermission(OrgRole.ORG_ADMIN, "MANAGE_ORDERS")).isTrue();
         assertThat(authorizationService.listOrganizationPermissions(OrgRole.ORG_ADMIN))
-            .containsExactlyInAnyOrder("MANAGE_ORGANIZATION", "MANAGE_USERS", "MANAGE_PRODUCT_ACCESS", "MANAGE_PRIVILEGED_ACCESS");
+            .containsExactlyInAnyOrder("MANAGE_ORGANIZATION", "MANAGE_USERS", "MANAGE_PRODUCT_ACCESS", "MANAGE_PRIVILEGED_ACCESS", "MANAGE_ORDERS");
     }
 
     @Test

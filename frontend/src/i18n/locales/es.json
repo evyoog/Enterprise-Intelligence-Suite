@@ -352,7 +352,9 @@
       "settingsCommon": "General",
       "security": "Seguridad",
       "preferences": "Preferencias",
-      "serviceStatus": "Estado del servicio"
+      "serviceStatus": "Estado del servicio",
+      "orders": "Pedidos",
+      "knowledgeBase": "Base de conocimiento"
     },
     "catalogTitle": "Catálogo de productos",
     "catalogSubtitle": "Busque y filtre los productos disponibles en la plataforma."
@@ -515,5 +517,56 @@
       "save": "Guardar"
     },
     "confirmCancel": "Esto cancela permanentemente tu suscripción a {{product}}. ¿Continuar?"
+  },
+  "orders": {
+    "title": "Pedidos",
+    "subtitle": "Solicita un producto para tu organización o revisa las solicitudes pendientes.",
+    "requestForm": {
+      "title": "Solicitar un producto",
+      "product": "Producto",
+      "plan": "Plan (opcional)",
+      "noPlan": "Precio fijo (sin plan)",
+      "submit": "Enviar solicitud"
+    },
+    "myOrders": "Mis solicitudes",
+    "noOrders": "Todavía no has solicitado ningún producto.",
+    "pending": {
+      "title": "Aprobaciones pendientes",
+      "none": "No hay pedidos esperando tu decisión.",
+      "note": "Nota (opcional)",
+      "approve": "Aprobar",
+      "reject": "Rechazar"
+    },
+    "status": {
+      "SUBMITTED": "Esperando aprobación",
+      "APPROVED": "Aprobado",
+      "REJECTED": "Rechazado",
+      "CANCELLED": "Cancelado"
+    },
+    "requestedBy": "Solicitado por {{name}}",
+    "decidedBy": "Decidido por {{name}}",
+    "cancel": "Cancelar solicitud"
+  },
+  "knowledgeBase": {
+    "title": "Base de conocimiento",
+    "subtitle": "Busca artículos sobre los productos de esta plataforma.",
+    "searchPlaceholder": "Buscar artículos…",
+    "noResults": "Ningún artículo coincide con tu búsqueda.",
+    "back": "Volver a la base de conocimiento",
+    "admin": {
+      "title": "Artículos de la base de conocimiento",
+      "newArticle": "Nuevo artículo",
+      "titleLabel": "Título",
+      "bodyLabel": "Contenido",
+      "save": "Guardar",
+      "publish": "Publicar",
+      "unpublish": "Despublicar",
+      "delete": "Eliminar",
+      "status": {
+        "DRAFT": "Borrador",
+        "PUBLISHED": "Publicado"
+      },
+      "version": "v{{version}}"
+    }
   }
 }

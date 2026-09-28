@@ -369,6 +369,26 @@ CREATE INDEX idx_subscription_organization ON product_subscription (owner_organi
 CREATE UNIQUE INDEX idx_subscription_customer_product ON product_subscription (owner_customer_id, product_id) WHERE owner_customer_id IS NOT NULL;
 CREATE UNIQUE INDEX idx_subscription_org_product ON product_subscription (owner_organization_id, product_id) WHERE owner_organization_id IS NOT NULL;
 
+-- 09.01 Order Management (sprint 2027.1.1). Organization purchasing only —
+-- see OrderService's own javadoc. No separate PROVISIONED status: APPROVED
+-- already means provisioned (synchronous, no workflow engine — see V009).
+CREATE TABLE orders (
+    id BIGSERIAL PRIMARY KEY,
+    organization_id BIGINT NOT NULL REFERENCES organization(id),
+    requested_by_customer_id BIGINT NOT NULL REFERENCES customer(id),
+    product_id BIGINT NOT NULL REFERENCES products(id),
+    plan_id BIGINT REFERENCES product_plans(id),
+    status VARCHAR(20) NOT NULL DEFAULT 'SUBMITTED'
+        CHECK (status IN ('SUBMITTED', 'APPROVED', 'REJECTED', 'CANCELLED')),
+    decided_by_customer_id BIGINT REFERENCES customer(id),
+    decided_at TIMESTAMP,
+    decision_note VARCHAR(500),
+    created_at TIMESTAMP NOT NULL DEFAULT now(),
+    updated_at TIMESTAMP NOT NULL DEFAULT now()
+);
+CREATE INDEX idx_orders_organization ON orders (organization_id, status);
+CREATE INDEX idx_orders_requested_by ON orders (requested_by_customer_id);
+
 -- Single-use, expiring email verification tokens — only a HASH of the raw
 -- token is ever stored; used_at is set once and never cleared, so a reused
 -- link fails instead of silently no-op-ing.
@@ -646,3 +666,16 @@ ALTER TABLE oidc_identity_provider
     ADD COLUMN first_name_claim VARCHAR(255),
     ADD COLUMN last_name_claim VARCHAR(255),
     ADD COLUMN display_name_claim VARCHAR(255);
+
+-- 11.01 Knowledge Base (sprint 2027.1.1): 11.01.02 AI Knowledge deliberately
+-- not built — see KnowledgeArticle's own javadoc. See migration V009.
+CREATE TABLE knowledge_article (
+    id BIGSERIAL PRIMARY KEY,
+    title VARCHAR(200) NOT NULL,
+    body VARCHAR(20000) NOT NULL,
+    status VARCHAR(20) NOT NULL DEFAULT 'DRAFT' CHECK (status IN ('DRAFT', 'PUBLISHED')),
+    version INT NOT NULL DEFAULT 1,
+    created_at TIMESTAMP NOT NULL DEFAULT now(),
+    updated_at TIMESTAMP NOT NULL DEFAULT now()
+);
+CREATE INDEX idx_knowledge_article_status ON knowledge_article (status);
