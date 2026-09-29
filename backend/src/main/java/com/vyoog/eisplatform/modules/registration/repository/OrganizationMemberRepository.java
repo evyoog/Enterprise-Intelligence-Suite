@@ -20,6 +20,10 @@ public interface OrganizationMemberRepository extends JpaRepository<Organization
 
     Optional<OrganizationMember> findByOrganizationIdAndCustomerId(Long organizationId, Long customerId);
 
+    /** 09.01 Order Management (sprint 2027.1.1): who to notify when a member
+     * submits an order for their organization. */
+    List<OrganizationMember> findByOrganizationIdAndOrgRoleAndStatus(Long organizationId, OrgRole orgRole, MembershipStatus status);
+
     /** A person can belong to at most one organization today (no multi-org
      * membership in this phase) — used to resolve "which org is the caller
      * an ORG_ADMIN of" from their own customer id. */

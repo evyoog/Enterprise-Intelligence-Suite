@@ -10,6 +10,8 @@ public record SubscriptionDto(
     String productName,
     SubscriptionStatus status,
     Instant startedAt,
-    Instant expiresAt
+    Instant expiresAt,
+    Long planId,
+    String planName
 ) {
 }

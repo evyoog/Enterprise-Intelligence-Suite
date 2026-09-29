@@ -1,12 +1,16 @@
 # Business rules — OIDC Identity-Provider Federation
 
-These rules come from the decisions recorded in [open-decisions.md](../../../01-business/roadmap/open-decisions.md) on 2026-09-25. There is no backend code for them yet. Rules marked **(to confirm)** mirror the existing SAML design and must be confirmed when the FRD is approved.
+Decided in [C22](../../../01-business/roadmap/open-decisions.md#c22), [C27](../../../01-business/roadmap/open-decisions.md#c27) and [C29](../../../01-business/roadmap/open-decisions.md#c29). Enforced by the backend.
 
 | ID | Rule | Enforced in | Source |
 |---|---|---|---|
-| BR-IAM-006.1 | Providers are per organization and are built in the backend `federation` module. | backend | [C22](../../../01-business/roadmap/open-decisions.md#c22) |
-| BR-IAM-006.2 | Client secrets are never hard-coded and are encrypted at rest. | backend | [C22](../../../01-business/roadmap/open-decisions.md#c22); `CLAUDE.md` rule 7 |
-| BR-IAM-006.3 | A federated user joins the organization as `MEMBER`; no identity-provider claim can grant `ORG_ADMIN`. | backend | [C23](../../../01-business/roadmap/open-decisions.md#c23); same rule as `SamlAuthenticationService#ensureActiveMembership` |
-| BR-IAM-006.4 | **(to confirm)** Managing providers requires `MANAGE_ORGANIZATION` in the caller's own organization, as for SAML. | backend | Mirrors `OrganizationSamlProviderController#requireOrgId` |
-| BR-IAM-006.5 | **(to confirm)** A provider of another organization returns the generic 403 "You do not have permission to do this", as for SAML. | backend | Mirrors `SamlProviderService#findOwnedOrThrow` |
-| BR-IAM-006.6 | **(to confirm)** Every create, update, enable, disable and delete is audited, as for SAML. | backend | Mirrors `SamlProviderService` |
+| BR-IAM-006.1 | Provider management needs `MANAGE_ORGANIZATION` and is always the caller's own organization (same as SAML). | backend | `OrganizationOidcProviderController#requireOrgId` → `OrganizationSelfService#requireOrganizationManagement` |
+| BR-IAM-006.2 | Fields: name, issuer (discovery) URL, client ID, client secret, scopes. The issuer must be an absolute `https://` URL (`http://localhost` allowed for development). Scopes default to `openid email profile` and must include `openid`. A secret is required on create; a blank secret on update keeps the stored one. | backend | `OidcProviderService#apply`, `#create` |
+| BR-IAM-006.3 | The client secret is encrypted with `TotpSecretCipher` (AES-GCM) and never returned; the API returns only `clientSecretSet`. | backend | `OidcProviderService`, `OidcProviderDto` |
+| BR-IAM-006.4 | At most one SAML or OIDC provider is enabled per organization: enabling one disables any other enabled SAML or OIDC provider. | backend | `OidcProviderService#setEnabled`, `SamlProviderService#setEnabled` |
+| BR-IAM-006.5 | Test reads `{issuer}/.well-known/openid-configuration` and checks that its issuer matches and that the authorization endpoint, token endpoint and JWKS URI are present. It never signs anyone in. | backend | `OidcProviderService#test` |
+| BR-IAM-006.6 | Sign-in: the organization code tells the web app the enabled protocol (`GET /saml/sso-check` returns `protocol`). OIDC uses the authorization code flow with PKCE (S256), a random `state` (single use, 10 minutes, bound to the organization) and a `nonce`. | backend | `SamlAuthenticationService#checkSso`, `OidcAuthenticationService#buildRedirectUrl` |
+| BR-IAM-006.7 | The callback refuses: an unknown, reused, expired or other-organization state; a provider error; a missing code; an ID token whose signature (JWKS) or expiry fails; an issuer other than the discovered one; an audience without our client ID; a nonce mismatch; no subject; no email. Each refusal returns to `/?ssoError=` with the reason. | backend | `OidcAuthenticationService#handleCallback` |
+| BR-IAM-006.8 | The stable identity is issuer + subject per organization. A known identity maps to the same customer (email changes do not create a new account); otherwise the customer is linked by email or JIT-provisioned. New users join as `MEMBER` only; a deactivated membership is refused. | backend | `OidcAuthenticationService#resolveOrProvision`, `FederatedAccountService` |
+| BR-IAM-006.9 | The organization MFA policy applies after OIDC sign-in exactly as after SAML ([C29](../../../01-business/roadmap/open-decisions.md#c29)). | backend | `FederatedAccountService#finishSignIn` → `SignInMfaGate` |
+| BR-IAM-006.10 | Audit: `OIDC_PROVIDER_CREATED/UPDATED/ENABLED/DISABLED/DELETED`, `OIDC_LOGIN_SUCCESS`, `OIDC_LOGIN_MFA_PENDING`. | backend | `OidcProviderService`, `FederatedAccountService` |

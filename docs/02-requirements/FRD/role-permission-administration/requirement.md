@@ -46,4 +46,4 @@ A platform administrator can create, view, edit and delete roles, and create, vi
 
 ## Dependencies
 - Existing endpoints under `/admin/roles` and `/admin/permissions`.
-- Existing admin layout (`AdminLayout`, `RequireAdmin`).
+- Existing admin layout (`AdminLayout`, `RequireAdmin`). Since 2026-09-26 the admin pages render in the signed-in `AppShell` ([application layout](../../../05-ui/screen-requirements/application-layout.md)).

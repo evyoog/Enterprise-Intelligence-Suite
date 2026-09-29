@@ -8,6 +8,7 @@ import com.vyoog.eisplatform.modules.registration.dto.OrganizationLifecycleReque
 import com.vyoog.eisplatform.modules.registration.dto.OrganizationLifecycleResultDto;
 import com.vyoog.eisplatform.modules.registration.dto.OrganizationSummaryDto;
 import com.vyoog.eisplatform.modules.registration.dto.PendingProvisioningDto;
+import com.vyoog.eisplatform.modules.registration.dto.ResetMfaRequest;
 import com.vyoog.eisplatform.modules.registration.dto.UpdateOrganizationRequest;
 import com.vyoog.eisplatform.modules.registration.dto.UpdateSeatsRequest;
 import com.vyoog.eisplatform.modules.registration.service.AdminRegistrationService;
@@ -105,6 +106,13 @@ public class AdminRegistrationController {
                                                             @Valid @RequestBody(required = false) OrganizationLifecycleRequest request,
                                                             @AuthenticationPrincipal Jwt jwt) {
         return adminRegistrationService.closeOrganization(organizationId, reason(request), actor(jwt));
+    }
+
+    /** C30: reset any account's two-factor authentication, by email. */
+    @PostMapping("/mfa-reset")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void resetMfa(@Valid @RequestBody ResetMfaRequest request, @AuthenticationPrincipal Jwt jwt) {
+        adminRegistrationService.resetMfaByEmail(request.email(), actor(jwt));
     }
 
     private AdminRegistrationService.Actor actor(Jwt jwt) {

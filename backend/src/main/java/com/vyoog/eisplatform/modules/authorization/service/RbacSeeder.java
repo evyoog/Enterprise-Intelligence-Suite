@@ -55,11 +55,35 @@ public class RbacSeeder implements ApplicationRunner {
         // to redefine what every OTHER permission/role means is a more
         // foundational capability than any single administrative action.
         "ADMIN", List.of("MANAGE_CATALOG", "MANAGE_REGISTRATIONS", "MANAGE_PRIVILEGED_ACCESS", "VIEW_AUDIT_LOG",
-            "MANAGE_ROLES", "MANAGE_PERMISSIONS")
+            "MANAGE_ROLES", "MANAGE_PERMISSIONS",
+            // C26 (2026-09-26): posting the interim service status page (REQ-PRT-001).
+            "MANAGE_SERVICE_STATUS",
+            // 15.01 Platform Administration (sprint 2026.4.2): currencies, regions, feature flags.
+            "MANAGE_PLATFORM_SETTINGS",
+            // 11.01 Knowledge Base (sprint 2027.1.1): its own permission — publishing
+            // customer-facing knowledge content is distinct from catalog management.
+            "MANAGE_KNOWLEDGE_BASE",
+            // 12.01 Ticket Management (sprint 2027.1.2): its own permission —
+            // handling support tickets is a distinct responsibility from
+            // every other admin capability above.
+            "MANAGE_SUPPORT_TICKETS",
+            // 03.04 Reviews & Ratings (sprint 2027.1.3): moderating customer
+            // reviews is its own permission, distinct from catalog management.
+            "MANAGE_REVIEWS",
+            // 14.01 Provider Onboarding (sprint 2027.2.1): verifying/approving/
+            // activating a provider and managing its contract is its own
+            // permission — a distinct, sensitive responsibility from every
+            // other admin capability above (it commits the platform to a
+            // business relationship with an external party).
+            "MANAGE_PARTNERS")
     );
 
     private static final Map<String, List<String>> ORGANIZATION_ROLES = Map.of(
-        "ORG_ADMIN", List.of("MANAGE_ORGANIZATION", "MANAGE_USERS", "MANAGE_PRODUCT_ACCESS", "MANAGE_PRIVILEGED_ACCESS"),
+        // 09.04 Approval Management (sprint 2027.1.1): deciding a member's
+        // order is its own permission — distinct from MANAGE_PRODUCT_ACCESS
+        // (assigning ALREADY-purchased access to a member), since an order
+        // decision commits the organization to a new subscription.
+        "ORG_ADMIN", List.of("MANAGE_ORGANIZATION", "MANAGE_USERS", "MANAGE_PRODUCT_ACCESS", "MANAGE_PRIVILEGED_ACCESS", "MANAGE_ORDERS"),
         "MEMBER", List.of()
     );
 

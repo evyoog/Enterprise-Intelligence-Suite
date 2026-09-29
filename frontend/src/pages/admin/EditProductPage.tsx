@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { Box, Button, CircularProgress, Typography } from '@mui/material'
+import { Alert, Box, Button, Chip, CircularProgress, Typography } from '@mui/material'
 import { ArrowLeft } from 'lucide-react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { ApiError } from '../../api/client'
@@ -17,6 +17,9 @@ export function EditProductPage() {
   const navigate = useNavigate()
   const [product, setProduct] = useState<Product | null>(null)
   const [error, setError] = useState<string | null>(null)
+  // 02.01.01.04/.05 Publish/Retire product (sprint 2026.4.1).
+  const [isChangingStatus, setIsChangingStatus] = useState(false)
+  const [statusError, setStatusError] = useState<string | null>(null)
 
   useEffect(() => {
     if (!id) return
@@ -25,18 +28,52 @@ export function EditProductPage() {
       .catch((e) => setError(e instanceof ApiError ? e.message : 'Could not load this product.'))
   }, [id])
 
+  const changeStatus = (action: 'publish' | 'retire') => {
+    if (!product) return
+    setIsChangingStatus(true)
+    setStatusError(null)
+    productsApi[action](product.id)
+      .then(setProduct)
+      .catch((e) => setStatusError(e instanceof ApiError ? e.message : 'Could not update this product’s status.'))
+      .finally(() => setIsChangingStatus(false))
+  }
+
   return (
     <Box sx={{ maxWidth: 560 }}>
       <Button onClick={() => navigate(-1)} startIcon={<ArrowLeft size={16} />} sx={{ mb: 2 }}>
         Back
       </Button>
 
-      <Typography variant="h4" sx={{ fontWeight: 700, mb: 1 }}>
-        Edit app
-      </Typography>
-      <Typography sx={{ color: 'text.secondary', mb: 4 }}>
+      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
+        <Typography variant="h4" sx={{ fontWeight: 700 }}>
+          Edit app
+        </Typography>
+        {product && <Chip size="small" label={`Version ${product.version}`} />}
+      </Box>
+      <Typography sx={{ color: 'text.secondary', mb: 2 }}>
         Update this app's details, pricing, SSO status, or availability.
       </Typography>
+
+      {product && (
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 3 }}>
+          <Chip
+            size="small"
+            color={product.status === 'ACTIVE' ? 'success' : product.status === 'RETIRED' ? 'default' : 'warning'}
+            label={product.status}
+          />
+          {product.status !== 'RETIRED' && (
+            <Button size="small" disabled={isChangingStatus} onClick={() => changeStatus('retire')}>
+              Retire
+            </Button>
+          )}
+          {product.status !== 'ACTIVE' && (
+            <Button size="small" disabled={isChangingStatus} onClick={() => changeStatus('publish')}>
+              Publish
+            </Button>
+          )}
+        </Box>
+      )}
+      {statusError && <Alert severity="error" sx={{ mb: 2 }}>{statusError}</Alert>}
 
       {error && <Typography color="error" role="alert">{error}</Typography>}
 

@@ -42,9 +42,10 @@ A signed-in user can request temporary, time-boxed access to a permission they d
 | REQ-IAM-004.6 | An approved request grants the permission until it expires. | P0 |
 | REQ-IAM-004.7 | The request form offers the permissions the user may request as a dropdown, from a new read-only endpoint `GET /me/privileged-access/requestable-permissions` ([C24](../../../01-business/roadmap/open-decisions.md#c24)). | P0 |
 | REQ-IAM-004.8 | When the backend refuses an action, its message is shown. | P0 |
+| REQ-IAM-004.9 | Organization administrators and platform administrators can list the active (approved, unexpired) grants of their scope, see who holds each one, and revoke one early with an optional note (sprint audit 2026-09-26). | P0 |
 
 ## Out of scope
-- Platform-administrator approve, reject and revoke (already built: `AdminPrivilegedAccessPage`, `/admin/privileged-access/**`)
+- Platform-administrator approve and reject (already built: `AdminPrivilegedAccessPage`). Correction 2026-09-26: this FRD said platform revoke was also built; the page had no revoke. It is added by REQ-IAM-004.9.
 - Any duration option, permission or scope beyond what the backend accepts
 
 ## Dependencies

@@ -35,7 +35,9 @@ An organization administrator can require multi-factor authentication for every 
 |---|---|---|
 | REQ-IAM-001.1 | The administrator can see whether MFA is currently required for their organization. | P0 |
 | REQ-IAM-001.2 | The administrator can turn the MFA requirement on or off for their own organization. | P0 |
-| REQ-IAM-001.3 | When MFA is required, a member's login that did not use a one-time password is refused (existing behaviour). | P0 |
+| REQ-IAM-001.3 | When MFA is required, a member's password sign-in that did not use a one-time password is not turned into a session until the member passes the platform authenticator step. Changed 2026-09-26 ([C29](../../../01-business/roadmap/open-decisions.md#c29)): the sign-in is no longer refused. | P0 |
+| REQ-IAM-001.4 | The policy also applies to SAML (and OIDC) sign-in: a member of an organization that requires MFA passes the platform authenticator step after the identity provider ([C29](../../../01-business/roadmap/open-decisions.md#c29)). | P0 |
+| REQ-IAM-001.5 | A member with no authenticator sets one up during sign-in (QR code, first code, recovery codes shown once). No password is asked, because the user has just signed in ([C29](../../../01-business/roadmap/open-decisions.md#c29)). | P0 |
 
 ## Out of scope
 - A general policy engine or any policy other than the MFA requirement. Under [C21](../../../01-business/roadmap/open-decisions.md#c21) it is deferred to sprint 2027.2.2 with Policy Management (15.02)
@@ -43,4 +45,4 @@ An organization administrator can require multi-factor authentication for every 
 
 ## Dependencies
 - Existing endpoints `GET /organization/me` and `PATCH /organization/me/mfa-policy`.
-- Existing login enforcement in `AuthController#login` and `MfaPolicyService`.
+- Login enforcement in `SignInMfaGate`, used by `AuthController#login` and `SamlAuthenticationService#handleAcs`; policy lookup in `MfaPolicyService`.

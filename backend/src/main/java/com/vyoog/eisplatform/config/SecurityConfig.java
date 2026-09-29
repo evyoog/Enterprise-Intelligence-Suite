@@ -74,6 +74,11 @@ public class SecurityConfig {
                 // here directly with a valid non-admin token if this rule weren't here.
                 .requestMatchers(HttpMethod.POST, "/products/images").access(permissions.platformPermission("MANAGE_CATALOG"))
                 .requestMatchers(HttpMethod.POST, "/products").access(permissions.platformPermission("MANAGE_CATALOG"))
+                // 02.01.01 Product Lifecycle (sprint 2026.4.1) — publish/retire.
+                // Neither is the exact-path POST /products above, so each needs
+                // its own explicit rule, same reasoning as DELETE /products/** below.
+                .requestMatchers(HttpMethod.POST, "/products/*/publish", "/products/*/retire")
+                    .access(permissions.platformPermission("MANAGE_CATALOG"))
                 .requestMatchers(HttpMethod.PUT, "/products/**").access(permissions.platformPermission("MANAGE_CATALOG"))
                 // Without this explicit rule, DELETE /products/{id} would fall
                 // through to the generic authenticated() catch-all below and be
@@ -106,6 +111,9 @@ public class SecurityConfig {
                 .requestMatchers(HttpMethod.GET, "/saml/sso-check").permitAll()
                 .requestMatchers(HttpMethod.GET, "/saml/*/login-init").permitAll()
                 .requestMatchers(HttpMethod.POST, "/saml/*/acs").permitAll()
+                // REQ-IAM-006 (C27): OIDC sign-in navigations, before any session exists.
+                .requestMatchers(HttpMethod.GET, "/oidc/*/login-init").permitAll()
+                .requestMatchers(HttpMethod.GET, "/oidc/*/callback").permitAll()
                 // Guarded by its own shared-secret header check inside the controller,
                 // not JWT — this is a backend-to-backend call from PMS's own backend,
                 // which has no Keycloak-issued bearer token of its own to present here.
@@ -114,11 +122,42 @@ public class SecurityConfig {
                 // product-catalog read are all pre-login by definition — nobody has a
                 // token yet at this point.
                 .requestMatchers("/register/**").permitAll()
+                // 11.01 Knowledge Base (sprint 2027.1.1): public reads, same
+                // reasoning as the product catalog above — a visitor needs
+                // product knowledge before they buy, signed in or not.
+                .requestMatchers(HttpMethod.GET, "/knowledge-base/**").permitAll()
+                // 01.03 Global Search (sprint 2027.1.3): public for products/
+                // knowledge articles; ticket results are scoped inside the
+                // service itself to whichever customer the caller's own JWT
+                // resolves to (empty for a signed-out caller) — see
+                // GlobalSearchController's own doc.
+                .requestMatchers(HttpMethod.GET, "/search").permitAll()
+                .requestMatchers("/admin/knowledge-base/**").access(permissions.platformPermission("MANAGE_KNOWLEDGE_BASE"))
+                // 12.01 Ticket Management (sprint 2027.1.2): admin ticket actions.
+                // Creating/tracking a customer's own tickets is covered by the
+                // existing "/me/**" rule below.
+                .requestMatchers("/admin/support/**").access(permissions.platformPermission("MANAGE_SUPPORT_TICKETS"))
+                // 03.04 Reviews & Ratings (sprint 2027.1.3): moderating reviews.
+                // Public GET /products/{id}/reviews is covered by the existing
+                // GET /products/** permitAll rule above; submitting/reading the
+                // caller's own review is covered by the existing /me/** rule.
+                .requestMatchers("/admin/reviews/**").access(permissions.platformPermission("MANAGE_REVIEWS"))
+                // 14.01 Provider Onboarding (sprint 2027.2.1): a prospective
+                // partner applies before it has any Vyoog identity — same
+                // reasoning as /register/** above, so it's public, not
+                // /me/**. Verify/approve/activate/reject and contract
+                // management are platform-admin-only.
+                .requestMatchers(HttpMethod.POST, "/partners/apply").permitAll()
+                .requestMatchers("/admin/partners/**").access(permissions.platformPermission("MANAGE_PARTNERS"))
                 // Platform-admin-only registration/provisioning actions — requires the
                 // MANAGE_REGISTRATIONS permission (same "ADMIN" JWT authority qualifies
                 // today, see RbacSeeder, but this is now a distinct, separately
                 // revocable permission from MANAGE_CATALOG above).
                 .requestMatchers("/admin/registrations/**").access(permissions.platformPermission("MANAGE_REGISTRATIONS"))
+                // C26 (REQ-PRT-001): posting product status and incidents.
+                .requestMatchers("/admin/service-status/**").access(permissions.platformPermission("MANAGE_SERVICE_STATUS"))
+                // 15.01 Platform Administration (sprint 2026.4.2): currencies, regions, feature flags.
+                .requestMatchers("/admin/platform-settings/**").access(permissions.platformPermission("MANAGE_PLATFORM_SETTINGS"))
                 // Phase 6 (PAM): approving/rejecting/revoking PLATFORM-scope
                 // privileged-access requests — its own permission, distinct
                 // from both MANAGE_CATALOG and MANAGE_REGISTRATIONS, since

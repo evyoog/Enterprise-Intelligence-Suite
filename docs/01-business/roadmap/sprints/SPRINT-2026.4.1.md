@@ -16,8 +16,46 @@
 | Application ID | Code | Application | Roadmap item | Source |
 |---|---|---|---|---|
 | 02 | `APP-CAT` | [Product & Catalog Management](../applications/02-product-catalog-management.md) | (whole application) | [PO] "eVyoog EIS - Roadmap Initiatives" |
+| 05 | `APP-TEN` | [Customer / Tenant Management](../applications/05-customer-tenant-management.md) | (whole application, except 05.01 Organization Management — built early in 2026.3.3, [C25](../open-decisions.md#c25)) | [C31](../open-decisions.md#c31): pulled forward from 2026.4.2 |
 
 > **Commitment ([DN-2](../open-decisions.md#dn-2-sprint-scope-length-and-dates)):** this sprint commits the P0 (MVP) capabilities of its applications and treats P1 capabilities as stretch scope. Anything not finished is recorded as carry-over on the next sprint page.
+
+## Changes and decisions in this sprint
+
+| Change | Decision and scope | FRD | Requirement |
+|---|---|---|---|
+| Sequence correction | [C31](../open-decisions.md#c31) Adopts the corrected sprint sequence: 05 Tenant pulled into this sprint (from 2026.4.2) | - | - |
+| Decided | [C32](../open-decisions.md#c32) Product Lifecycle & Structure: version counter, Publish/Retire actions and the new RETIRED status, hierarchy/variant/dependency fields | [product-lifecycle](../../../02-requirements/FRD/product-lifecycle/requirement.md) | REQ-CAT-001 |
+| Decided | [C33](../open-decisions.md#c33) Plan Management: currency, usage limit, included features, usage price, overage charge, tier-pricing text — data fields only, no billing engine | [plan-management](../../../02-requirements/FRD/plan-management/requirement.md) | REQ-CAT-002 |
+| Decided | [C34](../open-decisions.md#c34) Member Lifecycle: Suspend/Reactivate/Remove and Review access; Invite/Create user carried to 2026.4.2 | [member-lifecycle](../../../02-requirements/FRD/member-lifecycle/requirement.md) | REQ-TEN-002 |
+| Decided | [C35](../open-decisions.md#c35) Groups: create/add/remove member; Projects (05.04.02) carried to 2026.4.2 | [group-management](../../../02-requirements/FRD/group-management/requirement.md) | REQ-TEN-003 |
+
+### FRDs in this sprint
+
+| FRD | Requirement | Functions | Status |
+|---|---|---|---|
+| [product-lifecycle](../../../02-requirements/FRD/product-lifecycle/requirement.md) | REQ-CAT-001 | 02.01.01.03–.05, 02.01.02 | Approved |
+| [plan-management](../../../02-requirements/FRD/plan-management/requirement.md) | REQ-CAT-002 | 02.03.01.03–.04, 02.03.02.02–.04 | Approved |
+| [member-lifecycle](../../../02-requirements/FRD/member-lifecycle/requirement.md) | REQ-TEN-002 | 05.03.01.03–.05, 05.03.02.03 | Approved |
+| [group-management](../../../02-requirements/FRD/group-management/requirement.md) | REQ-TEN-003 | 05.04.01 | Approved |
+
+### Progress (as of 2026-09-26, first week of the sprint)
+
+| Feature | Status | Note |
+|---|---|---|
+| 02.01.01 Product Lifecycle | Done (this FRD's scope) | Version, Publish, Retire built; Create/Update product were already built |
+| 02.01.02 Product Structure | Done | Hierarchy, variants, dependencies built |
+| 02.02 Offering Management | Not started | Needs its own FRD — no decision recorded yet |
+| 02.03 Plan Management | Done (this FRD's scope) | Currency, usage limit, included features, usage price, overage charge, tier-pricing text built; Create plan/billing frequency/subscription price were already built |
+| 02.04 Product Content | Not started | Needs its own FRD |
+| 02.05 Localization | Not started | Needs its own FRD |
+| 05.02 Tenant Lifecycle | Not started | Needs its own FRD (what "tenant" means beyond Organization is undecided) |
+| 05.03.01 User Lifecycle | Partly done | Suspend/Reactivate/Remove built; Invite/Create user carried to 2026.4.2 (C34) |
+| 05.03.02 Role Assignment | Done | Assign role and Assign group were already built/built this sprint; Review access built this sprint |
+| 05.04.01 Groups | Done | Create/add/remove member built |
+| 05.04.02 Projects | Not started | Carried to 2026.4.2 (C35) |
+
+The rest of 02 (Offering, Content, Localization) and 05.02 Tenant Lifecycle remain open for this sprint; continuing them needs the same FRD-first process as above.
 
 ## EIS 02 Product & Catalog Management
 
@@ -52,12 +90,45 @@ Full breakdown with APIs, services, entities and events: [applications/02-produc
 
 ### Related code already in this repository
 
-Observed on branch `dev`, module level only: `backend/…/modules/product`, `backend/…/modules/platform`; `frontend/src/pages/ProductsPage.tsx`, `frontend/src/pages/admin/AdminProductsPage.tsx`, `frontend/src/pages/admin/EditProductPage.tsx`, `frontend/src/pages/admin/PlatformsListPage.tsx`, `frontend/src/pages/admin/EditPlatformPage.tsx`.
+Observed on branch `dev`, module level only: `backend/…/modules/product` (now with version/hierarchy/dependency fields and Publish/Retire, [product-lifecycle](../../../02-requirements/FRD/product-lifecycle/requirement.md); plan pricing fields, [plan-management](../../../02-requirements/FRD/plan-management/requirement.md)), `backend/…/modules/platform`; `frontend/src/pages/ProductsPage.tsx`, `frontend/src/pages/admin/AdminProductsPage.tsx`, `frontend/src/pages/admin/EditProductPage.tsx` (now with version/status/publish/retire), `frontend/src/pages/admin/PlatformsListPage.tsx`, `frontend/src/pages/admin/EditPlatformPage.tsx`, `frontend/src/components/admin/ProductForm.tsx` (now with structure and pricing fields).
+
+## EIS 05 Customer / Tenant Management
+
+**Planned work ([PO] / [WB] description):** Organizations, tenants, users and projects — this sprint covers everything except 05.01 Organization Management (built early in 2026.3.3, [C25](../open-decisions.md#c25)).
+
+Full breakdown: [applications/05-customer-tenant-management.md](../applications/05-customer-tenant-management.md).
+
+### Capabilities, features and requirement candidates
+
+| Capability | Feature | Functions (requirement candidates from [WB:Functions]) | Priority | Commitment |
+|---|---|---|---|---|
+| [05.02 Tenant Management](../applications/05-customer-tenant-management.md#0502-tenant-management) | 05.02.01 Tenant Lifecycle | Create tenant; Configure tenant; Assign region; Configure isolation; Configure tenant policies | P0 | Commit (not started — needs its own FRD) |
+| [05.03 User Management](../applications/05-customer-tenant-management.md#0503-user-management) | 05.03.01 User Lifecycle | Invite user; Create user; Activate user; Suspend user; Remove user | P0 | Partly (Activate/Suspend/Remove built; Invite/Create user carried to 2026.4.2, [C34](../open-decisions.md#c34)) |
+| [05.03 User Management](../applications/05-customer-tenant-management.md#0503-user-management) | 05.03.02 Role Assignment | Assign role; Assign group; Review access | P0 | Commit (built) |
+| [05.04 Group & Project Management](../applications/05-customer-tenant-management.md#0504-group--project-management) | 05.04.01 Groups | Create group; Add member; Remove member | P0 | Commit (built) |
+| [05.04 Group & Project Management](../applications/05-customer-tenant-management.md#0504-group--project-management) | 05.04.02 Projects | Create project; Assign users; Assign resources | P0 | Carried to 2026.4.2 ([C35](../open-decisions.md#c35)) |
+
+### Dependencies
+
+- **Stated:** Not specified.
+- **Implied by [WB]** (confirm before planning):
+  - UJ-004 Tenant Onboarding (Identity, Tenant, IAM) — application 06
+  - EVT-002 TenantCreated consumed by Provisioning and Audit — applications 09, 15
+
+### Expected deliverables
+
+- The P0 capabilities above, except where noted as carried ([DN-2](../open-decisions.md#dn-2-sprint-scope-length-and-dates)).
+
+### Related code already in this repository
+
+`backend/…/modules/registration` (organization, members — now with `SUSPENDED` status, review-access columns, and the new group/group-member entities and endpoints); `frontend/src/components/organization/OrganizationMembersCard.tsx` (now with suspend/reactivate/remove/review actions), `frontend/src/components/organization/OrganizationGroupsCard.tsx` (new).
 
 ## Decisions affecting this sprint
 
 - [C3](../open-decisions.md#c3) The [PO] sprint order is authoritative; the MVP is complete at the end of sprint 2027.1.3.
 - [C4](../open-decisions.md#c4), [C5](../open-decisions.md#c5), [C6](../open-decisions.md#c6) MVP, priority and phase as shown above.
+- [C31](../open-decisions.md#c31) Corrected sprint sequence: 05 Tenant pulled into this sprint.
+- [C32](../open-decisions.md#c32), [C33](../open-decisions.md#c33), [C34](../open-decisions.md#c34), [C35](../open-decisions.md#c35): see the FRDs above.
 - Sprint goal, team, capacity and status are Not specified.
 
 Details: [open-decisions.md](../open-decisions.md).

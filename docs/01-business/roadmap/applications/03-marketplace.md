@@ -8,7 +8,7 @@
 | Description | Discovery, evaluation, comparison and checkout ([PO] Table 1, [WB:Application Summary]) |
 | Product | EIS (PaaS) |
 | PI – CY Quarter | 2027.1 ([PO] "eVyoog EIS - Roadmap Initiatives") |
-| Sprint | [2027.1.3](../sprints/SPRINT-2027.1.3.md) (1–31 Mar 2027, [DN-2](../open-decisions.md#dn-2-sprint-scope-length-and-dates)) |
+| Sprint | Split ([C31](../open-decisions.md#c31)): 03a Discovery & checkout in [2027.1.2](../sprints/SPRINT-2027.1.2.md) (1–28 Feb 2027); 03b Trials & reviews in [2027.1.3](../sprints/SPRINT-2027.1.3.md) (1–31 Mar 2027) |
 | Capabilities / features / functions | 4 / 7 / 27 ([WB]) |
 | Application status | Not specified |
 
@@ -139,5 +139,12 @@ Not specified in any source. Under [DN-2](../open-decisions.md#dn-2-sprint-scope
 | Feature FRD | `docs/02-requirements/FRD/<feature>/` (copy `_template/`) | See the sprint page for FRDs in progress |
 | Requirement | `REQ-MKT-<NNN>` inside the FRD | Approved FRD required before build ([DN-4](../open-decisions.md#dn-4-business-rules-and-acceptance-criteria)) |
 | Business rules | `docs/03-business-rules/` and `FRD/<feature>/business-rules.md` | Per FRD |
-| Test cases | `test-cases/functional/<feature>/TC-MKT-<NNN>.md` | Not created |
+| Test cases | `test-cases/functional/product-recommendations/TC-MKT-001..004.md`, `test-cases/functional/product-reviews/TC-MKT-005..010.md` | Created ([REQ-MKT-001](../../../02-requirements/FRD/product-recommendations/requirement.md) sprint 2027.1.2, [REQ-MKT-002](../../../02-requirements/FRD/product-reviews/requirement.md) sprint 2027.1.3) |
 | NFRs | [WB:Non-Functional Requirements] NFR-001 to NFR-014 (platform-wide) | See [EIS-document-analysis.md](../EIS-document-analysis.md) section 2.17 |
+
+## Related code already in this repository
+
+Observed on branch `dev`. This is a module-level mapping, not a verified function-by-function implementation status.
+
+- Backend: `backend/src/main/java/com/vyoog/eisplatform/modules/product (Product#featured)`, `backend/src/main/java/com/vyoog/eisplatform/modules/dashboard (RecommendationService, RecommendationController — 03.01.02 only)`, `backend/src/main/java/com/vyoog/eisplatform/modules/reviews` (ProductReview, ProductReviewService — 03.04.01 only)
+- Frontend: `frontend/src/pages/MyProductsPage.tsx` (recommendations widget), `frontend/src/components/admin/ProductForm.tsx` (featured toggle), `frontend/src/pages/ProductDetailPage.tsx`, `frontend/src/pages/admin/AdminReviewsPage.tsx`

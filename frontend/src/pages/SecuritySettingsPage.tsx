@@ -7,7 +7,6 @@ import {
 import { ApiError } from '../api/client'
 import { mfaApi, type MfaStatus } from '../api/mfaApi'
 import { sessionsApi, type SessionInfo } from '../api/sessionsApi'
-import { SiteNavbar } from '../components/layout/SiteNavbar'
 import { PageHeader } from '../components/layout/PageHeader'
 import { PrivilegedAccessRequestsCard } from '../components/security/PrivilegedAccessRequestsCard'
 
@@ -141,9 +140,8 @@ export function SecuritySettingsPage() {
   }
 
   return (
-    <Box sx={{ minHeight: '100vh', bgcolor: 'background.default' }}>
-      <SiteNavbar />
-      <Container component="main" id="main-content" maxWidth="sm" sx={{ pt: '112px', pb: 8 }}>
+    <Box>
+      <Container maxWidth="sm" disableGutters sx={{ pb: 4 }}>
         <PageHeader title={t('security.title')} subtitle={t('security.subtitle')} />
 
         {loadError && <Alert severity="error">{loadError}</Alert>}

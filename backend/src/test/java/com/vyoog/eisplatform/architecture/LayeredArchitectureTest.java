@@ -45,9 +45,25 @@ class LayeredArchitectureTest {
         // - ..modules.dashboard.. (Phase 16) reuses ProductRepository the same
         //   way, only to confirm a product id is real before favoriting/
         //   recording a launch against it — not a duplicate catalog either.
+        // - ..modules.servicestatus.. (REQ-PRT-001, 2026-09-26) reads the same
+        //   catalog to list the products whose status is posted — again no
+        //   duplicate catalog.
+        // - ..modules.administration.. (15.01 Platform Administration, sprint
+        //   2026.4.2) seeds PlatformCurrency rows from the existing Currency
+        //   enum (PlatformAdministrationSeeder) — reusing the fixed currency
+        //   set, not defining a second one.
+        // - ..modules.search.. (01.03 Global Search, sprint 2027.1.3) reads
+        //   the same catalog to include products in a unified search result
+        //   — again no duplicate catalog, just another read path alongside
+        //   the storefront's own.
+        // - ..modules.reviews.. (03.04 Reviews & Ratings, sprint 2027.1.3)
+        //   reads the same catalog to resolve a product's name for its
+        //   review DTOs and to confirm a product exists before a review can
+        //   be submitted against it — again no duplicate catalog.
         ArchRule rule = classes().that().resideInAPackage("..modules.product..")
             .should().onlyHaveDependentClassesThat().resideInAnyPackage(
                 "..modules.product..", "..modules.platform..", "..modules.registration..", "..modules.dashboard..",
+                "..modules.servicestatus..", "..modules.administration..", "..modules.search..", "..modules.reviews..",
                 "com.vyoog.eisplatform", "..config.."
             );
 

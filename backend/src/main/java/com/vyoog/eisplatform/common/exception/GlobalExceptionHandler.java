@@ -77,6 +77,16 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(body);
     }
 
+    /** C29: the organization requires MFA and this member has no authenticator
+     * yet — the frontend sets one up with {@code mfaEnrollmentChallengeId}. */
+    @ExceptionHandler(PlatformMfaEnrollmentRequiredException.class)
+    public ResponseEntity<Map<String, Object>> handlePlatformMfaEnrollment(PlatformMfaEnrollmentRequiredException ex) {
+        Map<String, Object> body = body(HttpStatus.UNAUTHORIZED, ex.getMessage());
+        body.put("platformMfaEnrollmentRequired", true);
+        body.put("mfaEnrollmentChallengeId", ex.getChallengeId());
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(body);
+    }
+
     @ExceptionHandler(IllegalArgumentException.class)
     public ResponseEntity<Map<String, Object>> handleBadInput(IllegalArgumentException ex) {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(body(HttpStatus.BAD_REQUEST, ex.getMessage()));

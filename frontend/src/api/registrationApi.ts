@@ -9,7 +9,7 @@ export type RegistrationStatus =
   | 'CANCELLED'
   | 'EXPIRED'
 
-export type SubscriptionStatus = 'PENDING_SUBSCRIPTION' | 'ACTIVE' | 'CANCELLED' | 'EXPIRED'
+export type SubscriptionStatus = 'PENDING_SUBSCRIPTION' | 'ACTIVE' | 'SUSPENDED' | 'CANCELLED' | 'EXPIRED'
 
 // Only `name`, `businessEmail`, `gstin`, `phone`, and `firstAdmin.{email,
 // password,confirmPassword}` are ever actually collected by the real
@@ -86,6 +86,9 @@ export interface Subscription {
   status: SubscriptionStatus
   startedAt?: string
   expiresAt?: string
+  /** 07.01.02 Change plan (sprint 2026.4.3) — null means the product's flat price. */
+  planId?: number
+  planName?: string
 }
 
 export interface OrgMember {
@@ -95,8 +98,13 @@ export interface OrgMember {
   lastName?: string
   email?: string
   orgRole: 'ORG_ADMIN' | 'MEMBER'
-  status: 'ACTIVE' | 'INACTIVE'
+  status: 'ACTIVE' | 'SUSPENDED' | 'INACTIVE'
+  /** 05.03.02 Review access (sprint 2026.4.1) — set once an admin has confirmed
+   * this member's role and access, undefined if never reviewed. */
+  lastReviewedAt?: string
 }
+
+export type MemberStatusAction = 'SUSPEND' | 'REACTIVATE' | 'REMOVE'
 
 export interface Organization {
   id: number
@@ -138,6 +146,18 @@ export const myProductsApi = {
   listSubscriptions: () => apiRequest<Subscription[]>('/me/subscriptions'),
   subscribe: (productId: number) =>
     apiRequest<Subscription>('/me/subscriptions', { method: 'POST', body: JSON.stringify({ productId }) }),
+  // 07.01.01 Suspend/Reactivate/Cancel, 07.04.01 Renew (sprint 2026.4.3).
+  suspend: (subscriptionId: number) =>
+    apiRequest<Subscription>(`/me/subscriptions/${subscriptionId}/suspend`, { method: 'POST' }),
+  reactivate: (subscriptionId: number) =>
+    apiRequest<Subscription>(`/me/subscriptions/${subscriptionId}/reactivate`, { method: 'POST' }),
+  cancel: (subscriptionId: number) =>
+    apiRequest<Subscription>(`/me/subscriptions/${subscriptionId}/cancel`, { method: 'POST' }),
+  renew: (subscriptionId: number) =>
+    apiRequest<Subscription>(`/me/subscriptions/${subscriptionId}/renew`, { method: 'POST' }),
+  // 07.01.02 Change plan (sprint 2026.4.3) — null planId clears the plan.
+  changePlan: (subscriptionId: number, planId: number | null) =>
+    apiRequest<Subscription>(`/me/subscriptions/${subscriptionId}/plan`, { method: 'PATCH', body: JSON.stringify({ planId }) }),
 }
 
 // Authenticated — always scoped to the caller's own organization on the backend.
@@ -150,6 +170,15 @@ export const organizationApi = {
   // REQ-IAM-002 — requires MANAGE_USERS on the target member (enforced server-side).
   changeMemberRole: (memberId: number, orgRole: OrgMember['orgRole']) =>
     apiRequest<OrgMember>(`/organization/me/members/${memberId}/role`, { method: 'PATCH', body: JSON.stringify({ orgRole }) }),
+  // C30: reset a member's two-factor authentication (MANAGE_USERS, same organization).
+  resetMemberMfa: (memberId: number) =>
+    apiRequest<undefined>(`/organization/me/members/${memberId}/mfa/reset`, { method: 'POST' }),
+  // 05.03.01 User Lifecycle (sprint 2026.4.1) — suspend/reactivate/remove.
+  changeMemberStatus: (memberId: number, action: MemberStatusAction) =>
+    apiRequest<OrgMember>(`/organization/me/members/${memberId}/status`, { method: 'PATCH', body: JSON.stringify({ action }) }),
+  // 05.03.02 Review access (sprint 2026.4.1).
+  reviewMemberAccess: (memberId: number) =>
+    apiRequest<OrgMember>(`/organization/me/members/${memberId}/access-review`, { method: 'POST' }),
   listMyOrgProducts: () => apiRequest<OrgProductAccess[]>('/organization/me/products'),
   listMyOrgSubscription: () => apiRequest<Subscription[]>('/organization/me/subscription'),
 }

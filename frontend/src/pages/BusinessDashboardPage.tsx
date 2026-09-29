@@ -4,12 +4,12 @@ import {
   Alert, Box, Button, Chip, CircularProgress, Container, Grid, LinearProgress,
   Paper, Table, TableBody, TableCell, TableHead, TableRow, Typography,
 } from '@mui/material'
-import { useNavigate } from 'react-router-dom'
+import { Link as RouterLink, useNavigate } from 'react-router-dom'
 import { ApiError } from '../api/client'
 import { businessDashboardApi, type BusinessDashboard } from '../api/businessDashboardApi'
-import { SiteNavbar } from '../components/layout/SiteNavbar'
 import { PageHeader } from '../components/layout/PageHeader'
 import { OrganizationMfaPolicyCard } from '../components/organization/OrganizationMfaPolicyCard'
+import { OrganizationGroupsCard } from '../components/organization/OrganizationGroupsCard'
 import { OrganizationMembersCard } from '../components/organization/OrganizationMembersCard'
 import { OrganizationPrivilegedAccessCard } from '../components/organization/OrganizationPrivilegedAccessCard'
 import { useLocalePreference } from '../theming/LocalePreferenceProvider'
@@ -68,9 +68,8 @@ export function BusinessDashboardPage() {
   }, [navigate])
 
   return (
-    <Box sx={{ minHeight: '100vh', bgcolor: 'background.default' }}>
-      <SiteNavbar />
-      <Container component="main" id="main-content" maxWidth="lg" sx={{ pt: '112px', pb: 8 }}>
+    <Box>
+      <Container maxWidth="lg" disableGutters sx={{ pb: 4 }}>
         {error && <Alert severity="error">{error}</Alert>}
 
         {!error && !dashboard && (
@@ -176,6 +175,10 @@ export function BusinessDashboardPage() {
                     sx={{ mb: 1 }}
                   />
                   <Typography variant="body2" sx={{ color: 'text.secondary' }}>{dashboard.serviceHealth.note}</Typography>
+                  {/* REQ-PRT-001 (C26): per-product status and incidents. */}
+                  <Button component={RouterLink} to="/status" size="small" sx={{ mt: 1, px: 0 }}>
+                    {t('serviceStatus.link')}
+                  </Button>
                 </Paper>
               </Grid>
               <Grid size={{ xs: 12, sm: 6 }}>
@@ -198,6 +201,7 @@ export function BusinessDashboardPage() {
             <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
               <OrganizationMfaPolicyCard />
               <OrganizationMembersCard />
+              <OrganizationGroupsCard />
               <OrganizationPrivilegedAccessCard />
             </Box>
           </>

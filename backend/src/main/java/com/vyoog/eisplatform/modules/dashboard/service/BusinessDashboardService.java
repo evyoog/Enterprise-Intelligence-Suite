@@ -23,6 +23,8 @@ import com.vyoog.eisplatform.modules.registration.service.OrganizationSelfServic
 import com.vyoog.eisplatform.modules.registration.service.SubscriptionService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.boot.actuate.health.HealthEndpoint;
+import com.vyoog.eisplatform.modules.servicestatus.model.ServiceStatusValue;
+import com.vyoog.eisplatform.modules.servicestatus.service.ServiceStatusService;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -68,6 +70,7 @@ public class BusinessDashboardService {
     private final ProductUsageRepository usageRepository;
     private final ProductRepository productRepository;
     private final HealthEndpoint healthEndpoint;
+    private final ServiceStatusService serviceStatusService;
 
     private record UsageKey(Long customerId, Long productId) {
     }
@@ -141,10 +144,10 @@ public class BusinessDashboardService {
 
         ServiceHealthDto serviceHealth = new ServiceHealthDto(
             healthEndpoint.health().getStatus().getCode(),
-            "This reflects the Vyoog platform's own service status only, checked live right now. Individual "
-                + "product health/uptime monitoring is not implemented yet, and there is no incident-tracking "
-                + "or status-page history in this system yet — this is a current snapshot, not a record of "
-                + "past incidents."
+            // REQ-PRT-001 (C26): per-product status and incidents are posted
+            // by the platform team on the service status page.
+            "This reflects the Vyoog platform's own service status, checked live right now. Per-product status "
+                + "and incidents are posted by the platform team on the service status page."
         );
 
         SupportOverviewDto support = new SupportOverviewDto(
@@ -154,8 +157,23 @@ public class BusinessDashboardService {
         );
 
         List<DashboardAlertDto> alerts = buildAlerts(organization, applications);
+        alerts.addAll(serviceStatusAlerts(customerId));
 
         return new BusinessDashboardDto(organization, applications, seatUsage, billing, serviceHealth, support, alerts);
+    }
+
+    /** REQ-PRT-001 (C26): one alert per purchased product that is not fully
+     * operational or has an open incident. */
+    private List<DashboardAlertDto> serviceStatusAlerts(Long customerId) {
+        List<DashboardAlertDto> alerts = new ArrayList<>();
+        for (var product : serviceStatusService.affectedPurchasedProducts(customerId)) {
+            String state = product.status().name().replace('_', ' ').toLowerCase();
+            String incidents = product.openIncidents() == 0 ? ""
+                : " " + product.openIncidents() + " open incident" + (product.openIncidents() == 1 ? "" : "s") + ".";
+            alerts.add(new DashboardAlertDto("SERVICE_STATUS", product.status() == ServiceStatusValue.MAJOR_OUTAGE ? "error" : "warning",
+                product.productName() + " is " + state + "." + incidents + " See the service status page."));
+        }
+        return alerts;
     }
 
     private List<DashboardAlertDto> buildAlerts(OrganizationDto organization, List<BusinessApplicationDto> applications) {

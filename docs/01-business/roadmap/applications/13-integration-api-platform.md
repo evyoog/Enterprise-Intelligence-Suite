@@ -8,7 +8,7 @@
 | Description | APIs, connectors, events and webhooks ([PO] Table 1, [WB:Application Summary]) |
 | Product | EIS (PaaS) |
 | PI – CY Quarter | 2027.1 ([PO] "eVyoog EIS - Roadmap Initiatives") |
-| Sprint | [2027.1.1](../sprints/SPRINT-2027.1.1.md) (1–31 Jan 2027, [DN-2](../open-decisions.md#dn-2-sprint-scope-length-and-dates)) |
+| Sprint | Split ([C31](../open-decisions.md#c31)): 13a Gateway & events (API Management, Event Platform) in [2026.4.2](../sprints/SPRINT-2026.4.2.md) (1–30 Nov 2026); 13b Connectors (Integration Hub, Webhooks) in [2027.1.1](../sprints/SPRINT-2027.1.1.md) (1–31 Jan 2027) |
 | Capabilities / features / functions | 4 / 6 / 25 ([WB]) |
 | Application status | Not specified |
 

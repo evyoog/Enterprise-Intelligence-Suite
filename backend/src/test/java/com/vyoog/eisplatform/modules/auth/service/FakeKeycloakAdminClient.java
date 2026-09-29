@@ -90,7 +90,10 @@ public class FakeKeycloakAdminClient implements KeycloakAdminClient {
         if (createUserShouldFail) {
             return Optional.empty();
         }
-        String id = "fake-kc-user-" + (nextUserId++);
+        // Unique across resets too: the Spring test context (and its H2
+        // database) is shared, so a reused id would give two customers the
+        // same Keycloak sub, which real Keycloak never does.
+        String id = "fake-kc-user-" + (nextUserId++) + "-" + System.nanoTime();
         usersByEmail.put(email.toLowerCase(), id);
         enabledByUserId.put(id, enabled);
         return Optional.of(id);

@@ -1,17 +1,21 @@
 # Workflow — OIDC Identity-Provider Federation
 
-## States
 ```mermaid
-stateDiagram-v2
-    [*] --> Disabled: administrator creates provider
-    Disabled --> Enabled: administrator enables
-    Enabled --> Disabled: administrator disables
-    Disabled --> [*]: administrator deletes
+sequenceDiagram
+  autonumber
+  participant U as Member
+  participant W as EIS web app
+  participant A as Backend
+  participant I as Organization OIDC provider
+  U->>W: organization code
+  W->>A: GET /saml/sso-check (protocol = OIDC)
+  W->>A: GET /oidc/{org}/login-init
+  A->>I: redirect: code flow, PKCE, state, nonce
+  I->>A: GET /oidc/{org}/callback?code&state
+  A->>I: token request (client secret, code verifier)
+  A->>A: verify ID token (JWKS, exp, iss, aud, nonce)
+  A->>A: link / JIT-provision MEMBER, MFA gate (C29)
+  A-->>W: redirect: session, or ?mfaEnroll= / ?mfaChallenge=
 ```
 
-## Transitions
-| From | To | Actor | Condition / rule | Side effects (notifications, audit) |
-|---|---|---|---|---|
-| - | Disabled | Organization administrator | Not specified (to confirm: `MANAGE_ORGANIZATION`) | Not specified (to confirm: audit) |
-| Disabled | Enabled | Organization administrator | Not specified | Not specified |
-| Enabled | Disabled | Organization administrator | Not specified | Not specified |
+Provider states: Disabled ⇄ Enabled. Enabling one disables any other enabled SAML or OIDC provider of the organization.

@@ -48,6 +48,16 @@ public class OrganizationMember implements OrganizationOwnedResource {
 
     private Instant deactivatedAt;
 
+    /** 05.03.02 Review access (sprint 2026.4.1): stamped by
+     * OrganizationSelfService#reviewMemberAccess each time an admin
+     * confirms this member's role and access are still correct. Purely a
+     * record — it does not itself change anything about the member. */
+    @Column(name = "last_reviewed_at")
+    private Instant lastReviewedAt;
+
+    @Column(name = "last_reviewed_by_customer_id")
+    private Long lastReviewedByCustomerId;
+
     @Override
     public Long organizationId() {
         return organizationId;

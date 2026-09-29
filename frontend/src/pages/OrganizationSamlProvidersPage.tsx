@@ -8,8 +8,9 @@ import { Pencil, Trash2 } from 'lucide-react'
 import { ApiError, resolveAssetUrl } from '../api/client'
 import { samlApi, type SamlProvider, type SamlProviderTestResult } from '../api/samlApi'
 import { organizationApi } from '../api/registrationApi'
-import { SiteNavbar } from '../components/layout/SiteNavbar'
 import { PageHeader } from '../components/layout/PageHeader'
+import { OidcProvidersSection } from '../components/federation/OidcProvidersSection'
+import { ClaimMappingDialog } from '../components/federation/ClaimMappingDialog'
 
 /** 'keep' exists only when editing: change the name, leave the connection details as they are. */
 type EntryMode = 'metadata' | 'manual' | 'keep'
@@ -40,6 +41,11 @@ export function OrganizationSamlProvidersPage() {
 
   const [testResults, setTestResults] = useState<Record<number, SamlProviderTestResult>>({})
   const [testingId, setTestingId] = useState<number | null>(null)
+  // REQ-IAM-006: enabling SAML disables an enabled OIDC provider, so the
+  // OIDC section reloads after a SAML toggle (and SAML reloads after an OIDC one).
+  const [oidcRefresh, setOidcRefresh] = useState(0)
+  // REQ-IAM-007: the provider whose claim mapping is being edited.
+  const [mappingFor, setMappingFor] = useState<SamlProvider | null>(null)
 
   const load = () => {
     samlApi.list().then(setProviders).catch((e) => setLoadError(e instanceof ApiError ? e.message : 'Could not load SAML providers.'))
@@ -112,6 +118,7 @@ export function OrganizationSamlProvidersPage() {
       if (provider.enabled) await samlApi.disable(provider.id)
       else await samlApi.enable(provider.id)
       load()
+      setOidcRefresh((k) => k + 1)
     } catch (e) {
       setLoadError(e instanceof ApiError ? e.message : 'Could not update this provider.')
     }
@@ -139,9 +146,8 @@ export function OrganizationSamlProvidersPage() {
   }
 
   return (
-    <Box sx={{ minHeight: '100vh', bgcolor: 'background.default' }}>
-      <SiteNavbar />
-      <Container component="main" id="main-content" maxWidth="md" sx={{ pt: '112px', pb: 8 }}>
+    <Box>
+      <Container maxWidth="md" disableGutters sx={{ pb: 4 }}>
         <PageHeader title="Identity Federation" subtitle="Let your organization's members sign in through your own SAML identity provider" />
 
         {organizationId !== null && (
@@ -195,6 +201,10 @@ export function OrganizationSamlProvidersPage() {
                       onClick={() => startEdit(provider)}
                     >
                       {t('saml.edit')}
+                    </Button>
+                    <Button size="small" variant="text" aria-label={t('claimMapping.openFor', { name: provider.name })}
+                      onClick={() => setMappingFor(provider)}>
+                      {t('claimMapping.open')}
                     </Button>
                   </Box>
                   {testResults[provider.id] && (
@@ -269,6 +279,17 @@ export function OrganizationSamlProvidersPage() {
             </Box>
           </Paper>
         )}
+
+        <ClaimMappingDialog
+          open={mappingFor !== null}
+          providerName={mappingFor?.name ?? ''}
+          protocol="SAML"
+          initial={mappingFor?.claimMapping}
+          onSave={async (mapping) => { await samlApi.updateClaimMapping(mappingFor!.id, mapping); load() }}
+          onClose={() => setMappingFor(null)}
+        />
+
+        <OidcProvidersSection refreshKey={oidcRefresh} onChanged={load} />
       </Container>
     </Box>
   )

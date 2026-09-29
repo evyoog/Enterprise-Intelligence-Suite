@@ -37,6 +37,12 @@ public class OrganizationMemberService {
     public void assertSeatAvailable(Long organizationId) {
         Organization organization = organizationRepository.findById(organizationId)
             .orElseThrow(() -> new ResourceNotFoundException("Organization not found"));
+        // 05.02.01.05 Configure tenant policies (sprint 2026.4.2, carried from
+        // 2026.4.1): a platform-admin-only override, set on the organization
+        // itself — see Organization#allowSeatOverage's own javadoc.
+        if (organization.isAllowSeatOverage()) {
+            return;
+        }
         long activeCount = memberRepository.countByOrganizationIdAndStatus(organizationId, MembershipStatus.ACTIVE);
         if (activeCount >= organization.getLicensedSeats()) {
             throw new SeatLimitExceededException(
@@ -58,13 +64,40 @@ public class OrganizationMemberService {
     }
 
     /** Never deletes the row — flips it INACTIVE and frees the seat, keeping
-     * history and every past product-access assignment for audit purposes. */
+     * history and every past product-access assignment for audit purposes.
+     * One-way: see MembershipStatus's own javadoc. */
     public void removeMember(Long organizationMemberId) {
         OrganizationMember member = memberRepository.findById(organizationMemberId)
             .orElseThrow(() -> new ResourceNotFoundException("Member not found"));
         member.setStatus(MembershipStatus.INACTIVE);
         member.setDeactivatedAt(Instant.now());
         memberRepository.save(member);
+    }
+
+    /** 05.03.01 Suspend user (sprint 2026.4.1): frees the seat like
+     * {@link #removeMember} but is reversible — see {@link #reactivateMember}. */
+    public OrganizationMember suspendMember(Long organizationMemberId) {
+        OrganizationMember member = memberRepository.findById(organizationMemberId)
+            .orElseThrow(() -> new ResourceNotFoundException("Member not found"));
+        member.setStatus(MembershipStatus.SUSPENDED);
+        member.setDeactivatedAt(Instant.now());
+        return memberRepository.save(member);
+    }
+
+    /** 05.03.01 Activate user (sprint 2026.4.1): re-admits a SUSPENDED member,
+     * subject to the same seat limit as adding a brand-new one. Refuses to
+     * reactivate an INACTIVE (removed) member — that path is deliberately
+     * one-way; adding them back is a new {@link #addMember} instead. */
+    public OrganizationMember reactivateMember(Long organizationMemberId) {
+        OrganizationMember member = memberRepository.findById(organizationMemberId)
+            .orElseThrow(() -> new ResourceNotFoundException("Member not found"));
+        if (member.getStatus() == MembershipStatus.INACTIVE) {
+            throw new IllegalArgumentException("A removed member cannot be reactivated.");
+        }
+        assertSeatAvailable(member.getOrganizationId());
+        member.setStatus(MembershipStatus.ACTIVE);
+        member.setDeactivatedAt(null);
+        return memberRepository.save(member);
     }
 
     /**

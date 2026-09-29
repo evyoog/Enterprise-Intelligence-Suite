@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import {
   Box, Chip, CircularProgress, Container, Grid, InputAdornment,
   MenuItem, Select, TextField, Typography,
@@ -9,6 +10,7 @@ import { productsApi, type Product, type ProductSearchResponse } from '../api/pr
 import { searchHistoryApi } from '../api/searchHistoryApi'
 import { useAuth } from '../auth/AuthProvider'
 import { SiteNavbar } from '../components/layout/SiteNavbar'
+import { useInAppShell } from '../components/layout/appShellContext'
 import { ProductTile } from '../components/products/ProductTile'
 import { accentFor, iconFor } from '../utils/accentColor'
 
@@ -38,6 +40,10 @@ function groupByCategory(products: Product[]): Map<string, Product[]> {
  */
 export function ProductsPage() {
   const auth = useAuth()
+  const { t } = useTranslation()
+  // Signed in, this is the tool's catalog view inside the AppShell: no website
+  // header and no marketing copy, just the search and filter controls.
+  const inShell = useInAppShell()
   const [query, setQuery] = useState('')
   const [debouncedQuery, setDebouncedQuery] = useState('')
   const [category, setCategory] = useState<string | null>(null)
@@ -81,17 +87,15 @@ export function ProductsPage() {
   const totalCount = categoryFacets.reduce((sum, f) => sum + f.count, 0)
 
   return (
-    <Box sx={{ minHeight: '100vh', bgcolor: 'background.default' }}>
-      <SiteNavbar />
+    <Box sx={inShell ? undefined : { minHeight: '100vh', bgcolor: 'background.default' }}>
+      {!inShell && <SiteNavbar />}
 
       {/* SiteNavbar is position:fixed at 72px tall (landing.css's .navbar) —
           this banner's own top padding both clears it and gives the banner
           its height, so no separate spacer is needed. */}
       <Box
         sx={{
-          pt: '112px',
-          pb: 6,
-          px: 2,
+          ...(inShell ? { pt: 3, pb: 3, px: 1, borderRadius: 3 } : { pt: '112px', pb: 6, px: 2 }),
           background: `
             radial-gradient(ellipse 70% 140% at 85% 0%, rgba(115, 61, 255, 0.35), transparent 60%),
             radial-gradient(ellipse 60% 120% at 10% 100%, rgba(66, 216, 255, 0.18), transparent 65%),
@@ -101,15 +105,26 @@ export function ProductsPage() {
         }}
       >
         <Container maxWidth="lg">
-          <Typography variant="overline" sx={{ color: '#9da2af', letterSpacing: '.08em' }}>
-            Vyoog Product Catalog
-          </Typography>
-          <Typography variant="h3" sx={{ fontWeight: 800, letterSpacing: '-0.02em', mb: 1 }}>
-            Everything you can launch, in one place.
-          </Typography>
-          <Typography sx={{ color: '#c3c6d4', maxWidth: 560, mb: 3 }}>
-            Browse every Vyoog product your organization can run — sign in once and each one you're connected to opens with no second login.
-          </Typography>
+          {inShell ? (
+            <>
+              <Typography variant="h5" component="h1" sx={{ fontWeight: 700, mb: 0.5 }}>
+                {t('appShell.catalogTitle')}
+              </Typography>
+              <Typography sx={{ color: '#c3c6d4', mb: 2.5 }}>{t('appShell.catalogSubtitle')}</Typography>
+            </>
+          ) : (
+            <>
+              <Typography variant="overline" sx={{ color: '#9da2af', letterSpacing: '.08em' }}>
+                Vyoog Product Catalog
+              </Typography>
+              <Typography variant="h3" sx={{ fontWeight: 800, letterSpacing: '-0.02em', mb: 1 }}>
+                Everything you can launch, in one place.
+              </Typography>
+              <Typography sx={{ color: '#c3c6d4', maxWidth: 560, mb: 3 }}>
+                Browse every Vyoog product your organization can run — sign in once and each one you're connected to opens with no second login.
+              </Typography>
+            </>
+          )}
 
           <Box sx={{ position: 'relative', maxWidth: 480 }}>
             <TextField
@@ -220,7 +235,13 @@ export function ProductsPage() {
         </Container>
       </Box>
 
-      <Container component="main" id="main-content" maxWidth="lg" sx={{ py: 5 }}>
+      <Container
+        component={inShell ? 'div' : 'main'}
+        id={inShell ? undefined : 'main-content'}
+        maxWidth="lg"
+        disableGutters={inShell}
+        sx={{ py: inShell ? 3 : 5 }}
+      >
         {error && <Typography color="error" role="alert">{error}</Typography>}
 
         {!error && products === null && (

@@ -21,6 +21,11 @@ public class ProductDto {
     private String category;
     private ProductStatus status;
     private boolean ssoConnected;
+    private boolean featured;
     private List<PlatformSummaryDto> platforms;
     private List<ProductPlanDto> plans;
+    private Integer version;
+    private Long parentProductId;
+    private String variantLabel;
+    private List<Long> dependsOnProductIds;
 }

@@ -46,4 +46,14 @@ public class MfaLoginChallenge {
 
     @Column(name = "expires_at", nullable = false)
     private Instant expiresAt;
+
+    /** C29: VERIFY (enter a code) or ENROLL (set up an authenticator first). */
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false, length = 10)
+    private MfaChallengeKind kind = MfaChallengeKind.VERIFY;
+
+    /** True when the held tokens came from a token exchange (SAML / OIDC
+     * sign-in), so the session is finalized as an impersonated one. */
+    @Column(nullable = false)
+    private boolean impersonated = false;
 }

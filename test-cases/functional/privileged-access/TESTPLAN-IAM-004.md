@@ -37,6 +37,9 @@ Local and CI: automated tests. Manual checks: dev environment with a local Postg
 | [TC-IAM-032](TC-IAM-032.md) | AC-10 | P0 | Yes |
 | [TC-IAM-033](TC-IAM-033.md) | AC-11 | P0 | Yes |
 | [TC-IAM-034](TC-IAM-034.md) | AC-12 | P0 | Yes |
+| [TC-IAM-042](TC-IAM-042.md) | AC-13 | P0 | Yes |
+| [TC-IAM-043](TC-IAM-043.md) | AC-14 | P0 | Yes |
+| [TC-IAM-044](TC-IAM-044.md) | AC-15 | P0 | Yes |
 
 ## Entry Criteria
 - FRD REQ-IAM-004 Approved (product owner, 2026-09-25).

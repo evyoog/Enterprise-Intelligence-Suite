@@ -38,7 +38,17 @@
     "organizationCode": "Organization code",
     "ssoContinue": "Continue",
     "ssoChecking": "Checking…",
-    "ssoNotAvailable": "Single sign-on isn't set up for that organization code."
+    "ssoNotAvailable": "Single sign-on isn't set up for that organization code.",
+    "enrollSubtitle": "Your organization requires two-factor authentication. Scan the QR code with an authenticator app, then enter the 6-digit code to finish signing in.",
+    "enrollQrAlt": "QR code for your authenticator app",
+    "enrollManualKey": "Can't scan it? Enter this key:",
+    "enrollSubmit": "Verify and sign in",
+    "enrollStartError": "Could not start authenticator set-up. Please sign in again.",
+    "enrollVerifyError": "Could not verify your code. Please try again.",
+    "enrollDone": "Two-factor authentication is set up.",
+    "recoveryCodesHint": "Save these recovery codes somewhere safe. Each one works once if you lose your authenticator. They won't be shown again.",
+    "recoveryCodesLabel": "Recovery codes",
+    "enrollContinue": "I've saved them, continue"
   },
   "theme": {
     "light": "Light",
@@ -137,8 +147,38 @@
       "ORG_ADMIN": "Organization admin",
       "MEMBER": "Member"
     },
+    "statuses": {
+      "ACTIVE": "Active",
+      "SUSPENDED": "Suspended",
+      "INACTIVE": "Removed"
+    },
+    "actions": "Actions",
+    "suspend": "Suspend",
+    "reactivate": "Reactivate",
+    "remove": "Remove",
+    "review": "Review",
+    "reviewedOn": "Reviewed {{date}}",
+    "neverReviewed": "Never reviewed",
+    "statusSaveError": "Could not change this member's status.",
+    "reviewSaveError": "Could not record this review.",
+    "confirmRemove": "Remove {{name}} from this organization? This cannot be undone from here.",
     "approvalsTitle": "Privileged access approvals",
     "noPending": "No pending requests."
+  },
+  "groups": {
+    "title": "Groups",
+    "newGroupName": "New group name",
+    "create": "Create group",
+    "createError": "Could not create this group.",
+    "deleteGroup": "Delete",
+    "deleteError": "Could not delete this group.",
+    "noGroups": "No groups yet.",
+    "noMembers": "No members in this group yet.",
+    "addMember": "Add member",
+    "add": "Add",
+    "addMemberError": "Could not add this member.",
+    "removeMemberError": "Could not remove this member.",
+    "loadError": "Could not load this section."
   },
   "privilegedAccess": {
     "title": "Elevated access",
@@ -165,7 +205,13 @@
     "scope": {
       "PLATFORM": "Platform",
       "ORGANIZATION": "Organization"
-    }
+    },
+    "activeTitle": "Active grants",
+    "noActive": "No active grants.",
+    "requestedBy": "Requested by {{email}}",
+    "unknownRequester": "a platform account",
+    "revokeGrant": "Revoke {{permission}} for {{email}}",
+    "pendingTitle": "Pending requests"
   },
   "adminRbac": {
     "rolesTitle": "Roles",
@@ -274,6 +320,367 @@
       "billingCountry": "Billing country",
       "billingState": "Billing state",
       "billingCity": "Billing city"
+    }
+  },
+  "appShell": {
+    "productName": "EIS Platform",
+    "sidebarLabel": "Application",
+    "userMenu": "Account menu for {{name}}",
+    "rolePlatformAdmin": "Platform administrator",
+    "roleUser": "Signed in",
+    "sections": {
+      "workspace": "Workspace",
+      "organization": "Organization",
+      "administration": "Administration",
+      "account": "Account"
+    },
+    "nav": {
+      "dashboard": "Business dashboard",
+      "myProducts": "My products",
+      "catalog": "Product catalog",
+      "identityFederation": "Identity federation",
+      "platforms": "Platforms",
+      "apps": "All apps",
+      "registrations": "Registrations",
+      "privilegedAccess": "Privileged access",
+      "roles": "Roles",
+      "permissions": "Permissions",
+      "auditLog": "Audit log",
+      "settings": "Settings",
+      "settingsApp": "App",
+      "settingsPlatform": "Products",
+      "settingsCommon": "Common",
+      "security": "Security",
+      "preferences": "Preferences",
+      "serviceStatus": "Service status",
+      "orders": "Orders",
+      "knowledgeBase": "Knowledge base",
+      "support": "Support",
+      "search": "Search",
+      "reviews": "Reviews",
+      "becomeAPartner": "Become a partner",
+      "partners": "Partners"
+    },
+    "catalogTitle": "Product catalog",
+    "catalogSubtitle": "Search and filter the products available on the platform."
+  },
+  "mfaReset": {
+    "column": "Two-factor",
+    "button": "Reset 2FA",
+    "buttonFor": "Reset two-factor authentication for {{name}}",
+    "title": "Reset two-factor authentication for {{name}}?",
+    "titleByEmail": "Reset a user's two-factor authentication",
+    "body": "This removes their authenticator app and recovery codes and signs them out of any sign-in waiting for a code. They are notified, and the reset is recorded in the audit log. If their organization requires two-factor authentication, they set up a new authenticator the next time they sign in.",
+    "email": "User's email address",
+    "cancel": "Cancel",
+    "confirm": "Reset two-factor",
+    "done": "Two-factor authentication was reset for {{name}}.",
+    "error": "Could not reset two-factor authentication.",
+    "openByEmail": "Reset a user's 2FA"
+  },
+  "serviceStatus": {
+    "title": "Service status",
+    "subtitle": "Current status of each Vyoog product, posted by the platform team.",
+    "loadError": "Could not load the service status.",
+    "disabled": "The service status page is turned off.",
+    "productsLabel": "Product status",
+    "product": "Product",
+    "status": "Status",
+    "details": "Details",
+    "updated": "Last updated",
+    "noProducts": "No products yet.",
+    "openIncidents_one": "{{count}} open incident",
+    "openIncidents_other": "{{count}} open incidents",
+    "notPurchased": "Incident details are shown for products your organization has purchased.",
+    "incidentsTitle": "Incidents",
+    "incidentsHint": "Incidents for the products your organization has purchased.",
+    "noIncidents": "No incidents.",
+    "openSince": "Open since {{date}}",
+    "resolvedRange": "{{start}} – {{end}} · resolved",
+    "link": "View service status",
+    "values": {
+      "OPERATIONAL": "Operational",
+      "DEGRADED": "Degraded",
+      "PARTIAL_OUTAGE": "Partial outage",
+      "MAJOR_OUTAGE": "Major outage",
+      "MAINTENANCE": "Maintenance"
+    },
+    "admin": {
+      "title": "Service status",
+      "subtitle": "Post each product's status and its incidents. Customers see them on the service status page.",
+      "disabled": "The customer status page is turned off (app.status-page.enabled). You can still prepare status and incidents here.",
+      "productsTitle": "Product status",
+      "current": "Current",
+      "newStatus": "New status",
+      "note": "Note (optional)",
+      "statusFor": "New status for {{name}}",
+      "noteFor": "Note for {{name}}",
+      "save": "Save",
+      "saveFor": "Save status for {{name}}",
+      "statusSaved": "Status saved.",
+      "saveError": "Could not save.",
+      "newIncident": "Post an incident",
+      "editIncident": "Edit incident",
+      "incidentTitle": "Title",
+      "message": "Message",
+      "start": "Start",
+      "end": "End",
+      "endHint": "Leave empty while the incident is still open.",
+      "postIncident": "Post incident",
+      "saveIncident": "Save incident",
+      "cancelEdit": "Cancel",
+      "incidentPosted": "Incident posted.",
+      "incidentUpdated": "Incident updated.",
+      "edit": "Edit",
+      "editFor": "Edit incident {{title}}",
+      "resolve": "Resolve now",
+      "resolveFor": "Resolve incident {{title}}",
+      "actions": "Actions"
+    }
+  },
+  "oidc": {
+    "title": "OpenID Connect (OIDC)",
+    "subtitle": "Or let members sign in through an OIDC provider such as Azure AD, Okta or Google. Only one SAML or OIDC provider can be enabled at a time.",
+    "add": "Add OIDC provider",
+    "none": "No OIDC providers yet.",
+    "loadError": "Could not load OIDC providers.",
+    "actionError": "Could not complete this action.",
+    "saveError": "Could not save this OIDC provider.",
+    "enabled": "Enabled",
+    "disabled": "Disabled",
+    "clientIdValue": "Client ID: {{id}}",
+    "redirectUriValue": "Redirect URI: {{uri}}",
+    "enable": "Enable",
+    "disable": "Disable",
+    "enableLabel": "Enable {{name}}",
+    "disableLabel": "Disable {{name}}",
+    "test": "Test",
+    "testLabel": "Test {{name}}",
+    "edit": "Edit",
+    "editLabel": "Edit {{name}}",
+    "delete": "Delete",
+    "deleteLabel": "Delete {{name}}",
+    "addTitle": "Add OIDC provider",
+    "editTitle": "Edit OIDC provider",
+    "name": "Name",
+    "issuerUrl": "Issuer (discovery) URL",
+    "issuerHint": "For example https://login.microsoftonline.com/<tenant>/v2.0",
+    "clientId": "Client ID",
+    "clientSecret": "Client secret",
+    "secretHint": "Stored encrypted and never shown again.",
+    "secretKeepHint": "Leave blank to keep the current secret.",
+    "scopes": "Scopes",
+    "scopesHint": "Must include openid.",
+    "save": "Save",
+    "saving": "Saving…",
+    "cancel": "Cancel"
+  },
+  "claimMapping": {
+    "open": "Claim mapping",
+    "openFor": "Claim mapping for {{name}}",
+    "title": "Claim mapping — {{name}}",
+    "bodySaml": "Which SAML attribute supplies each detail. Leave a field blank to use the defaults. A name you set is tried first, then the defaults.",
+    "bodyOidc": "Which ID-token claim supplies each detail. Leave a field blank to use the defaults. A name you set is tried first, then the defaults.",
+    "fields": {
+      "email": "Email",
+      "firstName": "First name",
+      "lastName": "Last name",
+      "displayName": "Display name"
+    },
+    "defaults": "Defaults: {{names}}",
+    "reset": "Reset to defaults",
+    "cancel": "Cancel",
+    "save": "Save",
+    "saveError": "Could not save the claim mapping."
+  },
+  "subscriptions": {
+    "title": "Your subscriptions",
+    "subtitle": "Suspend, reactivate, cancel, renew, or change plan on any subscription you own.",
+    "backToDashboard": "Back to dashboard",
+    "noSubscriptions": "You have no subscriptions yet.",
+    "plan": "Plan",
+    "noPlan": "Flat price (no plan)",
+    "expires": "Expires {{date}}",
+    "neverExpires": "No expiry set",
+    "status": {
+      "PENDING_SUBSCRIPTION": "Pending",
+      "ACTIVE": "Active",
+      "SUSPENDED": "Suspended",
+      "CANCELLED": "Cancelled",
+      "EXPIRED": "Expired"
+    },
+    "actions": {
+      "suspend": "Suspend",
+      "reactivate": "Reactivate",
+      "cancel": "Cancel subscription",
+      "renew": "Renew",
+      "changePlan": "Change plan"
+    },
+    "changePlanDialog": {
+      "title": "Change plan for {{product}}",
+      "planLabel": "Plan",
+      "save": "Save"
+    },
+    "confirmCancel": "This permanently cancels your subscription to {{product}}. Continue?"
+  },
+  "orders": {
+    "title": "Orders",
+    "subtitle": "Request a product for your organization, or review pending requests.",
+    "requestForm": {
+      "title": "Request a product",
+      "product": "Product",
+      "plan": "Plan (optional)",
+      "noPlan": "Flat price (no plan)",
+      "submit": "Submit request"
+    },
+    "myOrders": "My requests",
+    "noOrders": "You have not requested any products yet.",
+    "pending": {
+      "title": "Pending approvals",
+      "none": "No orders are waiting on your decision.",
+      "note": "Note (optional)",
+      "approve": "Approve",
+      "reject": "Reject"
+    },
+    "status": {
+      "SUBMITTED": "Awaiting approval",
+      "APPROVED": "Approved",
+      "REJECTED": "Rejected",
+      "CANCELLED": "Cancelled"
+    },
+    "requestedBy": "Requested by {{name}}",
+    "decidedBy": "Decided by {{name}}",
+    "cancel": "Cancel request"
+  },
+  "knowledgeBase": {
+    "title": "Knowledge base",
+    "subtitle": "Search articles about the products on this platform.",
+    "searchPlaceholder": "Search articles…",
+    "noResults": "No articles match your search.",
+    "back": "Back to knowledge base",
+    "admin": {
+      "title": "Knowledge base articles",
+      "newArticle": "New article",
+      "titleLabel": "Title",
+      "bodyLabel": "Body",
+      "save": "Save",
+      "publish": "Publish",
+      "unpublish": "Unpublish",
+      "delete": "Delete",
+      "status": {
+        "DRAFT": "Draft",
+        "PUBLISHED": "Published"
+      },
+      "version": "v{{version}}"
+    }
+  },
+  "support": {
+    "myTickets": {
+      "title": "Support",
+      "subtitle": "Create a ticket, or check the status of one you already sent.",
+      "newTicket": {
+        "title": "New ticket",
+        "subject": "Subject",
+        "description": "Description",
+        "submit": "Submit ticket"
+      },
+      "list": "Your tickets",
+      "noTickets": "You have not created any tickets yet.",
+      "status": {
+        "OPEN": "Open",
+        "IN_PROGRESS": "In progress",
+        "ESCALATED": "Escalated",
+        "RESOLVED": "Resolved",
+        "CLOSED": "Closed"
+      }
+    },
+    "admin": {
+      "title": "Support tickets",
+      "category": "Category",
+      "priority": "Priority",
+      "assignTo": "Assign to (customer id)",
+      "save": "Save",
+      "escalate": "Escalate",
+      "resolve": "Resolve",
+      "resolutionNote": "Resolution note",
+      "close": "Close",
+      "priorityLevel": {
+        "LOW": "Low",
+        "MEDIUM": "Medium",
+        "HIGH": "High",
+        "URGENT": "Urgent"
+      }
+    }
+  },
+  "search": {
+    "title": "Search",
+    "placeholder": "Search products, knowledge base and your tickets…",
+    "noResults": "Nothing matches your search yet.",
+    "products": "Products",
+    "knowledgeArticles": "Knowledge base",
+    "tickets": "Your tickets",
+    "filterAll": "All"
+  },
+  "reviews": {
+    "title": "Reviews & ratings",
+    "noReviews": "No reviews yet.",
+    "averageOf": "{{average}} out of 5 ({{count}} review{{plural}})",
+    "yourReview": {
+      "title": "Write a review",
+      "rating": "Rating",
+      "comment": "Comment (optional)",
+      "submit": "Submit review",
+      "pendingNotice": "Your review is pending approval and is not yet shown publicly."
+    },
+    "admin": {
+      "title": "Moderate reviews",
+      "approve": "Approve",
+      "reject": "Reject",
+      "status": {
+        "PENDING": "Pending",
+        "APPROVED": "Approved",
+        "REJECTED": "Rejected"
+      }
+    }
+  },
+  "partners": {
+    "apply": {
+      "title": "Become a partner",
+      "subtitle": "Apply to become a provider on the eVyoog platform.",
+      "companyName": "Company name",
+      "contactName": "Contact name",
+      "contactEmail": "Contact email",
+      "description": "Tell us about your company (optional)",
+      "submit": "Submit application",
+      "submitted": "Thanks — your application has been submitted and is now under review.",
+      "reviewNotice": "A platform admin will verify and approve your application before you're activated as a partner.",
+      "error": "Could not submit your application. Please try again."
+    },
+    "admin": {
+      "title": "Partners",
+      "none": "No provider applications yet.",
+      "verify": "Verify",
+      "approve": "Approve",
+      "activate": "Activate",
+      "reject": "Reject",
+      "status": {
+        "REGISTERED": "Registered",
+        "VERIFIED": "Verified",
+        "APPROVED": "Approved",
+        "ACTIVE": "Active",
+        "REJECTED": "Rejected"
+      },
+      "contract": {
+        "title": "Contract",
+        "terms": "Terms",
+        "startDate": "Start date",
+        "endDate": "End date",
+        "save": "Save contract",
+        "status": {
+          "ACTIVE": "Active",
+          "EXPIRED": "Expired"
+        }
+      }
     }
   }
 }

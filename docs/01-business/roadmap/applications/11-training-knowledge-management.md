@@ -8,7 +8,7 @@
 | Description | Documentation, courses, labs and certifications ([PO] Table 1, [WB:Application Summary]) |
 | Product | EIS (PaaS) |
 | PI – CY Quarter | 2027.1 ([PO] "eVyoog EIS - Roadmap Initiatives") |
-| Sprint | [2027.1.3](../sprints/SPRINT-2027.1.3.md) (1–31 Mar 2027, [DN-2](../open-decisions.md#dn-2-sprint-scope-length-and-dates)) |
+| Sprint | Split ([C31](../open-decisions.md#c31)): 11a Knowledge base in [2027.1.1](../sprints/SPRINT-2027.1.1.md) (1–31 Jan 2027); 11b Learning & certification in [2027.1.3](../sprints/SPRINT-2027.1.3.md) (1–31 Mar 2027) |
 | Capabilities / features / functions | 4 / 7 / 26 ([WB]) |
 | Application status | Not specified |
 
@@ -138,5 +138,12 @@ Not specified in any source. Under [DN-2](../open-decisions.md#dn-2-sprint-scope
 | Feature FRD | `docs/02-requirements/FRD/<feature>/` (copy `_template/`) | See the sprint page for FRDs in progress |
 | Requirement | `REQ-KNW-<NNN>` inside the FRD | Approved FRD required before build ([DN-4](../open-decisions.md#dn-4-business-rules-and-acceptance-criteria)) |
 | Business rules | `docs/03-business-rules/` and `FRD/<feature>/business-rules.md` | Per FRD |
-| Test cases | `test-cases/functional/<feature>/TC-KNW-<NNN>.md` | Not created |
+| Test cases | `test-cases/functional/knowledge-base/TC-KNW-001..006.md` | Created ([REQ-KNW-001](../../../02-requirements/FRD/knowledge-base/requirement.md), sprint 2027.1.1, 11.01.01 only) |
 | NFRs | [WB:Non-Functional Requirements] NFR-001 to NFR-014 (platform-wide) | See [EIS-document-analysis.md](../EIS-document-analysis.md) section 2.17 |
+
+## Related code already in this repository
+
+Observed on branch `dev`. This is a module-level mapping, not a verified function-by-function implementation status.
+
+- Backend: `backend/src/main/java/com/vyoog/eisplatform/modules/knowledgebase (KnowledgeArticle, KnowledgeArticleService, KnowledgeArticleController, AdminKnowledgeArticleController — 11.01.01 only, no AI indexing)`
+- Frontend: `frontend/src/pages/KnowledgeBasePage.tsx`, `frontend/src/pages/admin/AdminKnowledgeBasePage.tsx`

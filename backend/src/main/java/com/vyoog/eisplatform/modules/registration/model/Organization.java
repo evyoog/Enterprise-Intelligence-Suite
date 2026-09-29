@@ -114,6 +114,24 @@ public class Organization {
     @Column(name = "lifecycle_status", nullable = false, length = 20)
     private OrganizationLifecycleStatus lifecycleStatus = OrganizationLifecycleStatus.ACTIVE;
 
+    /** 05.02.01.03 Assign region (sprint 2026.4.2, carried from 2026.4.1) —
+     * a plain nullable id into the administration module's PlatformRegion
+     * table (no JPA relationship or cross-module entity reference, same
+     * reasoning as {@link #parentOrganizationId}: nothing here needs to load
+     * a region's full row, just check it exists — see
+     * AdminRegistrationService#updateOrganization). Platform-admin-managed
+     * only, same as the rest of 05.02. */
+    @Column(name = "region_id")
+    private Long regionId;
+
+    /** 05.02.01.05 Configure tenant policies (sprint 2026.4.2, carried from
+     * 2026.4.1): when true, {@link com.vyoog.eisplatform.modules.registration.service.OrganizationMemberService#assertSeatAvailable}
+     * never blocks adding a member to this organization, regardless of
+     * {@link #licensedSeats}. Platform-admin-managed only — an org cannot
+     * grant itself unlimited seats. */
+    @Column(name = "allow_seat_overage", nullable = false)
+    private boolean allowSeatOverage = false;
+
     @CreatedDate
     @Column(updatable = false)
     private Instant createdAt;

@@ -15,6 +15,7 @@ const CATEGORY_LABELS: Record<NotificationCategory, string> = {
   ORGANIZATION: 'Organization',
   PRIVILEGED_ACCESS: 'Privileged access',
   SYSTEM: 'System',
+  ORDER: 'Orders',
 }
 const ALL_CATEGORIES = Object.keys(CATEGORY_LABELS) as NotificationCategory[]
 

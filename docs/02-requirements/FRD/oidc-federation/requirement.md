@@ -12,7 +12,7 @@
 | Application | [06 Identity & Access Management](../../../01-business/roadmap/applications/06-identity-access-management.md) |
 | Application code | `APP-IAM` ([DN-5](../../../01-business/roadmap/open-decisions.md#dn-5-application-codes)) |
 | Priority | P0: the application is MVP scope ([C4](../../../01-business/roadmap/open-decisions.md#c4), [C5](../../../01-business/roadmap/open-decisions.md#c5)) |
-| AI required | No. This feature makes no use of AI (proposed; confirmed when the FRD is approved, C12) |
+| AI required | No |
 
 ## Source functions
 Workbook functions from the sprint and application pages that this FRD covers:
@@ -46,9 +46,11 @@ Per-organization OpenID Connect (OIDC) identity-provider federation, built in th
 ## Dependencies
 - The existing SAML design in `SamlProviderService`, `SamlAuthenticationService` and `OrganizationSamlProviderController`, which this feature mirrors.
 
-## Open questions
-- Provider fields (for example issuer, client id, client secret, scopes, endpoints or discovery URL): Not specified; [C22](../../../01-business/roadmap/open-decisions.md#c22) says this FRD defines them.
-- Login flow (how an OIDC sign-in starts, the callback, and how it creates a platform session): Not specified.
-- Client-secret encryption: decide whether to reuse the existing TOTP-secret encryption (`TotpSecretCipher`, AES-GCM) ([C22](../../../01-business/roadmap/open-decisions.md#c22)).
-- Whether "at most one enabled provider per organization" (a SAML rule) applies across SAML and OIDC together: Not specified.
-- Endpoint paths: Not specified (proposal in api-requirements.md).
+## Decisions ([C27](../../../01-business/roadmap/open-decisions.md#c27), product owner, 2026-09-26)
+The open questions are resolved:
+- Provider fields: name, issuer (discovery) URL, client ID, client secret, scopes (default `openid email profile`).
+- Login flow: same as SAML — organization code, redirect to the provider, callback creates the normal platform session; new users join as `MEMBER`.
+- Client secret: encrypted with `TotpSecretCipher` (AES-GCM), never returned after saving.
+- At most one enabled provider per organization across SAML and OIDC together.
+- Endpoints: `/organization/me/oidc-providers`, mirroring SAML.
+- The organization MFA policy applies after OIDC sign-in too ([C29](../../../01-business/roadmap/open-decisions.md#c29)).

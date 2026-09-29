@@ -1,5 +1,6 @@
 package com.vyoog.eisplatform.modules.registration.controller;
 
+import com.vyoog.eisplatform.modules.registration.dto.ChangePlanRequest;
 import com.vyoog.eisplatform.modules.registration.dto.MyProductDto;
 import com.vyoog.eisplatform.modules.registration.dto.SubscribeRequest;
 import com.vyoog.eisplatform.modules.registration.dto.SubscriptionDto;
@@ -44,5 +45,36 @@ public class SubscriptionController {
     public SubscriptionDto subscribe(@AuthenticationPrincipal Jwt jwt, @Valid @RequestBody SubscribeRequest request) {
         Customer customer = currentCustomerResolver.resolve(jwt);
         return subscriptionService.subscribe(customer.getId(), request.productId());
+    }
+
+    @PostMapping("/subscriptions/{id}/suspend")
+    public SubscriptionDto suspend(@AuthenticationPrincipal Jwt jwt, @PathVariable("id") Long subscriptionId) {
+        Customer customer = currentCustomerResolver.resolve(jwt);
+        return subscriptionService.suspendSubscription(customer.getId(), subscriptionId);
+    }
+
+    @PostMapping("/subscriptions/{id}/reactivate")
+    public SubscriptionDto reactivate(@AuthenticationPrincipal Jwt jwt, @PathVariable("id") Long subscriptionId) {
+        Customer customer = currentCustomerResolver.resolve(jwt);
+        return subscriptionService.reactivateSubscription(customer.getId(), subscriptionId);
+    }
+
+    @PostMapping("/subscriptions/{id}/cancel")
+    public SubscriptionDto cancel(@AuthenticationPrincipal Jwt jwt, @PathVariable("id") Long subscriptionId) {
+        Customer customer = currentCustomerResolver.resolve(jwt);
+        return subscriptionService.cancelSubscription(customer.getId(), subscriptionId);
+    }
+
+    @PostMapping("/subscriptions/{id}/renew")
+    public SubscriptionDto renew(@AuthenticationPrincipal Jwt jwt, @PathVariable("id") Long subscriptionId) {
+        Customer customer = currentCustomerResolver.resolve(jwt);
+        return subscriptionService.renewSubscription(customer.getId(), subscriptionId);
+    }
+
+    @PatchMapping("/subscriptions/{id}/plan")
+    public SubscriptionDto changePlan(@AuthenticationPrincipal Jwt jwt, @PathVariable("id") Long subscriptionId,
+                                       @Valid @RequestBody ChangePlanRequest request) {
+        Customer customer = currentCustomerResolver.resolve(jwt);
+        return subscriptionService.changePlan(customer.getId(), subscriptionId, request);
     }
 }

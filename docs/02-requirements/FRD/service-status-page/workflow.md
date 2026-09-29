@@ -1,18 +1,26 @@
 # Workflow — Interim Service Status Page
 
-## States
+## Incident
 ```mermaid
 stateDiagram-v2
-    [*] --> Enabled: configuration setting on
-    Enabled --> Disabled: configuration setting off
-    Disabled --> Enabled: configuration setting on
+    [*] --> Open: admin posts incident (no end time)
+    Open --> Resolved: admin sets an end time
+    Resolved --> Open: admin clears the end time
+```
+
+## Page lifecycle
+```mermaid
+stateDiagram-v2
+    [*] --> Enabled: app.status-page.enabled = true (default)
+    Enabled --> Disabled: setting off
+    Disabled --> Enabled: setting on
     Enabled --> StatusFromHealthMonitoring: sprint 2027.1.1 retirement task
-    StatusFromHealthMonitoring --> Removed: sprint 2027.1.3 retirement task (incidents move to 12.04)
+    StatusFromHealthMonitoring --> Removed: sprint 2027.1.3 retirement task
 ```
 
 ## Transitions
-| From | To | Actor | Condition / rule | Side effects (notifications, audit) |
+| From | To | Actor | Condition / rule | Side effects |
 |---|---|---|---|---|
-| Enabled | Disabled | Operator (configuration) | Setting switched off | Not specified |
-| Enabled | Status from Health Monitoring | Development team | Sprint 2027.1.1 retirement task | Not specified |
-| Status from Health Monitoring | Removed | Development team | Sprint 2027.1.3 retirement task | Not specified |
+| — | Open | Platform admin | `MANAGE_SERVICE_STATUS`; active product | Audit `INCIDENT_POSTED`; dashboard alert for purchasers |
+| Open | Resolved | Platform admin | End time not before start | Audit `INCIDENT_UPDATED` |
+| Enabled | Disabled | Operator (configuration) | Setting off | Customer view returns `enabled: false` |

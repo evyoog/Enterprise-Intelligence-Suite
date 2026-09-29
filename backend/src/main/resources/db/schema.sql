@@ -8,8 +8,22 @@ CREATE TABLE products (
     category VARCHAR(255),
     status VARCHAR(20) NOT NULL DEFAULT 'ACTIVE',
     sso_connected BOOLEAN NOT NULL DEFAULT false,
+    -- 03.01.02 Show featured products (sprint 2027.1.2, V010).
+    featured BOOLEAN NOT NULL DEFAULT false,
+    -- 02.01 Product Lifecycle & Structure (sprint 2026.4.1, V006).
+    version INT NOT NULL DEFAULT 1,
+    parent_product_id BIGINT REFERENCES products(id),
+    variant_label VARCHAR(100),
     created_at TIMESTAMP NOT NULL DEFAULT now(),
     updated_at TIMESTAMP NOT NULL DEFAULT now()
+);
+
+-- 02.01.02.03 Define dependencies (sprint 2026.4.1, V006). Advisory only —
+-- see Product#dependsOn's own javadoc.
+CREATE TABLE product_dependencies (
+    product_id BIGINT NOT NULL REFERENCES products(id) ON DELETE CASCADE,
+    depends_on_product_id BIGINT NOT NULL REFERENCES products(id) ON DELETE CASCADE,
+    PRIMARY KEY (product_id, depends_on_product_id)
 );
 
 CREATE TABLE product_plans (
@@ -18,7 +32,14 @@ CREATE TABLE product_plans (
     name VARCHAR(100) NOT NULL,
     price NUMERIC(12, 2) NOT NULL,
     billing_period VARCHAR(20) NOT NULL,
-    sort_order INT
+    sort_order INT,
+    -- 02.03 Plan Management (sprint 2026.4.1, V006).
+    currency VARCHAR(10) NOT NULL DEFAULT 'USD',
+    usage_limit INT,
+    included_features VARCHAR(1000),
+    usage_price NUMERIC(12, 4),
+    tier_pricing VARCHAR(500),
+    overage_charge NUMERIC(12, 4)
 );
 
 CREATE INDEX idx_product_plans_product_id ON product_plans (product_id);
@@ -38,6 +59,31 @@ CREATE TABLE product_platforms (
     product_id BIGINT NOT NULL REFERENCES products(id) ON DELETE CASCADE,
     platform_id BIGINT NOT NULL REFERENCES platforms(id) ON DELETE CASCADE,
     PRIMARY KEY (product_id, platform_id)
+);
+
+-- 15.01 Platform Administration (sprint 2026.4.2). Seeded from the fixed
+-- Currency enum — see PlatformCurrency's own javadoc; enable/disable only.
+CREATE TABLE platform_currency (
+    code VARCHAR(10) PRIMARY KEY,
+    name VARCHAR(100) NOT NULL,
+    enabled BOOLEAN NOT NULL DEFAULT true
+);
+
+-- 15.01.02 Configure regions; 05.02.01.03 Assign region (organization.region_id
+-- below) — freely admin-defined, not a fixed geography list.
+CREATE TABLE platform_region (
+    id BIGSERIAL PRIMARY KEY,
+    code VARCHAR(50) NOT NULL UNIQUE,
+    name VARCHAR(150) NOT NULL,
+    enabled BOOLEAN NOT NULL DEFAULT true
+);
+
+-- 15.01.01 Configure feature flags — runtime, admin-toggleable, distinct
+-- from a Spring config property. See PlatformFeatureFlag's own javadoc.
+CREATE TABLE platform_feature_flag (
+    flag_key VARCHAR(100) PRIMARY KEY,
+    enabled BOOLEAN NOT NULL DEFAULT true,
+    description VARCHAR(500)
 );
 
 CREATE TABLE sso_bridge_session (
@@ -138,7 +184,12 @@ CREATE TABLE mfa_login_challenge (
     refresh_token TEXT NOT NULL,
     attempts INT NOT NULL DEFAULT 0,
     created_at TIMESTAMP NOT NULL DEFAULT now(),
-    expires_at TIMESTAMP NOT NULL
+    expires_at TIMESTAMP NOT NULL,
+    -- C29 (2026-09-26): VERIFY (enter a code) or ENROLL (set up an
+    -- authenticator during sign-in); impersonated = held tokens came from a
+    -- SAML/OIDC token exchange. See migration V002.
+    kind VARCHAR(10) NOT NULL DEFAULT 'VERIFY' CHECK (kind IN ('VERIFY', 'ENROLL')),
+    impersonated BOOLEAN NOT NULL DEFAULT false
 );
 
 -- A registering company. parent_organization_id is NEVER settable by public
@@ -178,6 +229,9 @@ CREATE TABLE organization (
     -- from the registration status above. See migration V001.
     lifecycle_status VARCHAR(20) NOT NULL DEFAULT 'ACTIVE'
         CHECK (lifecycle_status IN ('ACTIVE', 'SUSPENDED', 'CLOSED')),
+    -- 05.02 Tenant Lifecycle (sprint 2026.4.2, carried from 2026.4.1).
+    region_id BIGINT REFERENCES platform_region(id),
+    allow_seat_overage BOOLEAN NOT NULL DEFAULT false,
     created_at TIMESTAMP NOT NULL DEFAULT now(),
     updated_at TIMESTAMP NOT NULL DEFAULT now()
 );
@@ -251,7 +305,26 @@ CREATE TABLE organization_member (
     status VARCHAR(20) NOT NULL DEFAULT 'ACTIVE',
     joined_at TIMESTAMP NOT NULL DEFAULT now(),
     deactivated_at TIMESTAMP,
+    -- 05.03.02.03 Review access (sprint 2026.4.1, V006).
+    last_reviewed_at TIMESTAMP,
+    last_reviewed_by_customer_id BIGINT REFERENCES customer(id),
     UNIQUE (organization_id, customer_id)
+);
+
+-- 05.04.01 Groups (sprint 2026.4.1, V006).
+CREATE TABLE organization_group (
+    id BIGSERIAL PRIMARY KEY,
+    organization_id BIGINT NOT NULL REFERENCES organization(id) ON DELETE CASCADE,
+    name VARCHAR(150) NOT NULL,
+    created_at TIMESTAMP NOT NULL DEFAULT now()
+);
+
+CREATE TABLE organization_group_member (
+    id BIGSERIAL PRIMARY KEY,
+    group_id BIGINT NOT NULL REFERENCES organization_group(id) ON DELETE CASCADE,
+    organization_member_id BIGINT NOT NULL REFERENCES organization_member(id) ON DELETE CASCADE,
+    added_at TIMESTAMP NOT NULL DEFAULT now(),
+    UNIQUE (group_id, organization_member_id)
 );
 CREATE INDEX idx_org_member_org ON organization_member (organization_id);
 CREATE INDEX idx_org_member_customer ON organization_member (customer_id);
@@ -281,6 +354,8 @@ CREATE TABLE product_subscription (
     owner_customer_id BIGINT REFERENCES customer(id),
     owner_organization_id BIGINT REFERENCES organization(id),
     status VARCHAR(30) NOT NULL DEFAULT 'PENDING_SUBSCRIPTION',
+    -- 07.01.02 Subscription Changes (sprint 2026.4.3).
+    plan_id BIGINT REFERENCES product_plans(id),
     started_at TIMESTAMP,
     expires_at TIMESTAMP,
     created_at TIMESTAMP NOT NULL DEFAULT now(),
@@ -295,6 +370,26 @@ CREATE INDEX idx_subscription_customer ON product_subscription (owner_customer_i
 CREATE INDEX idx_subscription_organization ON product_subscription (owner_organization_id);
 CREATE UNIQUE INDEX idx_subscription_customer_product ON product_subscription (owner_customer_id, product_id) WHERE owner_customer_id IS NOT NULL;
 CREATE UNIQUE INDEX idx_subscription_org_product ON product_subscription (owner_organization_id, product_id) WHERE owner_organization_id IS NOT NULL;
+
+-- 09.01 Order Management (sprint 2027.1.1). Organization purchasing only —
+-- see OrderService's own javadoc. No separate PROVISIONED status: APPROVED
+-- already means provisioned (synchronous, no workflow engine — see V009).
+CREATE TABLE orders (
+    id BIGSERIAL PRIMARY KEY,
+    organization_id BIGINT NOT NULL REFERENCES organization(id),
+    requested_by_customer_id BIGINT NOT NULL REFERENCES customer(id),
+    product_id BIGINT NOT NULL REFERENCES products(id),
+    plan_id BIGINT REFERENCES product_plans(id),
+    status VARCHAR(20) NOT NULL DEFAULT 'SUBMITTED'
+        CHECK (status IN ('SUBMITTED', 'APPROVED', 'REJECTED', 'CANCELLED')),
+    decided_by_customer_id BIGINT REFERENCES customer(id),
+    decided_at TIMESTAMP,
+    decision_note VARCHAR(500),
+    created_at TIMESTAMP NOT NULL DEFAULT now(),
+    updated_at TIMESTAMP NOT NULL DEFAULT now()
+);
+CREATE INDEX idx_orders_organization ON orders (organization_id, status);
+CREATE INDEX idx_orders_requested_by ON orders (requested_by_customer_id);
 
 -- Single-use, expiring email verification tokens — only a HASH of the raw
 -- token is ever stored; used_at is set once and never cleared, so a reused
@@ -491,3 +586,166 @@ CREATE TABLE audit_log (
 CREATE INDEX idx_audit_log_organization ON audit_log (organization_id, "timestamp" DESC);
 CREATE INDEX idx_audit_log_actor ON audit_log (actor_customer_id, "timestamp" DESC);
 CREATE INDEX idx_audit_log_timestamp ON audit_log ("timestamp" DESC);
+
+-- REQ-PRT-001 interim service status page (sprint 2026.3.3, decisions C20/C26).
+-- Posted by platform admins (MANAGE_SERVICE_STATUS). A product with no row is
+-- OPERATIONAL. Replaced by Health Monitoring / Incident Management later (C20).
+-- See migration V003.
+CREATE TABLE product_service_status (
+    product_id BIGINT PRIMARY KEY REFERENCES products(id) ON DELETE CASCADE,
+    status VARCHAR(20) NOT NULL DEFAULT 'OPERATIONAL'
+        CHECK (status IN ('OPERATIONAL', 'DEGRADED', 'PARTIAL_OUTAGE', 'MAJOR_OUTAGE', 'MAINTENANCE')),
+    note VARCHAR(500),
+    updated_at TIMESTAMP NOT NULL DEFAULT now(),
+    updated_by_keycloak_sub VARCHAR(255)
+);
+
+CREATE TABLE service_incident (
+    id BIGSERIAL PRIMARY KEY,
+    product_id BIGINT NOT NULL REFERENCES products(id) ON DELETE CASCADE,
+    title VARCHAR(200) NOT NULL,
+    message VARCHAR(4000) NOT NULL,
+    started_at TIMESTAMP NOT NULL,
+    ended_at TIMESTAMP,
+    created_at TIMESTAMP NOT NULL DEFAULT now(),
+    updated_at TIMESTAMP NOT NULL DEFAULT now(),
+    created_by_keycloak_sub VARCHAR(255),
+    CHECK (ended_at IS NULL OR ended_at >= started_at)
+);
+CREATE INDEX idx_service_incident_product ON service_incident (product_id, started_at DESC);
+
+-- REQ-IAM-006 OIDC federation (sprint 2026.3.3, decisions C22/C27), mirroring
+-- the SAML tables. The client secret is AES-GCM encrypted (TotpSecretCipher).
+-- At most one SAML or OIDC provider is enabled per organization (enforced in
+-- SamlProviderService / OidcProviderService). See migration V004.
+CREATE TABLE oidc_identity_provider (
+    id BIGSERIAL PRIMARY KEY,
+    organization_id BIGINT NOT NULL REFERENCES organization(id) ON DELETE CASCADE,
+    name VARCHAR(255) NOT NULL,
+    issuer_url VARCHAR(500) NOT NULL,
+    client_id VARCHAR(255) NOT NULL,
+    encrypted_client_secret TEXT NOT NULL,
+    scopes VARCHAR(500) NOT NULL DEFAULT 'openid email profile',
+    enabled BOOLEAN NOT NULL DEFAULT false,
+    created_at TIMESTAMP NOT NULL DEFAULT now(),
+    updated_at TIMESTAMP NOT NULL DEFAULT now()
+);
+CREATE UNIQUE INDEX idx_oidc_idp_one_enabled_per_org ON oidc_identity_provider (organization_id) WHERE enabled = true;
+
+CREATE TABLE oidc_login_request (
+    state VARCHAR(64) PRIMARY KEY,
+    organization_id BIGINT NOT NULL REFERENCES organization(id) ON DELETE CASCADE,
+    provider_id BIGINT NOT NULL REFERENCES oidc_identity_provider(id) ON DELETE CASCADE,
+    nonce VARCHAR(64) NOT NULL,
+    code_verifier VARCHAR(128) NOT NULL,
+    created_at TIMESTAMP NOT NULL DEFAULT now(),
+    expires_at TIMESTAMP NOT NULL,
+    consumed_at TIMESTAMP
+);
+
+CREATE TABLE oidc_external_identity (
+    id BIGSERIAL PRIMARY KEY,
+    organization_id BIGINT NOT NULL REFERENCES organization(id) ON DELETE CASCADE,
+    issuer VARCHAR(500) NOT NULL,
+    subject VARCHAR(255) NOT NULL,
+    customer_id BIGINT NOT NULL REFERENCES customer(id) ON DELETE CASCADE,
+    email VARCHAR(255),
+    created_at TIMESTAMP NOT NULL DEFAULT now(),
+    last_login_at TIMESTAMP,
+    UNIQUE (organization_id, issuer, subject)
+);
+
+-- REQ-IAM-007 claim mapping (sprint 2026.3.3, decisions C23/C28): optional
+-- attribute / claim names per provider, tried before the defaults.
+-- See migration V005.
+ALTER TABLE saml_identity_provider
+    ADD COLUMN email_claim VARCHAR(255),
+    ADD COLUMN first_name_claim VARCHAR(255),
+    ADD COLUMN last_name_claim VARCHAR(255),
+    ADD COLUMN display_name_claim VARCHAR(255);
+ALTER TABLE oidc_identity_provider
+    ADD COLUMN email_claim VARCHAR(255),
+    ADD COLUMN first_name_claim VARCHAR(255),
+    ADD COLUMN last_name_claim VARCHAR(255),
+    ADD COLUMN display_name_claim VARCHAR(255);
+
+-- 11.01 Knowledge Base (sprint 2027.1.1): 11.01.02 AI Knowledge deliberately
+-- not built — see KnowledgeArticle's own javadoc. See migration V009.
+CREATE TABLE knowledge_article (
+    id BIGSERIAL PRIMARY KEY,
+    title VARCHAR(200) NOT NULL,
+    body VARCHAR(20000) NOT NULL,
+    status VARCHAR(20) NOT NULL DEFAULT 'DRAFT' CHECK (status IN ('DRAFT', 'PUBLISHED')),
+    version INT NOT NULL DEFAULT 1,
+    created_at TIMESTAMP NOT NULL DEFAULT now(),
+    updated_at TIMESTAMP NOT NULL DEFAULT now()
+);
+CREATE INDEX idx_knowledge_article_status ON knowledge_article (status);
+
+-- 12.01 Ticket Management (sprint 2027.1.2). Not AI-driven — see
+-- SupportTicket's own javadoc. See migration V010.
+CREATE TABLE support_ticket (
+    id BIGSERIAL PRIMARY KEY,
+    requested_by_customer_id BIGINT NOT NULL REFERENCES customer(id),
+    subject VARCHAR(200) NOT NULL,
+    description VARCHAR(4000) NOT NULL,
+    category VARCHAR(100),
+    priority VARCHAR(20) NOT NULL DEFAULT 'MEDIUM' CHECK (priority IN ('LOW', 'MEDIUM', 'HIGH', 'URGENT')),
+    status VARCHAR(20) NOT NULL DEFAULT 'OPEN'
+        CHECK (status IN ('OPEN', 'IN_PROGRESS', 'ESCALATED', 'RESOLVED', 'CLOSED')),
+    assigned_to_customer_id BIGINT REFERENCES customer(id),
+    resolution_note VARCHAR(2000),
+    resolved_at TIMESTAMP,
+    closed_at TIMESTAMP,
+    created_at TIMESTAMP NOT NULL DEFAULT now(),
+    updated_at TIMESTAMP NOT NULL DEFAULT now()
+);
+CREATE INDEX idx_support_ticket_requested_by ON support_ticket (requested_by_customer_id);
+CREATE INDEX idx_support_ticket_status ON support_ticket (status);
+
+-- 03.04 Reviews & Ratings (sprint 2027.1.3). PENDING until an admin
+-- moderates it (MANAGE_REVIEWS) — never shown publicly or averaged before
+-- then. At most one review per (product, customer) — see ProductReview's
+-- own javadoc. See migration V011.
+CREATE TABLE product_review (
+    id BIGSERIAL PRIMARY KEY,
+    product_id BIGINT NOT NULL REFERENCES products(id) ON DELETE CASCADE,
+    customer_id BIGINT NOT NULL REFERENCES customer(id),
+    rating INT NOT NULL CHECK (rating BETWEEN 1 AND 5),
+    comment VARCHAR(2000),
+    status VARCHAR(20) NOT NULL DEFAULT 'PENDING' CHECK (status IN ('PENDING', 'APPROVED', 'REJECTED')),
+    created_at TIMESTAMP NOT NULL DEFAULT now(),
+    updated_at TIMESTAMP NOT NULL DEFAULT now(),
+    UNIQUE (product_id, customer_id)
+);
+CREATE INDEX idx_product_review_product_status ON product_review (product_id, status);
+
+-- 14.01 Provider Onboarding (sprint 2027.2.1, C42). A provider applies
+-- before it has any Vyoog identity — no FK to customer/organization, same
+-- reasoning as the pre-login registration flow. See migration V012.
+CREATE TABLE provider (
+    id BIGSERIAL PRIMARY KEY,
+    name VARCHAR(255) NOT NULL,
+    contact_name VARCHAR(255) NOT NULL,
+    contact_email VARCHAR(255) NOT NULL,
+    description VARCHAR(2000),
+    status VARCHAR(20) NOT NULL DEFAULT 'REGISTERED'
+        CHECK (status IN ('REGISTERED', 'VERIFIED', 'APPROVED', 'ACTIVE', 'REJECTED')),
+    created_at TIMESTAMP NOT NULL DEFAULT now(),
+    updated_at TIMESTAMP NOT NULL DEFAULT now()
+);
+
+-- 14.01.02 Contracts. One contract per provider — Create/Manage terms are
+-- the same upsert (see PartnerContract's own javadoc); Track expiration is
+-- the scheduled ContractExpiryJob flipping status, not computed on read.
+CREATE TABLE partner_contract (
+    id BIGSERIAL PRIMARY KEY,
+    provider_id BIGINT NOT NULL UNIQUE REFERENCES provider(id) ON DELETE CASCADE,
+    terms VARCHAR(4000) NOT NULL,
+    start_date DATE NOT NULL,
+    end_date DATE NOT NULL,
+    status VARCHAR(20) NOT NULL DEFAULT 'ACTIVE' CHECK (status IN ('ACTIVE', 'EXPIRED')),
+    created_at TIMESTAMP NOT NULL DEFAULT now(),
+    updated_at TIMESTAMP NOT NULL DEFAULT now()
+);
+CREATE INDEX idx_partner_contract_status_end_date ON partner_contract (status, end_date);

@@ -39,9 +39,16 @@ class AuthorizationServiceTest {
         assertThat(authorizationService.hasPlatformPermission(Set.of("ROLE_ADMIN"), "MANAGE_PRIVILEGED_ACCESS")).isTrue();
         // Phase 3 (2026.3.3): MANAGE_ROLES/MANAGE_PERMISSIONS joined the
         // ADMIN role's seeded set — RBAC administration itself.
+        // C26 (2026-09-26): MANAGE_SERVICE_STATUS, posting the service status page.
+        // 15.01 Platform Administration (sprint 2026.4.2): MANAGE_PLATFORM_SETTINGS.
+        // 11.01 Knowledge Base (sprint 2027.1.1): MANAGE_KNOWLEDGE_BASE.
+        // 12.01 Ticket Management (sprint 2027.1.2): MANAGE_SUPPORT_TICKETS.
+        // 03.04 Reviews & Ratings (sprint 2027.1.3): MANAGE_REVIEWS.
+        // 14.01 Provider Onboarding (sprint 2027.2.1): MANAGE_PARTNERS.
         assertThat(authorizationService.listPlatformPermissions(Set.of("ROLE_ADMIN")))
             .containsExactlyInAnyOrder("MANAGE_CATALOG", "MANAGE_REGISTRATIONS", "MANAGE_PRIVILEGED_ACCESS", "VIEW_AUDIT_LOG",
-                "MANAGE_ROLES", "MANAGE_PERMISSIONS");
+                "MANAGE_ROLES", "MANAGE_PERMISSIONS", "MANAGE_SERVICE_STATUS", "MANAGE_PLATFORM_SETTINGS", "MANAGE_KNOWLEDGE_BASE",
+                "MANAGE_SUPPORT_TICKETS", "MANAGE_REVIEWS", "MANAGE_PARTNERS");
     }
 
     @Test
@@ -57,8 +64,10 @@ class AuthorizationServiceTest {
         assertThat(authorizationService.hasOrganizationPermission(OrgRole.ORG_ADMIN, "MANAGE_PRODUCT_ACCESS")).isTrue();
         // Phase 6 (PAM): joined ORG_ADMIN's seeded set alongside the other three.
         assertThat(authorizationService.hasOrganizationPermission(OrgRole.ORG_ADMIN, "MANAGE_PRIVILEGED_ACCESS")).isTrue();
+        // 09.04 Approval Management (sprint 2027.1.1): MANAGE_ORDERS.
+        assertThat(authorizationService.hasOrganizationPermission(OrgRole.ORG_ADMIN, "MANAGE_ORDERS")).isTrue();
         assertThat(authorizationService.listOrganizationPermissions(OrgRole.ORG_ADMIN))
-            .containsExactlyInAnyOrder("MANAGE_ORGANIZATION", "MANAGE_USERS", "MANAGE_PRODUCT_ACCESS", "MANAGE_PRIVILEGED_ACCESS");
+            .containsExactlyInAnyOrder("MANAGE_ORGANIZATION", "MANAGE_USERS", "MANAGE_PRODUCT_ACCESS", "MANAGE_PRIVILEGED_ACCESS", "MANAGE_ORDERS");
     }
 
     @Test

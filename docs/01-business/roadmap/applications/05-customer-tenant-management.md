@@ -8,7 +8,7 @@
 | Description | Organizations, tenants, users and projects ([PO] Table 1, [WB:Application Summary]) |
 | Product | EIS (PaaS) |
 | PI – CY Quarter | 2026.4 ([PO] "eVyoog EIS - Roadmap Initiatives") |
-| Sprint | [2026.4.2](../sprints/SPRINT-2026.4.2.md) (1–30 Nov 2026, [DN-2](../open-decisions.md#dn-2-sprint-scope-length-and-dates)) |
+| Sprint | [2026.4.1](../sprints/SPRINT-2026.4.1.md) (1–31 Oct 2026, [DN-2](../open-decisions.md#dn-2-sprint-scope-length-and-dates)); 05.01 built early in 2026.3.3 ([C25](../open-decisions.md#c25)); Invite/Create user and Projects carry over to [2026.4.2](../sprints/SPRINT-2026.4.2.md) ([C31](../open-decisions.md#c31)) |
 | Capabilities / features / functions | 4 / 6 / 24 ([WB]) |
 | Application status | Not specified |
 
@@ -136,5 +136,5 @@ Not specified in any source. Under [DN-2](../open-decisions.md#dn-2-sprint-scope
 
 Observed on branch `dev`. This is a module-level mapping, not a verified function-by-function implementation status.
 
-- Backend: `backend/src/main/java/com/vyoog/eisplatform/modules/registration (organization, members, seats, organization lifecycle)`
-- Frontend: `frontend/src/pages/register/OrganizationRegisterPage.tsx`, `frontend/src/pages/register/VerifyEmailPage.tsx`, `frontend/src/pages/admin/RegistrationsAdminPage.tsx`, `frontend/src/components/admin/OrganizationEditDialog.tsx`, `frontend/src/components/admin/OrganizationLifecycleDialog.tsx`
+- Backend: `backend/src/main/java/com/vyoog/eisplatform/modules/registration` (organization, members and seats, organization lifecycle; now also member suspend/reactivate/remove/review — [member-lifecycle](../../../02-requirements/FRD/member-lifecycle/requirement.md) — groups — [group-management](../../../02-requirements/FRD/group-management/requirement.md) — and region assignment / seat overage — [tenant-lifecycle](../../../02-requirements/FRD/tenant-lifecycle/requirement.md))
+- Frontend: `frontend/src/pages/register/OrganizationRegisterPage.tsx`, `frontend/src/pages/register/VerifyEmailPage.tsx`, `frontend/src/pages/admin/RegistrationsAdminPage.tsx`, `frontend/src/components/admin/OrganizationEditDialog.tsx`, `frontend/src/components/admin/OrganizationLifecycleDialog.tsx`, `frontend/src/components/organization/OrganizationMembersCard.tsx`, `frontend/src/components/organization/OrganizationGroupsCard.tsx`

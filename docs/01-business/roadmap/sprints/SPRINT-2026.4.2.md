@@ -15,19 +15,48 @@
 
 | Application ID | Code | Application | Roadmap item | Source |
 |---|---|---|---|---|
-| 05 | `APP-TEN` | [Customer / Tenant Management](../applications/05-customer-tenant-management.md) | (whole application) | [PO] "eVyoog EIS - Roadmap Initiatives" |
+| 05 | `APP-TEN` | [Customer / Tenant Management](../applications/05-customer-tenant-management.md) | Carry-over only: 05.02 Tenant Lifecycle, 05.03.01 Invite/Create user, 05.04.02 Projects (see [C31](../open-decisions.md#c31)) | [PO] "eVyoog EIS - Roadmap Initiatives" |
+| 13a | `APP-INT` (part) | Gateway & Events (API Management 13.01, Event Platform 13.03) | [C31](../open-decisions.md#c31): pulled forward from 2027.1.1 |
+| 15a | `APP-GOV` (part) | Audit & Platform Administration (15.01 Platform Administration, 15.03 Audit) | [C31](../open-decisions.md#c31): pulled forward from 2027.2.2 |
 
 > **Commitment ([DN-2](../open-decisions.md#dn-2-sprint-scope-length-and-dates)):** this sprint commits the P0 (MVP) capabilities of its applications and treats P1 capabilities as stretch scope. Anything not finished is recorded as carry-over on the next sprint page.
+>
+> **13a's scope table is not yet written up on this page** — that is follow-up work, still pending (see `open-decisions.md`'s "Follow-up updates required" table). 15a's own table is below, under "EIS 15a". 15.03 Audit Logging/Search were already built early, in sprint 2026.3.3 (see that sprint page's own audit trail work).
 
 ## Scope changes from decisions
 
 | Change | Decision and scope | FRD | Requirement |
 |---|---|---|---|
 | Pulled forward | [C25](../open-decisions.md#c25) 05.01.01.02–.05 (update, suspend, activate, soft close organization) were built early in sprint [2026.3.3](SPRINT-2026.3.3.md). 05.01.01.01 Create organization stays in this sprint | [organization-lifecycle](../../../02-requirements/FRD/organization-lifecycle/requirement.md) | REQ-TEN-001 |
+| Pulled back | [C31](../open-decisions.md#c31) Most of 05 (05.02, 05.03.01.03–.05, 05.03.02, 05.04.01) moved to [2026.4.1](SPRINT-2026.4.1.md). Only Invite/Create user (05.03.01.01/.02) and Projects (05.04.02) stay here, as carry-over from that sprint ([C34](../open-decisions.md#c34), [C35](../open-decisions.md#c35)) | [member-lifecycle](../../../02-requirements/FRD/member-lifecycle/requirement.md), [group-management](../../../02-requirements/FRD/group-management/requirement.md) | REQ-TEN-002, REQ-TEN-003 |
+| Pulled forward | [C31](../open-decisions.md#c31) 13a Gateway & Events (from 2027.1.1) and 15a Audit & Platform Administration (from 2027.2.2) added to this sprint | - | - |
+| Decided | [C36](../open-decisions.md#c36) Platform Administration: currencies (enable/disable), regions (free CRUD), feature flags (CRUD + "groups_enabled"), languages (read-only). Configure defaults and Manage templates carried further | [platform-administration](../../../02-requirements/FRD/platform-administration/requirement.md) | REQ-GOV-001 |
+| Decided | [C37](../open-decisions.md#c37) Tenant Lifecycle: Assign region and Configure tenant policies (allowSeatOverage) built; Create/Configure tenant and Configure isolation satisfied by existing code, no new capability | [tenant-lifecycle](../../../02-requirements/FRD/tenant-lifecycle/requirement.md) | REQ-TEN-004 |
 
-## EIS 05 Customer / Tenant Management
+### FRDs in this sprint
 
-**Planned work ([PO] / [WB] description):** Organizations, tenants, users and projects
+| FRD | Requirement | Functions | Status |
+|---|---|---|---|
+| [platform-administration](../../../02-requirements/FRD/platform-administration/requirement.md) | REQ-GOV-001 | 15.01.01 (currencies, feature flags, languages), 15.01.02 (regions) | Approved |
+| [tenant-lifecycle](../../../02-requirements/FRD/tenant-lifecycle/requirement.md) | REQ-TEN-004 | 05.02.01.03, 05.02.01.05 (.01/.02/.04 satisfied by existing code) | Approved |
+
+### Progress (as of 2026-09-27, first days of the sprint)
+
+| Feature | Status | Note |
+|---|---|---|
+| 15.01.01 Platform Configuration (currencies, feature flags, languages) | Done (this FRD's scope) | Configure defaults not built |
+| 15.01.02 Global Settings (regions) | Partly done | Regions built; Configure defaults, Manage templates not built |
+| 15.03 Audit | Done | Already built early in 2026.3.3 (see that sprint's own audit trail work) |
+| 13a Gateway & Events (13.01, 13.03) | Not started | Needs its own FRD — no decision recorded yet |
+| 05.02 Tenant Lifecycle | Done (this FRD's scope) | Assign region, tenant policies built; Create/Configure tenant, Configure isolation satisfied by existing code (C37) |
+| 05.03.01 Invite/Create user | Not started | Carried again — needs a decision on the identity-creation flow ([C34](../open-decisions.md#c34)) |
+| 05.04.02 Projects | Not started | Carried again — needs a decision on the Project resource model ([C35](../open-decisions.md#c35)) |
+
+13a Gateway & Events and the remaining 15.01.02 items remain open for this sprint.
+
+## EIS 05 Customer / Tenant Management (carry-over only)
+
+**Planned work:** 05.01, 05.03.02 and 05.04.01 were already built (2026.3.3, 2026.4.1) and are not repeated here — only this sprint's actual carry-over is listed.
 
 Full breakdown with APIs, services, entities and events: [applications/05-customer-tenant-management.md](../applications/05-customer-tenant-management.md).
 
@@ -35,12 +64,9 @@ Full breakdown with APIs, services, entities and events: [applications/05-custom
 
 | Capability | Feature | Functions (requirement candidates from [WB:Functions]) | Priority | Commitment |
 |---|---|---|---|---|
-| [05.01 Organization Management](../applications/05-customer-tenant-management.md#0501-organization-management) | 05.01.01 Organization Lifecycle | Create organization; Update organization; Suspend organization; Activate organization; Close organization | P0 | Commit |
-| [05.02 Tenant Management](../applications/05-customer-tenant-management.md#0502-tenant-management) | 05.02.01 Tenant Lifecycle | Create tenant; Configure tenant; Assign region; Configure isolation; Configure tenant policies | P0 | Commit |
-| [05.03 User Management](../applications/05-customer-tenant-management.md#0503-user-management) | 05.03.01 User Lifecycle | Invite user; Create user; Activate user; Suspend user; Remove user | P0 | Commit |
-| [05.03 User Management](../applications/05-customer-tenant-management.md#0503-user-management) | 05.03.02 Role Assignment | Assign role; Assign group; Review access | P0 | Commit |
-| [05.04 Group & Project Management](../applications/05-customer-tenant-management.md#0504-group--project-management) | 05.04.01 Groups | Create group; Add member; Remove member | P0 | Commit |
-| [05.04 Group & Project Management](../applications/05-customer-tenant-management.md#0504-group--project-management) | 05.04.02 Projects | Create project; Assign users; Assign resources | P0 | Commit |
+| [05.02 Tenant Management](../applications/05-customer-tenant-management.md#0502-tenant-management) | 05.02.01 Tenant Lifecycle | Create tenant; Configure tenant; Assign region; Configure isolation; Configure tenant policies | P0 | Commit — **Done** ([tenant-lifecycle](../../../02-requirements/FRD/tenant-lifecycle/requirement.md)) |
+| [05.03 User Management](../applications/05-customer-tenant-management.md#0503-user-management) | 05.03.01 User Lifecycle | Invite user; Create user | P0 | Commit — **Not started** |
+| [05.04 Group & Project Management](../applications/05-customer-tenant-management.md#0504-group--project-management) | 05.04.02 Projects | Create project; Assign users; Assign resources | P0 | Commit — **Not started** |
 
 ### Dependencies
 
@@ -51,16 +77,44 @@ Full breakdown with APIs, services, entities and events: [applications/05-custom
 
 ### Expected deliverables
 
-- The P0 capabilities above ([DN-2](../open-decisions.md#dn-2-sprint-scope-length-and-dates)). Deliverables are otherwise Not specified in any source.
+- The P0 capabilities above ([DN-2](../open-decisions.md#dn-2-sprint-scope-length-and-dates)); 05.02 is done, the other two remain open.
 
 ### Related code already in this repository
 
-Observed on branch `dev`, module level only: `backend/…/modules/registration (organization, members, seats, organization lifecycle)`; `frontend/src/pages/register/OrganizationRegisterPage.tsx`, `frontend/src/pages/register/VerifyEmailPage.tsx`, `frontend/src/pages/admin/RegistrationsAdminPage.tsx`, `frontend/src/components/admin/OrganizationEditDialog.tsx`, `frontend/src/components/admin/OrganizationLifecycleDialog.tsx`.
+Observed on branch `dev`, module level only: `backend/…/modules/registration` (organization, members, seats, organization lifecycle; now also region assignment and seat-overage policy — [tenant-lifecycle](../../../02-requirements/FRD/tenant-lifecycle/requirement.md)); `frontend/src/pages/register/OrganizationRegisterPage.tsx`, `frontend/src/pages/register/VerifyEmailPage.tsx`, `frontend/src/pages/admin/RegistrationsAdminPage.tsx`, `frontend/src/components/admin/OrganizationEditDialog.tsx` (now with region/seat-overage fields), `frontend/src/components/admin/OrganizationLifecycleDialog.tsx`.
+
+## EIS 15a Administration & Governance: platform administration
+
+**Planned work:** Platform Configuration and Global Settings — audit (15.03) was already built early, in 2026.3.3.
+
+Full breakdown: [applications/15-administration-governance.md](../applications/15-administration-governance.md).
+
+### Capabilities, features and requirement candidates
+
+| Capability | Feature | Functions (requirement candidates from [WB:Functions]) | Priority | Commitment |
+|---|---|---|---|---|
+| [15.01 Platform Administration](../applications/15-administration-governance.md#1501-platform-administration) | 15.01.01 Platform Configuration | Configure platform (currencies, feature flags); Configure languages | Not specified | Not specified — **Done** ([platform-administration](../../../02-requirements/FRD/platform-administration/requirement.md)) |
+| [15.01 Platform Administration](../applications/15-administration-governance.md#1501-platform-administration) | 15.01.02 Global Settings | Configure regions; Configure defaults; Manage templates | Not specified | Not specified — regions **Done**, defaults/templates **Not started** |
+
+### Dependencies
+
+- **Stated:** Not specified.
+- **Implied by [WB]:** consumed by [tenant-lifecycle](../../../02-requirements/FRD/tenant-lifecycle/requirement.md) (regions) and by 05.04.01 Groups (the "groups_enabled" flag).
+
+### Expected deliverables
+
+- The capabilities above ([DN-2](../open-decisions.md#dn-2-sprint-scope-length-and-dates)); their [WB] priority is Not specified in any source.
+
+### Related code already in this repository
+
+New this sprint: `backend/…/modules/administration` (currencies, regions, feature flags); `frontend/src/pages/admin/settings/CommonSettingsPage.tsx` (replaces its earlier placeholder), `frontend/src/api/platformAdministrationApi.ts`.
 
 ## Decisions affecting this sprint
 
 - [C3](../open-decisions.md#c3) The [PO] sprint order is authoritative; the MVP is complete at the end of sprint 2027.1.3.
 - [C4](../open-decisions.md#c4), [C5](../open-decisions.md#c5), [C6](../open-decisions.md#c6) MVP, priority and phase as shown above.
+- [C31](../open-decisions.md#c31) Corrected sprint sequence: 05 carry-over, 13a and 15a as shown above.
+- [C36](../open-decisions.md#c36), [C37](../open-decisions.md#c37): see the FRDs above.
 - Sprint goal, team, capacity and status are Not specified.
 
 Details: [open-decisions.md](../open-decisions.md).

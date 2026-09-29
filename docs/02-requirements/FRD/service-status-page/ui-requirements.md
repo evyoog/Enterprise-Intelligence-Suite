@@ -1,29 +1,30 @@
 # UI requirements — Interim Service Status Page
 
-Screens and placement follow the sprint 2026.3.3 development plan: reuse existing pages, layouts and components. Do not add a new layout.
+Placement decided in [C26](../../../01-business/roadmap/open-decisions.md#c26).
 
 ## Screens
-| Screen | Route | Roles | Wireframe |
+| Screen | Route | Roles |
+|---|---|---|
+| Status page (customer view) | `/status`, "Service status" in the signed-in sidebar; linked from the dashboard's Service health card | Every signed-in user |
+| Status and incident posting (admin view) | `/admin/service-status`, "Service status" in the Administration section | `MANAGE_SERVICE_STATUS` |
+
+## Fields and validation (admin)
+| Field | Type | Required | Validation |
 |---|---|---|---|
-| Status page (customer view) | Not specified | Customers (visibility Not specified) | Not specified |
-| Status and incident posting (admin view) | Under the existing `/admin` layout (exact path Not specified) | Platform administrator | Not specified |
+| Product | Select of active products | Yes | Backend: active product |
+| Status value | Select of the five values | Yes | Backend |
+| Note | Text, max 500 | No | Backend |
+| Incident title | Text, max 200 | Yes | Backend |
+| Incident message | Text, max 4000 | Yes | Backend |
+| Start time | Date and time | Yes | Backend |
+| End time | Date and time | No (empty = open) | Backend: not before start |
 
-## Fields and validation
-| Field | Type | Required | Validation | Error message (i18n key) |
-|---|---|---|---|---|
-| Product | Not specified | Not specified | Not specified | Not specified |
-| Status value | Not specified (values Not specified) | Not specified | Not specified | Not specified |
-| Incident title | Not specified | Not specified | Not specified | Not specified |
-| Incident message | Not specified | Not specified | Not specified | Not specified |
-| Start and end time | Not specified | Not specified | Not specified | Not specified |
-| Visibility | Not specified | Not specified | Not specified | Not specified |
-
-Validation is done by the backend. The UI shows the backend's error message as returned and does not re-implement the rules.
+Backend messages are shown as returned.
 
 ## States
-- The field list is from [C20](../../../01-business/roadmap/open-decisions.md#c20). Types, rules and states are to be defined in this FRD before approval.
-- When the configuration setting is off, the page is not shown.
+- Customer view: a table of products with a colour-coded status chip; incidents for purchased products, open ones marked amber, resolved ones green. For a product the customer has not purchased that has open incidents, a note says incident details are for purchased products.
+- Setting off: the customer page shows "The service status page is turned off." and no status; the admin page shows a notice and keeps working.
+- Admin: "Resolve now" pre-fills the end time with the current time.
 
 ## Accessibility and localization
-- All user-facing text goes through i18n, in both `en.json` and `es.json`.
-- Keyboard operable, and screen-reader labelled controls (workbook function 01.01.02). A jest-axe check runs in the component tests.
+Text under `serviceStatus` in `en.json` and `es.json`. jest-axe checks in `ServiceStatusPage.test.tsx`.

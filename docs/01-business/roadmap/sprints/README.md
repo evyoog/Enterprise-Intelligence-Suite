@@ -10,7 +10,7 @@ To add a sprint, copy [`_template.md`](_template.md).
 
 | Sprint | Dates | EIS applications | Scope changes from decisions |
 |---|---|---|---|
-| [2026.3.3](SPRINT-2026.3.3.md) | 1–30 Sep 2026 | [01 Enterprise Intelligence Suite](../applications/01-enterprise-intelligence-suite.md), [06 Identity & Access Management](../applications/06-identity-access-management.md) | C16, C17, C18, C19, C20, C21, C22, C23, C24, C25 |
+| [2026.3.3](SPRINT-2026.3.3.md) | 1–30 Sep 2026 | [01 Enterprise Intelligence Suite](../applications/01-enterprise-intelligence-suite.md), [06 Identity & Access Management](../applications/06-identity-access-management.md) | C16, C17, C18, C19, C20, C21, C22, C23, C24, C25, C26, C27, C28, C29, C30 |
 
 ## PI 2026.4
 

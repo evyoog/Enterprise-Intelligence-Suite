@@ -36,6 +36,11 @@ public class MfaPolicyService {
      * satisfy). False only when the org actually requires it and this
      * particular login didn't use OTP.
      */
+    /** C29: whether the account's organization requires MFA at all. */
+    public boolean isMfaRequiredFor(String keycloakSub) {
+        return !isMfaSatisfied(keycloakSub, null);
+    }
+
     public boolean isMfaSatisfied(String keycloakSub, List<String> amr) {
         if (amr != null && amr.contains("otp")) {
             return true;

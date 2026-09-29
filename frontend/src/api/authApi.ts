@@ -10,6 +10,18 @@ interface TokenResponse {
   mfaVerified: boolean
 }
 
+/** Matches MfaEnrollResponse. */
+export interface SignInEnrollmentStart {
+  secret: string
+  otpAuthUri: string
+  qrCodePngBase64: string
+}
+
+/** Matches SignInEnrollmentResponse: a session plus the new recovery codes (shown once). */
+export interface SignInEnrollmentResult extends TokenResponse {
+  recoveryCodes: string[]
+}
+
 export const authApi = {
   // totp is only ever sent on a login's second submission, after the first
   // one came back with the mfaRequired flag (see ApiError.detail) — see
@@ -22,6 +34,13 @@ export const authApi = {
   // way (see PlatformMfaService on the backend for how it tells them apart).
   verifyMfaChallenge: (challengeId: string, code: string) =>
     apiRequest<TokenResponse>('/auth/mfa/verify', { method: 'POST', body: JSON.stringify({ challengeId, code }) }),
+  // C29: set up an authenticator to finish a sign-in the backend held because
+  // the organization requires MFA (ApiError.detail.platformMfaEnrollmentRequired,
+  // or the ?mfaEnroll= redirect after SAML sign-in). No password is asked.
+  startSignInEnrollment: (challengeId: string) =>
+    apiRequest<SignInEnrollmentStart>('/auth/mfa/enroll/start', { method: 'POST', body: JSON.stringify({ challengeId }) }),
+  completeSignInEnrollment: (challengeId: string, code: string) =>
+    apiRequest<SignInEnrollmentResult>('/auth/mfa/enroll/complete', { method: 'POST', body: JSON.stringify({ challengeId, code }) }),
   refresh: () => apiRequest<TokenResponse>('/auth/refresh', { method: 'POST' }),
   // The one "am I logged in" check — also covers cross-app auto-login (see
   // AuthController.session() on the backend): no local session but the shared

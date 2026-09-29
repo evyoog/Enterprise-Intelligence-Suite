@@ -32,6 +32,12 @@ public class PlatformPrivilegedAccessController {
         return privilegedAccessService.listPendingForPlatform();
     }
 
+    /** REQ-IAM-004.7: active PLATFORM-scope grants, for early revocation. */
+    @GetMapping("/active")
+    public List<PrivilegedAccessRequestDto> active() {
+        return privilegedAccessService.listActiveForPlatform();
+    }
+
     @PostMapping("/{id}/approve")
     public PrivilegedAccessRequestDto approve(@AuthenticationPrincipal Jwt jwt, @PathVariable Long id,
                                                @RequestBody(required = false) PrivilegedAccessDecisionRequest body) {

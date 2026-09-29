@@ -8,5 +8,7 @@ package com.vyoog.eisplatform.modules.federation.dto;
  * is available and the organization's own public name, never anything about
  * the underlying IdP configuration.
  */
-public record SsoCheckResponseDto(boolean available, Long organizationId, String organizationName) {
+public record SsoCheckResponseDto(boolean available, Long organizationId, String organizationName,
+                                  /** REQ-IAM-006: "SAML" or "OIDC" — which sign-in to start. Null when unavailable. */
+                                  String protocol) {
 }

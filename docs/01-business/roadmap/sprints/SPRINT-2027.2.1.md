@@ -18,6 +18,36 @@
 | 14 | `APP-PTR` | [Partner & Provider Management](../applications/14-partner-provider-management.md) | (whole application) | [PO] "eVyoog EIS - Roadmap Initiatives" |
 
 > **Commitment ([DN-2](../open-decisions.md#dn-2-sprint-scope-length-and-dates)):** this sprint commits the P0 (MVP) capabilities of its applications and treats P1 capabilities as stretch scope. Anything not finished is recorded as carry-over on the next sprint page.
+>
+> **Possible overflow ([C31](../open-decisions.md#c31)):** 03b Trials & reviews and 11b Learning & certification are provisionally in [2027.1.3](SPRINT-2027.1.3.md), which is the busiest sprint in the corrected sequence. Neither has anything depending on it, so either can move here if 2027.1.3 is overloaded — check that sprint's page for their current status before this sprint starts.
+
+## Scope changes from decisions
+
+| Change | Decision and scope | FRD | Requirement |
+|---|---|---|---|
+| Unchanged | [C31](../open-decisions.md#c31) 14 Partners stays in this sprint. Its dependencies (03a Checkout, 08 Billing, 13b Connectors, 15b Policy & compliance) all land earlier under the corrected sequence | - | - |
+| Decided | [C42](../open-decisions.md#c42) 14.01 Provider Onboarding built: Register (public, no account required), Verify/Approve/Activate (three separate admin gates, `MANAGE_PARTNERS`), and Contracts (create/edit terms, scheduled auto-expiry — same pattern as 07.04.01) | [provider-onboarding](../../../02-requirements/FRD/provider-onboarding/requirement.md) | REQ-PTR-001 |
+| Not built | [C42](../open-decisions.md#c42) 14.02 Publisher Management — `Product` has no publisher/owner field anywhere in this codebase; needs its own ownership-model decision |
+| Not built | [C42](../open-decisions.md#c42) 14.03 Revenue Sharing (Commission, Payouts) — needs Billing (08), still not built (same gap as C38) |
+| Not built | [C42](../open-decisions.md#c42) 14.04 Partner Operations — unprioritized in any source; needs a Partner Manager role/identity decision |
+
+### FRDs in this sprint
+
+| FRD | Requirement | Functions | Status |
+|---|---|---|---|
+| [provider-onboarding](../../../02-requirements/FRD/provider-onboarding/requirement.md) | REQ-PTR-001 | 14.01.01, 14.01.02 | Approved |
+
+### Progress (as of 2026-09-28)
+
+| Feature | Status | Note |
+|---|---|---|
+| 14.01.01 Provider Lifecycle | Done | Register (public)/Verify/Approve/Activate/Reject, each its own admin decision |
+| 14.01.02 Contracts | Done | Create/edit terms (one upsert), track expiration (scheduled job) |
+| 14.02 Publisher Management | Not started | Carried — needs a product-ownership/publisher model |
+| 14.03 Revenue Sharing | Not started | Carried — needs Billing (08), still not built |
+| 14.04 Partner Operations | Not started | Carried — needs a Partner Manager role/identity decision |
+
+14.02, 14.03 and 14.04 remain open for this sprint, each carried to a later one once the decision it needs is made.
 
 ## EIS 14 Partner & Provider Management
 
@@ -52,6 +82,7 @@ Full breakdown with APIs, services, entities and events: [applications/14-partne
 
 - [C3](../open-decisions.md#c3) The [PO] sprint order is authoritative; the MVP is complete at the end of sprint 2027.1.3.
 - [C4](../open-decisions.md#c4), [C5](../open-decisions.md#c5), [C6](../open-decisions.md#c6) MVP, priority and phase as shown above.
+- [C31](../open-decisions.md#c31) Corrected sprint sequence: 14 unchanged; possible overflow from 2027.1.3 as shown above.
 - Sprint goal, team, capacity and status are Not specified.
 
 Details: [open-decisions.md](../open-decisions.md).

@@ -29,6 +29,16 @@ public record ProductCreateRequest(
     // Empty/null means "no subscription tiers yet" — the flat price above is
     // what the storefront shows in that case. @Valid cascades validation into
     // each ProductPlanCreateRequest when this list is present.
-    @Valid List<ProductPlanCreateRequest> plans
+    @Valid List<ProductPlanCreateRequest> plans,
+    // 02.01.02 Product Structure (sprint 2026.4.1). Null parentProductId means
+    // top-level; variantLabel is meaningless without one.
+    Long parentProductId,
+    String variantLabel,
+    // Other products this one requires — resolved to entities in
+    // ProductService (needs a repository lookup), same reason as platformIds.
+    List<Long> dependsOnProductIds,
+    // 03.01.02 Show featured products (sprint 2027.1.2). Null defaults to
+    // false, same reason as ssoConnected above.
+    Boolean featured
 ) {
 }

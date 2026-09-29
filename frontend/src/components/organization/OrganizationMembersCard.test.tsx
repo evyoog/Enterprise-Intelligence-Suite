@@ -9,11 +9,15 @@ import { OrganizationMembersCard } from './OrganizationMembersCard'
 
 const listMyOrgUsers = vi.fn()
 const changeMemberRole = vi.fn()
+const changeMemberStatus = vi.fn()
+const reviewMemberAccess = vi.fn()
 
 vi.mock('../../api/registrationApi', () => ({
   organizationApi: {
     listMyOrgUsers: () => listMyOrgUsers(),
     changeMemberRole: (id: number, role: string) => changeMemberRole(id, role),
+    changeMemberStatus: (id: number, action: string) => changeMemberStatus(id, action),
+    reviewMemberAccess: (id: number) => reviewMemberAccess(id),
   },
 }))
 
@@ -31,6 +35,8 @@ describe('OrganizationMembersCard', () => {
   beforeEach(() => {
     listMyOrgUsers.mockReset()
     changeMemberRole.mockReset()
+    changeMemberStatus.mockReset()
+    reviewMemberAccess.mockReset()
   })
 
   it('lists members and changes a role', async () => {
@@ -59,6 +65,43 @@ describe('OrganizationMembersCard', () => {
     listMyOrgUsers.mockRejectedValue(new ApiError(403, 'You do not have permission to do this'))
     const { container } = renderWithProviders(<OrganizationMembersCard />)
     await waitFor(() => expect(container.querySelector('section')).toBeNull())
+  })
+
+  // 05.03.01 User Lifecycle (sprint 2026.4.1).
+  it('suspends a member, then offers reactivate instead of suspend', async () => {
+    const user = userEvent.setup()
+    listMyOrgUsers.mockResolvedValue([ada, bob])
+    changeMemberStatus.mockResolvedValue({ ...bob, status: 'SUSPENDED' })
+    renderWithProviders(<OrganizationMembersCard />)
+
+    await user.click(await screen.findByRole('button', { name: 'Suspend Bob Byte' }))
+    expect(changeMemberStatus).toHaveBeenCalledWith(8, 'SUSPEND')
+    expect(await screen.findByRole('button', { name: 'Reactivate Bob Byte' })).toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: 'Suspend Bob Byte' })).not.toBeInTheDocument()
+  })
+
+  it('asks for confirmation before removing a member, and does nothing if declined', async () => {
+    const user = userEvent.setup()
+    listMyOrgUsers.mockResolvedValue([ada, bob])
+    const confirmSpy = vi.spyOn(window, 'confirm').mockReturnValue(false)
+    renderWithProviders(<OrganizationMembersCard />)
+
+    await user.click(await screen.findByRole('button', { name: 'Remove Bob Byte' }))
+    expect(confirmSpy).toHaveBeenCalled()
+    expect(changeMemberStatus).not.toHaveBeenCalled()
+    confirmSpy.mockRestore()
+  })
+
+  it('records an access review', async () => {
+    const user = userEvent.setup()
+    listMyOrgUsers.mockResolvedValue([ada, bob])
+    reviewMemberAccess.mockResolvedValue({ ...bob, lastReviewedAt: '2026-10-01T00:00:00Z' })
+    renderWithProviders(<OrganizationMembersCard />)
+
+    expect(await screen.findAllByText('Never reviewed')).toHaveLength(2)
+    await user.click(screen.getByRole('button', { name: 'Review Bob Byte' }))
+    expect(reviewMemberAccess).toHaveBeenCalledWith(8)
+    await waitFor(() => expect(screen.getAllByText('Never reviewed')).toHaveLength(1))
   })
 
   it('has no detectable a11y violations', async () => {

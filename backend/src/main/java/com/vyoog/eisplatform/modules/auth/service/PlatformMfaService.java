@@ -6,6 +6,8 @@ import com.vyoog.eisplatform.modules.auth.dto.MfaEnrollResponse;
 import com.vyoog.eisplatform.modules.auth.dto.MfaRecoveryCodesResponse;
 import com.vyoog.eisplatform.modules.auth.dto.MfaStatusDto;
 import com.vyoog.eisplatform.modules.auth.model.CustomerMfaCredential;
+import com.vyoog.eisplatform.modules.auth.model.MfaChallengeKind;
+import com.vyoog.eisplatform.modules.registration.repository.CustomerRepository;
 import com.vyoog.eisplatform.modules.auth.model.MfaLoginChallenge;
 import com.vyoog.eisplatform.modules.auth.model.MfaRecoveryCode;
 import com.vyoog.eisplatform.modules.auth.repository.CustomerMfaCredentialRepository;
@@ -74,6 +76,7 @@ public class PlatformMfaService {
     private final CurrentPasswordVerifier currentPasswordVerifier;
     private final AuditService auditService;
     private final NotificationService notificationService;
+    private final CustomerRepository customerRepository;
     private final String issuer;
     private final Duration challengeTtl;
     private final int maxChallengeAttempts;
@@ -92,6 +95,7 @@ public class PlatformMfaService {
             CurrentPasswordVerifier currentPasswordVerifier,
             AuditService auditService,
             NotificationService notificationService,
+            CustomerRepository customerRepository,
             @Value("${vyoog.auth.platform-mfa.issuer}") String issuer,
             @Value("${vyoog.auth.platform-mfa.challenge-ttl-minutes}") long challengeTtlMinutes,
             @Value("${vyoog.auth.platform-mfa.max-challenge-attempts}") int maxChallengeAttempts,
@@ -103,6 +107,7 @@ public class PlatformMfaService {
         this.currentPasswordVerifier = currentPasswordVerifier;
         this.auditService = auditService;
         this.notificationService = notificationService;
+        this.customerRepository = customerRepository;
         this.issuer = issuer;
         this.challengeTtl = Duration.ofMinutes(challengeTtlMinutes);
         this.maxChallengeAttempts = maxChallengeAttempts;
@@ -147,7 +152,13 @@ public class PlatformMfaService {
     @Transactional
     public MfaEnrollResponse enroll(Long customerId, String email, String currentPassword) {
         requireFreshPassword(email, currentPassword);
+        return beginEnrollment(customerId, email);
+    }
 
+    /** Generates a new, not-yet-enabled secret and its QR code. Callers have
+     * already re-authenticated the user: a fresh password ({@link #enroll})
+     * or a sign-in that just succeeded ({@link #startChallengeEnrollment}). */
+    private MfaEnrollResponse beginEnrollment(Long customerId, String email) {
         String secret = secretGenerator.generate();
 
         CustomerMfaCredential credential = credentialRepository.findById(customerId).orElseGet(() -> {
@@ -248,16 +259,61 @@ public class PlatformMfaService {
     }
 
     // ---------------------------------------------------------------
+    // C30 (2026-09-26): an administrator resets another user's MFA (lost
+    // device and recovery codes). Authority is checked by the caller
+    // (OrganizationSelfService for org admins, the MANAGE_REGISTRATIONS gate
+    // for platform admins). Removes the authenticator, the recovery codes and
+    // any sign-in parked on them; if the organization requires MFA, the user
+    // sets up a new authenticator at their next sign-in (C29).
+    // ---------------------------------------------------------------
+
+    @Transactional
+    public void resetByAdmin(Long targetCustomerId, String actorKeycloakSub, Long actorCustomerId, String actorEmail,
+                             Long organizationId) {
+        if (actorCustomerId != null && actorCustomerId.equals(targetCustomerId)) {
+            throw new IllegalArgumentException(
+                "You cannot reset your own two-factor authentication here. Use Security settings instead.");
+        }
+        if (credentialRepository.findById(targetCustomerId).isEmpty()) {
+            throw new IllegalArgumentException("This user has not set up two-factor authentication.");
+        }
+        credentialRepository.deleteById(targetCustomerId);
+        recoveryCodeRepository.deleteByCustomerId(targetCustomerId);
+        challengeRepository.deleteByCustomerId(targetCustomerId);
+
+        String targetEmail = emailOf(targetCustomerId);
+        auditService.recordSuccess("MFA_RESET_BY_ADMIN", actorKeycloakSub, actorCustomerId, actorEmail,
+            "Customer", String.valueOf(targetCustomerId), organizationId,
+            "Two-factor authentication reset for " + targetEmail);
+        notificationService.notify(targetCustomerId, targetEmail, NotificationCategory.SECURITY, NotificationSeverity.WARNING,
+            "Two-factor authentication was reset",
+            "An administrator reset two-factor authentication on your account. Set up your authenticator app again "
+                + "the next time you sign in. If you did not ask for this, contact your administrator immediately.");
+    }
+
+    // ---------------------------------------------------------------
     // Login-time challenge — created by AuthController right after a real
     // Keycloak grant succeeds for a customer with Platform MFA enabled;
     // consumed by AuthController#verifyPlatformMfa.
     // ---------------------------------------------------------------
 
-    public record LoginChallengeResult(Long customerId, String keycloakSub, String accessToken, String refreshToken) {
+    public record LoginChallengeResult(Long customerId, String keycloakSub, String accessToken, String refreshToken,
+                                       boolean impersonated) {
+    }
+
+    /** C29: a sign-in completed by enrolling; the recovery codes are shown once. */
+    public record ChallengeEnrollmentResult(LoginChallengeResult login, List<String> recoveryCodes) {
     }
 
     @Transactional
     public String createLoginChallenge(Long customerId, String keycloakSub, String accessToken, String refreshToken) {
+        return createLoginChallenge(customerId, keycloakSub, accessToken, refreshToken, MfaChallengeKind.VERIFY, false);
+    }
+
+    /** C29: also used for ENROLL challenges and for federated (impersonated) sign-ins. */
+    @Transactional
+    public String createLoginChallenge(Long customerId, String keycloakSub, String accessToken, String refreshToken,
+                                       MfaChallengeKind kind, boolean impersonated) {
         String id = generateOpaqueId();
         MfaLoginChallenge challenge = new MfaLoginChallenge();
         challenge.setId(id);
@@ -268,6 +324,8 @@ public class PlatformMfaService {
         challenge.setAttempts(0);
         challenge.setCreatedAt(Instant.now());
         challenge.setExpiresAt(Instant.now().plus(challengeTtl));
+        challenge.setKind(kind);
+        challenge.setImpersonated(impersonated);
         challengeRepository.save(challenge);
         return id;
     }
@@ -278,18 +336,7 @@ public class PlatformMfaService {
      * login) rather than left available for unlimited guessing. */
     @Transactional(noRollbackFor = InvalidCredentialsException.class)
     public LoginChallengeResult verifyLoginChallenge(String challengeId, String code) {
-        MfaLoginChallenge challenge = challengeRepository.findById(challengeId)
-            .orElseThrow(() -> new InvalidCredentialsException("This verification request is no longer valid. Please sign in again."));
-
-        if (challenge.getExpiresAt().isBefore(Instant.now())) {
-            challengeRepository.deleteById(challengeId);
-            throw new InvalidCredentialsException("This verification request has expired. Please sign in again.");
-        }
-
-        if (challenge.getAttempts() >= maxChallengeAttempts) {
-            challengeRepository.deleteById(challengeId);
-            throw new InvalidCredentialsException("Too many attempts. Please sign in again.");
-        }
+        MfaLoginChallenge challenge = requireUsableChallenge(challengeId, MfaChallengeKind.VERIFY);
 
         Long customerId = challenge.getCustomerId();
         boolean valid = verifyFactor(customerId, code);
@@ -307,7 +354,62 @@ public class PlatformMfaService {
         });
         auditService.recordSuccess("MFA_VERIFICATION_SUCCESS", challenge.getKeycloakSub(), customerId, null, "Customer", String.valueOf(customerId), null, null);
 
-        return new LoginChallengeResult(customerId, challenge.getKeycloakSub(), challenge.getAccessToken(), challenge.getRefreshToken());
+        return new LoginChallengeResult(customerId, challenge.getKeycloakSub(), challenge.getAccessToken(),
+            challenge.getRefreshToken(), challenge.isImpersonated());
+    }
+
+    // ---------------------------------------------------------------
+    // C29: set up an authenticator during sign-in. The user has just signed
+    // in (password or federated), so no password is asked here; the held
+    // tokens become a session only after a valid first code.
+    // ---------------------------------------------------------------
+
+    @Transactional(noRollbackFor = InvalidCredentialsException.class)
+    public MfaEnrollResponse startChallengeEnrollment(String challengeId) {
+        MfaLoginChallenge challenge = requireUsableChallenge(challengeId, MfaChallengeKind.ENROLL);
+        return beginEnrollment(challenge.getCustomerId(), emailOf(challenge.getCustomerId()));
+    }
+
+    @Transactional(noRollbackFor = InvalidCredentialsException.class)
+    public ChallengeEnrollmentResult completeChallengeEnrollment(String challengeId, String code) {
+        MfaLoginChallenge challenge = requireUsableChallenge(challengeId, MfaChallengeKind.ENROLL);
+        Long customerId = challenge.getCustomerId();
+        MfaRecoveryCodesResponse codes;
+        try {
+            codes = verifyEnrollment(customerId, emailOf(customerId), code);
+        } catch (InvalidCredentialsException e) {
+            challenge.setAttempts(challenge.getAttempts() + 1);
+            challengeRepository.save(challenge);
+            throw e;
+        }
+        challengeRepository.deleteById(challengeId);
+        auditService.recordSuccess("MFA_ENROLLED_DURING_SIGN_IN", challenge.getKeycloakSub(), customerId, null,
+            "Customer", String.valueOf(customerId), null, null);
+        return new ChallengeEnrollmentResult(
+            new LoginChallengeResult(customerId, challenge.getKeycloakSub(), challenge.getAccessToken(),
+                challenge.getRefreshToken(), challenge.isImpersonated()),
+            codes.codes());
+    }
+
+    /** Found, of the expected kind, not expired and not out of attempts;
+     * otherwise deleted (when stale) and refused with a "sign in again" message. */
+    private MfaLoginChallenge requireUsableChallenge(String challengeId, MfaChallengeKind expectedKind) {
+        MfaLoginChallenge challenge = challengeRepository.findById(challengeId)
+            .filter(c -> c.getKind() == expectedKind)
+            .orElseThrow(() -> new InvalidCredentialsException("This verification request is no longer valid. Please sign in again."));
+        if (challenge.getExpiresAt().isBefore(Instant.now())) {
+            challengeRepository.deleteById(challengeId);
+            throw new InvalidCredentialsException("This verification request has expired. Please sign in again.");
+        }
+        if (challenge.getAttempts() >= maxChallengeAttempts) {
+            challengeRepository.deleteById(challengeId);
+            throw new InvalidCredentialsException("Too many attempts. Please sign in again.");
+        }
+        return challenge;
+    }
+
+    private String emailOf(Long customerId) {
+        return customerRepository.findById(customerId).map(c -> c.getEmail()).orElse("account-" + customerId);
     }
 
     // ---------------------------------------------------------------

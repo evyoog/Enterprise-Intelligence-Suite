@@ -38,6 +38,9 @@ public record OrganizationAdminDto(
     String adminLastName,
     String adminEmail,
     boolean adminKeycloakLinked,
-    Instant createdAt
+    Instant createdAt,
+    Long regionId,
+    String regionName,
+    boolean allowSeatOverage
 ) {
 }
