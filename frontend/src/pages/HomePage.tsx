@@ -159,8 +159,12 @@ export function HomePage() {
                   <article className="product" key={product.id}>
                     <div className="product-icon">{initials(product.name)}</div>
                     <h3>{product.name}</h3>
+                    {product.category && <span className="product-category">{product.category}</span>}
                     <p>{product.description ?? 'A Vyoog product, ready to launch from your workspace.'}</p>
-                    <RouterLink className="product-link" to="/products">Explore {product.name} →</RouterLink>
+                    <div className="product-actions">
+                      <RouterLink className="product-link" to="/products">Explore →</RouterLink>
+                      <button className="product-subscribe-btn" onClick={authModal.openRegister}>Subscribe</button>
+                    </div>
                   </article>
                 ))}
               </div>

@@ -10,7 +10,7 @@ describe('buildAppNavigation', () => {
       isAdmin: false,
       permissions: { platform: [], organization: ['MANAGE_ORGANIZATION', 'MANAGE_USERS'] },
     }))
-    expect(nav.workspace).toEqual(['dashboard', 'myProducts', 'catalog', 'serviceStatus', 'knowledgeBase', 'support', 'search', 'becomeAPartner'])
+    expect(nav.workspace).toEqual(['dashboard', 'myProducts', 'catalog', 'serviceStatus', 'knowledgeBase', 'support', 'becomeAPartner'])
     // 09 Order & Provisioning Management (sprint 2027.1.1): any organization
     // member sees Orders, not just ORG_ADMIN.
     expect(nav.organization).toEqual(['identityFederation', 'orders'])
@@ -20,14 +20,14 @@ describe('buildAppNavigation', () => {
 
   it('gives a plain member Orders but no other organization item, and no business dashboard', () => {
     const nav = keys(buildAppNavigation({ isAdmin: false, permissions: { platform: [], organization: ['MANAGE_PRIVILEGED_ACCESS_SELF'] } }))
-    expect(nav.workspace).toEqual(['myProducts', 'catalog', 'serviceStatus', 'knowledgeBase', 'support', 'search', 'becomeAPartner'])
+    expect(nav.workspace).toEqual(['myProducts', 'catalog', 'serviceStatus', 'knowledgeBase', 'support', 'becomeAPartner'])
     expect(nav.organization).toEqual(['orders'])
     expect(nav.administration).toBeUndefined()
   })
 
   it('gives an individual (no organization at all) no organization items, business dashboard, or Orders', () => {
     const nav = keys(buildAppNavigation({ isAdmin: false, permissions: { platform: [], organization: [] } }))
-    expect(nav.workspace).toEqual(['myProducts', 'catalog', 'serviceStatus', 'knowledgeBase', 'support', 'search', 'becomeAPartner'])
+    expect(nav.workspace).toEqual(['myProducts', 'catalog', 'serviceStatus', 'knowledgeBase', 'support', 'becomeAPartner'])
     expect(nav.organization).toBeUndefined()
     expect(nav.administration).toBeUndefined()
   })
@@ -38,7 +38,7 @@ describe('buildAppNavigation', () => {
       permissions: { platform: ['MANAGE_REGISTRATIONS', 'VIEW_AUDIT_LOG'], organization: [] },
     }))
     expect(nav.administration).toEqual(['registrations', 'auditLog'])
-    expect(nav.workspace).toEqual(['catalog', 'serviceStatus', 'knowledgeBase', 'search', 'becomeAPartner'])
+    expect(nav.workspace).toEqual(['catalog', 'serviceStatus', 'knowledgeBase', 'becomeAPartner'])
   })
 
   it('shows a platform admin the full admin menu while permissions are unknown', () => {

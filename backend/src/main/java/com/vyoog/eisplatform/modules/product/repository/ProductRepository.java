@@ -8,6 +8,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import java.util.List;
+import java.util.Optional;
 
 /** {@link JpaSpecificationExecutor} backs Phase 17's search — dynamic
  * name/category/platform/status predicates without hand-writing a query
@@ -15,6 +16,9 @@ import java.util.List;
 public interface ProductRepository extends JpaRepository<Product, Long>, JpaSpecificationExecutor<Product> {
 
     List<Product> findByStatus(ProductStatus status);
+
+    /** Used by {@code CatalogSeeder} to seed each eVyoog product suite's flagship app idempotently. */
+    Optional<Product> findByName(String name);
 
     /** 03.01.02 Show featured products (sprint 2027.1.2). */
     List<Product> findByStatusAndFeaturedTrue(ProductStatus status);
