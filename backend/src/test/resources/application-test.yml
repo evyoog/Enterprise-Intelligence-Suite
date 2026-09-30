@@ -59,3 +59,12 @@ app:
 vyoog:
   keycloak:
     ropc-client-secret: test-placeholder-secret
+  # 08 Billing & Payments (C46): a real Razorpay call is never made in tests
+  # (RazorpayClient is @MockBean'd wherever a Razorpay-dependent path is
+  # exercised) — these only need to make RazorpayProperties#isConfigured()
+  # true so "not configured" isn't the path under test by accident.
+  billing:
+    razorpay:
+      key-id: rzp_test_1234567890
+      key-secret: test-key-secret
+      webhook-secret: test-webhook-secret

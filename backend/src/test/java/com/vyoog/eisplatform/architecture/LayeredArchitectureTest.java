@@ -60,10 +60,16 @@ class LayeredArchitectureTest {
         //   reads the same catalog to resolve a product's name for its
         //   review DTOs and to confirm a product exists before a review can
         //   be submitted against it — again no duplicate catalog.
+        // - ..modules.billing.. (08 Billing & Payments, sprint 2026.4.3,
+        //   C46) reuses the existing fixed Currency enum (an invoice bills
+        //   in whatever currency its subscription's plan already uses) and
+        //   reads Product/ProductPlan to build invoice lines — no second
+        //   currency or pricing model defined.
         ArchRule rule = classes().that().resideInAPackage("..modules.product..")
             .should().onlyHaveDependentClassesThat().resideInAnyPackage(
                 "..modules.product..", "..modules.platform..", "..modules.registration..", "..modules.dashboard..",
                 "..modules.servicestatus..", "..modules.administration..", "..modules.search..", "..modules.reviews..",
+                "..modules.billing..",
                 "com.vyoog.eisplatform", "..config.."
             );
 

@@ -138,6 +138,16 @@ vyoog:
     from: ${MAIL_FROM:logesh.b@vyoog.com}
   registration:
     verification-token-ttl-hours: ${REGISTRATION_VERIFICATION_TTL_HOURS:24}
+  # 08 Billing & Payments (sprint 2026.4.3, C46). Deliberately EMPTY
+  # defaults, unlike every other secret above — "not configured" is a real,
+  # intended mode for this integration (BR-10), not a placeholder waiting to
+  # be filled in for local dev. Set these in config/secrets.env
+  # (BR-SEC-001), never here.
+  billing:
+    razorpay:
+      key-id: ${RAZORPAY_KEY_ID:}
+      key-secret: ${RAZORPAY_KEY_SECRET:}
+      webhook-secret: ${RAZORPAY_WEBHOOK_SECRET:}
 
 server:
   port: ${SERVER_PORT:8081}

@@ -38,6 +38,9 @@ import { ProductDetailPage } from './pages/ProductDetailPage'
 import { AdminReviewsPage } from './pages/admin/AdminReviewsPage'
 import { ProviderApplicationPage } from './pages/ProviderApplicationPage'
 import { AdminPartnersPage } from './pages/admin/AdminPartnersPage'
+import { BillingPage, OrganizationBillingPage } from './pages/BillingPage'
+import { AdminBillingPage } from './pages/admin/AdminBillingPage'
+import { AdminPaymentGatewayPage } from './pages/admin/AdminPaymentGatewayPage'
 import { AdminPartnerDetailPage } from './pages/admin/AdminPartnerDetailPage'
 import { RequireAdmin } from './components/routing/RequireAdmin'
 import { RequireAuth } from './components/routing/RequireAuth'
@@ -123,6 +126,9 @@ function MainApp() {
           <Route path="/organization/orders" element={<RequireAuth><OrganizationOrdersPage /></RequireAuth>} />
           {/* 12.01 Ticket Management (sprint 2027.1.2): any authenticated customer. */}
           <Route path="/support/tickets" element={<RequireAuth><MyTicketsPage /></RequireAuth>} />
+          {/* 08 Billing & Payments (sprint 2026.4.3, REQ-BIL-001, C46). */}
+          <Route path="/billing" element={<RequireAuth><BillingPage /></RequireAuth>} />
+          <Route path="/organization/billing" element={<RequireAuth><OrganizationBillingPage /></RequireAuth>} />
 
           {/* "settings" is a category (see the sidebar's expandable Settings
               group), so a bare /admin/settings visit redirects to its first
@@ -152,6 +158,8 @@ function MainApp() {
             <Route path="reviews" element={<AdminReviewsPage />} />
             <Route path="partners" element={<AdminPartnersPage />} />
             <Route path="partners/:id" element={<AdminPartnerDetailPage />} />
+            <Route path="billing" element={<AdminBillingPage />} />
+            <Route path="billing/payment-gateway" element={<AdminPaymentGatewayPage />} />
           </Route>
         </Route>
       </Routes>

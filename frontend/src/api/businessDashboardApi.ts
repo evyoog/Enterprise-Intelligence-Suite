@@ -29,6 +29,10 @@ export interface SubscriptionSummary {
 
 export interface BillingOverview {
   subscriptions: SubscriptionSummary[]
+  // 01.02.01 View spending (REQ-BIL-001.16, C46): real totals from paid
+  // invoices, keyed by currency code; empty when there are none yet.
+  spentThisPeriodByCurrency: Record<string, number>
+  spentLastPeriodByCurrency: Record<string, number>
   note: string
 }
 

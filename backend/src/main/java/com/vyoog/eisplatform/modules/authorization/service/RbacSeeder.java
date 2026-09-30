@@ -75,7 +75,12 @@ public class RbacSeeder implements ApplicationRunner {
             // permission — a distinct, sensitive responsibility from every
             // other admin capability above (it commits the platform to a
             // business relationship with an external party).
-            "MANAGE_PARTNERS")
+            "MANAGE_PARTNERS",
+            // 08 Billing & Payments (sprint 2026.4.3, C46): refunding a
+            // payment and seeing every customer's invoices/payments is a
+            // distinct, sensitive responsibility from every other admin
+            // capability above.
+            "MANAGE_BILLING")
     );
 
     private static final Map<String, List<String>> ORGANIZATION_ROLES = Map.of(

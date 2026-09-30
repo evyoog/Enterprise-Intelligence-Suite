@@ -87,3 +87,29 @@ export async function apiRequest<T>(path: string, options: RequestInit = {}): Pr
   if (response.status === 204) return undefined as T
   return response.json()
 }
+
+/** For the handful of endpoints that return a file (Billing & Payments'
+ * invoice/receipt documents, REQ-BIL-001.11) rather than JSON — triggers a
+ * real browser download using the filename the backend's
+ * Content-Disposition header names, same as clicking a plain download link
+ * but with the Authorization header apiRequest already attaches. */
+export async function apiDownload(path: string): Promise<void> {
+  const token = tokenProvider()
+  const response = await fetch(`${API_BASE_URL}${path}`, {
+    credentials: 'include',
+    headers: token ? { Authorization: `Bearer ${token}` } : {},
+  })
+  if (!response.ok) {
+    const detail = await response.json().catch(() => null)
+    throw new ApiError(response.status, detail?.message ?? 'Download failed', detail)
+  }
+  const disposition = response.headers.get('Content-Disposition') ?? ''
+  const filename = /filename="?([^"]+)"?/.exec(disposition)?.[1] ?? 'document.txt'
+  const blob = await response.blob()
+  const url = URL.createObjectURL(blob)
+  const link = document.createElement('a')
+  link.href = url
+  link.download = filename
+  link.click()
+  URL.revokeObjectURL(url)
+}
