@@ -1,10 +1,10 @@
-# EIS Platform UI/UX Consistency Pass (C44, C45, C48)
+# EIS Platform UI/UX Consistency Pass (C44, C45, C48, C49)
 
 | Field | Value |
 |---|---|
-| Decisions | [C44](../01-business/roadmap/open-decisions.md#c44), [C45](../01-business/roadmap/open-decisions.md#c45), [C48](../01-business/roadmap/open-decisions.md#c48) |
-| Requested | 2026-09-29 (C44), 2026-09-30 (C45, C48) |
-| Status | Phases 1–2 done, plus the purchase flow (C48) (this doc records both what shipped and what's next) |
+| Decisions | [C44](../01-business/roadmap/open-decisions.md#c44), [C45](../01-business/roadmap/open-decisions.md#c45), [C48](../01-business/roadmap/open-decisions.md#c48), [C49](../01-business/roadmap/open-decisions.md#c49) |
+| Requested | 2026-09-29 (C44), 2026-09-30 (C45, C48, C49) |
+| Status | Phases 1–2 done, plus the purchase flow (C48) and the product page's tabbed/interactive redesign (C49) (this doc records both what shipped and what's next) |
 | Reference | `evyoog.com` was requested as the visual/brand reference, twice. Neither attempt could reach it from this build environment — the network egress proxy blocks the whole `vyoog.com` domain family, confirmed against the marketing site, the logo image URL the app already loads (`www.vyoog.com/wp-content/uploads/...`), and re-tested for C45. Nothing below claims to match evyoog.com pixel-for-pixel. C45 unified the app's own two existing color systems (the MUI app theme and the public landing page) into one instead — see "Brand" below. |
 
 ## Why this doc exists
@@ -63,6 +63,10 @@ Subscribe used to be an inline action (C45: call the endpoint, show an alert on 
 - **`/checkout/:productId`** — confirm/save billing details (skipped straight through once details are on file) → activate the subscription (unchanged endpoint, still generates the invoice in the same call) → pay the resulting invoice through Razorpay Checkout right there, reusing Billing's own pay-invoice calls. A $0 plan skips straight to a plain confirmation, since no invoice exists to pay.
 - **`/login`** — a real page (not the modal) with `?returnTo=`, for exactly one reason: Subscribe while signed out needs to come back to checkout afterward, which a modal staying open over the product page doesn't do as cleanly as a real navigation. The modal (`AuthCredentialsForm`, now shared between both) still handles every in-app "Login" link — this page isn't a replacement for it, just an addition for this one flow. It carries the same "Don't have an account? Create one" link to `/register` the modal already had.
 - **Catalog interactivity** — a quick Subscribe action was added directly to product cards on `/products` and the homepage (not just the detail page), routing through the same signed-in/signed-out rule.
+
+### 9. The product page itself, made interactive (C49)
+
+`/products/:id` was one long scroll (header → what's included → access flow → reviews → write-a-review), asked for by name as needing "interactive UI." Reorganized into three tabs — **Overview**, **Pricing**, **Reviews (count)** — and the ratings section gained a real rating-distribution breakdown (5★ down to 1★, computed from this product's own approved reviews) that doubles as a filter: click a bar to narrow the review list to that star value, click again to clear it. The header's average-rating line is itself clickable, jumping straight to the Reviews tab. Nothing here is decorative-only — every interaction reveals or narrows real data this page already had.
 
 ## Full audit: what else was reviewed, and the plan for it
 

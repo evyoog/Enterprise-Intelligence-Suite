@@ -3,6 +3,7 @@ import { render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { MemoryRouter, Route, Routes } from 'react-router-dom'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { ApiError } from '../api/client'
 import { CheckoutPage } from './CheckoutPage'
 
 const getProduct = vi.fn()
@@ -54,6 +55,7 @@ function renderCheckout() {
       <Routes>
         <Route path="/checkout/:productId" element={<CheckoutPage />} />
         <Route path="/my/products" element={<div>My products page</div>} />
+        <Route path="/login" element={<div>Sign in page</div>} />
       </Routes>
     </MemoryRouter>
   )
@@ -70,6 +72,30 @@ describe('CheckoutPage', () => {
     renderCheckout()
     expect(await screen.findByText('Confirm your billing details')).toBeInTheDocument()
     expect(screen.getByRole('button', { name: 'Save & continue' })).toBeInTheDocument()
+  })
+
+  it('sends the visitor to sign in (with a way back here) when the session has expired, instead of a confusing "could not load" message', async () => {
+    getDetails.mockRejectedValue(new ApiError(401, 'Not authenticated'))
+    renderCheckout()
+    expect(await screen.findByText('Sign in page')).toBeInTheDocument()
+    expect(screen.queryByText('Could not load this product.')).not.toBeInTheDocument()
+  })
+
+  it('sends the visitor to sign in if the session expires while starting the subscription', async () => {
+    saveDetails.mockRejectedValue(new ApiError(401, 'Not authenticated'))
+    renderCheckout()
+
+    const user = userEvent.setup()
+    await user.type(await screen.findByLabelText(/Billing name/), 'Jane')
+    await user.type(screen.getByLabelText(/Billing email/), 'jane@example.com')
+    await user.type(screen.getByLabelText(/Address line 1/), '1 Main St')
+    await user.type(screen.getByLabelText(/^City/), 'Chennai')
+    await user.type(screen.getByLabelText(/State \/ region/), 'TN')
+    await user.type(screen.getByLabelText(/Postal code/), '600001')
+    await user.type(screen.getByLabelText(/^Country/), 'India')
+    await user.click(screen.getByRole('button', { name: 'Save & continue' }))
+
+    expect(await screen.findByText('Sign in page')).toBeInTheDocument()
   })
 
   it('goes straight to a free-plan confirmation when the plan has no price', async () => {

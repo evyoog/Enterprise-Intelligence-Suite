@@ -59,7 +59,20 @@ export function CheckoutPage() {
         }
         setStep('billing')
       })
-      .catch(() => setStep('error'))
+      .catch((e) => {
+        // A session that expired (or died in another tab — AuthProvider's
+        // own periodic/focus session check) surfaces here as a 401 on
+        // myBillingApi.getDetails(), which needs a real session — never
+        // show "Could not load this product" for that; it isn't the
+        // product, it's the visitor no longer being signed in. Same
+        // returnTo pattern the Subscribe button itself uses, so signing
+        // back in lands right back on this checkout.
+        if (e instanceof ApiError && e.status === 401) {
+          navigate(`/login?returnTo=${encodeURIComponent(`/checkout/${id}`)}`, { replace: true })
+          return
+        }
+        setStep('error')
+      })
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id])
 
@@ -86,6 +99,10 @@ export function CheckoutPage() {
       setInvoice(openInvoice)
       setStep(overview.gatewayConfigured ? 'payment' : 'gateway-unavailable')
     } catch (e) {
+      if (e instanceof ApiError && e.status === 401) {
+        navigate(`/login?returnTo=${encodeURIComponent(`/checkout/${id}`)}`, { replace: true })
+        return
+      }
       setError(e instanceof ApiError ? e.message : 'Could not start your subscription.')
       setStep('billing')
     }
@@ -104,6 +121,10 @@ export function CheckoutPage() {
       await myBillingApi.confirmPayment(order.paymentId, result)
       setStep('paid')
     } catch (e) {
+      if (e instanceof ApiError && e.status === 401) {
+        navigate(`/login?returnTo=${encodeURIComponent(`/checkout/${id}`)}`, { replace: true })
+        return
+      }
       if (e instanceof Error && e.message === 'cancelled') {
         setError(t('checkout.paymentCancelled'))
       } else {
