@@ -65,7 +65,10 @@ describe('CheckoutPage', () => {
   beforeEach(() => {
     for (const m of [getProduct, subscribe, getDetails, saveDetails, invoices, overview, createPayment, confirmPayment]) m.mockReset()
     getProduct.mockResolvedValue(product)
-    getDetails.mockResolvedValue(null)
+    // 404 is how the backend signals "nothing saved yet" (never a null 200
+    // body — see BillingDetailsService's own doc) — every test that doesn't
+    // override this exercises the first-time, blank-form path.
+    getDetails.mockRejectedValue(new ApiError(404, 'No billing details saved yet'))
   })
 
   it('shows the billing-details form first when none are on file', async () => {

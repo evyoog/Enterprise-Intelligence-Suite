@@ -225,7 +225,10 @@ class BillingServiceTest {
     @Test
     void billingDetailsCanBeSavedAndReadBack() {
         Customer customer = newCustomer();
-        assertThat(billingDetailsService.getForCustomer(customer.getId())).isNull();
+        // 404, not a null 200 body — see BillingDetailsService's own javadoc
+        // on why a null return would break a JSON client.
+        assertThatThrownBy(() -> billingDetailsService.getForCustomer(customer.getId()))
+            .isInstanceOf(ResourceNotFoundException.class);
 
         BillingDetailsDto saved = billingDetailsService.saveForCustomer(customer.getId(), new SaveBillingDetailsRequest(
             "Bill Payer", "billing@example.com", "1 Main St", null, "Chennai", "TN", "600001", "India", "GSTIN123"));

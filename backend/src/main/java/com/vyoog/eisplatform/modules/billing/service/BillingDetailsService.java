@@ -1,5 +1,6 @@
 package com.vyoog.eisplatform.modules.billing.service;
 
+import com.vyoog.eisplatform.common.exception.ResourceNotFoundException;
 import com.vyoog.eisplatform.modules.audit.service.AuditService;
 import com.vyoog.eisplatform.modules.billing.dto.BillingDetailsDto;
 import com.vyoog.eisplatform.modules.billing.dto.SaveBillingDetailsRequest;
@@ -17,12 +18,20 @@ public class BillingDetailsService {
     private final BillingDetailsRepository billingDetailsRepository;
     private final AuditService auditService;
 
+    /** 404, not a null 200 body — a controller method that returns null
+     * makes Spring write an empty response with no JSON at all (not even
+     * the literal {@code null}), which breaks a JSON client expecting a
+     * parseable body. Same "not saved yet" convention as
+     * {@code ReviewsController#getMine} elsewhere in this codebase: the
+     * frontend catches the 404 and treats it as "nothing saved yet". */
     public BillingDetailsDto getForCustomer(Long customerId) {
-        return billingDetailsRepository.findByOwnerCustomerId(customerId).map(this::toDto).orElse(null);
+        return billingDetailsRepository.findByOwnerCustomerId(customerId).map(this::toDto)
+            .orElseThrow(() -> new ResourceNotFoundException("No billing details saved yet"));
     }
 
     public BillingDetailsDto getForOrganization(Long organizationId) {
-        return billingDetailsRepository.findByOwnerOrganizationId(organizationId).map(this::toDto).orElse(null);
+        return billingDetailsRepository.findByOwnerOrganizationId(organizationId).map(this::toDto)
+            .orElseThrow(() -> new ResourceNotFoundException("No billing details saved yet"));
     }
 
     @Transactional
