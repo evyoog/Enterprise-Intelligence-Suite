@@ -1,0 +1,63 @@
+# Data model — Billing & Payments
+
+Proposed for [REQ-BIL-001](../../02-requirements/FRD/billing-payments/requirement.md). Final column types are set in the migration when the feature is built. Workbook entities used: Invoice (DE), Payment (DE). No card numbers or CVV are stored anywhere ([BR-BIL-001](../../03-business-rules/BR-BIL-001-no-raw-card-data.md)).
+
+Ownership: every record belongs to **either** a customer (individual) **or** an organization, never both.
+
+## billing_details
+| Attribute | Required | Description |
+|---|---|---|
+| id | Yes | Primary key |
+| customer_id / organization_id | One of them | Owner |
+| billing_name, billing_email | Yes | |
+| address_line1, address_line2, city, state, postal_code, country | Yes (line 2 optional) | |
+| tax_id | No | For example GSTIN; validation Not specified |
+| updated_at, updated_by | Yes | |
+
+## invoice
+| Attribute | Required | Description |
+|---|---|---|
+| id | Yes | Primary key |
+| invoice_number | Yes | Unique, immutable once finalized; format Not specified |
+| customer_id / organization_id | One of them | Owner |
+| subscription_id | Yes | What it bills |
+| status | Yes | OPEN, PAID, PARTIALLY_REFUNDED, REFUNDED, VOID |
+| currency | Yes | Plan currency |
+| subtotal, tax_amount, total | Yes | Smallest currency unit |
+| period_start, period_end, issued_at, due_at | Yes (due_at rule Not specified) | |
+| bill_to_snapshot | Yes | Billing details copied at issue |
+
+## invoice_line
+id, invoice_id, description, period_start, period_end, quantity, unit_amount, amount.
+
+## payment
+| Attribute | Required | Description |
+|---|---|---|
+| id | Yes | Primary key |
+| invoice_id | Yes | |
+| provider | Yes | `RAZORPAY` |
+| provider_order_id, provider_payment_id | Yes / when known | Razorpay IDs |
+| status | Yes | CREATED, CAPTURED, FAILED, PARTIALLY_REFUNDED, REFUNDED |
+| amount, refunded_amount, currency | Yes | Smallest unit |
+| method_type, method_network, method_last4 | When known | Display only |
+| failure_reason | No | As returned by Razorpay |
+| created_at, captured_at | | |
+
+## payment_refund
+id, payment_id, provider_refund_id, amount, reason, status, requested_by, created_at.
+
+## payment_method
+| Attribute | Required | Description |
+|---|---|---|
+| id | Yes | Primary key |
+| customer_id / organization_id | One of them | Owner |
+| provider_token_ref | Yes | Razorpay token / method reference only |
+| type | Yes | CARD, UPI |
+| network, last4, expiry_month, expiry_year, card_type, issuer | Cards | Display only |
+| upi_masked | UPI | Display only |
+| is_default | Yes | One default per owner |
+| consent_at | Cards | When the customer agreed to save |
+| status | Yes | ACTIVE, REMOVED |
+
+## payment_webhook_event
+id, provider_event_id (unique), event_type, payment_id (nullable), received_at, processed_at, payload_summary (no card data).

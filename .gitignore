@@ -15,6 +15,8 @@ logs/
 .env.local
 .env.*.local
 deployment/environments/*/.env
+# Common secrets file (commit config/secrets.env.example instead) — BR-SEC-001
+config/secrets.env
 
 # Node
 node_modules/
