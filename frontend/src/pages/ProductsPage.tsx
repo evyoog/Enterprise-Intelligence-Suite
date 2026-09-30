@@ -5,6 +5,7 @@ import {
   MenuItem, Select, TextField, Typography,
 } from '@mui/material'
 import { Search } from 'lucide-react'
+import { useNavigate } from 'react-router-dom'
 import { ApiError } from '../api/client'
 import { productsApi, type Product, type ProductSearchResponse } from '../api/productsApi'
 import { searchHistoryApi } from '../api/searchHistoryApi'
@@ -40,6 +41,7 @@ function groupByCategory(products: Product[]): Map<string, Product[]> {
  */
 export function ProductsPage() {
   const auth = useAuth()
+  const navigate = useNavigate()
   const { t } = useTranslation()
   // Signed in, this is the tool's catalog view inside the AppShell: no website
   // header and no marketing copy, just the search and filter controls.
@@ -85,6 +87,18 @@ export function ProductsPage() {
   const groups = useMemo(() => products ? groupByCategory(products) : null, [products])
   const categoryFacets = result?.facets.categories ?? []
   const totalCount = categoryFacets.reduce((sum, f) => sum + f.count, 0)
+
+  // C48: a quick-action Subscribe right on the catalog card — same rule as
+  // the product detail page and the homepage cards: checkout when signed
+  // in, a full-page sign-in (with a way back here) when not.
+  const handleSubscribeClick = (productId: number) => {
+    const checkoutPath = `/checkout/${productId}`
+    if (!auth.isAuthenticated) {
+      navigate(`/login?returnTo=${encodeURIComponent(checkoutPath)}`)
+      return
+    }
+    navigate(checkoutPath)
+  }
 
   return (
     <Box sx={inShell ? undefined : { minHeight: '100vh', bgcolor: 'background.default' }}>
@@ -280,7 +294,11 @@ export function ProductsPage() {
               <Grid container spacing={2.5}>
                 {items.map((product, index) => (
                   <Grid key={product.id} size={{ xs: 12, sm: 6, md: 4, lg: 3 }}>
-                    <ProductTile product={product} animationDelay={(groupIndex * items.length + index) * 40} />
+                    <ProductTile
+                      product={product}
+                      animationDelay={(groupIndex * items.length + index) * 40}
+                      onSubscribe={() => handleSubscribeClick(product.id)}
+                    />
                   </Grid>
                 ))}
               </Grid>

@@ -632,6 +632,7 @@
     "subscribed": "You're subscribed.",
     "subscribeError": "Could not subscribe. Please try again.",
     "viewInMyProducts": "View in My Products",
+    "included": "What's included",
     "requestForOrg": "Buying for your organization? Submit a purchase request",
     "flowTitle": "How you get access",
     "billing": {
@@ -834,5 +835,27 @@
       "testFailed": "Could not reach Razorpay.",
       "notConfiguredGuidance": "Add the Razorpay credentials to the common secrets file, then restart the backend."
     }
+  },
+  "checkout": {
+    "title": "Checkout",
+    "steps": {
+      "details": "Billing details",
+      "payment": "Payment",
+      "done": "Done"
+    },
+    "billingDetails": "Confirm your billing details",
+    "saveAndContinue": "Save & continue",
+    "continueToPayment": "Continue to payment",
+    "free": "Free",
+    "payTitle": "Payment details",
+    "payNow": "Pay {{amount}}",
+    "gatewayUnavailable": "Your subscription is active. Online payments aren't available yet — we'll invoice you once they are.",
+    "viewInBilling": "View in Billing",
+    "paidTitle": "Payment received — you're all set.",
+    "freeTitle": "You're subscribed.",
+    "goToMyProducts": "Go to My Products",
+    "loadError": "Could not load this product.",
+    "paymentCancelled": "Payment was cancelled. You can try again.",
+    "paymentFailed": "Payment failed. Please try again."
   }
 }

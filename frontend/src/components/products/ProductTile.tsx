@@ -1,4 +1,4 @@
-import { Box, Chip, IconButton, Tooltip, Typography } from '@mui/material'
+import { Box, Button, Chip, IconButton, Tooltip, Typography } from '@mui/material'
 import { ExternalLink, Pencil, Trash2 } from 'lucide-react'
 import { Link as RouterLink } from 'react-router-dom'
 import { resolveAssetUrl } from '../../api/client'
@@ -24,6 +24,11 @@ interface ProductTileProps {
   animationDelay?: number
   /** Admin view only — omitted entirely (no trash icon shown) if not passed. */
   onDelete?: () => void
+  /** Public catalog only (C48) — a quick-action Subscribe button right on
+   * the card, so buying doesn't always require opening the detail page
+   * first. The caller decides where it goes (checkout vs. sign-in), same
+   * division of responsibility as {@link onDelete}. */
+  onSubscribe?: () => void
 }
 
 /**
@@ -32,7 +37,7 @@ interface ProductTileProps {
  * description and pricing. Shared by the admin ProductGrid and the public
  * ProductsPage so both catalogs — and any future one — look identical.
  */
-export function ProductTile({ product, admin = false, showPlatformChips = true, animationDelay = 0, onDelete }: ProductTileProps) {
+export function ProductTile({ product, admin = false, showPlatformChips = true, animationDelay = 0, onDelete, onSubscribe }: ProductTileProps) {
   const accent = accentFor(product.name)
   const Icon = iconFor(product.name)
   const launchable = Boolean(product.launchUrl)
@@ -182,6 +187,17 @@ export function ProductTile({ product, admin = false, showPlatformChips = true, 
           </Box>
         ) : (
           <Typography sx={{ fontWeight: 700 }}>${product.price.toFixed(2)}</Typography>
+        )}
+        {onSubscribe && (
+          <Button
+            variant="contained"
+            size="small"
+            fullWidth
+            onClick={onSubscribe}
+            sx={{ mt: 1.25, bgcolor: accent.fg, '&:hover': { bgcolor: accent.fg, filter: 'brightness(0.92)' } }}
+          >
+            Subscribe
+          </Button>
         )}
       </Box>
     </Box>

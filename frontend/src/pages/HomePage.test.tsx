@@ -10,6 +10,12 @@ vi.mock('../auth/AuthProvider', () => ({ useAuth: () => ({ isAuthenticated: fals
 const openRegister = vi.fn()
 vi.mock('../auth/AuthModalContext', () => ({ useAuthModal: () => ({ openLogin: vi.fn(), openRegister }) }))
 
+const mockNavigate = vi.fn()
+vi.mock('react-router-dom', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('react-router-dom')>()
+  return { ...actual, useNavigate: () => mockNavigate }
+})
+
 const list = vi.fn()
 vi.mock('../api/productsApi', async () => {
   const actual = await vi.importActual<typeof import('../api/productsApi')>('../api/productsApi')
@@ -25,9 +31,10 @@ describe('HomePage', () => {
   beforeEach(() => {
     list.mockReset()
     openRegister.mockReset()
+    mockNavigate.mockReset()
   })
 
-  it('lists every product from the catalog with a subscribe button that goes to get-started', async () => {
+  it('lists every product from the catalog with a subscribe button that sends a signed-out visitor to sign in first', async () => {
     list.mockResolvedValue([product])
     renderWithProviders(<HomePage />)
 
@@ -36,6 +43,6 @@ describe('HomePage', () => {
 
     const subscribeButtons = screen.getAllByRole('button', { name: 'Subscribe' })
     await userEvent.setup().click(subscribeButtons[0])
-    expect(openRegister).toHaveBeenCalled()
+    expect(mockNavigate).toHaveBeenCalledWith(`/login?returnTo=${encodeURIComponent('/checkout/1')}`)
   })
 })
