@@ -1,10 +1,10 @@
-# EIS Platform UI/UX Consistency Pass (C44, C45)
+# EIS Platform UI/UX Consistency Pass (C44, C45, C48)
 
 | Field | Value |
 |---|---|
-| Decisions | [C44](../01-business/roadmap/open-decisions.md#c44), [C45](../01-business/roadmap/open-decisions.md#c45) |
-| Requested | 2026-09-29 (C44), 2026-09-30 (C45) |
-| Status | Phases 1–2 done (this doc records both what shipped and what's next) |
+| Decisions | [C44](../01-business/roadmap/open-decisions.md#c44), [C45](../01-business/roadmap/open-decisions.md#c45), [C48](../01-business/roadmap/open-decisions.md#c48) |
+| Requested | 2026-09-29 (C44), 2026-09-30 (C45, C48) |
+| Status | Phases 1–2 done, plus the purchase flow (C48) (this doc records both what shipped and what's next) |
 | Reference | `evyoog.com` was requested as the visual/brand reference, twice. Neither attempt could reach it from this build environment — the network egress proxy blocks the whole `vyoog.com` domain family, confirmed against the marketing site, the logo image URL the app already loads (`www.vyoog.com/wp-content/uploads/...`), and re-tested for C45. Nothing below claims to match evyoog.com pixel-for-pixel. C45 unified the app's own two existing color systems (the MUI app theme and the public landing page) into one instead — see "Brand" below. |
 
 ## Why this doc exists
@@ -49,12 +49,20 @@ This was the explicit worked example in the request ("Global Search should be in
 
 Thittam.ai, Yukth.ai and Tharav.ai's C44 placeholder ("full product description not yet available") is now a short, professional, generic-but-honest one-liner and category (Planning / Automation / Insights) — no specific feature/integration/certification is claimed, since no source describes what these three suites actually do, but it no longer reads as an apology on a live product page either.
 
-### 7. Subscribe + access-flow showcase on the product page (C45)
+### 7. Subscribe + access-flow showcase on the product page (C45, superseded by C48 below)
 
 `/products/:id` (`ProductDetailPage.tsx`) had ratings/reviews but no way to actually get the product. It now has:
-- A **Subscribe** button (signed out → opens the register flow, same as the homepage; signed in → calls the real individual-subscription endpoint, `POST /me/subscriptions`, directly) with success/error feedback.
+- A **Subscribe** button — C45 had it call `POST /me/subscriptions` directly with an inline success alert; C48 replaced that with a real navigation to the dedicated checkout page (see #8) once Billing & Payments existed to check out into.
 - A secondary link to the existing organization-purchase flow (`/organization/orders`) for org-context buying.
 - A four-step **"How you get access"** showcase — Discover → Subscribe → Get access → Launch — depicting the platform's own real flow (what subscribing and single sign-on launch actually do here), not a fabricated per-product business process this codebase has no source for.
+- A **"What's included"** list (C48), sourced from the plan's own `includedFeatures` field.
+
+### 8. A real purchase flow: checkout page + full-page sign-in (C48)
+
+Subscribe used to be an inline action (C45: call the endpoint, show an alert on the same page) — reasonable before Billing & Payments existed, but with a real invoice/payment step now built (C46), a purchase deserved its own screen:
+- **`/checkout/:productId`** — confirm/save billing details (skipped straight through once details are on file) → activate the subscription (unchanged endpoint, still generates the invoice in the same call) → pay the resulting invoice through Razorpay Checkout right there, reusing Billing's own pay-invoice calls. A $0 plan skips straight to a plain confirmation, since no invoice exists to pay.
+- **`/login`** — a real page (not the modal) with `?returnTo=`, for exactly one reason: Subscribe while signed out needs to come back to checkout afterward, which a modal staying open over the product page doesn't do as cleanly as a real navigation. The modal (`AuthCredentialsForm`, now shared between both) still handles every in-app "Login" link — this page isn't a replacement for it, just an addition for this one flow. It carries the same "Don't have an account? Create one" link to `/register` the modal already had.
+- **Catalog interactivity** — a quick Subscribe action was added directly to product cards on `/products` and the homepage (not just the detail page), routing through the same signed-in/signed-out rule.
 
 ## Full audit: what else was reviewed, and the plan for it
 

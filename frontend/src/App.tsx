@@ -39,6 +39,8 @@ import { AdminReviewsPage } from './pages/admin/AdminReviewsPage'
 import { ProviderApplicationPage } from './pages/ProviderApplicationPage'
 import { AdminPartnersPage } from './pages/admin/AdminPartnersPage'
 import { BillingPage, OrganizationBillingPage } from './pages/BillingPage'
+import { LoginPage } from './pages/LoginPage'
+import { CheckoutPage } from './pages/CheckoutPage'
 import { AdminBillingPage } from './pages/admin/AdminBillingPage'
 import { AdminPaymentGatewayPage } from './pages/admin/AdminPaymentGatewayPage'
 import { AdminPartnerDetailPage } from './pages/admin/AdminPartnerDetailPage'
@@ -79,14 +81,16 @@ function MainApp() {
             straight to the software tool (see PublicOnly / appHomePath). */}
         <Route path="/" element={<PublicOnly><HomePage /></PublicOnly>} />
 
-        {/* Login stays a modal (see AuthModalProvider) — this bare path just
-            sends anyone with an old bookmark back to "/" where the Navbar's
-            Login button is. Register is a real, routed page (the emailed
-            verify link needs a real URL to open, and check-email/verify
-            already are). Organization registration is the ONLY registration
-            path now — individual self-registration was removed — so "/register"
-            itself goes straight there instead of a type-select screen. */}
-        <Route path="/login" element={<Navigate to="/" replace />} />
+        {/* In-app "Login" links keep using the modal (see AuthModalProvider) —
+            this real page (C48) exists for flows that need to come back to
+            somewhere specific after signing in, e.g. Subscribe while signed
+            out: "/login?returnTo=/checkout/:productId". Register is a real,
+            routed page (the emailed verify link needs a real URL to open, and
+            check-email/verify already are). Organization registration is the
+            ONLY registration path now — individual self-registration was
+            removed — so "/register" itself goes straight there instead of a
+            type-select screen. */}
+        <Route path="/login" element={<LoginPage />} />
         <Route path="/register" element={<Navigate to="/register/organization" replace />} />
         <Route path="/register/organization" element={<OrganizationRegisterPage />} />
         <Route path="/register/check-email" element={<CheckEmailPage />} />
@@ -129,6 +133,11 @@ function MainApp() {
           {/* 08 Billing & Payments (sprint 2026.4.3, REQ-BIL-001, C46). */}
           <Route path="/billing" element={<RequireAuth><BillingPage /></RequireAuth>} />
           <Route path="/organization/billing" element={<RequireAuth><OrganizationBillingPage /></RequireAuth>} />
+          {/* C48: Subscribe -> straight to payment details for a signed-in
+              customer (RequireAuth is a bookmark/reload safety net — the
+              Subscribe button itself already routes signed-out visitors to
+              /login first, with ?returnTo back here). */}
+          <Route path="/checkout/:productId" element={<RequireAuth><CheckoutPage /></RequireAuth>} />
 
           {/* "settings" is a category (see the sidebar's expandable Settings
               group), so a bare /admin/settings visit redirects to its first

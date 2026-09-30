@@ -632,6 +632,7 @@
     "subscribed": "Te has suscrito.",
     "subscribeError": "No se pudo completar la suscripción. Inténtalo de nuevo.",
     "viewInMyProducts": "Ver en Mis productos",
+    "included": "Qué incluye",
     "requestForOrg": "¿Lo necesitas para tu organización? Envía una solicitud de compra",
     "flowTitle": "Cómo obtienes acceso",
     "billing": {
@@ -834,5 +835,27 @@
       "testFailed": "No se pudo conectar con Razorpay.",
       "notConfiguredGuidance": "Agregue las credenciales de Razorpay al archivo común de secretos y reinicie el backend."
     }
+  },
+  "checkout": {
+    "title": "Pago",
+    "steps": {
+      "details": "Datos de facturación",
+      "payment": "Pago",
+      "done": "Listo"
+    },
+    "billingDetails": "Confirme sus datos de facturación",
+    "saveAndContinue": "Guardar y continuar",
+    "continueToPayment": "Continuar al pago",
+    "free": "Gratis",
+    "payTitle": "Detalles del pago",
+    "payNow": "Pagar {{amount}}",
+    "gatewayUnavailable": "Su suscripción está activa. Los pagos en línea aún no están disponibles — le facturaremos cuando lo estén.",
+    "viewInBilling": "Ver en Facturación",
+    "paidTitle": "Pago recibido — todo listo.",
+    "freeTitle": "Se ha suscrito.",
+    "goToMyProducts": "Ir a Mis productos",
+    "loadError": "No se pudo cargar este producto.",
+    "paymentCancelled": "El pago fue cancelado. Puede intentarlo de nuevo.",
+    "paymentFailed": "El pago falló. Inténtelo de nuevo."
   }
 }

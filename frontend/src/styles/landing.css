@@ -366,6 +366,20 @@ html { scroll-behavior: smooth; }
 .vyoog-landing .footer a:hover { color: #fff; }
 .vyoog-landing .copy { border-top: 1px solid var(--line); margin-top: 40px; padding-top: 20px; font-size: 9px; }
 
+/* AUTH — full page (C48 LoginPage), same visual language as the modal below
+   but as an ordinary page section rather than a fixed overlay. */
+.vyoog-landing .auth-page {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 40px 20px;
+  background: var(--black);
+}
+.vyoog-landing .auth-page .modal-box { box-shadow: 0 35px 100px rgba(0, 0, 0, 0.5); }
+.vyoog-landing .auth-page-back { display: block; text-align: center; margin-bottom: 18px; font-size: 11px; color: #858b9a; text-decoration: none; }
+.vyoog-landing .auth-page-back:hover { color: #fff; }
+
 /* AUTH MODAL */
 .vyoog-landing .modal { position: fixed; inset: 0; z-index: 200; background: rgba(0, 0, 0, 0.76); backdrop-filter: blur(13px); display: none; align-items: center; justify-content: center; padding: 20px; }
 .vyoog-landing .modal.open { display: flex; }

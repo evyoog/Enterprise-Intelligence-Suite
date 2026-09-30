@@ -1,14 +1,12 @@
 import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Alert, Box, Button, Chip, CircularProgress, Paper, Rating, TextField, Typography } from '@mui/material'
-import { Link as RouterLink, useParams } from 'react-router-dom'
+import { Link as RouterLink, useNavigate, useParams } from 'react-router-dom'
 import { Boxes, CheckCircle2, ClipboardCheck, Rocket, Search } from 'lucide-react'
 import { ApiError } from '../api/client'
 import { productsApi, type Product } from '../api/productsApi'
 import { reviewsApi, type ProductRatingSummary } from '../api/reviewsApi'
-import { myProductsApi } from '../api/registrationApi'
 import { useAuth } from '../auth/AuthProvider'
-import { useAuthModal } from '../auth/AuthModalContext'
 import { PageHeader } from '../components/layout/PageHeader'
 import { accentFor } from '../utils/accentColor'
 
@@ -28,7 +26,7 @@ const FLOW_STEPS = [
 export function ProductDetailPage() {
   const { t } = useTranslation()
   const auth = useAuth()
-  const authModal = useAuthModal()
+  const navigate = useNavigate()
   const { id } = useParams<{ id: string }>()
   const productId = Number(id)
 
@@ -39,10 +37,6 @@ export function ProductDetailPage() {
   const [submitting, setSubmitting] = useState(false)
   const [submitError, setSubmitError] = useState<string | null>(null)
   const [justSubmitted, setJustSubmitted] = useState(false)
-
-  const [subscribing, setSubscribing] = useState(false)
-  const [subscribed, setSubscribed] = useState(false)
-  const [subscribeError, setSubscribeError] = useState<string | null>(null)
 
   const loadRatings = () => reviewsApi.getRatings(productId).then(setRatings).catch(() => {})
 
@@ -57,14 +51,17 @@ export function ProductDetailPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [productId])
 
+  // C48: Subscribe goes straight to this platform's own purchase flow — the
+  // payment-details/checkout page for a signed-in customer, or a full-page
+  // sign-in (with a way back here) for a signed-out one. Neither is a modal:
+  // this is a real navigation, the same way a real storefront's "Buy" button
+  // is, not an inline action that quietly activates something on this page.
   const handleSubscribe = () => {
-    if (!auth.isAuthenticated) { authModal.openRegister(); return }
-    setSubscribing(true)
-    setSubscribeError(null)
-    myProductsApi.subscribe(productId)
-      .then(() => setSubscribed(true))
-      .catch((e) => setSubscribeError(e instanceof ApiError ? e.message : t('productDetail.subscribeError')))
-      .finally(() => setSubscribing(false))
+    if (!auth.isAuthenticated) {
+      navigate(`/login?returnTo=${encodeURIComponent(`/checkout/${productId}`)}`)
+      return
+    }
+    navigate(`/checkout/${productId}`)
   }
 
   const submit = async () => {
@@ -114,23 +111,9 @@ export function ProductDetailPage() {
             </Typography>
           </Box>
           <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1, alignItems: 'flex-start', justifyContent: 'center' }}>
-            {subscribeError && <Alert severity="error" sx={{ mb: 0.5 }}>{subscribeError}</Alert>}
-            {subscribed ? (
-              <Alert severity="success" sx={{ mb: 0.5 }}>
-                {t('productDetail.subscribed')}{' '}
-                <RouterLink to="/my/products">{t('productDetail.viewInMyProducts')}</RouterLink>
-              </Alert>
-            ) : (
-              <Button
-                variant="contained"
-                size="large"
-                disabled={subscribing}
-                onClick={handleSubscribe}
-                startIcon={subscribing ? <CircularProgress size={16} color="inherit" /> : undefined}
-              >
-                {t('productDetail.subscribe')}
-              </Button>
-            )}
+            <Button variant="contained" size="large" onClick={handleSubscribe}>
+              {t('productDetail.subscribe')}
+            </Button>
             {auth.isAuthenticated && (
               <Typography variant="caption">
                 <RouterLink to="/organization/orders">{t('productDetail.requestForOrg')}</RouterLink>
@@ -140,12 +123,33 @@ export function ProductDetailPage() {
         </Box>
       </Paper>
 
+      {plan?.includedFeatures && (
+        <Box sx={{ mb: 4 }}>
+          <Typography variant="h6" component="h5" sx={{ fontWeight: 700, mb: 1.5 }}>{t('productDetail.included')}</Typography>
+          <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: 'repeat(2, 1fr)' }, gap: 1 }}>
+            {plan.includedFeatures.split(',').map((feature) => (
+              <Box key={feature} sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                <CheckCircle2 size={16} color={accent.fg} />
+                <Typography variant="body2">{feature.trim()}</Typography>
+              </Box>
+            ))}
+          </Box>
+        </Box>
+      )}
+
       <Typography variant="h6" component="h5" sx={{ fontWeight: 700, mb: 1.5 }}>{t('productDetail.flowTitle')}</Typography>
       <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: 'repeat(4, 1fr)' }, gap: 1.5, mb: 4 }}>
         {FLOW_STEPS.map((step, index) => {
           const StepIcon = step.icon
           return (
-            <Paper key={step.titleKey} variant="outlined" sx={{ p: 2, position: 'relative' }}>
+            <Paper
+              key={step.titleKey}
+              variant="outlined"
+              sx={{
+                p: 2, position: 'relative', transition: 'transform 0.15s ease, box-shadow 0.15s ease',
+                '&:hover': { transform: 'translateY(-2px)', boxShadow: 2 },
+              }}
+            >
               <Typography variant="caption" sx={{ color: 'text.disabled', fontWeight: 700 }}>
                 {String(index + 1).padStart(2, '0')}
               </Typography>
