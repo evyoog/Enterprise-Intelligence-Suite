@@ -624,6 +624,29 @@
     "tickets": "Tus tickets",
     "filterAll": "Todo"
   },
+  "productDetail": {
+    "subscribe": "Suscribirse",
+    "subscribed": "Te has suscrito.",
+    "subscribeError": "No se pudo completar la suscripción. Inténtalo de nuevo.",
+    "viewInMyProducts": "Ver en Mis productos",
+    "requestForOrg": "¿Lo necesitas para tu organización? Envía una solicitud de compra",
+    "flowTitle": "Cómo obtienes acceso",
+    "billing": {
+      "MONTHLY": "/mes",
+      "YEARLY": "/año",
+      "ONE_TIME": "pago único"
+    },
+    "flow": {
+      "discover": "Descubre",
+      "discoverDesc": "Explora el catálogo y compara planes antes de decidir.",
+      "subscribe": "Suscríbete",
+      "subscribeDesc": "Suscríbete al instante, o envía una solicitud de compra para tu organización.",
+      "access": "Obtén acceso",
+      "accessDesc": "Las suscripciones individuales se activan de inmediato; las solicitudes de organización necesitan aprobación del administrador.",
+      "launch": "Inicia",
+      "launchDesc": "Inicio de sesión único — sin un login aparte para este producto."
+    }
+  },
   "reviews": {
     "title": "Reseñas y calificaciones",
     "noReviews": "Todavía no hay reseñas.",

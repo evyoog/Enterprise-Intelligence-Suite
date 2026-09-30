@@ -624,6 +624,29 @@
     "tickets": "Your tickets",
     "filterAll": "All"
   },
+  "productDetail": {
+    "subscribe": "Subscribe",
+    "subscribed": "You're subscribed.",
+    "subscribeError": "Could not subscribe. Please try again.",
+    "viewInMyProducts": "View in My Products",
+    "requestForOrg": "Buying for your organization? Submit a purchase request",
+    "flowTitle": "How you get access",
+    "billing": {
+      "MONTHLY": "/month",
+      "YEARLY": "/year",
+      "ONE_TIME": "one-time"
+    },
+    "flow": {
+      "discover": "Discover",
+      "discoverDesc": "Browse the catalog and compare plans before you commit.",
+      "subscribe": "Subscribe",
+      "subscribeDesc": "Subscribe instantly, or submit a purchase request for your organization.",
+      "access": "Get access",
+      "accessDesc": "Individual subscriptions activate right away; organization requests need admin approval.",
+      "launch": "Launch",
+      "launchDesc": "Single sign-on — no separate login for this product."
+    }
+  },
   "reviews": {
     "title": "Reviews & ratings",
     "noReviews": "No reviews yet.",

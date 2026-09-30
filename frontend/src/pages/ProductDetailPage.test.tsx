@@ -38,6 +38,15 @@ vi.mock('../auth/AuthProvider', async () => {
   return { ...actual, useAuth: () => authState }
 })
 
+const openRegister = vi.fn()
+vi.mock('../auth/AuthModalContext', () => ({ useAuthModal: () => ({ openLogin: vi.fn(), openRegister }) }))
+
+const subscribe = vi.fn()
+vi.mock('../api/registrationApi', async () => {
+  const actual = await vi.importActual<typeof import('../api/registrationApi')>('../api/registrationApi')
+  return { ...actual, myProductsApi: { ...actual.myProductsApi, subscribe: (id: number) => subscribe(id) } }
+})
+
 const product = {
   id: 1, name: 'Valam.ai', description: 'Analytics for everyone.', price: 0, status: 'ACTIVE' as const,
   ssoConnected: false, featured: false, platforms: [], plans: [], version: 1, dependsOnProductIds: [],
@@ -59,9 +68,41 @@ function renderDetail() {
 
 describe('ProductDetailPage', () => {
   beforeEach(() => {
-    for (const m of [getProduct, getRatings, getMine, submit]) m.mockReset()
+    for (const m of [getProduct, getRatings, getMine, submit, subscribe, openRegister]) m.mockReset()
     authState = { isAuthenticated: false }
     getMine.mockRejectedValue(new ApiError(404, 'Review not found'))
+  })
+
+  it('opens the register modal when a signed-out visitor clicks Subscribe', async () => {
+    getProduct.mockResolvedValue(product)
+    getRatings.mockResolvedValue({ averageRating: null, reviewCount: 0, reviews: [] })
+    renderDetail()
+
+    await userEvent.setup().click(await screen.findByRole('button', { name: 'Subscribe' }))
+    expect(openRegister).toHaveBeenCalled()
+    expect(subscribe).not.toHaveBeenCalled()
+  })
+
+  it('subscribes a signed-in customer directly and shows a confirmation', async () => {
+    authState = { isAuthenticated: true }
+    getProduct.mockResolvedValue(product)
+    getRatings.mockResolvedValue({ averageRating: null, reviewCount: 0, reviews: [] })
+    subscribe.mockResolvedValue({ id: 1, productId: 1, productName: 'Valam.ai', status: 'ACTIVE' })
+    renderDetail()
+
+    await userEvent.setup().click(await screen.findByRole('button', { name: 'Subscribe' }))
+    expect(subscribe).toHaveBeenCalledWith(1)
+    expect(await screen.findByText("You're subscribed.")).toBeInTheDocument()
+  })
+
+  it('shows the product-access flow showcase', async () => {
+    getProduct.mockResolvedValue(product)
+    getRatings.mockResolvedValue({ averageRating: null, reviewCount: 0, reviews: [] })
+    renderDetail()
+
+    expect(await screen.findByText('How you get access')).toBeInTheDocument()
+    expect(screen.getByText('Discover')).toBeInTheDocument()
+    expect(screen.getByText('Launch')).toBeInTheDocument()
   })
 
   it('shows the average rating and approved reviews', async () => {
