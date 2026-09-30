@@ -635,6 +635,11 @@
     "included": "Qué incluye",
     "requestForOrg": "¿Lo necesitas para tu organización? Envía una solicitud de compra",
     "flowTitle": "Cómo obtienes acceso",
+    "tabs": {
+      "overview": "Resumen",
+      "pricing": "Precios",
+      "reviews": "Reseñas ({{count}})"
+    },
     "billing": {
       "MONTHLY": "/mes",
       "YEARLY": "/año",
@@ -655,6 +660,9 @@
     "title": "Reseñas y calificaciones",
     "noReviews": "Todavía no hay reseñas.",
     "averageOf": "{{average}} de 5 ({{count}} reseña{{plural}})",
+    "filterByStars": "Mostrar solo reseñas de {{count}} estrellas",
+    "clearFilter": "Quitar filtro",
+    "noneAtThisRating": "No hay reseñas con esta calificación.",
     "yourReview": {
       "title": "Escribe una reseña",
       "rating": "Calificación",

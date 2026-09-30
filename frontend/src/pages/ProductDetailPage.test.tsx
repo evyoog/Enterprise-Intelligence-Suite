@@ -102,6 +102,7 @@ describe('ProductDetailPage', () => {
       reviews: [{ id: 1, productId: 1, productName: 'Valam.ai', customerId: 5, customerName: 'Jane', rating: 5, comment: 'Great!', status: 'APPROVED', createdAt: '2027-03-01T00:00:00Z' }],
     })
     renderDetail()
+    await userEvent.setup().click(await screen.findByRole('tab', { name: /Reviews/ }))
     expect(await screen.findByText('Great!')).toBeInTheDocument()
   })
 
@@ -109,7 +110,32 @@ describe('ProductDetailPage', () => {
     getProduct.mockResolvedValue(product)
     getRatings.mockResolvedValue({ averageRating: null, reviewCount: 0, reviews: [] })
     renderDetail()
+    await userEvent.setup().click(await screen.findByRole('tab', { name: /Reviews/ }))
     expect(await screen.findByText('No reviews yet.')).toBeInTheDocument()
+  })
+
+  it('filters the review list by clicking a star-rating bar, and clears the filter again', async () => {
+    getProduct.mockResolvedValue(product)
+    getRatings.mockResolvedValue({
+      averageRating: 4,
+      reviewCount: 2,
+      reviews: [
+        { id: 1, productId: 1, productName: 'Valam.ai', customerId: 5, customerName: 'Jane', rating: 5, comment: 'Excellent!', status: 'APPROVED', createdAt: '2027-03-01T00:00:00Z' },
+        { id: 2, productId: 1, productName: 'Valam.ai', customerId: 6, customerName: 'Tom', rating: 3, comment: 'It is okay.', status: 'APPROVED', createdAt: '2027-03-02T00:00:00Z' },
+      ],
+    })
+    renderDetail()
+    const user = userEvent.setup()
+    await user.click(await screen.findByRole('tab', { name: /Reviews/ }))
+    expect(await screen.findByText('Excellent!')).toBeInTheDocument()
+    expect(screen.getByText('It is okay.')).toBeInTheDocument()
+
+    await user.click(screen.getByRole('button', { name: 'Show only 5-star reviews' }))
+    expect(screen.getByText('Excellent!')).toBeInTheDocument()
+    expect(screen.queryByText('It is okay.')).not.toBeInTheDocument()
+
+    await user.click(screen.getByRole('button', { name: 'Clear filter' }))
+    expect(screen.getByText('It is okay.')).toBeInTheDocument()
   })
 
   it('lets a signed-in customer submit a review', async () => {
@@ -120,6 +146,7 @@ describe('ProductDetailPage', () => {
     renderDetail()
 
     const user = userEvent.setup()
+    await user.click(await screen.findByRole('tab', { name: /Reviews/ }))
     await screen.findByText('Write a review')
     fireEvent.click(screen.getByLabelText('4 Stars'))
     await user.click(await screen.findByRole('button', { name: 'Submit review' }))

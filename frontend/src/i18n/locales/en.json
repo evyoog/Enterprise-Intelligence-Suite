@@ -635,6 +635,11 @@
     "included": "What's included",
     "requestForOrg": "Buying for your organization? Submit a purchase request",
     "flowTitle": "How you get access",
+    "tabs": {
+      "overview": "Overview",
+      "pricing": "Pricing",
+      "reviews": "Reviews ({{count}})"
+    },
     "billing": {
       "MONTHLY": "/month",
       "YEARLY": "/year",
@@ -655,6 +660,9 @@
     "title": "Reviews & ratings",
     "noReviews": "No reviews yet.",
     "averageOf": "{{average}} out of 5 ({{count}} review{{plural}})",
+    "filterByStars": "Show only {{count}}-star reviews",
+    "clearFilter": "Clear filter",
+    "noneAtThisRating": "No reviews at this rating.",
     "yourReview": {
       "title": "Write a review",
       "rating": "Rating",

@@ -350,6 +350,15 @@ Raised from the sprint 2026.3.3 development plan.
 
 **Reason:** a purchase is normally the single most important flow ANY commercial platform has — it deserved a real, dedicated screen (billing details → payment) rather than a background action with an inline success/error alert, and a returning customer deserved a way to sign in (not just register) when Subscribe interrupts them signed out.
 
+### C49
+**Decision (product owner, 2026-09-30):** `/products/:id` (the page opened from "Reviews & ratings") needed more interactive UI, not just more content.
+- Reorganized into three tabs — **Overview** (description, What's included, the access-flow showcase), **Pricing** (every real plan as its own hoverable card, not just the one implicit default), **Reviews** (count shown right on the tab) — instead of one long scroll.
+- **Rating distribution** (5★ down to 1★) computed client-side from this product's own approved reviews (real counts, nothing fabricated) as clickable bars: clicking a bar filters the review list to that star value, clicking it again (or "Clear filter") returns to all reviews.
+- The header's average-rating line is itself a click target that jumps to the Reviews tab.
+- Kept from C45/C48: the Subscribe button's signed-in/signed-out routing, the access-flow showcase, and the "What's included" list — none of that changed, just where it sits.
+
+**Reason:** three separate concerns (what it is, what it costs, what people think of it) read better as three tabs than one page everyone has to scroll past to reach the part they want, and a static bar chart is a missed chance to also let a visitor narrow the reviews to what they actually care about.
+
 ### DN-2 Sprint scope, length and dates
 **Decision:**
 - **Sprint length:** sprints are **calendar months**. Sprint `.1`, `.2` and `.3` are the first, second and third months of the PI's calendar quarter. Example: 2026.3.3 = 1–30 Sep 2026; 2026.4.1 = 1–31 Oct 2026.
