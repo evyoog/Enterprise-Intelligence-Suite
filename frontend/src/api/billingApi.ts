@@ -140,7 +140,10 @@ interface Page<T> {
 function scopedApi(base: string) {
   return {
     overview: () => apiRequest<BillingOverview>(`${base}/overview`),
-    getDetails: () => apiRequest<BillingDetails | null>(`${base}/details`),
+    // 404 (not a nullable 200) when nothing is saved yet — callers catch it
+    // and treat it as "no billing details yet", same convention as
+    // reviewsApi.getMine elsewhere in this app.
+    getDetails: () => apiRequest<BillingDetails>(`${base}/details`),
     saveDetails: (input: SaveBillingDetailsInput) =>
       apiRequest<BillingDetails>(`${base}/details`, { method: 'PUT', body: JSON.stringify(input) }),
     invoices: (page = 0) => apiRequest<Page<Invoice>>(`${base}/invoices?page=${page}`),

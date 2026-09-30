@@ -50,29 +50,39 @@ export function CheckoutPage() {
   const [hasExistingDetails, setHasExistingDetails] = useState(false)
 
   useEffect(() => {
-    Promise.all([productsApi.get(id), myBillingApi.getDetails()])
-      .then(([p, d]) => {
-        setProduct(p)
-        if (d) {
-          setDetails({ ...d, addressLine2: d.addressLine2 ?? '', taxId: d.taxId ?? '' })
-          setHasExistingDetails(true)
-        }
-        setStep('billing')
-      })
-      .catch((e) => {
+    // Promise.allSettled, not Promise.all: a first-time customer has no
+    // billing details yet, and myBillingApi.getDetails() 404s for that
+    // (BillingDetailsService's own doc) — that rejection must NOT fail the
+    // whole page load the way Promise.all's fail-fast would. The blank form
+    // is the correct, intended result there, not an error.
+    Promise.allSettled([productsApi.get(id), myBillingApi.getDetails()]).then(([productResult, detailsResult]) => {
+      if (productResult.status === 'rejected') {
+        setStep('error')
+        return
+      }
+      setProduct(productResult.value)
+
+      if (detailsResult.status === 'fulfilled') {
+        const d = detailsResult.value
+        setDetails({ ...d, addressLine2: d.addressLine2 ?? '', taxId: d.taxId ?? '' })
+        setHasExistingDetails(true)
+      } else {
+        const e = detailsResult.reason
         // A session that expired (or died in another tab — AuthProvider's
-        // own periodic/focus session check) surfaces here as a 401 on
-        // myBillingApi.getDetails(), which needs a real session — never
+        // own periodic/focus session check) surfaces here as a 401 — never
         // show "Could not load this product" for that; it isn't the
         // product, it's the visitor no longer being signed in. Same
         // returnTo pattern the Subscribe button itself uses, so signing
-        // back in lands right back on this checkout.
+        // back in lands right back on this checkout. Any other failure
+        // (in practice, only the expected 404 for "nothing saved yet") just
+        // leaves the billing-details form blank — nothing to fill in yet.
         if (e instanceof ApiError && e.status === 401) {
           navigate(`/login?returnTo=${encodeURIComponent(`/checkout/${id}`)}`, { replace: true })
           return
         }
-        setStep('error')
-      })
+      }
+      setStep('billing')
+    })
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id])
 
