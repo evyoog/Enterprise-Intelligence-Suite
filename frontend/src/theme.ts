@@ -29,9 +29,21 @@ const base = {
   },
 }
 
-// Phase 21: real light/dark themes (previously hardcoded light-only "by
-// design") — same brand blue accent in both, everything else re-tuned for
-// contrast in dark mode rather than just flipping background/text.
+// C45: the same blue/violet/cyan triad already used on the public landing
+// page (styles/landing.css's own --blue/--violet/--cyan) is now the whole
+// app's palette — before this, the signed-in tool (MUI blue #2563eb) and the
+// public site (blue/violet/cyan gradients) were two different color systems
+// that happened to share a building. evyoog.com itself couldn't be reached
+// from this environment (see docs/08-architecture/ui-ux-redesign.md), so
+// this unifies what the app already had rather than guessing a new brand.
+const BRAND = {
+  blue: '#4c63ff',
+  blueDark: '#3548d6',
+  blueLight: '#7d8dff',
+  violet: '#733dff',
+  cyan: '#42d8ff',
+}
+
 export function getTheme(mode: 'light' | 'dark'): Theme {
   if (mode === 'dark') {
     return createTheme({
@@ -39,20 +51,29 @@ export function getTheme(mode: 'light' | 'dark'): Theme {
       palette: {
         mode: 'dark',
         primary: {
-          main: '#60a5fa',
-          dark: '#3b82f6',
-          light: '#93c5fd',
+          main: BRAND.blueLight,
+          dark: BRAND.blue,
+          light: '#a6b1ff',
           contrastText: '#0b1220',
         },
+        secondary: {
+          main: '#a685ff',
+          dark: BRAND.violet,
+          light: '#c3aeff',
+          contrastText: '#0b1220',
+        },
+        info: {
+          main: BRAND.cyan,
+        },
         background: {
-          default: '#0f172a',
-          paper: '#1e293b',
+          default: '#0f1117',
+          paper: '#191c26',
         },
         text: {
           primary: '#f1f5f9',
-          secondary: '#94a3b8',
+          secondary: '#98a2b3',
         },
-        divider: '#334155',
+        divider: '#2b2f3d',
       },
     })
   }
@@ -62,20 +83,29 @@ export function getTheme(mode: 'light' | 'dark'): Theme {
     palette: {
       mode: 'light',
       primary: {
-        main: '#2563eb',
-        dark: '#1d4ed8',
-        light: '#3b82f6',
+        main: BRAND.blue,
+        dark: BRAND.blueDark,
+        light: BRAND.blueLight,
         contrastText: '#ffffff',
       },
+      secondary: {
+        main: BRAND.violet,
+        dark: '#5c2ed6',
+        light: '#9a6bff',
+        contrastText: '#ffffff',
+      },
+      info: {
+        main: '#1090ad',
+      },
       background: {
-        default: '#f8fafc',
+        default: '#f6f7fb',
         paper: '#ffffff',
       },
       text: {
-        primary: '#1e293b',
-        secondary: '#64748b',
+        primary: '#181b27',
+        secondary: '#5c6270',
       },
-      divider: '#e2e8f0',
+      divider: '#e4e6ee',
     },
   })
 }

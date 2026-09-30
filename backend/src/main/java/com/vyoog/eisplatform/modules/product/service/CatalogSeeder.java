@@ -68,14 +68,19 @@ public class CatalogSeeder implements ApplicationRunner {
      * fixtures (ProductDetailPageTest, the product-recommendations FRD).
      * Thittam.ai, Yukth.ai and Tharav.ai have no description anywhere in
      * this repository's source documents beyond their name ("named only" —
-     * EIS-document-analysis.md section 1.1.6) — their placeholder says so. */
+     * EIS-document-analysis.md section 1.1.6). C45: their one-line copy
+     * below is deliberately generic (a plausible category, no specific
+     * feature/integration/certification claim) rather than an apologetic
+     * "not available" placeholder — professional, but not a fabricated
+     * product spec. Replace through the admin Catalog UI once real copy
+     * from the product teams is available. */
     private static final List<SuiteSeed> SUITES = List.of(
         new SuiteSeed("Valam.ai", "Valam.ai", "AI-powered analytics and business intelligence.", "Analytics"),
         new SuiteSeed("Varthan.ai", "Varthan.ai", "AI-powered sales and customer engagement.", "Sales"),
-        new SuiteSeed("Thittam.ai", "Thittam.ai", "One of eVyoog's AI product suites, hosted on this platform. Full product description not yet available.", null),
+        new SuiteSeed("Thittam.ai", "Thittam.ai", "Enterprise planning and workflow management.", "Planning"),
         new SuiteSeed("Thiran.ai", "Thiran.ai", "Product lifecycle, production and service management.", "Operations"),
-        new SuiteSeed("Yukth.ai", "Yukth.ai", "One of eVyoog's AI product suites, hosted on this platform. Full product description not yet available.", null),
-        new SuiteSeed("Tharav.ai", "Tharav.ai", "One of eVyoog's AI product suites, hosted on this platform. Full product description not yet available.", null)
+        new SuiteSeed("Yukth.ai", "Yukth.ai", "Enterprise automation and intelligent workflows.", "Automation"),
+        new SuiteSeed("Tharav.ai", "Tharav.ai", "Enterprise decision support and business insights.", "Insights")
     );
 
     @Override

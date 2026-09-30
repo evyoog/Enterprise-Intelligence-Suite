@@ -1,11 +1,11 @@
-# EIS Platform UI/UX Consistency Pass (C44)
+# EIS Platform UI/UX Consistency Pass (C44, C45)
 
 | Field | Value |
 |---|---|
-| Decision | [C44](../01-business/roadmap/open-decisions.md#c44) |
-| Requested | 2026-09-29 |
-| Status | Phase 1 done (this doc records both what shipped and what's next) |
-| Reference | `evyoog.com` was requested as the visual/brand reference. It could not be reached from this build environment — the network egress proxy blocks the whole `vyoog.com` domain family, confirmed against both the marketing site and the logo image URL the app already loads (`www.vyoog.com/wp-content/uploads/...`). Nothing below claims to match evyoog.com pixel-for-pixel; the existing in-app logo and a professional enterprise-platform palette were used instead — see "Brand" below. |
+| Decisions | [C44](../01-business/roadmap/open-decisions.md#c44), [C45](../01-business/roadmap/open-decisions.md#c45) |
+| Requested | 2026-09-29 (C44), 2026-09-30 (C45) |
+| Status | Phases 1–2 done (this doc records both what shipped and what's next) |
+| Reference | `evyoog.com` was requested as the visual/brand reference, twice. Neither attempt could reach it from this build environment — the network egress proxy blocks the whole `vyoog.com` domain family, confirmed against the marketing site, the logo image URL the app already loads (`www.vyoog.com/wp-content/uploads/...`), and re-tested for C45. Nothing below claims to match evyoog.com pixel-for-pixel. C45 unified the app's own two existing color systems (the MUI app theme and the public landing page) into one instead — see "Brand" below. |
 
 ## Why this doc exists
 
@@ -35,6 +35,27 @@ This was the explicit worked example in the request ("Global Search should be in
 - **Added:** `frontend/src/components/layout/TopBarSearch.tsx` — a debounced search box in the signed-in top bar (`AppShell.tsx`), showing a grouped live-result dropdown (Products / Knowledge base / Your tickets), with a "See all results" row that deep-links to `/search?q=...`.
 - **Kept:** the `/search` route itself, and `GlobalSearchPage.tsx` — still real, still reachable, just not a permanent nav destination. On mobile (where a persistent search box doesn't fit the top bar) a search icon button opens `/search` directly instead.
 
+### 4. Create added to the admin Products page (built between C44 and C45, on direct request)
+
+`/admin/apps` had Read (the grid), Update and Delete (`ProductTile`'s edit/trash icons) but not Create — the only way to add a product was the separate Settings page (item #2 below). An "Add App" button now opens the same `ProductForm` in a dialog, reused verbatim; the grid refetches on success via a new `reloadToken` prop on `ProductGrid`. The Settings page still works too (not removed, since removing it wasn't asked for) — it's just no longer the only way in.
+
+### 5. One color system instead of two (C45)
+
+**Problem found:** `theme.ts` (the signed-in MUI app) and `styles/landing.css` (the public marketing page) were never the same brand — `theme.ts` used a generic blue (`#2563eb`, no secondary color at all); `landing.css` already had its own real blue/violet/cyan triad (`--blue #4c63ff`, `--violet #733dff`, `--cyan #42d8ff`). A visitor saw one palette on `/` and a different one the instant they signed in.
+
+**Fix:** `theme.ts`'s `primary`/`secondary`/`info` (light and dark) now derive from that same triad instead of an unrelated blue. A handful of `landing.css` rules that had drifted to their own one-off hex (the product-card icon gradients, the featured-plan button, the auth-modal focus/link colors) now reference the file's own `--blue`/`--violet`/`--cyan` custom properties, the way the rest of that file already did.
+
+### 6. Product descriptions refined (C45)
+
+Thittam.ai, Yukth.ai and Tharav.ai's C44 placeholder ("full product description not yet available") is now a short, professional, generic-but-honest one-liner and category (Planning / Automation / Insights) — no specific feature/integration/certification is claimed, since no source describes what these three suites actually do, but it no longer reads as an apology on a live product page either.
+
+### 7. Subscribe + access-flow showcase on the product page (C45)
+
+`/products/:id` (`ProductDetailPage.tsx`) had ratings/reviews but no way to actually get the product. It now has:
+- A **Subscribe** button (signed out → opens the register flow, same as the homepage; signed in → calls the real individual-subscription endpoint, `POST /me/subscriptions`, directly) with success/error feedback.
+- A secondary link to the existing organization-purchase flow (`/organization/orders`) for org-context buying.
+- A four-step **"How you get access"** showcase — Discover → Subscribe → Get access → Launch — depicting the platform's own real flow (what subscribing and single sign-on launch actually do here), not a fabricated per-product business process this codebase has no source for.
+
 ## Full audit: what else was reviewed, and the plan for it
 
 Every screen in `frontend/src/pages/` and `frontend/src/pages/admin/` was reviewed against three questions: does it duplicate another screen's data, does it hide a primary action (like "create") somewhere a user wouldn't look for it, and is its table/filter/form pattern consistent with the platform's other admin screens. Findings below; **only #3 above has been built** — the rest are scoped and ready to build next, in the order listed.
@@ -60,7 +81,9 @@ Right now each admin list (Reviews, Partners, Tickets, Audit Log, Registrations�
 
 ### Brand
 
-`theme.ts` was not changed in this pass — the real brand reference (`evyoog.com`) was unreachable, and guessing colors and presenting them as "the eVyoog brand" would be worse than leaving the current palette in place. The in-app logo (`https://www.vyoog.com/.../evyoog-logonew1.png`, loaded from the user's own browser, not from this build environment) is kept as-is everywhere it already appears. If real brand tokens (hex values, type, logo files) become available, they drop into `theme.ts`'s existing token structure directly — no structural change needed first.
+`evyoog.com` was requested as the brand/color reference twice (C44, C45) and both attempts confirmed it's unreachable from this build environment — the network egress proxy blocks the whole `vyoog.com` domain family, including the in-app logo image URL. Guessing colors and presenting them as "the eVyoog brand" would be worse than not touching the palette, so C44 left `theme.ts` alone.
+
+C45 took a different, honest path: instead of inventing a third palette, it unified the app's own two pre-existing, already-in-repo color systems. `styles/landing.css` (the public marketing page) already had a real blue/violet/cyan triad (`--blue #4c63ff`, `--violet #733dff`, `--cyan #42d8ff`); `theme.ts` (the signed-in MUI app) used an unrelated generic blue with no secondary color at all. `theme.ts`'s `primary`/`secondary`/`info` tokens (light and dark) now derive from that same triad, so the signed-in app and the public site are one consistent brand instead of two. The in-app logo (`https://www.vyoog.com/.../evyoog-logonew1.png`, loaded from the user's own browser, not from this build environment) is kept as-is everywhere it already appears. If real brand tokens (hex values, type, logo files) become available from evyoog.com, they drop into `theme.ts`'s existing token structure directly — no structural change needed first.
 
 ## Suggested build order for what's left
 
