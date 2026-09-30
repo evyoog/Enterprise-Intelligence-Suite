@@ -14,6 +14,7 @@ vi.mock('../../auth/AuthProvider', () => ({ useAuth: () => mockUseAuth() }))
 const getPermissions = vi.fn()
 vi.mock('../../api/myPermissionsApi', () => ({ myPermissionsApi: { get: () => getPermissions() } }))
 vi.mock('./NotificationBell', () => ({ NotificationBell: () => <button type="button">Notifications</button> }))
+vi.mock('../../api/globalSearchApi', () => ({ globalSearchApi: { search: () => Promise.resolve({ products: [], knowledgeArticles: [], tickets: [] }) } }))
 
 function Probe({ label }: { label: string }) {
   return <p>{label} {useInAppShell() ? '(in app)' : '(public)'}</p>

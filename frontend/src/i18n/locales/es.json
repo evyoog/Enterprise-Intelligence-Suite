@@ -615,6 +615,9 @@
   "search": {
     "title": "Buscar",
     "placeholder": "Buscar productos, base de conocimiento y tus tickets…",
+    "topBarPlaceholder": "Buscar productos, base de conocimiento, tickets…",
+    "searching": "Buscando…",
+    "seeAllResults": "Ver todos los resultados de \"{{query}}\"",
     "noResults": "Nada coincide con tu búsqueda todavía.",
     "products": "Productos",
     "knowledgeArticles": "Base de conocimiento",

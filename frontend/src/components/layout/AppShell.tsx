@@ -4,12 +4,13 @@ import {
   AppBar, Avatar, Box, Collapse, Divider, Drawer, IconButton, List, ListItemButton, ListItemIcon,
   ListItemText, ListSubheader, Menu, MenuItem, Toolbar, Tooltip, Typography, useMediaQuery, useTheme,
 } from '@mui/material'
-import { ChevronDown, ChevronRight, LogOut, Menu as MenuIcon, Moon, Palette, Sun, UserCog } from 'lucide-react'
+import { ChevronDown, ChevronRight, LogOut, Menu as MenuIcon, Moon, Palette, Search as SearchIcon, Sun, UserCog } from 'lucide-react'
 import { Link as RouterLink, Navigate, Outlet, useLocation, useNavigate } from 'react-router-dom'
 import { useAuth } from '../../auth/AuthProvider'
 import { myPermissionsApi, type MyPermissions } from '../../api/myPermissionsApi'
 import { useThemeMode } from '../../theming/ThemeModeProvider'
 import { NotificationBell } from './NotificationBell'
+import { TopBarSearch } from './TopBarSearch'
 import { AppShellContext } from './appShellContext'
 import { appHomePath, buildAppNavigation, isNavItemActive, type AppNavItem } from './appNavigation'
 
@@ -198,10 +199,13 @@ export function AppShell() {
                   <MenuIcon size={22} />
                 </IconButton>
               )}
-              {isMobile && (
-                <Typography sx={{ fontWeight: 700 }}>{t('appShell.productName')}</Typography>
-              )}
+              {!isMobile && <TopBarSearch />}
               <Box sx={{ flexGrow: 1 }} />
+              {isMobile && (
+                <IconButton aria-label={t('search.title')} onClick={() => navigate('/search')} sx={{ color: 'inherit' }}>
+                  <SearchIcon size={19} />
+                </IconButton>
+              )}
               <NotificationBell />
               <Tooltip title={t('theme.toggle')}>
                 <IconButton

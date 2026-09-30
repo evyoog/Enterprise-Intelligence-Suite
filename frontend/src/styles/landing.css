@@ -285,9 +285,19 @@ html { scroll-behavior: smooth; }
 .vyoog-landing .product:nth-child(4n+2) .product-icon { background: linear-gradient(135deg, #1bcbdb, #486cff); }
 .vyoog-landing .product:nth-child(4n+3) .product-icon { background: linear-gradient(135deg, #2bdb85, #169bc7); }
 .vyoog-landing .product:nth-child(4n+4) .product-icon { background: linear-gradient(135deg, #ff8b5c, #c544ff); }
-.vyoog-landing .product h3 { font-size: 23px; margin: 0 0 9px; letter-spacing: -0.7px; }
-.vyoog-landing .product p { font-size: 12px; line-height: 1.65; color: #777c88; margin: 0; }
-.vyoog-landing .product-link { position: absolute; left: 25px; bottom: 23px; color: #5366e8; font-size: 11px; font-weight: 600; background: none; border: 0; cursor: pointer; display: inline-flex; align-items: center; gap: 4px; }
+.vyoog-landing .product h3 { font-size: 23px; margin: 0 0 4px; letter-spacing: -0.7px; }
+.vyoog-landing .product-category {
+  display: inline-block; font-size: 10px; font-weight: 700; letter-spacing: .05em; text-transform: uppercase;
+  color: #5366e8; background: rgba(83, 102, 232, 0.1); border-radius: 999px; padding: 3px 10px; margin-bottom: 12px;
+}
+.vyoog-landing .product p { font-size: 12px; line-height: 1.65; color: #777c88; margin: 0 0 44px; }
+.vyoog-landing .product-actions { position: absolute; left: 25px; right: 25px; bottom: 23px; display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+.vyoog-landing .product-link { color: #5366e8; font-size: 11px; font-weight: 600; background: none; border: 0; cursor: pointer; display: inline-flex; align-items: center; gap: 4px; }
+.vyoog-landing .product-subscribe-btn {
+  font-size: 11px; font-weight: 700; color: #fff; background: linear-gradient(135deg, #5367ff, #7639ff);
+  border: 0; border-radius: 999px; padding: 8px 16px; cursor: pointer; transition: .2s;
+}
+.vyoog-landing .product-subscribe-btn:hover { filter: brightness(1.08); transform: translateY(-1px); }
 
 /* SOLUTIONS / INDUSTRY BLOCKS */
 .vyoog-landing .dark-grid { display: grid; grid-template-columns: 1.2fr 0.8fr; gap: 18px; }

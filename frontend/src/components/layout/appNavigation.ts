@@ -2,7 +2,7 @@ import type { ComponentType } from 'react'
 import {
   Building2, KeyRound, LayoutDashboard, LayoutGrid, Layers, Package, ScrollText, Settings, ShieldCheck,
   SlidersHorizontal, Store, UserCheck, UserCog, UsersRound, Palette, Boxes, Activity, ClipboardList, BookOpen,
-  LifeBuoy, Search, Star, Handshake,
+  LifeBuoy, Star, Handshake,
 } from 'lucide-react'
 import type { MyPermissions } from '../../api/myPermissionsApi'
 
@@ -68,8 +68,10 @@ export function buildAppNavigation({ isAdmin, permissions }: NavAccess): AppNavS
   if (hasCustomerWorkspace) {
     workspace.push({ key: 'support', labelKey: 'support', to: '/support/tickets', icon: LifeBuoy })
   }
-  // 01.03 Global Search (sprint 2027.1.3): public, same as the catalog above.
-  workspace.push({ key: 'search', labelKey: 'search', to: '/search', icon: Search })
+  // 01.03 Global Search (sprint 2027.1.3): C44 moved this into the top bar
+  // (AppShell's TopBarSearch) instead of a sidebar destination — search is a
+  // utility, not a place you navigate to. "/search" still exists as a
+  // deep-link target ("See all results"), just not a permanent nav item.
   // 14.01.01.01 Register provider (sprint 2027.2.1): public — a prospective
   // partner applies before it has any Vyoog identity, same as /register.
   workspace.push({ key: 'becomeAPartner', labelKey: 'becomeAPartner', to: '/partners/apply', icon: Handshake })

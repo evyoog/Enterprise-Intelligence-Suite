@@ -615,6 +615,9 @@
   "search": {
     "title": "Search",
     "placeholder": "Search products, knowledge base and your tickets…",
+    "topBarPlaceholder": "Search products, knowledge base, tickets…",
+    "searching": "Searching…",
+    "seeAllResults": "See all results for \"{{query}}\"",
     "noResults": "Nothing matches your search yet.",
     "products": "Products",
     "knowledgeArticles": "Knowledge base",
