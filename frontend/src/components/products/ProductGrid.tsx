@@ -17,6 +17,9 @@ interface ProductGridProps {
    * fetch, same as everywhere else this dataset is small enough to just
    * filter in the browser. */
   platformId?: number
+  /** Bump this (e.g. after creating a new app elsewhere on the same page) to
+   * force a refetch — the grid has no other way to know new data exists. */
+  reloadToken?: number
 }
 
 /**
@@ -25,7 +28,7 @@ interface ProductGridProps {
  * ("/products") has its own richer layout (search + category sections) in
  * ProductsPage, built directly on ProductTile instead of this component.
  */
-export function ProductGrid({ admin = false, onLoaded, platformId }: ProductGridProps) {
+export function ProductGrid({ admin = false, onLoaded, platformId, reloadToken }: ProductGridProps) {
   const [products, setProducts] = useState<Product[] | null>(null)
   const [error, setError] = useState<string | null>(null)
 
@@ -41,7 +44,7 @@ export function ProductGrid({ admin = false, onLoaded, platformId }: ProductGrid
         onLoaded?.(scoped)
       })
       .catch((e) => setError(e instanceof ApiError ? e.message : 'Could not load products.'))
-  }, [admin, platformId])
+  }, [admin, platformId, reloadToken])
 
   if (error) {
     return <Typography color="error" role="alert">{error}</Typography>
