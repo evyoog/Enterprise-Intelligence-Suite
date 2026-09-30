@@ -359,7 +359,10 @@
       "search": "Search",
       "reviews": "Reviews",
       "becomeAPartner": "Become a partner",
-      "partners": "Partners"
+      "partners": "Partners",
+      "billing": "Billing",
+      "billingInvoicesPayments": "Invoices & payments",
+      "paymentGateway": "Payment gateway"
     },
     "catalogTitle": "Product catalog",
     "catalogSubtitle": "Search and filter the products available on the platform."
@@ -707,6 +710,129 @@
           "EXPIRED": "Expired"
         }
       }
+    }
+  },
+  "billing": {
+    "title": "Billing",
+    "subtitle": "Invoices, payments and payment methods.",
+    "tabs": {
+      "overview": "Overview",
+      "invoices": "Invoices",
+      "methods": "Payment methods",
+      "history": "Payment history",
+      "details": "Billing details"
+    },
+    "gateway": {
+      "notConfigured": "Online payments are not available yet. You can still view invoices and update billing details."
+    },
+    "overview": {
+      "amountDue": "Amount due",
+      "spentThisPeriod": "Spent this period",
+      "defaultMethod": "Default payment method",
+      "noneSaved": "None saved.",
+      "addMethod": "Add payment method",
+      "nextInvoice": "Next invoice",
+      "noneUpcoming": "No upcoming invoice",
+      "recentInvoices": "Recent invoices",
+      "viewInvoices": "View invoices"
+    },
+    "invoices": {
+      "number": "Invoice number",
+      "issued": "Issued",
+      "status": "Status",
+      "total": "Total",
+      "actions": "Actions",
+      "pay": "Pay",
+      "downloadInvoice": "Download invoice",
+      "downloadReceipt": "Download receipt",
+      "empty": "No invoices yet."
+    },
+    "pay": {
+      "title": "Pay invoice",
+      "action": "Pay {{amount}}",
+      "processing": "Confirming your payment…",
+      "success": "Payment received.",
+      "failed": "Payment failed.",
+      "cancelled": "Payment was cancelled. The invoice is still open.",
+      "pending": "Your payment is being confirmed."
+    },
+    "methods": {
+      "add": "Add payment method",
+      "type": "Type",
+      "details": "Details",
+      "status": "Status",
+      "default": "Default",
+      "expired": "Expired",
+      "setDefault": "Set as default",
+      "remove": "Remove",
+      "empty": "No saved payment methods."
+    },
+    "addMethod": {
+      "title": "Add payment method",
+      "card": "Card",
+      "upi": "UPI",
+      "consent": "I agree to securely save this card with Razorpay for future payments",
+      "makeDefault": "Set as default",
+      "continue": "Continue to secure entry",
+      "saved": "Payment method saved.",
+      "cancelled": "Nothing was saved.",
+      "failed": "Could not save the payment method."
+    },
+    "history": {
+      "date": "Date",
+      "empty": "No payments yet."
+    },
+    "details": {
+      "name": "Billing name",
+      "email": "Billing email",
+      "address1": "Address line 1",
+      "address2": "Address line 2",
+      "city": "City",
+      "state": "State / region",
+      "postalCode": "Postal code",
+      "country": "Country",
+      "taxId": "Tax ID",
+      "saved": "Billing details saved."
+    }
+  },
+  "admin": {
+    "billing": {
+      "title": "Billing",
+      "subtitle": "Every invoice and payment across the platform.",
+      "owner": "Customer / organization",
+      "refund": {
+        "action": "Refund",
+        "title": "Refund payment",
+        "amount": "Amount",
+        "reason": "Reason",
+        "refundable": "Refundable up to {{amount}}",
+        "confirm": "Refund"
+      },
+      "reconcile": "Reconcile"
+    },
+    "paymentGateway": {
+      "title": "Payment gateway",
+      "subtitle": "Razorpay connection status — read-only.",
+      "provider": "Provider",
+      "status": "Status",
+      "configured": "Configured",
+      "notConfigured": "Not configured",
+      "mode": "Mode",
+      "live": "Live",
+      "test": "Test",
+      "keyId": "Key ID",
+      "keySecret": "Key secret",
+      "webhookSecret": "Webhook secret",
+      "webhookUrl": "Webhook URL",
+      "lastWebhook": "Last webhook received",
+      "never": "Never",
+      "set": "Set",
+      "notSet": "Not set",
+      "copy": "Copy",
+      "testConnection": "Test connection",
+      "connected": "Connected.",
+      "testFailed": "Could not reach Razorpay.",
+      "notConfiguredGuidance": "Add the Razorpay credentials to the common secrets file, then restart the backend."
     }
   }
 }

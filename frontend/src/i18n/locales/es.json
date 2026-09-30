@@ -359,7 +359,10 @@
       "search": "Buscar",
       "reviews": "Reseñas",
       "becomeAPartner": "Conviértete en socio",
-      "partners": "Socios"
+      "partners": "Socios",
+      "billing": "Facturación",
+      "billingInvoicesPayments": "Facturas y pagos",
+      "paymentGateway": "Pasarela de pago"
     },
     "catalogTitle": "Catálogo de productos",
     "catalogSubtitle": "Busque y filtre los productos disponibles en la plataforma."
@@ -707,6 +710,129 @@
           "EXPIRED": "Vencido"
         }
       }
+    }
+  },
+  "billing": {
+    "title": "Facturación",
+    "subtitle": "Facturas, pagos y métodos de pago.",
+    "tabs": {
+      "overview": "Resumen",
+      "invoices": "Facturas",
+      "methods": "Métodos de pago",
+      "history": "Historial de pagos",
+      "details": "Datos de facturación"
+    },
+    "gateway": {
+      "notConfigured": "Los pagos en línea aún no están disponibles. Puede ver facturas y actualizar los datos de facturación."
+    },
+    "overview": {
+      "amountDue": "Monto adeudado",
+      "spentThisPeriod": "Gastado este período",
+      "defaultMethod": "Método de pago predeterminado",
+      "noneSaved": "Ninguno guardado.",
+      "addMethod": "Agregar método de pago",
+      "nextInvoice": "Próxima factura",
+      "noneUpcoming": "Sin próxima factura",
+      "recentInvoices": "Facturas recientes",
+      "viewInvoices": "Ver facturas"
+    },
+    "invoices": {
+      "number": "Número de factura",
+      "issued": "Emitida",
+      "status": "Estado",
+      "total": "Total",
+      "actions": "Acciones",
+      "pay": "Pagar",
+      "downloadInvoice": "Descargar factura",
+      "downloadReceipt": "Descargar recibo",
+      "empty": "Aún no hay facturas."
+    },
+    "pay": {
+      "title": "Pagar factura",
+      "action": "Pagar {{amount}}",
+      "processing": "Confirmando su pago…",
+      "success": "Pago recibido.",
+      "failed": "El pago falló.",
+      "cancelled": "El pago fue cancelado. La factura sigue abierta.",
+      "pending": "Su pago se está confirmando."
+    },
+    "methods": {
+      "add": "Agregar método de pago",
+      "type": "Tipo",
+      "details": "Detalles",
+      "status": "Estado",
+      "default": "Predeterminado",
+      "expired": "Vencida",
+      "setDefault": "Establecer predeterminado",
+      "remove": "Eliminar",
+      "empty": "No hay métodos de pago guardados."
+    },
+    "addMethod": {
+      "title": "Agregar método de pago",
+      "card": "Tarjeta",
+      "upi": "UPI",
+      "consent": "Acepto guardar esta tarjeta de forma segura con Razorpay para futuros pagos",
+      "makeDefault": "Establecer como predeterminado",
+      "continue": "Continuar a entrada segura",
+      "saved": "Método de pago guardado.",
+      "cancelled": "No se guardó nada.",
+      "failed": "No se pudo guardar el método de pago."
+    },
+    "history": {
+      "date": "Fecha",
+      "empty": "Aún no hay pagos."
+    },
+    "details": {
+      "name": "Nombre de facturación",
+      "email": "Correo de facturación",
+      "address1": "Dirección línea 1",
+      "address2": "Dirección línea 2",
+      "city": "Ciudad",
+      "state": "Estado / región",
+      "postalCode": "Código postal",
+      "country": "País",
+      "taxId": "ID fiscal",
+      "saved": "Datos de facturación guardados."
+    }
+  },
+  "admin": {
+    "billing": {
+      "title": "Facturación",
+      "subtitle": "Todas las facturas y pagos de la plataforma.",
+      "owner": "Cliente / organización",
+      "refund": {
+        "action": "Reembolsar",
+        "title": "Reembolsar pago",
+        "amount": "Monto",
+        "reason": "Motivo",
+        "refundable": "Reembolsable hasta {{amount}}",
+        "confirm": "Reembolsar"
+      },
+      "reconcile": "Reconciliar"
+    },
+    "paymentGateway": {
+      "title": "Pasarela de pago",
+      "subtitle": "Estado de la conexión con Razorpay — solo lectura.",
+      "provider": "Proveedor",
+      "status": "Estado",
+      "configured": "Configurado",
+      "notConfigured": "No configurado",
+      "mode": "Modo",
+      "live": "Producción",
+      "test": "Prueba",
+      "keyId": "ID de clave",
+      "keySecret": "Clave secreta",
+      "webhookSecret": "Secreto del webhook",
+      "webhookUrl": "URL del webhook",
+      "lastWebhook": "Último webhook recibido",
+      "never": "Nunca",
+      "set": "Configurado",
+      "notSet": "No configurado",
+      "copy": "Copiar",
+      "testConnection": "Probar conexión",
+      "connected": "Conectado.",
+      "testFailed": "No se pudo conectar con Razorpay.",
+      "notConfiguredGuidance": "Agregue las credenciales de Razorpay al archivo común de secretos y reinicie el backend."
     }
   }
 }

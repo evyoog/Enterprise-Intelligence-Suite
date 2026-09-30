@@ -10,5 +10,7 @@ public enum NotificationCategory {
     PRIVILEGED_ACCESS,
     SYSTEM,
     /** 09 Order & Provisioning Management (sprint 2027.1.1): order submitted/approved/rejected. */
-    ORDER
+    ORDER,
+    /** 08 Billing & Payments (sprint 2026.4.3, C46): invoice generated, payment received/failed, refund processed. */
+    BILLING
 }

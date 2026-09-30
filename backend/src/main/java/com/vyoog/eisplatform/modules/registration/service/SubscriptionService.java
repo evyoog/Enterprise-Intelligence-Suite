@@ -2,6 +2,7 @@ package com.vyoog.eisplatform.modules.registration.service;
 
 import com.vyoog.eisplatform.common.exception.ResourceNotFoundException;
 import com.vyoog.eisplatform.modules.audit.service.AuditService;
+import com.vyoog.eisplatform.modules.billing.service.InvoiceService;
 import com.vyoog.eisplatform.modules.notification.model.NotificationCategory;
 import com.vyoog.eisplatform.modules.notification.model.NotificationSeverity;
 import com.vyoog.eisplatform.modules.notification.service.NotificationService;
@@ -47,6 +48,12 @@ public class SubscriptionService {
     private final CustomerRepository customerRepository;
     private final NotificationService notificationService;
     private final AuditService auditService;
+    /** REQ-BIL-001.2: generating an invoice is a side effect of subscribing
+     * or renewing — called directly, same pattern as {@code OrderService}
+     * already calling this class directly for provisioning. Does NOT change
+     * when or whether a subscription activates (FRD Open question 3, still
+     * open — decision C47). */
+    private final InvoiceService invoiceService;
 
     /** Every mutation below starts here — resolves the subscription and
      * confirms it belongs to this individual customer, or refuses with the
@@ -128,6 +135,7 @@ public class SubscriptionService {
                 "You're now subscribed to " + product.getName() + "."));
         auditService.recordSuccess("SUBSCRIPTION_CREATED", null, customerId, null,
             "ProductSubscription", productId.toString(), null, "Customer subscribed to product " + productId);
+        invoiceService.generateForSubscription(subscription.getId());
 
         return toDto(subscription, product.getName());
     }
@@ -161,6 +169,7 @@ public class SubscriptionService {
 
         auditService.recordSuccess("SUBSCRIPTION_CREATED", null, null, null,
             "ProductSubscription", productId.toString(), organizationId, "Organization subscribed to product " + productId);
+        invoiceService.generateForSubscription(subscription.getId());
 
         return toDto(subscription, product.getName());
     }
@@ -285,6 +294,7 @@ public class SubscriptionService {
         notify(subscription, "Subscription renewed", "Your subscription has been renewed.");
         auditService.recordSuccess("SUBSCRIPTION_RENEWED", null, customerId, null,
             "ProductSubscription", subscriptionId.toString(), null, "Subscription renewed until " + newExpiry);
+        invoiceService.generateForSubscription(subscription.getId());
         return toDto(subscription);
     }
 

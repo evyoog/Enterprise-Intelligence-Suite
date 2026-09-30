@@ -26,14 +26,16 @@
 |---|---|---|---|
 | Added | [C19](../open-decisions.md#c19) View spending (01.02.01, application 01 Enterprise Intelligence Suite), delivered with Billing & Payments (08). Moved from sprint [2026.3.3](SPRINT-2026.3.3.md) | - | - |
 | Decided | [C38](../open-decisions.md#c38) Subscription Lifecycle: suspend/reactivate/cancel/renew/change-plan built for individual-customer subscriptions, plus a scheduled auto-expiry job. Change quantity/Schedule change, 07.02 Entitlement Management, 07.03 License & Quota Management, Schedule/Notify/Auto-renew, organization-owned-subscription actions, and all of 08 Billing & Payments carried further | [subscription-lifecycle](../../../02-requirements/FRD/subscription-lifecycle/requirement.md) | REQ-SUB-001 |
+| Decided | [C46](../open-decisions.md#c46) The MVP must include online payment; provider Razorpay (credentials later). Billing screens and backend built now in "Payment gateway not configured" mode; card entry only in Razorpay's secure window; one common secrets file | [billing-payments](../../../02-requirements/FRD/billing-payments/requirement.md) | REQ-BIL-001 |
 
 ### FRDs in this sprint
 
 | FRD | Requirement | Functions | Status |
 |---|---|---|---|
 | [subscription-lifecycle](../../../02-requirements/FRD/subscription-lifecycle/requirement.md) | REQ-SUB-001 | 07.01.01 (suspend, reactivate, cancel, renew — upgrade/downgrade folded into change plan), 07.01.02 (change plan only), 07.04.01 (process renewal only), 07.04.02 | Approved |
+| [billing-payments](../../../02-requirements/FRD/billing-payments/requirement.md) | REQ-BIL-001 | 08.02.02 (generate, finalize invoice), 08.03.01, 08.03.02, 08.04.01 (invoice, receipt, download), 08.05.02 (format currency), 01.02.01 (view spending) | Draft |
 
-### Progress (as of 2026-09-27)
+### Progress (as of 2026-09-30)
 
 | Feature | Status | Note |
 |---|---|---|
@@ -41,11 +43,11 @@
 | 07.01.02 Subscription Changes (change plan) | Partly done | Change plan built; Change quantity, Schedule change not built — no quantity/scheduling model exists yet |
 | 07.02 Entitlement Management | Not started | Needs a scoping decision against the existing product-access model first ([C38](../open-decisions.md#c38)) |
 | 07.03 License & Quota Management | Not started | Same as above |
-| 07.04.01 Renewal & Lifecycle (process renewal) | Partly done | Process renewal built (extends term, no payment); Schedule/Notify/Auto-renew not built — no billing step exists to trigger from |
+| 07.04.01 Renewal & Lifecycle (process renewal) | Partly done | Process renewal built (extends term); now also generates an invoice (REQ-BIL-001.2) when the plan is paid. Schedule/Notify/Auto-renew still not built |
 | 07.04.02 Lifecycle (expire, reactivate subscription) | Done (this FRD's scope) | Hourly scheduled job; reactivate folded into renew |
-| 08 Billing & Payments (whole application) | Not started | Needs a payment-provider decision first ([C38](../open-decisions.md#c38)) |
+| 08 Billing & Payments (08.02.02, 08.03.01, 08.03.02, 08.04.01, 08.05.02, 01.02.01) | Built (REQ-BIL-001, C46/C47) | Razorpay integration (gateway-not-configured mode by default), billing details, invoices, pay-invoice via Checkout, saved payment methods, refunds, reconcile, admin gateway-status screen, real spend on the business dashboard. Pricing (price books/promotions), usage billing, tax and credit notes remain Not covered — see the FRD's own Out of scope section |
 
-07.02, 07.03, the remaining 07.01.02/07.04.01 items, and all of 08 remain open, carried to a later sprint once the decisions above are made.
+07.02, 07.03, and the remaining 07.01.02/07.04.01 items remain open, carried to a later sprint once the decisions above are made. 08's own remaining open questions (tax, invoice terms, organization-billing permission shape, legal invoice fields) are recorded in [C47](../open-decisions.md#c47) and still block the FRD's own approval.
 
 ## EIS 07 Subscription & Entitlement Management
 

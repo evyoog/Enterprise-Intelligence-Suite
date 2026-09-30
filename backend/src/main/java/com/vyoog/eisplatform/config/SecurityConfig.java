@@ -176,6 +176,16 @@ public class SecurityConfig {
                 // permissions to a role (MANAGE_ROLES).
                 .requestMatchers("/admin/roles/**").access(permissions.platformPermission("MANAGE_ROLES"))
                 .requestMatchers("/admin/permissions/**").access(permissions.platformPermission("MANAGE_PERMISSIONS"))
+                // 08 Billing & Payments (sprint 2026.4.3, C46): its own
+                // permission — refunding a payment or seeing every
+                // customer's invoices is a distinct, sensitive
+                // responsibility from every other admin capability above.
+                .requestMatchers("/admin/billing/**").access(permissions.platformPermission("MANAGE_BILLING"))
+                // Razorpay calls this directly — no Vyoog user token exists
+                // on that request. Trusted only via its own signature
+                // (BR-5/BR-6), verified inside PaymentService, never by a
+                // JWT here.
+                .requestMatchers(HttpMethod.POST, "/webhooks/razorpay").permitAll()
                 // Requesting/viewing/self-revoking privileged access (either
                 // scope — see PrivilegedAccessController) is deliberately
                 // covered by the existing /me/** authenticated() rule below,

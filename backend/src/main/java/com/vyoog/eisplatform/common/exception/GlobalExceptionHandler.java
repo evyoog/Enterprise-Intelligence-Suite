@@ -87,6 +87,36 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(body);
     }
 
+    /** Billing & Payments, BR-10: every Razorpay-dependent action refuses
+     * with this when a credential is missing (REQ-BIL-001.14). */
+    @ExceptionHandler(PaymentGatewayNotConfiguredException.class)
+    public ResponseEntity<Map<String, Object>> handleGatewayNotConfigured(PaymentGatewayNotConfiguredException ex) {
+        Map<String, Object> body = body(HttpStatus.SERVICE_UNAVAILABLE, ex.getMessage());
+        body.put("code", "PAYMENT_GATEWAY_NOT_CONFIGURED");
+        return ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE).body(body);
+    }
+
+    @ExceptionHandler(RazorpayApiException.class)
+    public ResponseEntity<Map<String, Object>> handleGatewayError(RazorpayApiException ex) {
+        Map<String, Object> body = body(HttpStatus.BAD_GATEWAY, ex.getMessage());
+        body.put("code", "PAYMENT_GATEWAY_ERROR");
+        return ResponseEntity.status(HttpStatus.BAD_GATEWAY).body(body);
+    }
+
+    @ExceptionHandler(InvalidPaymentSignatureException.class)
+    public ResponseEntity<Map<String, Object>> handleInvalidSignature(InvalidPaymentSignatureException ex) {
+        Map<String, Object> body = body(HttpStatus.BAD_REQUEST, ex.getMessage());
+        body.put("code", "SIGNATURE_INVALID");
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(body);
+    }
+
+    @ExceptionHandler(BillingConflictException.class)
+    public ResponseEntity<Map<String, Object>> handleBillingConflict(BillingConflictException ex) {
+        Map<String, Object> body = body(HttpStatus.CONFLICT, ex.getMessage());
+        body.put("code", "INVALID_STATE");
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(body);
+    }
+
     @ExceptionHandler(IllegalArgumentException.class)
     public ResponseEntity<Map<String, Object>> handleBadInput(IllegalArgumentException ex) {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(body(HttpStatus.BAD_REQUEST, ex.getMessage()));

@@ -139,6 +139,15 @@ export function BusinessDashboardPage() {
 
             <SectionTitle>Billing</SectionTitle>
             <Alert severity="info" sx={{ mb: 1.5 }}>{dashboard.billing.note}</Alert>
+            {Object.keys(dashboard.billing.spentThisPeriodByCurrency).length > 0 && (
+              <Box sx={{ display: 'flex', gap: 2, mb: 1.5 }}>
+                <Typography variant="body2">
+                  Spent this period:{' '}
+                  {Object.entries(dashboard.billing.spentThisPeriodByCurrency)
+                    .map(([cur, amt]) => `${(amt / 100).toFixed(2)} ${cur}`).join(', ')}
+                </Typography>
+              </Box>
+            )}
             <Paper variant="outlined">
               <Table size="small">
                 <TableHead>

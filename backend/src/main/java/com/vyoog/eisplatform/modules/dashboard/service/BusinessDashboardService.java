@@ -1,5 +1,6 @@
 package com.vyoog.eisplatform.modules.dashboard.service;
 
+import com.vyoog.eisplatform.modules.billing.service.InvoiceService;
 import com.vyoog.eisplatform.modules.dashboard.dto.BillingOverviewDto;
 import com.vyoog.eisplatform.modules.dashboard.dto.BusinessApplicationDto;
 import com.vyoog.eisplatform.modules.dashboard.dto.BusinessDashboardDto;
@@ -37,12 +38,13 @@ import java.util.stream.Collectors;
 /**
  * Phase 19: the org-admin-only "business dashboard" — Business, Usage,
  * Billing, Service Health, Support, and Alerts sections, built ONLY from
- * data that genuinely exists. Two sections are deliberately partial:
- * Billing (no payment/invoice model exists anywhere in this backend — see
- * BillingOverviewDto) and Support (the separate Ticketing app has no
- * query-by-customer endpoint yet — see SupportOverviewDto). Reporting that
- * gap explicitly, rather than fabricating numbers, is the point of this
- * class's own javadoc as much as the aggregation logic is.
+ * data that genuinely exists. Billing (01.02.01 View spending) now reads
+ * real paid-invoice totals from the Billing & Payments module (REQ-BIL-001,
+ * C46) — see BillingOverviewDto. One section remains deliberately partial:
+ * Support (the separate Ticketing app has no query-by-customer endpoint yet
+ * — see SupportOverviewDto). Reporting that gap explicitly, rather than
+ * fabricating numbers, is the point of this class's own javadoc as much as
+ * the aggregation logic is.
  *
  * <p>Phase 8 (2026.3.3) re-verified every claim in this class against the
  * real current state of the systems it describes, rather than trusting the
@@ -71,6 +73,7 @@ public class BusinessDashboardService {
     private final ProductRepository productRepository;
     private final HealthEndpoint healthEndpoint;
     private final ServiceStatusService serviceStatusService;
+    private final InvoiceService invoiceService;
 
     private record UsageKey(Long customerId, Long productId) {
     }
@@ -136,10 +139,18 @@ public class BusinessDashboardService {
                 : 0.0
         );
 
+        Instant now = Instant.now();
+        Instant thisPeriodStart = now.minus(30, java.time.temporal.ChronoUnit.DAYS);
+        Instant lastPeriodStart = now.minus(60, java.time.temporal.ChronoUnit.DAYS);
+        Map<String, Long> spentThisPeriod = invoiceService.spentInPeriod(null, organizationId, thisPeriodStart, now);
+        Map<String, Long> spentLastPeriod = invoiceService.spentInPeriod(null, organizationId, lastPeriodStart, thisPeriodStart);
         BillingOverviewDto billing = new BillingOverviewDto(
             subscriptionService.listOrganizationSubscriptions(organizationId),
-            "No payment or invoice data is available — this reflects configured subscription status and dates only, "
-                + "not actual charges. No payment gateway or invoice model exists in this system yet."
+            spentThisPeriod,
+            spentLastPeriod,
+            spentThisPeriod.isEmpty() && spentLastPeriod.isEmpty()
+                ? "No paid invoices yet (REQ-BIL-001) — this reflects configured subscription status and dates only, not actual charges."
+                : "Reflects paid invoices from Billing & Payments (REQ-BIL-001), trailing/preceding 30-day windows."
         );
 
         ServiceHealthDto serviceHealth = new ServiceHealthDto(

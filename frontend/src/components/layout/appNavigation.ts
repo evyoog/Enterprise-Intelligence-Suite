@@ -2,7 +2,7 @@ import type { ComponentType } from 'react'
 import {
   Building2, KeyRound, LayoutDashboard, LayoutGrid, Layers, Package, ScrollText, Settings, ShieldCheck,
   SlidersHorizontal, Store, UserCheck, UserCog, UsersRound, Palette, Boxes, Activity, ClipboardList, BookOpen,
-  LifeBuoy, Star, Handshake,
+  LifeBuoy, Star, Handshake, CreditCard, PlugZap,
 } from 'lucide-react'
 import type { MyPermissions } from '../../api/myPermissionsApi'
 
@@ -68,6 +68,11 @@ export function buildAppNavigation({ isAdmin, permissions }: NavAccess): AppNavS
   if (hasCustomerWorkspace) {
     workspace.push({ key: 'support', labelKey: 'support', to: '/support/tickets', icon: LifeBuoy })
   }
+  // 08 Billing & Payments (sprint 2026.4.3, REQ-BIL-001, C46): an
+  // individual customer's own invoices/payment methods.
+  if (hasCustomerWorkspace) {
+    workspace.push({ key: 'billing', labelKey: 'billing', to: '/billing', icon: CreditCard })
+  }
   // 01.03 Global Search (sprint 2027.1.3): C44 moved this into the top bar
   // (AppShell's TopBarSearch) instead of a sidebar destination — search is a
   // utility, not a place you navigate to. "/search" still exists as a
@@ -85,6 +90,11 @@ export function buildAppNavigation({ isAdmin, permissions }: NavAccess): AppNavS
   // pending-approvals section on the same page — see OrganizationOrdersPage.
   if (inOrganization) {
     organizationItems.push({ key: 'orders', labelKey: 'orders', to: '/organization/orders', icon: ClipboardList })
+  }
+  // 08 Billing & Payments (C46), FRD Open question 5: organization admins
+  // only, via the existing MANAGE_ORGANIZATION permission.
+  if (organization('MANAGE_ORGANIZATION')) {
+    organizationItems.push({ key: 'orgBilling', labelKey: 'billing', to: '/organization/billing', icon: CreditCard })
   }
 
   const admin: AppNavItem[] = []
@@ -113,6 +123,19 @@ export function buildAppNavigation({ isAdmin, permissions }: NavAccess): AppNavS
   }
   if (platform('MANAGE_PARTNERS')) {
     admin.push({ key: 'adminPartners', labelKey: 'partners', to: '/admin/partners', icon: Handshake })
+  }
+  // 08 Billing & Payments (sprint 2026.4.3, C46): its own permission —
+  // refunding a payment and seeing every customer's invoices is a distinct,
+  // sensitive responsibility from every other admin capability above.
+  if (platform('MANAGE_BILLING')) {
+    admin.push({
+      key: 'adminBilling', labelKey: 'billing', to: '/admin/billing', icon: CreditCard,
+      matchPrefixes: ['/admin/billing'],
+      children: [
+        { key: 'adminBillingInvoices', labelKey: 'billingInvoicesPayments', to: '/admin/billing', icon: CreditCard },
+        { key: 'adminPaymentGateway', labelKey: 'paymentGateway', to: '/admin/billing/payment-gateway', icon: PlugZap },
+      ],
+    })
   }
   if (platform('MANAGE_CATALOG')) {
     admin.push({
