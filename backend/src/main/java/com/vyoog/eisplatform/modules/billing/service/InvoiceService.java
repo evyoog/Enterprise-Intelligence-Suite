@@ -32,6 +32,7 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.Instant;
 import java.time.ZoneOffset;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -61,56 +62,89 @@ public class InvoiceService {
      * invoice would be pure noise there. */
     @Transactional
     public Invoice generateForSubscription(Long subscriptionId) {
-        ProductSubscription subscription = subscriptionRepository.findById(subscriptionId)
-            .orElseThrow(() -> new ResourceNotFoundException("Subscription not found"));
-        Product product = productRepository.findById(subscription.getProductId())
-            .orElseThrow(() -> new ResourceNotFoundException("Product not found"));
-        ProductPlan plan = subscription.getPlanId() == null ? null
-            : productPlanRepository.findById(subscription.getPlanId()).orElse(null);
+        return generateForSubscriptions(List.of(subscriptionId));
+    }
 
-        BigDecimal price = plan != null ? plan.getPrice() : product.getPrice();
-        Currency currency = plan != null ? plan.getCurrency() : Currency.USD;
-        long amount = toMinorUnits(price);
-        if (amount <= 0) {
+    /** C59 (REQ-MKT-003.8, engineering default for REQ-MKT-003 Open
+     * question 1): one invoice for a whole cart, one line per subscription.
+     * Every subscription must have the same owner and currency. Zero-amount
+     * lines are skipped; returns null when nothing is left to bill. The
+     * invoice's own {@code subscriptionId} is the first billed subscription
+     * (each line carries its own). */
+    @Transactional
+    public Invoice generateForSubscriptions(List<Long> subscriptionIds) {
+        record Billed(ProductSubscription subscription, Product product, ProductPlan plan, long amount, Currency currency) {}
+        List<Billed> billed = new ArrayList<>();
+        for (Long subscriptionId : subscriptionIds) {
+            ProductSubscription subscription = subscriptionRepository.findById(subscriptionId)
+                .orElseThrow(() -> new ResourceNotFoundException("Subscription not found"));
+            Product product = productRepository.findById(subscription.getProductId())
+                .orElseThrow(() -> new ResourceNotFoundException("Product not found"));
+            ProductPlan plan = subscription.getPlanId() == null ? null
+                : productPlanRepository.findById(subscription.getPlanId()).orElse(null);
+            BigDecimal price = plan != null ? plan.getPrice() : product.getPrice();
+            Currency currency = plan != null ? plan.getCurrency() : Currency.USD;
+            long amount = toMinorUnits(price);
+            if (amount > 0) {
+                billed.add(new Billed(subscription, product, plan, amount, currency));
+            }
+        }
+        if (billed.isEmpty()) {
             return null;
         }
+        ProductSubscription first = billed.get(0).subscription();
+        Currency currency = billed.get(0).currency();
+        for (Billed b : billed) {
+            if (b.currency() != currency) {
+                throw new IllegalArgumentException("Items in different currencies cannot be billed on one invoice.");
+            }
+            if (!java.util.Objects.equals(b.subscription().getOwnerCustomerId(), first.getOwnerCustomerId())
+                    || !java.util.Objects.equals(b.subscription().getOwnerOrganizationId(), first.getOwnerOrganizationId())) {
+                throw new IllegalArgumentException("Subscriptions with different owners cannot be billed on one invoice.");
+            }
+        }
+        long total = billed.stream().mapToLong(Billed::amount).sum();
 
         Invoice invoice = new Invoice();
-        invoice.setSubscriptionId(subscriptionId);
-        invoice.setOwnerCustomerId(subscription.getOwnerCustomerId());
-        invoice.setOwnerOrganizationId(subscription.getOwnerOrganizationId());
+        invoice.setSubscriptionId(first.getId());
+        invoice.setOwnerCustomerId(first.getOwnerCustomerId());
+        invoice.setOwnerOrganizationId(first.getOwnerOrganizationId());
         invoice.setStatus(InvoiceStatus.OPEN);
         invoice.setCurrency(currency);
-        invoice.setSubtotal(amount);
+        invoice.setSubtotal(total);
         invoice.setTaxAmount(0);
-        invoice.setTotal(amount);
-        invoice.setPeriodStart(subscription.getStartedAt() != null ? subscription.getStartedAt() : Instant.now());
-        invoice.setPeriodEnd(subscription.getExpiresAt());
-        BillingDetails billingDetails = subscription.getOwnerCustomerId() != null
-            ? billingDetailsRepository.findByOwnerCustomerId(subscription.getOwnerCustomerId()).orElse(null)
-            : billingDetailsRepository.findByOwnerOrganizationId(subscription.getOwnerOrganizationId()).orElse(null);
+        invoice.setTotal(total);
+        invoice.setPeriodStart(first.getStartedAt() != null ? first.getStartedAt() : Instant.now());
+        invoice.setPeriodEnd(first.getExpiresAt());
+        BillingDetails billingDetails = first.getOwnerCustomerId() != null
+            ? billingDetailsRepository.findByOwnerCustomerId(first.getOwnerCustomerId()).orElse(null)
+            : billingDetailsRepository.findByOwnerOrganizationId(first.getOwnerOrganizationId()).orElse(null);
         invoice.setBillToSnapshot(billingDetailsService.snapshotFor(billingDetails));
         invoice = invoiceRepository.save(invoice);
 
-        InvoiceLine line = new InvoiceLine();
-        line.setInvoice(invoice);
-        line.setDescription(product.getName() + (plan != null ? " — " + plan.getName() : ""));
-        line.setPeriodStart(invoice.getPeriodStart());
-        line.setPeriodEnd(invoice.getPeriodEnd());
-        line.setQuantity(1);
-        line.setUnitAmount(amount);
-        line.setAmount(amount);
-        invoice.getLines().add(line);
+        for (Billed b : billed) {
+            InvoiceLine line = new InvoiceLine();
+            line.setInvoice(invoice);
+            line.setDescription(b.product().getName() + (b.plan() != null ? " — " + b.plan().getName() : ""));
+            line.setPeriodStart(b.subscription().getStartedAt() != null ? b.subscription().getStartedAt() : invoice.getPeriodStart());
+            line.setPeriodEnd(b.subscription().getExpiresAt());
+            line.setQuantity(1);
+            line.setUnitAmount(b.amount());
+            line.setAmount(b.amount());
+            line.setSubscriptionId(b.subscription().getId());
+            invoice.getLines().add(line);
+        }
 
         invoice.setDueAt(invoice.getIssuedAt() != null ? invoice.getIssuedAt() : Instant.now());
         invoice = invoiceRepository.save(invoice);
         invoice.setInvoiceNumber(formatInvoiceNumber(invoice));
         invoice = invoiceRepository.save(invoice);
 
-        notifyOwner(invoice, product.getName());
+        String productNames = String.join(", ", billed.stream().map(b -> b.product().getName()).toList());
+        notifyOwner(invoice, productNames);
         auditService.recordSuccess("INVOICE_GENERATED", null, invoice.getOwnerCustomerId(), null,
             "Invoice", invoice.getId().toString(), invoice.getOwnerOrganizationId(),
-            "Invoice " + invoice.getInvoiceNumber() + " generated for " + product.getName());
+            "Invoice " + invoice.getInvoiceNumber() + " generated for " + productNames);
         return invoice;
     }
 

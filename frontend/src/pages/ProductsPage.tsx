@@ -1,3 +1,4 @@
+import { useBuy } from '../components/cart/useBuy'
 import { useEffect, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import {
@@ -5,7 +6,6 @@ import {
   MenuItem, Select, TextField, Typography,
 } from '@mui/material'
 import { Search } from 'lucide-react'
-import { useNavigate } from 'react-router-dom'
 import { ApiError } from '../api/client'
 import { productsApi, type Product, type ProductSearchResponse } from '../api/productsApi'
 import { searchHistoryApi } from '../api/searchHistoryApi'
@@ -41,7 +41,6 @@ function groupByCategory(products: Product[]): Map<string, Product[]> {
  */
 export function ProductsPage() {
   const auth = useAuth()
-  const navigate = useNavigate()
   const { t } = useTranslation()
   // Signed in, this is the tool's catalog view inside the AppShell: no website
   // header and no marketing copy, just the search and filter controls.
@@ -91,14 +90,8 @@ export function ProductsPage() {
   // C48: a quick-action Subscribe right on the catalog card — same rule as
   // the product detail page and the homepage cards: checkout when signed
   // in, a full-page sign-in (with a way back here) when not.
-  const handleSubscribeClick = (productId: number) => {
-    const checkoutPath = `/checkout/${productId}`
-    if (!auth.isAuthenticated) {
-      navigate(`/login?returnTo=${encodeURIComponent(checkoutPath)}`)
-      return
-    }
-    navigate(checkoutPath)
-  }
+  const handleSubscribeClick = useBuy()
+
 
   return (
     <Box sx={inShell ? undefined : { minHeight: '100vh', bgcolor: 'background.default' }}>

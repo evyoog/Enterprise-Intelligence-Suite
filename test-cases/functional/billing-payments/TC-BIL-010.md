@@ -18,10 +18,10 @@ As TC-BIL-009; Razorpay test credentials.
 2. Complete the payment in Razorpay Checkout.
 
 ## Expected Result
-Razorpay Checkout opens with `prefill.method = card` (UPI: `upi`; Other online methods: no prefill) for the invoice total; after signature verification step 3 shows "Payment successful" with the invoice number, amount and method.
+Razorpay Checkout opens with `prefill.method = card` (UPI: `upi`; Netbanking: `netbanking`; Wallets: `wallet` — C59) for the invoice total; after signature verification step 3 shows "Payment successful" with the invoice number, amount and method.
 
 ## Automated coverage
-- `frontend/src/pages/CheckoutPage.test.tsx` — "pays by card through Razorpay with the card method prefilled and shows success"
+- `frontend/src/pages/CheckoutPage.test.tsx` — "pays with the default saved card; an expired card cannot be chosen"
 
 ## Actual Result
 The automated tests passed on 2026-10-01.

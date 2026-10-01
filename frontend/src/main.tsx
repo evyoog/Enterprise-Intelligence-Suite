@@ -6,6 +6,7 @@ import App from './App.tsx'
 import { ThemeModeProvider } from './theming/ThemeModeProvider'
 import { LocalePreferenceProvider } from './theming/LocalePreferenceProvider'
 import { AuthProvider } from './auth/AuthProvider'
+import { CartProvider } from './components/cart/CartContext'
 import './i18n'
 
 createRoot(document.getElementById('root')!).render(
@@ -14,7 +15,9 @@ createRoot(document.getElementById('root')!).render(
       <CssBaseline />
       <LocalePreferenceProvider>
         <AuthProvider>
-          <App />
+          <CartProvider>
+            <App />
+          </CartProvider>
         </AuthProvider>
       </LocalePreferenceProvider>
     </ThemeModeProvider>

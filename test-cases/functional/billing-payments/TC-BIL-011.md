@@ -22,7 +22,7 @@ As TC-BIL-009.
 The card number, name, expiry and CVV are decorative read-only placeholders (no `<input>` other than the save-card and terms checkboxes); a note says card details are handled by the payment provider. No EIS request payload, log or database column contains a card number, expiry or CVV.
 
 ## Automated coverage
-- `frontend/src/pages/CheckoutPage.test.tsx` — "never renders a card input: the card panel holds no text fields (BR-BIL-001)"
+- `frontend/src/pages/CheckoutPage.test.tsx` — "never renders a card input: the \"use another card\" fields are placeholders (BR-BIL-001)"
 
 ## Actual Result
 The automated tests passed on 2026-10-01.

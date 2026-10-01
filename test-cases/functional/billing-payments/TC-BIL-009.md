@@ -16,14 +16,14 @@ A customer with saved billing details and an OPEN invoice; gateway configured.
 ## Steps
 1. Open `/checkout?invoiceId=<id>&step=payment`.
 2. Observe the payment options and the Pay button.
-3. Select Card.
+3. Select a tile.
 4. Tick "I agree to the Terms of Service and the Privacy Policy."
 
 ## Expected Result
-Step 2: four radio options in order Card, UPI, Other online methods, Pay by invoice; Pay disabled. Step 3: Card checked, Pay still disabled. Step 4: Pay enabled.
+Step 2: five method tiles (a radio group) in order Card, UPI, Netbanking, Wallets, Pay by invoice (C59 redesign); Pay disabled. Step 3: the tile checked, Pay still disabled. Step 4: Pay enabled.
 
 ## Automated coverage
-- `frontend/src/pages/CheckoutPage.test.tsx` — "shows four payment options and keeps Pay disabled until an option and consent are chosen"
+- `frontend/src/pages/CheckoutPage.test.tsx` — "shows five method tiles and keeps Pay disabled until a tile and the terms are chosen"
 
 ## Actual Result
 The automated tests passed on 2026-10-01.

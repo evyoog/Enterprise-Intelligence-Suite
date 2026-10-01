@@ -902,7 +902,8 @@
     "steps": {
       "details": "Billing details",
       "payment": "Payment",
-      "complete": "Complete"
+      "complete": "Complete",
+      "cart": "Cart"
     },
     "details": {
       "title": "Billing details",
@@ -923,51 +924,57 @@
       "tooLong": "This value is too long."
     },
     "payment": {
-      "title": "Payment method",
-      "subtitle": "Choose how you would like to pay.",
-      "noOptions": "No payment options are available right now. Please contact support."
+      "title": "Payment",
+      "subtitle": "All transactions are secure and encrypted.",
+      "noOptions": "No payment options are available right now. Please contact support.",
+      "amountDue": "Amount due",
+      "amountDueLabel": "Amount due {{amount}}"
     },
     "option": {
       "card": {
         "title": "Card",
-        "description": "Credit or debit card"
+        "description": "Pay securely with your credit or debit card."
       },
       "upi": {
         "title": "UPI",
-        "description": "Pay with any UPI app"
-      },
-      "other": {
-        "title": "Other online methods",
-        "description": "Net banking, wallets and more"
+        "description": "Pay with any UPI app."
       },
       "offline": {
         "title": "Pay by invoice",
-        "description": "Bank transfer, NEFT/RTGS or cheque"
+        "description": "We'll issue an invoice now. Pay by bank transfer, NEFT/RTGS or cheque, quoting the invoice number."
+      },
+      "netbanking": {
+        "title": "Netbanking",
+        "description": "Pay from your bank account."
+      },
+      "wallets": {
+        "title": "Wallets",
+        "description": "Pay with a mobile wallet."
       }
     },
     "card": {
-      "lead": "You will enter your card details in the secure payment window after you select Pay.",
+      "lead": "You'll enter your card details in Razorpay's secure window after you select Pay.",
       "number": "Card number",
       "name": "Name on card",
       "expiry": "Expiry (MM/YY)",
       "cvv": "CVV",
       "cvvHelp": "The 3 or 4 digit code on the back of your card.",
       "secureNote": "Card details are handled by our payment provider and are never stored by eVyoog.",
-      "save": "Save this card with the payment provider for future payments"
+      "save": "Save this card with the payment provider for future payments",
+      "accepted": "Accepted cards"
     },
     "upi": {
-      "note": "You will complete the UPI payment in the secure payment window."
-    },
-    "other": {
-      "note": "You will choose net banking, a wallet or another method in the secure payment window."
+      "note": "You'll pay with your UPI ID or a UPI app in Razorpay's secure window.",
+      "apps": "UPI apps",
+      "saved": "Saved UPI IDs"
     },
     "offline": {
       "terms": "We will issue an invoice with our bank details. Your subscription is activated as usual; please pay by the due date.",
       "emailTo": "The invoice will be emailed to {{email}}."
     },
-    "pay": "Pay {{amount}}",
+    "pay": "Pay | {{amount}}",
     "generateInvoice": "Generate invoice",
-    "consent": "I agree to the Terms of Service and the Privacy Policy.",
+    "consent": "I agree to the Terms & Conditions, Refund policy and Privacy policy.",
     "genericError": "Something went wrong. Please try again.",
     "loadError": "Could not load your order.",
     "summary": {
@@ -975,9 +982,10 @@
       "subtotal": "Subtotal",
       "noTax": "Tax: none for this region",
       "total": "Total",
-      "trust": "Secure payment. Card details never touch eVyoog servers.",
+      "trust": "Payments are processed securely by Razorpay.",
       "qty": "Qty {{qty}}",
-      "toggle": "Show order summary ({{total}})"
+      "toggle": "Total {{total}} · {{count}} items",
+      "editCart": "Edit cart"
     },
     "period": {
       "MONTHLY": "Monthly",
@@ -1014,7 +1022,14 @@
       "method": "Method",
       "date": "Date",
       "total": "Total",
-      "dueDate": "Due date"
+      "dueDate": "Due date",
+      "orderSubmitted": {
+        "title": "Order submitted for approval",
+        "reference": "Order {{refs}}",
+        "body": "Your organization admin approves orders before payment. You'll be able to pay once it's approved.",
+        "viewOrders": "View my orders",
+        "browse": "Browse products"
+      }
     },
     "bank": {
       "accountName": "Account name",
@@ -1036,6 +1051,86 @@
       "paid": "Payment received.",
       "invoiceGenerated": "Invoice generated.",
       "failed": "Payment did not go through."
+    },
+    "brand": "eVyoog",
+    "review": {
+      "contact": "Contact",
+      "address": "Billing address",
+      "change": "Change",
+      "changeLabel": "Change {{field}}"
+    },
+    "netbanking": {
+      "note": "You'll choose your bank in Razorpay's secure window."
+    },
+    "wallets": {
+      "note": "You'll choose your wallet in Razorpay's secure window."
+    },
+    "savedCards": {
+      "title": "Saved cards",
+      "cardLabel": "{{network}} ending {{last4}}",
+      "expires": "Expires {{date}}",
+      "expired": "Expired",
+      "default": "Default",
+      "menu": "More actions for the card ending {{last4}}",
+      "remove": "Remove",
+      "useAnother": "Use another card",
+      "removeConfirm": {
+        "title": "Remove saved card?",
+        "body": "The card ending {{last4}} will be removed from your saved methods."
+      }
+    },
+    "footer": {
+      "stepBack": "Step back",
+      "completeOrder": "Complete order"
+    },
+    "poweredBy": "Powered by"
+  },
+  "cart": {
+    "title": "Your cart",
+    "badge": "Cart, {{count}} items",
+    "badgeEmpty": "Cart, empty",
+    "added": "Added {{product}} — {{plan}} to your cart",
+    "removed": "Removed {{product}}",
+    "undo": "Undo",
+    "remove": "Remove",
+    "removeItem": "Remove {{product}}",
+    "changePlan": "Change plan",
+    "confirmPrice": "Confirm new price",
+    "addRequired": "Add {{required}}",
+    "continueBrowsing": "Continue browsing",
+    "clear": "Clear cart",
+    "clearConfirm": {
+      "title": "Clear cart?",
+      "body": "Remove all items from your cart?"
+    },
+    "proceed": "Proceed to checkout",
+    "submitForApproval": "Submit order for approval",
+    "approvalHelp": "Your organization admin approves orders before payment.",
+    "viewSummary": "View summary",
+    "error": "Something went wrong with your cart. Please try again.",
+    "retry": "Retry",
+    "summary": {
+      "title": "Order summary",
+      "items": "{{count}} items",
+      "subtotal": "Subtotal",
+      "taxAtPayment": "Tax calculated at payment",
+      "noTax": "Tax: none for this region",
+      "total": "Total",
+      "trust": "Secure payments by Razorpay",
+      "acceptedMethods": "Accepted payment methods"
+    },
+    "empty": {
+      "title": "Your cart is empty",
+      "body": "Find a product to get started.",
+      "browse": "Browse products"
+    },
+    "issue": {
+      "productUnavailable": "This product is no longer available.",
+      "planUnavailable": "This plan is no longer available. Choose another plan.",
+      "priceChanged": "The price changed from {{old}} to {{new}}.",
+      "alreadySubscribed": "You already have an active subscription to {{product}}.",
+      "missingDependency": "{{product}} requires {{required}}.",
+      "currencyMismatch": "This item is priced in a different currency from the rest of your cart. Check out separately."
     }
   }
 }

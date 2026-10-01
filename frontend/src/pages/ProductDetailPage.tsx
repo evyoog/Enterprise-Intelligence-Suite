@@ -1,9 +1,10 @@
+import { useBuy } from '../components/cart/useBuy'
 import { useEffect, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import {
   Alert, Box, Button, Chip, CircularProgress, Fade, LinearProgress, Paper, Rating, Tab, Tabs, TextField, Typography,
 } from '@mui/material'
-import { Link as RouterLink, useNavigate, useParams } from 'react-router-dom'
+import { Link as RouterLink, useParams } from 'react-router-dom'
 import { Boxes, CheckCircle2, ClipboardCheck, Rocket, Search, Star } from 'lucide-react'
 import { ApiError } from '../api/client'
 import { productsApi, type Product, type ProductPlan } from '../api/productsApi'
@@ -35,7 +36,6 @@ type TabKey = 'overview' | 'pricing' | 'reviews'
 export function ProductDetailPage() {
   const { t } = useTranslation()
   const auth = useAuth()
-  const navigate = useNavigate()
   const { id } = useParams<{ id: string }>()
   const productId = Number(id)
 
@@ -63,18 +63,9 @@ export function ProductDetailPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [productId])
 
-  // C48: Subscribe goes straight to this platform's own purchase flow — the
-  // payment-details/checkout page for a signed-in customer, or a full-page
-  // sign-in (with a way back here) for a signed-out one. Neither is a modal:
-  // this is a real navigation, the same way a real storefront's "Buy" button
-  // is, not an inline action that quietly activates something on this page.
-  const handleSubscribe = () => {
-    if (!auth.isAuthenticated) {
-      navigate(`/login?returnTo=${encodeURIComponent(`/checkout/${productId}`)}`)
-      return
-    }
-    navigate(`/checkout/${productId}`)
-  }
+  // C59: Buy adds the plan to the cart and opens it (useBuy).
+  const buy = useBuy()
+  const handleSubscribe = (planId?: number) => buy(productId, planId)
 
   const submit = async () => {
     if (!myRating) return
@@ -160,7 +151,7 @@ export function ProductDetailPage() {
             </Typography>
           </Box>
           <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1, alignItems: 'flex-start', justifyContent: 'center' }}>
-            <Button variant="contained" size="large" onClick={handleSubscribe}>
+            <Button variant="contained" size="large" onClick={() => handleSubscribe(plan?.id)}>
               {t('productDetail.subscribe')}
             </Button>
             {auth.isAuthenticated && (
@@ -263,7 +254,7 @@ export function ProductDetailPage() {
                     ))}
                   </Box>
                 )}
-                <Button variant="outlined" size="small" fullWidth onClick={handleSubscribe}>
+                <Button variant="outlined" size="small" fullWidth onClick={() => handleSubscribe(p.id)}>
                   {t('productDetail.subscribe')}
                 </Button>
               </Paper>
@@ -271,7 +262,7 @@ export function ProductDetailPage() {
             {product.plans.length === 0 && (
               <Paper variant="outlined" sx={{ p: 2.5 }}>
                 <Typography variant="h5" sx={{ fontWeight: 700, mb: 1.5 }}>${product.price.toFixed(2)}</Typography>
-                <Button variant="contained" onClick={handleSubscribe}>{t('productDetail.subscribe')}</Button>
+                <Button variant="contained" onClick={() => handleSubscribe()}>{t('productDetail.subscribe')}</Button>
               </Paper>
             )}
           </Box>

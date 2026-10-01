@@ -117,6 +117,16 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.CONFLICT).body(body);
     }
 
+    @ExceptionHandler(CartConflictException.class)
+    public ResponseEntity<Map<String, Object>> handleCartConflict(CartConflictException ex) {
+        Map<String, Object> body = body(HttpStatus.CONFLICT, ex.getMessage());
+        body.put("code", ex.getCode());
+        if (ex.getIssues() != null) {
+            body.put("issues", ex.getIssues());
+        }
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(body);
+    }
+
     @ExceptionHandler(IllegalArgumentException.class)
     public ResponseEntity<Map<String, Object>> handleBadInput(IllegalArgumentException ex) {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(body(HttpStatus.BAD_REQUEST, ex.getMessage()));

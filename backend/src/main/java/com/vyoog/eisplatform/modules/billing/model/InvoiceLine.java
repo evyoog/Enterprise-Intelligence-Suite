@@ -35,4 +35,9 @@ public class InvoiceLine {
 
     @Column(nullable = false)
     private long amount;
+
+    /** C59 (REQ-MKT-003.8): the subscription this line bills. One invoice
+     * can pay a cart of several products, so each line carries its own. */
+    @Column(name = "subscription_id")
+    private Long subscriptionId;
 }

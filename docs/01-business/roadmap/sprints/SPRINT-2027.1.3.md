@@ -45,6 +45,7 @@
 | Not built | [C41](../open-decisions.md#c41) 04b Customer-facing AI agents and 12.02 AI Support — same agent/LLM framework gap 04a already carries |
 | Not built | [C41](../open-decisions.md#c41) 11b Learning & Certification — all P1/stretch, explicitly deferrable per this sprint's own note, no dependents |
 | Not built | [C41](../open-decisions.md#c41) 15b Policy Management & Compliance — 15.02's priority is Not specified in any source; needs its own general policy-engine scoping decision |
+| Decided | [C58](../open-decisions.md#c58) Vector store for semantic search (01.03.01.02): **pgvector** in the existing PostgreSQL database. Embedding model Not specified (depends on D8, LLM provider). Semantic search stays carried until D8 is decided; no FRD change yet | - | - |
 
 ### FRDs in this sprint
 
@@ -198,6 +199,7 @@ Note: 06.02.02 "Policy" for this sprint's purposes is the **organization MFA pol
 - [C10](../open-decisions.md#c10) Application 01 is named "Enterprise Intelligence Suite".
 - [C21](../open-decisions.md#c21) General policy engine (15.02) is distinct from the organization MFA policy (06.02.02), already built.
 - [C31](../open-decisions.md#c31) Corrected sprint sequence: 01b, 04b, 03b, 11b and 15b as shown above. This is the busiest sprint; 03b and 11b can move to 2027.2.1.
+- [C58](../open-decisions.md#c58) pgvector for semantic search.
 - Sprint goal, team, capacity and status are Not specified.
 
 Details: [open-decisions.md](../open-decisions.md).

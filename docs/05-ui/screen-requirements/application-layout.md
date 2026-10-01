@@ -5,7 +5,7 @@ Requested by the product owner on 2026-09-26. The frontend has two separate fram
 | State | Frame | Navigation |
 |---|---|---|
 | Not signed in | **Public Vyoog website** | `SiteNavbar` (Products mega-menu, Solutions, Pricing, Company, Resources, Login, Get started) |
-| Signed in | **Vyoog software tool** (`AppShell`) | Sidebar filtered by role and permissions; slim top bar with notifications, theme and the account menu. No website header or marketing copy |
+| Signed in | **Vyoog software tool** (`AppShell`) | Sidebar filtered by role and permissions; slim top bar with the cart icon, notifications, theme and the account menu. No website header or marketing copy |
 
 ## Routes
 | Route | Visitor | Signed-in user |
@@ -14,8 +14,18 @@ Requested by the product owner on 2026-09-26. The frontend has two separate fram
 | `/products` | Public catalog with the website header and banner | Catalog inside the tool: title, search and filters only |
 | `/account/preferences` | Public page with the website header | Inside the tool |
 | `/my/products`, `/organization/business-dashboard`, `/account/security`, `/organization/identity-federation` | Redirected to `/` (`RequireAuth`) | Inside the tool |
+| `/cart`, `/checkout` | Redirected to sign in (`RequireAuth`; REQ-MKT-003 Open question 5) | Inside the tool ([cart.md](cart.md), [checkout-payment.md](checkout-payment.md)) |
 | `/admin/**` | Redirected to `/` (`RequireAdmin`) | Inside the tool for a platform admin; a non-admin is sent to `/products` |
 | `/register/**`, `/forgot-password`, `/reset-password` | Public pages | Public pages. The website header then shows only "My Workspace" / "Admin Panel" and Sign out |
+
+## Top bar: cart icon
+Added by [C59](../../01-business/roadmap/open-decisions.md#c59) ([REQ-MKT-003.7](../../02-requirements/FRD/cart-checkout/requirement.md)), Draft.
+
+- Every signed-in page shows a **cart icon** in the top bar, left of notifications, with an **item-count badge** (hidden when the cart is empty; "99+" above 99).
+- Clicking it opens [`/cart`](cart.md).
+- Accessible name: "Cart, {n} items" ("Cart, empty" when there are none); the badge number is not announced separately.
+- The count comes from `GET /me/cart` and updates after every add, remove, Undo or checkout without a page reload.
+- Whether platform admins see it too: Not specified (proposed: every signed-in user).
 
 ## Sidebar
 Built by `buildAppNavigation` (`frontend/src/components/layout/appNavigation.ts`) from `useAuth().isAdmin` and `GET /me/permissions`. Each item is gated on the permission its backend endpoints check. This is UI filtering only; the backend stays the security boundary.
