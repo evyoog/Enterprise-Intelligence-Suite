@@ -1,0 +1,18 @@
+# Business rules — Cart and checkout (REQ-MKT-003)
+
+Cross-feature rules that also apply: [BR-BIL-001 No raw card data](../../../03-business-rules/BR-BIL-001-no-raw-card-data.md), and the billing rules in [billing-payments/business-rules.md](../billing-payments/business-rules.md).
+
+| ID | Rule | Enforced in | Source |
+|---|---|---|---|
+| BR-1 | A cart belongs to exactly one signed-in user. Another user's cart or cart item is refused with a generic 404. | backend | REQ-MKT-003.2 |
+| BR-2 | Only paid plans can be added. A free plan keeps its current subscribe behaviour and is refused by the add-to-cart API. | backend | REQ-MKT-003.1 |
+| BR-3 | A product appears in a cart at most once. Adding another plan of a product already in the cart replaces that item's plan (to confirm in review, Open question 6). | backend (unique cart + product) | REQ-MKT-003.1 |
+| BR-4 | Change plan accepts only a plan of the same product. A plan of another product is refused (400). | backend | REQ-MKT-003.4 |
+| BR-5 | Each item stores the unit price and currency at the moment it was added (`unit_price_at_add`). The cart shows the current catalog price. A difference is a validation issue (BR-6 b), and the old price is never charged. | backend | REQ-MKT-003.5 |
+| BR-6 | Validation runs on **Proceed to checkout / Submit order for approval**, and again when the checkout is created. It reports, per item: (a) `NOT_AVAILABLE` — the product is not `ACTIVE`, or the plan no longer exists; (b) `PRICE_CHANGED` — the current price differs from `unit_price_at_add`, and the old and new prices are returned; (c) `ALREADY_SUBSCRIBED` — the customer (or, for an organization member, the organization) has an ACTIVE subscription to the product; (d) `MISSING_DEPENDENCY` — the product depends on a product that the customer neither has an ACTIVE subscription to nor has in the same cart. (e) `CURRENCY_MISMATCH` — the item's currency differs from the cart's first item (one invoice has one currency; [C59](../../../01-business/roadmap/open-decisions.md#c59) default). | backend (frontend shows the messages) | REQ-MKT-003.5 |
+| BR-7 | Checkout cannot be created while any item has an issue. A `PRICE_CHANGED` issue clears once the customer confirms the new price, which updates `unit_price_at_add`. The other issues clear only when the item is removed or changed. | backend | REQ-MKT-003.5 |
+| BR-8 | Tax lines in the cart use the region from the customer's billing details and the rules in [REQ-BIL-002](../tax-rules/requirement.md). Without billing details, no tax is calculated and the cart shows "Tax calculated at payment". The amount actually charged is the invoice's, calculated at checkout. | backend | REQ-MKT-003.3 |
+| BR-9 | **Individual:** checkout creates the subscriptions (the same as today's subscribe) and their invoice, then empties the cart. **Organization member:** submitting creates the order under REQ-ORD-001 and empties the cart. Payment happens only after an organization admin approves. How several items become invoices or orders is Open question 1. | backend | REQ-MKT-003.8 |
+| BR-10 | Checkout is idempotent per cart: a second Proceed for the same cart contents (for example a double click) returns the checkout already created and never creates a second invoice or order. | backend | REQ-MKT-003.8 |
+| BR-11 | Adding, changing, removing and clearing items are not audited. Order submission and payment are audited under their existing rules (to confirm in review). | backend | REQ-MKT-003.9 |
+| BR-12 | No coupon, discount, fee, shipping or quantity field exists in the cart or its API ([C50](../../../01-business/roadmap/open-decisions.md#c50); D14 not decided). | backend / frontend | REQ-MKT-003 Out of scope |

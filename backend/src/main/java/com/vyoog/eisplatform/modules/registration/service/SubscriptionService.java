@@ -140,6 +140,41 @@ public class SubscriptionService {
         return toDto(subscription, product.getName());
     }
 
+    /** C59 (REQ-MKT-003.8): an individual's cart checkout. Same as
+     * {@link #subscribe}, but with the cart item's plan, and without
+     * issuing an invoice — the cart checkout issues one invoice for every
+     * item ({@code InvoiceService#generateForSubscriptions}). Returns the
+     * subscription id. */
+    @Transactional
+    public Long subscribeFromCart(Long customerId, Long productId, Long planId) {
+        Product product = productRepository.findById(productId)
+            .filter(p -> p.getStatus() == ProductStatus.ACTIVE)
+            .orElseThrow(() -> new ResourceNotFoundException("Product not found"));
+
+        ProductSubscription subscription = subscriptionRepository
+            .findByOwnerCustomerIdAndProductId(customerId, productId)
+            .orElseGet(() -> {
+                ProductSubscription created = new ProductSubscription();
+                created.setProductId(productId);
+                created.setOwnerType(RegistrationOwnerType.INDIVIDUAL);
+                created.setOwnerCustomerId(customerId);
+                return created;
+            });
+        subscription.setStatus(SubscriptionStatus.ACTIVE);
+        subscription.setStartedAt(Instant.now());
+        subscription.setExpiresAt(null);
+        subscription.setPlanId(planId);
+        subscription = subscriptionRepository.save(subscription);
+
+        customerRepository.findById(customerId).ifPresent(customer ->
+            notificationService.notify(customerId, customer.getEmail(), NotificationCategory.SUBSCRIPTION, NotificationSeverity.INFO,
+                "Subscribed to " + product.getName(),
+                "You're now subscribed to " + product.getName() + "."));
+        auditService.recordSuccess("SUBSCRIPTION_CREATED", null, customerId, null,
+            "ProductSubscription", productId.toString(), null, "Customer subscribed to product " + productId + " from the cart");
+        return subscription.getId();
+    }
+
     /** 09.02.01 Service Provisioning (sprint 2027.1.1): the organization
      * equivalent of {@link #subscribe} — called by {@code OrderService} once
      * an order is approved, never directly by a member (there is no

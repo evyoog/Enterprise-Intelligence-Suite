@@ -147,6 +147,18 @@ public class PaymentMethodService {
             "PaymentMethod", method.getId().toString(), organizationId, "Payment method removed");
     }
 
+    /** C59 (REQ-BIL-001.22): a saved method chosen at checkout must be the
+     * caller's own, still saved, and not an expired card. */
+    public void requireUsableForPayment(Long customerId, Long organizationId, Long methodId) {
+        PaymentMethod method = resolveOwn(customerId, organizationId, methodId);
+        if (method.getStatus() != PaymentMethodStatus.ACTIVE) {
+            throw new ResourceNotFoundException("Payment method not found");
+        }
+        if (method.isExpiredCard()) {
+            throw new BillingConflictException("This card has expired. Choose another card.");
+        }
+    }
+
     private PaymentMethod resolveOwn(Long customerId, Long organizationId, Long methodId) {
         PaymentMethod method = paymentMethodRepository.findById(methodId)
             .orElseThrow(() -> new ResourceNotFoundException("Payment method not found"));

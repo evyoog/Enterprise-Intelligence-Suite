@@ -65,11 +65,14 @@ class LayeredArchitectureTest {
         //   in whatever currency its subscription's plan already uses) and
         //   reads Product/ProductPlan to build invoice lines — no second
         //   currency or pricing model defined.
+        // - ..modules.cart.. (REQ-MKT-003, C59) reads the same catalog to
+        //   price cart items and check purchase validation (published
+        //   product, plan, dependencies) — no second catalog or price list.
         ArchRule rule = classes().that().resideInAPackage("..modules.product..")
             .should().onlyHaveDependentClassesThat().resideInAnyPackage(
                 "..modules.product..", "..modules.platform..", "..modules.registration..", "..modules.dashboard..",
                 "..modules.servicestatus..", "..modules.administration..", "..modules.search..", "..modules.reviews..",
-                "..modules.billing..",
+                "..modules.billing..", "..modules.cart..",
                 "com.vyoog.eisplatform", "..config.."
             );
 

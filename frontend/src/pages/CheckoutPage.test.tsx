@@ -1,5 +1,5 @@
 import '../i18n'
-import { render, screen, waitFor } from '@testing-library/react'
+import { render, screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { axe } from 'jest-axe'
 import { MemoryRouter, Route, Routes } from 'react-router-dom'
@@ -27,6 +27,8 @@ const payByInvoice = vi.fn()
 const createPayment = vi.fn()
 const confirmPayment = vi.fn()
 const invoiceDetail = vi.fn()
+const paymentMethods = vi.fn()
+const removePaymentMethod = vi.fn()
 vi.mock('../api/billingApi', async () => {
   const actual = await vi.importActual<typeof import('../api/billingApi')>('../api/billingApi')
   return {
@@ -37,9 +39,11 @@ vi.mock('../api/billingApi', async () => {
       saveDetails: (input: unknown) => saveDetails(input),
       checkout: (p: unknown) => checkout(p),
       payByInvoice: (id: number) => payByInvoice(id),
-      createPayment: (id: number) => createPayment(id),
+      createPayment: (id: number, body: unknown) => createPayment(id, body),
       confirmPayment: (id: number, body: unknown) => confirmPayment(id, body),
       invoiceDetail: (id: number) => invoiceDetail(id),
+      paymentMethods: () => paymentMethods(),
+      removePaymentMethod: (id: number) => removePaymentMethod(id),
     },
   }
 })
@@ -48,8 +52,8 @@ vi.mock('../utils/razorpayCheckout', () => ({
   openRazorpayCheckout: vi.fn().mockResolvedValue({ providerOrderId: 'order_1', providerPaymentId: 'pay_1', signature: 'sig_1' }),
 }))
 
-const product = {
-  id: 7, name: 'Valam.ai', description: 'Analytics.', price: 19.99, status: 'ACTIVE' as const,
+const freeProduct = {
+  id: 7, name: 'Valam.ai', description: 'Analytics.', price: 0, status: 'ACTIVE' as const,
   ssoConnected: false, featured: false, platforms: [], plans: [], version: 1, dependsOnProductIds: [],
 }
 
@@ -58,11 +62,17 @@ const savedDetails = {
   city: 'Chennai', state: 'TN', postalCode: '600001', country: 'India', updatedAt: '2026-10-01T00:00:00Z',
 }
 
+const visa = { id: 5, type: 'CARD', network: 'Visa', last4: '2860', expiryMonth: 8, expiryYear: 2030, isDefault: true, expired: false }
+const expiredMastercard = { id: 6, type: 'CARD', network: 'Mastercard', last4: '5014', expiryMonth: 1, expiryYear: 2024, isDefault: false, expired: true }
+
 function summary(overrides: Record<string, unknown> = {}) {
   return {
     invoiceId: 9, invoiceNumber: 'INV-2026-000009', invoiceStatus: 'OPEN', paymentRoute: null,
     subscriptionId: 1, subscriptionStatus: 'ACTIVE', currency: 'USD',
-    items: [{ productId: 7, productName: 'Valam.ai', planName: 'Pro', billingPeriod: 'MONTHLY', amount: 1999, quantity: 1 }],
+    items: [
+      { productId: 7, productName: 'Valam.ai', planName: 'Pro', billingPeriod: 'MONTHLY', amount: 1500 },
+      { productId: 8, productName: 'Varthan.ai', planName: 'Team', billingPeriod: 'YEARLY', amount: 499 },
+    ],
     subtotal: 1999, taxLines: [], total: 1999, dueAt: '2026-10-01T00:00:00Z', billingEmail: 'jane@example.com',
     gatewayConfigured: true, payByInvoiceAllowed: true,
     ...overrides,
@@ -75,38 +85,28 @@ function renderAt(url: string) {
       <Routes>
         <Route path="/checkout" element={<CheckoutPage />} />
         <Route path="/checkout/:productId" element={<LegacyCheckoutRedirect />} />
-        <Route path="/my/products" element={<div>My products page</div>} />
+        <Route path="/cart" element={<div>Cart page</div>} />
         <Route path="/login" element={<div>Sign in page</div>} />
       </Routes>
     </MemoryRouter>
   )
 }
 
-async function fillDetails(user: ReturnType<typeof userEvent.setup>) {
-  await user.type(await screen.findByLabelText(/Full name or company/), 'Jane')
-  await user.type(screen.getByLabelText(/Billing email/), 'jane@example.com')
-  await user.type(screen.getByLabelText(/Address line 1/), '1 Main St')
-  await user.type(screen.getByLabelText(/^City/), 'Chennai')
-  await user.type(screen.getByLabelText(/State \/ region/), 'TN')
-  await user.type(screen.getByLabelText(/Postal code/), '600001')
-  await user.type(screen.getByLabelText(/^Country/), 'India')
-}
+const tiles = () => within(screen.getByRole('radiogroup', { name: 'Payment' })).getAllByRole('radio')
+const payButton = () => screen.getByRole('button', { name: /Pay \| \$19\.99|Generate invoice/ })
 
-describe('CheckoutPage (C55)', () => {
+describe('CheckoutPage (C55, C59 redesign)', () => {
   beforeEach(() => {
-    for (const m of [getProduct, subscribe, getDetails, saveDetails, checkout, payByInvoice, createPayment, confirmPayment, invoiceDetail]) m.mockReset()
+    for (const m of [getProduct, subscribe, getDetails, saveDetails, checkout, payByInvoice, createPayment, confirmPayment, invoiceDetail, paymentMethods, removePaymentMethod]) m.mockReset()
     vi.mocked(openRazorpayCheckout).mockClear()
-    getProduct.mockResolvedValue(product)
+    getProduct.mockResolvedValue(freeProduct)
     getDetails.mockRejectedValue(new ApiError(404, 'No billing details saved yet'))
+    paymentMethods.mockResolvedValue([])
   })
 
-  it('forwards the legacy /checkout/:productId link and shows the billing-details form first', async () => {
+  it('forwards the legacy /checkout/:productId link to the cart', async () => {
     renderAt('/checkout/7')
-    expect(await screen.findByRole('heading', { name: 'Billing details' })).toBeInTheDocument()
-    expect(screen.getByRole('button', { name: 'Continue to payment' })).toBeInTheDocument()
-    expect(getProduct).toHaveBeenCalledWith(7)
-    // Stepper marks the current step for assistive tech.
-    expect(screen.getByText('Billing details', { selector: 'p' }).closest('li')).toHaveAttribute('aria-current', 'step')
+    expect(await screen.findByText('Cart page')).toBeInTheDocument()
   })
 
   it('sends the visitor to sign in when the session has expired', async () => {
@@ -117,68 +117,143 @@ describe('CheckoutPage (C55)', () => {
 
   it('validates required billing fields before continuing', async () => {
     renderAt('/checkout?productId=7')
-    const user = userEvent.setup()
-    await user.click(await screen.findByRole('button', { name: 'Continue to payment' }))
+    await userEvent.setup().click(await screen.findByRole('button', { name: 'Continue to payment' }))
     expect((await screen.findAllByText('This field is required.')).length).toBeGreaterThan(0)
     expect(saveDetails).not.toHaveBeenCalled()
   })
 
-  it('goes straight to a free-plan confirmation when the subscription has no invoice', async () => {
-    saveDetails.mockResolvedValue({})
+  it('keeps the free-plan flow: subscribe on continue and show the free confirmation', async () => {
+    getDetails.mockResolvedValue(savedDetails)
     subscribe.mockResolvedValue({ id: 1, productId: 7, productName: 'Valam.ai', status: 'ACTIVE' })
     checkout.mockResolvedValue(summary({ invoiceId: null, invoiceNumber: null, invoiceStatus: null, total: 0, subtotal: 0 }))
     renderAt('/checkout?productId=7')
-    const user = userEvent.setup()
-    await fillDetails(user)
-    await user.click(screen.getByRole('button', { name: 'Continue to payment' }))
+    await userEvent.setup().click(await screen.findByRole('button', { name: 'Continue to payment' }))
     expect(await screen.findByText("You're subscribed")).toBeInTheDocument()
     expect(subscribe).toHaveBeenCalledWith(7)
   })
 
-  it('shows four payment options and keeps Pay disabled until an option and consent are chosen', async () => {
+  it('shows the breadcrumb from the cart, the billing summary with Change, the amount due and the cart summary', async () => {
+    getDetails.mockResolvedValue(savedDetails)
+    checkout.mockResolvedValue(summary())
+    renderAt('/checkout?invoiceId=9&from=cart&step=payment')
+
+    await screen.findByRole('radiogroup', { name: 'Payment' })
+    const crumbs = screen.getByRole('navigation', { name: 'Checkout progress' })
+    expect(within(crumbs).getByRole('link', { name: 'Cart' })).toHaveAttribute('href', '/cart')
+    expect(within(crumbs).getByText('Payment').closest('li')).toHaveAttribute('aria-current', 'step')
+    expect(screen.getByText('jane@example.com')).toBeInTheDocument()
+    expect(screen.getByRole('img', { name: 'Amount due $19.99' })).toBeInTheDocument()
+    const aside = screen.getByRole('complementary', { name: /Order summary/ })
+    expect(aside).toHaveTextContent('Valam.ai')
+    expect(aside).toHaveTextContent('Varthan.ai')
+    expect(within(aside).getByText('Tax: none for this region')).toBeInTheDocument()
+    expect(within(aside).getByRole('link', { name: 'Edit cart' })).toHaveAttribute('href', '/cart')
+
+    await userEvent.setup().click(screen.getByRole('button', { name: 'Change Contact' }))
+    expect(await screen.findByRole('textbox', { name: /Billing email/ })).toHaveValue('jane@example.com')
+  })
+
+  it('shows five method tiles and keeps Pay disabled until a tile and the terms are chosen', async () => {
     getDetails.mockResolvedValue(savedDetails)
     checkout.mockResolvedValue(summary())
     renderAt('/checkout?invoiceId=9&step=payment')
+    await screen.findByRole('radiogroup', { name: 'Payment' })
 
-    const radios = await screen.findAllByRole('radio')
-    expect(radios.map((r) => r.textContent)).toEqual([
-      expect.stringContaining('Card'), expect.stringContaining('UPI'),
-      expect.stringContaining('Other online methods'), expect.stringContaining('Pay by invoice'),
+    expect(tiles().map((r) => r.textContent)).toEqual([
+      expect.stringContaining('Card'), expect.stringContaining('UPI'), expect.stringContaining('Netbanking'),
+      expect.stringContaining('Wallets'), expect.stringContaining('Pay by invoice'),
     ])
     const user = userEvent.setup()
-    const pay = () => screen.getByRole('button', { name: /Pay \$19\.99|Generate invoice/ })
-    expect(pay()).toBeDisabled()
-    await user.click(radios[0])
-    expect(radios[0]).toHaveAttribute('aria-checked', 'true')
-    expect(pay()).toBeDisabled()
+    expect(payButton()).toBeDisabled()
+    // AC-34: the footer's Complete order never starts a payment and stays disabled here.
+    expect(screen.getByRole('button', { name: 'Complete order' })).toBeDisabled()
+    await user.click(tiles()[2])
+    expect(tiles()[2]).toHaveAttribute('aria-checked', 'true')
+    expect(payButton()).toBeDisabled()
     await user.click(screen.getByRole('checkbox', { name: /I agree/ }))
-    expect(pay()).toBeEnabled()
+    expect(payButton()).toBeEnabled()
   })
 
-  it('never renders a card input: the card panel holds no text fields (BR-BIL-001)', async () => {
+  it('moves between tiles with the arrow keys', async () => {
+    getDetails.mockResolvedValue(savedDetails)
+    checkout.mockResolvedValue(summary())
+    renderAt('/checkout?invoiceId=9&step=payment')
+    await screen.findByRole('radiogroup', { name: 'Payment' })
+    const user = userEvent.setup()
+    await user.click(tiles()[0])
+    await user.keyboard('{ArrowRight}')
+    expect(tiles()[1]).toHaveAttribute('aria-checked', 'true')
+    expect(tiles()[1]).toHaveFocus()
+  })
+
+  it('pays with the default saved card; an expired card cannot be chosen', async () => {
+    getDetails.mockResolvedValue(savedDetails)
+    checkout.mockResolvedValue(summary())
+    paymentMethods.mockResolvedValue([visa, expiredMastercard])
+    createPayment.mockResolvedValue({ paymentId: 3, providerOrderId: 'order_1', amount: 1999, currency: 'USD', keyId: 'rzp_test_1' })
+    confirmPayment.mockResolvedValue({ status: 'CAPTURED', amount: 1999, currency: 'USD', methodType: 'card', methodNetwork: 'Visa', methodLast4: '2860' })
+    renderAt('/checkout?invoiceId=9&step=payment')
+    await screen.findByRole('radiogroup', { name: 'Payment' })
+    const user = userEvent.setup()
+    await user.click(tiles()[0])
+
+    const saved = screen.getByRole('radiogroup', { name: 'Saved cards' })
+    expect(within(saved).getByRole('radio', { name: 'Visa ending 2860' })).toHaveAttribute('aria-checked', 'true')
+    const expired = within(saved).getByRole('radio', { name: 'Mastercard ending 5014' })
+    expect(expired).toHaveAttribute('aria-disabled', 'true')
+    expect(within(saved).getByText('Expired')).toBeInTheDocument()
+    await user.click(expired)
+    expect(expired).toHaveAttribute('aria-checked', 'false')
+
+    await user.click(screen.getByRole('checkbox', { name: /I agree/ }))
+    await user.click(payButton())
+    await waitFor(() => expect(confirmPayment).toHaveBeenCalledWith(3, { providerOrderId: 'order_1', providerPaymentId: 'pay_1', signature: 'sig_1' }))
+    expect(createPayment).toHaveBeenCalledWith(9, { method: 'card', paymentMethodId: 5 })
+    expect(vi.mocked(openRazorpayCheckout).mock.calls[0][0]).toMatchObject({ method: 'card' })
+    expect(await screen.findByRole('heading', { name: 'Payment successful' })).toBeInTheDocument()
+  })
+
+  it('never renders a card input: the "use another card" fields are placeholders (BR-BIL-001)', async () => {
     getDetails.mockResolvedValue(savedDetails)
     checkout.mockResolvedValue(summary())
     const { container } = renderAt('/checkout?invoiceId=9&step=payment')
-    await userEvent.setup().click((await screen.findAllByRole('radio'))[0])
+    await screen.findByRole('radiogroup', { name: 'Payment' })
+    await userEvent.setup().click(tiles()[0])
     expect(screen.getByText(/never stored by eVyoog/)).toBeInTheDocument()
     expect(container.querySelectorAll('input:not([type="checkbox"])')).toHaveLength(0)
     expect(screen.queryByRole('textbox')).not.toBeInTheDocument()
   })
 
-  it('pays by card through Razorpay with the card method prefilled and shows success', async () => {
+  it('removes a saved card from its menu after confirmation', async () => {
+    getDetails.mockResolvedValue(savedDetails)
+    checkout.mockResolvedValue(summary())
+    paymentMethods.mockResolvedValue([visa])
+    removePaymentMethod.mockResolvedValue(undefined)
+    renderAt('/checkout?invoiceId=9&step=payment')
+    await screen.findByRole('radiogroup', { name: 'Payment' })
+    const user = userEvent.setup()
+    await user.click(tiles()[0])
+    await user.click(screen.getByRole('button', { name: 'More actions for the card ending 2860' }))
+    await user.click(screen.getByRole('menuitem', { name: 'Remove' }))
+    await user.click(within(screen.getByRole('dialog', { name: 'Remove saved card?' })).getByRole('button', { name: 'Remove' }))
+    await waitFor(() => expect(removePaymentMethod).toHaveBeenCalledWith(5))
+    await waitFor(() => expect(screen.queryByRole('radiogroup', { name: 'Saved cards' })).not.toBeInTheDocument())
+  })
+
+  it('pays by netbanking with that method preselected in Razorpay', async () => {
     getDetails.mockResolvedValue(savedDetails)
     checkout.mockResolvedValue(summary())
     createPayment.mockResolvedValue({ paymentId: 3, providerOrderId: 'order_1', amount: 1999, currency: 'USD', keyId: 'rzp_test_1' })
-    confirmPayment.mockResolvedValue({ status: 'CAPTURED', amount: 1999, currency: 'USD', provider: 'RAZORPAY' })
+    confirmPayment.mockResolvedValue({ status: 'CAPTURED', amount: 1999, currency: 'USD' })
     renderAt('/checkout?invoiceId=9&step=payment')
+    await screen.findByRole('radiogroup', { name: 'Payment' })
     const user = userEvent.setup()
-    await user.click((await screen.findAllByRole('radio'))[0])
+    await user.click(tiles()[2])
+    expect(screen.getByText(/choose your bank in Razorpay/)).toBeInTheDocument()
     await user.click(screen.getByRole('checkbox', { name: /I agree/ }))
-    await user.click(screen.getByRole('button', { name: /Pay \$19\.99/ }))
-
-    await waitFor(() => expect(confirmPayment).toHaveBeenCalledWith(3, { providerOrderId: 'order_1', providerPaymentId: 'pay_1', signature: 'sig_1' }))
-    expect(vi.mocked(openRazorpayCheckout).mock.calls[0][0]).toMatchObject({ method: 'card' })
-    expect(await screen.findByRole('heading', { name: 'Payment successful' })).toBeInTheDocument()
+    await user.click(payButton())
+    await waitFor(() => expect(createPayment).toHaveBeenCalledWith(9, { method: 'netbanking' }))
+    expect(vi.mocked(openRazorpayCheckout).mock.calls[0][0]).toMatchObject({ method: 'netbanking' })
   })
 
   it('shows a failed result with retry options when the customer closes Razorpay', async () => {
@@ -187,28 +262,28 @@ describe('CheckoutPage (C55)', () => {
     createPayment.mockResolvedValue({ paymentId: 3, providerOrderId: 'order_1', amount: 1999, currency: 'USD', keyId: 'rzp_test_1' })
     vi.mocked(openRazorpayCheckout).mockRejectedValueOnce(new Error('cancelled'))
     renderAt('/checkout?invoiceId=9&step=payment')
+    await screen.findByRole('radiogroup', { name: 'Payment' })
     const user = userEvent.setup()
-    await user.click((await screen.findAllByRole('radio'))[1])
+    await user.click(tiles()[1])
     await user.click(screen.getByRole('checkbox', { name: /I agree/ }))
-    await user.click(screen.getByRole('button', { name: /Pay \$19\.99/ }))
+    await user.click(payButton())
     expect(await screen.findByRole('heading', { name: 'Payment failed' })).toBeInTheDocument()
     expect(screen.getByRole('button', { name: 'Try again' })).toBeInTheDocument()
     expect(screen.getByRole('button', { name: 'Choose another method' })).toBeInTheDocument()
     expect(confirmPayment).not.toHaveBeenCalled()
   })
 
-  it('disables online options when the gateway is not configured but keeps Pay by invoice', async () => {
+  it('disables the online tiles when the gateway is not configured but keeps Pay by invoice', async () => {
     getDetails.mockResolvedValue(savedDetails)
     checkout.mockResolvedValue(summary({ gatewayConfigured: false }))
     renderAt('/checkout?invoiceId=9&step=payment')
-    const radios = await screen.findAllByRole('radio')
+    await screen.findByRole('radiogroup', { name: 'Payment' })
     expect(screen.getByText(/Online payments are not available/i)).toBeInTheDocument()
-    expect(radios[0]).toHaveAttribute('aria-disabled', 'true')
-    expect(radios[1]).toHaveAttribute('aria-disabled', 'true')
-    expect(radios[2]).toHaveAttribute('aria-disabled', 'true')
-    expect(radios[3]).not.toHaveAttribute('aria-disabled')
-    await userEvent.setup().click(radios[0])
-    expect(radios[0]).toHaveAttribute('aria-checked', 'false')
+    const all = tiles()
+    for (const tile of all.slice(0, 4)) expect(tile).toHaveAttribute('aria-disabled', 'true')
+    expect(all[4]).not.toHaveAttribute('aria-disabled')
+    await userEvent.setup().click(all[0])
+    expect(all[0]).toHaveAttribute('aria-checked', 'false')
   })
 
   it('generates an offline invoice and shows the bank details to pay into', async () => {
@@ -220,8 +295,9 @@ describe('CheckoutPage (C55)', () => {
       bankDetails: { accountName: 'eVyoog Pvt Ltd', bankName: 'Demo Bank', accountNumber: '0011223344', ifsc: 'DEMO0001234', swiftBic: null },
     })
     renderAt('/checkout?invoiceId=9&step=payment')
+    await screen.findByRole('radiogroup', { name: 'Payment' })
     const user = userEvent.setup()
-    await user.click((await screen.findAllByRole('radio'))[3])
+    await user.click(tiles()[4])
     await user.click(screen.getByRole('checkbox', { name: /I agree/ }))
     await user.click(screen.getByRole('button', { name: 'Generate invoice' }))
 
@@ -233,19 +309,22 @@ describe('CheckoutPage (C55)', () => {
     expect(screen.getByRole('button', { name: 'Copy Account number' })).toBeInTheDocument()
   })
 
-  it('shows tax lines, or "none for this region" when there are none', async () => {
-    getDetails.mockResolvedValue(savedDetails)
-    checkout.mockResolvedValue(summary())
-    renderAt('/checkout?invoiceId=9&step=payment')
-    expect(await screen.findByText('Tax: none for this region')).toBeInTheDocument()
-    expect(screen.getByRole('complementary', { name: 'Order summary' })).toHaveTextContent('Valam.ai')
+  it('shows the order-submitted result for an organization member', async () => {
+    const { container } = renderAt('/checkout?orders=15,16&step=complete')
+    expect(await screen.findByRole('heading', { name: 'Order submitted for approval' })).toBeInTheDocument()
+    expect(screen.getByText('Order #15, #16')).toBeInTheDocument()
+    expect(screen.getByRole('link', { name: 'View my orders' })).toHaveAttribute('href', '/organization/orders')
+    expect(checkout).not.toHaveBeenCalled()
+    expect(await axe(container)).toHaveNoViolations()
   })
 
-  it('has no detectable accessibility violations on the payment step', async () => {
+  it('has no detectable accessibility violations on the payment step with saved cards', async () => {
     getDetails.mockResolvedValue(savedDetails)
     checkout.mockResolvedValue(summary())
-    const { container } = renderAt('/checkout?invoiceId=9&step=payment')
-    await userEvent.setup().click((await screen.findAllByRole('radio'))[0])
+    paymentMethods.mockResolvedValue([visa, expiredMastercard])
+    const { container } = renderAt('/checkout?invoiceId=9&from=cart&step=payment')
+    await screen.findByRole('radiogroup', { name: 'Payment' })
+    await userEvent.setup().click(tiles()[0])
     expect(await axe(container)).toHaveNoViolations()
   })
 

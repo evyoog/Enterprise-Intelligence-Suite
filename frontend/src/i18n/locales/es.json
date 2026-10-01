@@ -902,7 +902,8 @@
     "steps": {
       "details": "Datos de facturación",
       "payment": "Pago",
-      "complete": "Completado"
+      "complete": "Completado",
+      "cart": "Carrito"
     },
     "details": {
       "title": "Datos de facturación",
@@ -923,51 +924,57 @@
       "tooLong": "Este valor es demasiado largo."
     },
     "payment": {
-      "title": "Método de pago",
-      "subtitle": "Elige cómo quieres pagar.",
-      "noOptions": "No hay opciones de pago disponibles ahora. Contacta con soporte."
+      "title": "Pago",
+      "subtitle": "Todas las transacciones son seguras y cifradas.",
+      "noOptions": "No hay opciones de pago disponibles ahora. Contacta con soporte.",
+      "amountDue": "Importe a pagar",
+      "amountDueLabel": "Importe a pagar {{amount}}"
     },
     "option": {
       "card": {
         "title": "Tarjeta",
-        "description": "Tarjeta de crédito o débito"
+        "description": "Paga de forma segura con tu tarjeta de crédito o débito."
       },
       "upi": {
         "title": "UPI",
-        "description": "Paga con cualquier app UPI"
-      },
-      "other": {
-        "title": "Otros métodos en línea",
-        "description": "Banca en línea, monederos y más"
+        "description": "Paga con cualquier app UPI."
       },
       "offline": {
         "title": "Pagar con factura",
-        "description": "Transferencia bancaria, NEFT/RTGS o cheque"
+        "description": "Emitiremos una factura ahora. Paga por transferencia, NEFT/RTGS o cheque indicando el número de factura."
+      },
+      "netbanking": {
+        "title": "Banca en línea",
+        "description": "Paga desde tu cuenta bancaria."
+      },
+      "wallets": {
+        "title": "Monederos",
+        "description": "Paga con un monedero móvil."
       }
     },
     "card": {
-      "lead": "Introducirás los datos de tu tarjeta en la ventana de pago segura después de pulsar Pagar.",
+      "lead": "Introducirás los datos de tu tarjeta en la ventana segura de Razorpay después de pulsar Pagar.",
       "number": "Número de tarjeta",
       "name": "Nombre en la tarjeta",
       "expiry": "Caducidad (MM/AA)",
       "cvv": "CVV",
       "cvvHelp": "El código de 3 o 4 dígitos del reverso de tu tarjeta.",
       "secureNote": "Los datos de la tarjeta los gestiona nuestro proveedor de pagos y eVyoog nunca los almacena.",
-      "save": "Guardar esta tarjeta en el proveedor de pagos para futuros pagos"
+      "save": "Guardar esta tarjeta en el proveedor de pagos para futuros pagos",
+      "accepted": "Tarjetas aceptadas"
     },
     "upi": {
-      "note": "Completarás el pago UPI en la ventana de pago segura."
-    },
-    "other": {
-      "note": "Elegirás banca en línea, un monedero u otro método en la ventana de pago segura."
+      "note": "Pagarás con tu ID de UPI o una app UPI en la ventana segura de Razorpay.",
+      "apps": "Apps UPI",
+      "saved": "ID de UPI guardados"
     },
     "offline": {
       "terms": "Emitiremos una factura con nuestros datos bancarios. Tu suscripción se activa como siempre; paga antes de la fecha de vencimiento.",
       "emailTo": "La factura se enviará a {{email}}."
     },
-    "pay": "Pagar {{amount}}",
+    "pay": "Pagar | {{amount}}",
     "generateInvoice": "Generar factura",
-    "consent": "Acepto los Términos del servicio y la Política de privacidad.",
+    "consent": "Acepto los Términos y condiciones, la Política de reembolso y la Política de privacidad.",
     "genericError": "Algo salió mal. Inténtalo de nuevo.",
     "loadError": "No se pudo cargar tu pedido.",
     "summary": {
@@ -975,9 +982,10 @@
       "subtotal": "Subtotal",
       "noTax": "Impuestos: ninguno para esta región",
       "total": "Total",
-      "trust": "Pago seguro. Los datos de la tarjeta nunca pasan por los servidores de eVyoog.",
+      "trust": "Los pagos se procesan de forma segura con Razorpay.",
       "qty": "Cant. {{qty}}",
-      "toggle": "Mostrar resumen del pedido ({{total}})"
+      "toggle": "Total {{total}} · {{count}} artículos",
+      "editCart": "Editar carrito"
     },
     "period": {
       "MONTHLY": "Mensual",
@@ -1014,7 +1022,14 @@
       "method": "Método",
       "date": "Fecha",
       "total": "Total",
-      "dueDate": "Fecha de vencimiento"
+      "dueDate": "Fecha de vencimiento",
+      "orderSubmitted": {
+        "title": "Pedido enviado para aprobación",
+        "reference": "Pedido {{refs}}",
+        "body": "El administrador de tu organización aprueba los pedidos antes del pago. Podrás pagar cuando se apruebe.",
+        "viewOrders": "Ver mis pedidos",
+        "browse": "Explorar productos"
+      }
     },
     "bank": {
       "accountName": "Titular de la cuenta",
@@ -1036,6 +1051,86 @@
       "paid": "Pago recibido.",
       "invoiceGenerated": "Factura generada.",
       "failed": "El pago no se completó."
+    },
+    "brand": "eVyoog",
+    "review": {
+      "contact": "Contacto",
+      "address": "Dirección de facturación",
+      "change": "Cambiar",
+      "changeLabel": "Cambiar {{field}}"
+    },
+    "netbanking": {
+      "note": "Elegirás tu banco en la ventana segura de Razorpay."
+    },
+    "wallets": {
+      "note": "Elegirás tu monedero en la ventana segura de Razorpay."
+    },
+    "savedCards": {
+      "title": "Tarjetas guardadas",
+      "cardLabel": "{{network}} terminada en {{last4}}",
+      "expires": "Caduca {{date}}",
+      "expired": "Caducada",
+      "default": "Predeterminada",
+      "menu": "Más acciones para la tarjeta terminada en {{last4}}",
+      "remove": "Quitar",
+      "useAnother": "Usar otra tarjeta",
+      "removeConfirm": {
+        "title": "¿Quitar tarjeta guardada?",
+        "body": "Se quitará la tarjeta terminada en {{last4}} de tus métodos guardados."
+      }
+    },
+    "footer": {
+      "stepBack": "Paso anterior",
+      "completeOrder": "Completar pedido"
+    },
+    "poweredBy": "Con la tecnología de"
+  },
+  "cart": {
+    "title": "Tu carrito",
+    "badge": "Carrito, {{count}} artículos",
+    "badgeEmpty": "Carrito, vacío",
+    "added": "Se añadió {{product}} — {{plan}} a tu carrito",
+    "removed": "Se quitó {{product}}",
+    "undo": "Deshacer",
+    "remove": "Quitar",
+    "removeItem": "Quitar {{product}}",
+    "changePlan": "Cambiar plan",
+    "confirmPrice": "Confirmar nuevo precio",
+    "addRequired": "Añadir {{required}}",
+    "continueBrowsing": "Seguir explorando",
+    "clear": "Vaciar carrito",
+    "clearConfirm": {
+      "title": "¿Vaciar carrito?",
+      "body": "¿Quitar todos los artículos de tu carrito?"
+    },
+    "proceed": "Continuar al pago",
+    "submitForApproval": "Enviar pedido para aprobación",
+    "approvalHelp": "El administrador de tu organización aprueba los pedidos antes del pago.",
+    "viewSummary": "Ver resumen",
+    "error": "Algo salió mal con tu carrito. Inténtalo de nuevo.",
+    "retry": "Reintentar",
+    "summary": {
+      "title": "Resumen del pedido",
+      "items": "{{count}} artículos",
+      "subtotal": "Subtotal",
+      "taxAtPayment": "Impuestos calculados al pagar",
+      "noTax": "Impuestos: ninguno para esta región",
+      "total": "Total",
+      "trust": "Pagos seguros con Razorpay",
+      "acceptedMethods": "Métodos de pago aceptados"
+    },
+    "empty": {
+      "title": "Tu carrito está vacío",
+      "body": "Busca un producto para empezar.",
+      "browse": "Explorar productos"
+    },
+    "issue": {
+      "productUnavailable": "Este producto ya no está disponible.",
+      "planUnavailable": "Este plan ya no está disponible. Elige otro plan.",
+      "priceChanged": "El precio cambió de {{old}} a {{new}}.",
+      "alreadySubscribed": "Ya tienes una suscripción activa a {{product}}.",
+      "missingDependency": "{{product}} requiere {{required}}.",
+      "currencyMismatch": "Este artículo tiene un precio en otra moneda que el resto de tu carrito. Págalo por separado."
     }
   }
 }

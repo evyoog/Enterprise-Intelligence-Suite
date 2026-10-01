@@ -21,7 +21,7 @@ None.
 No axe violations; the payment options are a `radiogroup` operable with arrow keys and Space/Enter; the stepper marks the current step with `aria-current="step"`.
 
 ## Automated coverage
-- `frontend/src/pages/CheckoutPage.test.tsx` — the two "has no detectable accessibility violations" tests
+- `frontend/src/pages/CheckoutPage.test.tsx` — the "has no detectable accessibility violations" tests and the order-submitted axe check
 - `frontend/src/pages/admin/AdminBillingPage.test.tsx` — dialog axe check
 - `frontend/src/pages/admin/AdminBillingSettingsPage.test.tsx` — "shows the empty state…" axe check
 

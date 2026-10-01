@@ -38,6 +38,8 @@
 | Not built | [C40](../open-decisions.md#c40) 03.03 Marketplace Checkout: needs a product-options/discount data model no source specifies — carried further |
 | Not built | [C40](../open-decisions.md#c40) 04a AI Agent Orchestration (whole application, including the C21/C4 additions above): needs an agent/LLM framework decision — carried further |
 | Not built | [C40](../open-decisions.md#c40) 10 Service & Resource Management (whole application, including the C20 retirement task): P1/stretch, no real infrastructure to manage yet — carried further |
+| Moved out | [C59](../open-decisions.md#c59) 03.03 Marketplace Checkout moves to [2026.4.3](SPRINT-2026.4.3.md), built with Billing as the cart and checkout ([REQ-MKT-003](../../../02-requirements/FRD/cart-checkout/requirement.md)). 03a here keeps 03.01 Product Discovery only | [cart-checkout](../../../02-requirements/FRD/cart-checkout/requirement.md) | REQ-MKT-003 |
+| Added | [C57](../open-decisions.md#c57) Service instances (answer to D7, option A): one subscription's provisioned tenant in a hosted product, with status and product-reported health; the source the interim status page ([C20](../open-decisions.md#c20)) switches to for per-product status. FRD is a documents-only stub | [service-instances](../../../02-requirements/FRD/service-instances/requirement.md) | REQ-SRM-001 |
 
 ### FRDs in this sprint
 
@@ -45,6 +47,7 @@
 |---|---|---|---|
 | [product-recommendations](../../../02-requirements/FRD/product-recommendations/requirement.md) | REQ-MKT-001 | 03.01.02 (03.01.01 already satisfied by existing catalog search) | Approved |
 | [ticket-management](../../../02-requirements/FRD/ticket-management/requirement.md) | REQ-SUP-001 | 12.01.01 | Approved |
+| [service-instances](../../../02-requirements/FRD/service-instances/requirement.md) | REQ-SRM-001 | 10 Service & Resource Management (service instance status and health) | Draft (stub) |
 
 ### Progress (as of 2026-09-28)
 
@@ -52,7 +55,7 @@
 |---|---|---|
 | 03.01.01 Catalog Browsing | Done (pre-existing) | Browse/search/filter/sort already built (Phase 17), before this sprint |
 | 03.01.02 Recommendations | Done (this FRD's scope) | Featured flag + popularity from existing usage data, no AI/ML model |
-| 03.03 Marketplace Checkout | Not started | Carried — needs a product-options/discount data model first ([C40](../open-decisions.md#c40)) |
+| 03.03 Marketplace Checkout | Moved | Moved to [2026.4.3](SPRINT-2026.4.3.md) by [C59](../open-decisions.md#c59) (REQ-MKT-003, Draft) |
 | 04a AI Agent Orchestration (whole application) | Not started | Carried — needs an agent/LLM framework decision first ([C40](../open-decisions.md#c40)) |
 | 10 Service & Resource Management (whole application) | Not started | Carried — P1/stretch, no infrastructure to manage; the [C20](../open-decisions.md#c20) retirement task still can't land |
 | 12.01.01 Ticket Management | Done (this FRD's scope) | Human-operated, not AI-driven |
@@ -164,6 +167,7 @@ Full breakdown: [applications/12-support-service-management.md](../applications/
 - [C4](../open-decisions.md#c4), [C5](../open-decisions.md#c5), [C6](../open-decisions.md#c6) MVP, priority and phase as shown above.
 - [C20](../open-decisions.md#c20) The retirement task for the interim service-status page, now here with 10 Service & Resource Management.
 - [C31](../open-decisions.md#c31) Corrected sprint sequence: 04 split, 10, 03a and 12a moved in as shown above.
+- [C57](../open-decisions.md#c57) Service instances; [C59](../open-decisions.md#c59) 03.03 moved to 2026.4.3.
 - Sprint goal, team, capacity and status are Not specified.
 
 Details: [open-decisions.md](../open-decisions.md).

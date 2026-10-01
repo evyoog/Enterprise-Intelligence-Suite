@@ -53,7 +53,7 @@ export async function openRazorpayCheckout(options: {
   description: string
   /** C55: preselects a method inside Razorpay's window ("card", "upi").
    * Card/UPI details are still entered only there (BR-BIL-001). */
-  method?: 'card' | 'upi'
+  method?: 'card' | 'upi' | 'netbanking' | 'wallet'
 }): Promise<RazorpayResult> {
   await loadCheckoutScript()
   return new Promise((resolve, reject) => {

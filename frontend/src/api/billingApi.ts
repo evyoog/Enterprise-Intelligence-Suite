@@ -5,6 +5,8 @@ export type InvoiceStatus = 'OPEN' | 'PAID' | 'PARTIALLY_REFUNDED' | 'REFUNDED' 
 export type PaymentStatus = 'CREATED' | 'CAPTURED' | 'FAILED' | 'PARTIALLY_REFUNDED' | 'REFUNDED'
 export type PaymentMethodType = 'CARD' | 'UPI'
 export type PaymentRoute = 'ONLINE' | 'OFFLINE'
+/** Razorpay Checkout method preselection (C59 tiles). */
+export type CheckoutMethod = 'card' | 'upi' | 'netbanking' | 'wallet'
 export type OfflinePaymentMethod = 'BANK_TRANSFER' | 'NEFT_RTGS' | 'CHEQUE'
 
 /** C55 (REQ-BIL-001.18): one row of the checkout's "Your order" panel. */
@@ -219,7 +221,12 @@ function scopedApi(base: string) {
     invoiceDetail: (invoiceId: number) => apiRequest<Invoice>(`${base}/invoices/${invoiceId}`),
     downloadDocument: (invoiceId: number, type: 'invoice' | 'receipt') =>
       apiDownload(`${base}/invoices/${invoiceId}/document?type=${type}`),
-    createPayment: (invoiceId: number) => apiRequest<CreatePaymentResponse>(`${base}/invoices/${invoiceId}/payments`, { method: 'POST' }),
+    /** C59 (REQ-BIL-001.22): optionally the saved method chosen at checkout and
+     * the tile used for Razorpay's preselection. Never card data (BR-BIL-001). */
+    createPayment: (invoiceId: number, body?: { paymentMethodId?: number; method?: CheckoutMethod }) =>
+      apiRequest<CreatePaymentResponse>(`${base}/invoices/${invoiceId}/payments`, {
+        method: 'POST', ...(body ? { body: JSON.stringify(body) } : {}),
+      }),
     confirmPayment: (paymentId: number, body: { providerOrderId: string; providerPaymentId: string; signature: string }) =>
       apiRequest<Payment>(`${base}/payments/${paymentId}/confirm`, { method: 'POST', body: JSON.stringify(body) }),
     payments: (page = 0) => apiRequest<Page<Payment>>(`${base}/payments?page=${page}`),

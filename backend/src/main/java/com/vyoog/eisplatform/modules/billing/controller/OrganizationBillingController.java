@@ -119,9 +119,13 @@ public class OrganizationBillingController {
     }
 
     @PostMapping("/invoices/{invoiceId}/payments")
-    public CreatePaymentResponse createPayment(@AuthenticationPrincipal Jwt jwt, @PathVariable Long invoiceId) {
+    public CreatePaymentResponse createPayment(@AuthenticationPrincipal Jwt jwt, @PathVariable Long invoiceId,
+                                               @Valid @RequestBody(required = false) CreatePaymentRequest request) {
         Customer customer = currentCustomerResolver.resolve(jwt);
         OrganizationMember member = ownerResolver.requireManageOrganizationBilling(customer.getId());
+        if (request != null && request.paymentMethodId() != null) {
+            paymentMethodService.requireUsableForPayment(null, member.getOrganizationId(), request.paymentMethodId());
+        }
         return paymentService.createPaymentForInvoice(null, member.getOrganizationId(), invoiceId);
     }
 

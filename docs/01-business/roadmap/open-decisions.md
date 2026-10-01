@@ -58,6 +58,12 @@ Raised from the sprint 2026.3.3 development plan.
 6. **D3 Billing scope for the MVP** (REQ-BIL-001 Open question 2): confirm the MVP excludes price books, promotions and usage billing. → Decided 2026-10-01: see [C50](#c50).
 7. **D4 Tax calculation** (REQ-BIL-001 Open question 1): how is tax calculated — GST only, provider-calculated, or admin-configured rates per region? → Decided 2026-10-01: see [C51](#c51).
 8. **D5 Entitlements:** is an entitlement a stored grant or derived at runtime from active subscriptions? → Decided 2026-10-01: see [C52](#c52).
+9. **D6 Provisioning:** how does EIS create and change a customer's tenant in a hosted product? → Decided 2026-10-01 (option B): see [C56](#c56).
+10. **D7 Service instance:** what is a "service instance" for Service & Resource Management (10)? → Decided 2026-10-01 (option A): see [C57](#c57).
+11. **D10 Vector store:** where are embeddings for semantic search and AI knowledge stored? → Decided 2026-10-01 (option A): see [C58](#c58).
+12. **D17 Cart:** does the platform have a cart, or does Buy go straight to checkout? → Decided 2026-10-01 (dedicated cart): see [C59](#c59).
+
+The D-numbers (D3–D23) come from the product owner's decision list, which is not stored in this repository. Only the D-items answered so far are listed above. D8 (LLM provider), D13 (events), D14 (seats and quantity), D15 (auto-renew), D16 (organization billing permission), D19 (webhooks) and D23 (product media storage) are referenced by records below but are still **not decided**.
 
 ---
 
@@ -404,6 +410,8 @@ Raised from the sprint 2026.3.3 development plan.
 
 **Still open:** who may use Pay by invoice; payment terms (days until due) and reminder emails; the bank details printed on invoices (fields) and where admins maintain them; whether activation waits for payment (REQ-BIL-001 Open question 3); whether a purchase-order number field is needed; Terms & Conditions and Privacy Policy URLs (no legal routes exist in the app today); which other online methods (netbanking, wallets) are offered.
 
+**Layout superseded by [C59](#c59) (2026-10-01):** the checkout layout is redesigned (breadcrumb Cart › Billing details › Payment › Complete, payment-method tiles, saved cards, cart summary, brand logos); everything else in this record — Pay by invoice, Record offline payment, offline bank details, the card-panel approach and the open questions — still applies. Card-panel approach re-checked on 2026-10-01: razorpay.com was still not reachable from the build environment and a web search found no official Razorpay documentation for embeddable secure card fields, so the placeholder + Razorpay Checkout approach stays (REQ-BIL-001 Open question 15).
+
 **Built (Phase 2, 2026-10-01, at the user's request "do code"):** the checkout screen `/checkout?productId|subscriptionId|invoiceId[&scope=organization]` (the C48 link `/checkout/:productId` now redirects to it; Billing → **Pay** opens it in place of the Pay-invoice dialog), the admin **Record offline payment** dialog and the **Billing settings** page (`/admin/billing/settings`), with schema change `V014__checkout_offline_payment.sql`. Until the open questions above are answered, the build uses these **engineering defaults** (each a single place in code, to be replaced by the decided rule):
 
 | Open question | Default built | Where |
@@ -419,6 +427,58 @@ Raised from the sprint 2026.3.3 development plan.
 | Pending online payment | Poll every 5 s for up to 2 min, then "taking longer than usual" | `CheckoutPage` |
 
 **Reason:** organizations commonly pay by bank transfer against an invoice rather than by card; offering both routes in one checkout keeps a single flow (C44) while BR-BIL-001 keeps EIS out of card-data scope.
+
+### C56
+**Decision (product owner, 2026-10-01) — answer to D6, option B:** When a subscription starts, is suspended, is resumed or is cancelled, EIS notifies the hosted product through a defined **event or webhook contract** that each product implements. The product creates or changes the customer's tenant and reports the result back to EIS. The existing internal sign-in bridge stays the way users reach the product. Every hosted product team must implement the contract. The delivery mechanism (D13 events or D19 webhooks) is **not decided**.
+
+FRD: [REQ-ORD-002 Provisioning contract](../../02-requirements/FRD/provisioning-contract/requirement.md) (Draft, sprint [2027.1.1](sprints/SPRINT-2027.1.1.md)). Its message shape is a proposal to confirm with the hosted product teams.
+
+**Reason:** EIS cannot create tenants inside products it does not run. A contract that each product implements keeps tenant logic in the product, and lets EIS track the outcome for every product in the same way.
+
+### C57
+**Decision (product owner, 2026-10-01) — answer to D7, option A:** A **service instance** is one subscription's provisioned tenant in a hosted product, with a status and a health value that the product reports. This is what Service & Resource Management (application 10) manages. The interim status page ([C20](#c20)) switches its per-product status to this source.
+
+FRD: [REQ-SRM-001 Service instances](../../02-requirements/FRD/service-instances/requirement.md) (Draft, sprint [2027.1.2](sprints/SPRINT-2027.1.2.md)).
+
+**Reason:** EIS hosts other teams' products and does not run their infrastructure. The tenant that provisioning ([C56](#c56)) creates is the only resource EIS can track for each subscription.
+
+### C58
+**Decision (product owner, 2026-10-01) — answer to D10, option A:** Semantic search (01.03.01.02, [C16](#c16)) and AI knowledge (11.01.02) store their embeddings with **pgvector** in the existing PostgreSQL database. Embedding model: **Not specified**. It depends on D8, the LLM provider.
+
+Sprints: [2027.1.1](sprints/SPRINT-2027.1.1.md) (11.01.02 AI knowledge) and [2027.1.3](sprints/SPRINT-2027.1.3.md) (semantic search). No FRD changes are needed until those features are scoped.
+
+**Reason:** this keeps one database to operate, back up and secure. pgvector is a PostgreSQL extension, so the platform does not need a separate vector service.
+
+### C59
+**Decision (product owner, 2026-10-01) — answer to D17, a dedicated cart:** The platform has a **cart**. **Buy** on any paid plan adds the plan to the cart and opens the cart page. An individual's cart proceeds to billing details and payment. An organization member's cart is submitted as an order that an organization admin approves (existing [REQ-ORD-001](../../02-requirements/FRD/order-lifecycle/requirement.md) rules); payment follows approval. Marketplace checkout (03.03) is **pulled forward into sprint [2026.4.3](sprints/SPRINT-2026.4.3.md)**, to be built with Billing.
+
+This replaces the earlier recommendation of no separate cart, where Buy went straight to checkout. That recommendation was never recorded in this file; it was the behaviour of the C48 page `/checkout/:productId` and of [C55](#c55).
+
+FRD: [REQ-MKT-003 Cart and checkout](../../02-requirements/FRD/cart-checkout/requirement.md) (Draft). Screens: [cart.md](../../05-ui/screen-requirements/cart.md) and the redesigned [checkout-payment.md](../../05-ui/screen-requirements/checkout-payment.md), with logos per [payment-brand-assets.md](../../05-ui/screen-requirements/payment-brand-assets.md).
+
+**Built (2026-10-01, at the product owner's request "start develop the code", before REQ-MKT-003 and the REQ-BIL-001 changes were marked Approved):** the cart (`/cart`, module `cart`, `/me/cart` API, tables `cart` and `cart_item`, migration `V015__cart_checkout.sql`), Buy → cart on every Subscribe button, the top-bar cart badge, and the redesigned checkout. Until the open questions are answered, the build uses these **engineering defaults** (each in one place in code):
+
+| Open question | Default built | Where |
+|---|---|---|
+| REQ-MKT-003 OQ 1 — several products, one invoice | Yes: an individual's cart is billed on **one invoice**, one line per subscription (`invoice_line.subscription_id`; the invoice's own `subscription_id` is the first item's). All items must share a currency (`CURRENCY_MISMATCH` issue otherwise). An organization member's cart becomes **one order per item**, because a REQ-ORD-001 order holds one product | `CartService.checkout`, `InvoiceService.generateForSubscriptions` |
+| OQ 2 — organization admin's own cart | Goes through approval like any member's (existing REQ-ORD-001 rules) | `CartService.checkout` |
+| OQ 3 — cart expiry | None | — |
+| OQ 5 — anonymous add to cart | No anonymous cart; Buy signs the visitor in, then adds the item (`/cart?add=…`) | `useBuy`, `CartPage` |
+| OQ 6 — second Buy, persistence, audit | Replaces the plan; stored on the server; cart changes not audited | `CartService` |
+| OQ 7 — fees line | None | — |
+| OQ 8 — price-change confirmation | Per item (**Confirm new price**) | `CartPage`, `PATCH /me/cart/items/{id}` |
+| Who is an "organization member" | A customer with an ACTIVE organization membership | `CartService.membership` |
+| Default plan for a product-level Buy | The product's Monthly paid plan, else its first paid plan; a product with no paid plan keeps the free-plan flow | `CartPage` |
+| Repeated checkout (BR-10) | A second checkout within 2 minutes of a successful one returns the same invoice or orders; the cart row is locked during checkout | `CartService.checkout` |
+| Tax in the cart | No tax lines (REQ-BIL-002 tax engine not built); "Tax calculated at payment" without billing details | `CartService.toDto` |
+| REQ-BIL-001 OQ 19 — wallet brands | Generic wallet icon | `CheckoutPage` |
+| REQ-BIL-001 OQ 22 — Cart crumb for an invoice paid from Billing | Hidden | `CheckoutPage` `Breadcrumb` |
+| REQ-BIL-001.23 — logo files | No official file obtained yet (brand kits not reachable from the build environment); each brand shows as its name in a text chip until a file and its licence are recorded in `frontend/src/assets/payment-logos/ATTRIBUTION.md` | `PaymentLogos` |
+| Legal links (OQ 12, 20) | Not rendered (URLs unknown); consent text names them without links | `CheckoutPage` |
+
+**Numbering note:** the request for this decision called the earlier billing decisions C46 (Razorpay), C47 (no coupons or usage billing), C48 (tax), C49 (entitlements) and C50 (offline Pay by invoice). In this file they are [C46](#c46), [C50](#c50), [C51](#c51), [C52](#c52) and [C55](#c55). C47–C49 were already used for other records. C50 (offline Pay by invoice) in the request is [C55](#c55) here, and it was already recorded, so it is not recorded again.
+
+**Reason:** one cart lets a customer review several purchases, re-checks them before paying, and gives organization members a single path into the existing order approval.
 
 ### DN-2 Sprint scope, length and dates
 **Decision:**
@@ -503,6 +563,10 @@ These documents are **not** changed by this file. Update them to match:
 | C52 | Create FRD `entitlements` (REQ-SUB-002, Draft); add to `SPRINT-2026.4.3.md` scope. 07.02.02 Quota (consumption/enforcement), 07.03 License & Quota Management (quantity, D14) and an entitlement grant/revoke history remain carried — still pending, respectively, usage metering (C50), a licensing/quantity decision, and a store this decision deliberately does not create |
 | C53 | A real "last N periods" revenue/order trend chart (as already sketched, not built, for the Billing screen's own Overview tab) is carried — needs a new aggregation query this decision did not build. The platform admin dashboard's "top 5 products by launches" and the business dashboard's charts use data already returned by existing endpoints/queries; no further follow-up needed for those |
 | C55 | REQ-BIL-001.18–.21 added (Draft); new screen `checkout-payment.md`, new `admin-billing-settings.md`, Record offline payment dialog in `admin-billing.md`; API and data model updated. Answer the open questions listed in C55 before approval. Re-verify the card-panel approach against Razorpay's documentation. In Phase 2, `/checkout?subscriptionId|invoiceId` replaces the C48 page `/checkout/:productId` and the Billing "Pay invoice" dialog (`billing-pay-invoice.md`) |
+| C56 | Create FRD `provisioning-contract` (REQ-ORD-002, Draft); add it to `SPRINT-2027.1.1.md`. Confirm the proposed message shape with every hosted product team, and decide the delivery mechanism (D13 events or D19 webhooks), retries and ordering before approval |
+| C57 | Create FRD `service-instances` (REQ-SRM-001, Draft); add it to `SPRINT-2027.1.2.md`. When it is built, switch the interim status page's per-product status ([C20](#c20), REQ-PRT-001) to service-instance health |
+| C58 | Note pgvector on `SPRINT-2027.1.1.md` (11.01.02) and `SPRINT-2027.1.3.md` (semantic search). Choose the embedding model once D8 (LLM provider) is decided. The pgvector extension must be available on every environment's PostgreSQL 16 (local Docker image, AWS RDS) before either feature is built |
+| C59 | Create FRD `cart-checkout` (REQ-MKT-003, Draft); add it to `SPRINT-2026.4.3.md` and mark 03.03 as moved out of `SPRINT-2027.1.2.md`. New screens `cart.md` and `payment-brand-assets.md`; `checkout-payment.md` redesigned; cart icon in `application-layout.md`; REQ-BIL-001.18 updated for the redesigned checkout (Draft). Answer the REQ-MKT-003 open questions before approval |
 | C54 | The wider navigation-consolidation / shared `<DataTable>`/`<FilterBar>` pass ([C44](#c44)) would make the business dashboard's new click-to-filter table and sort behavior reusable elsewhere instead of page-local — still carried, same as before. `database/seed/README.md` now points to [docs/07-database/demo-data.md](../../07-database/demo-data.md) for exactly what `DemoDataSeeder` adds |
 
 **Done (2026-09-26), no longer follow-up:** C31 (sprint pages 2026.4.1 through 2027.2.2, and the "Sprint" field on application pages 02, 03, 04, 05, 10, 11, 12, 13, 15, all updated to the corrected sequence — this superseded the older "C21: add the general policy engine to `SPRINT-2027.2.2.md`" and "C16, C17: add the deferred functions to `SPRINT-2027.1.3.md`" rows, and the "C21: add the agent controls to `SPRINT-2027.1.2.md`" row, which are now folded into C31's own sprint pages); C32–C35 (FRDs written and Approved, sprint 2026.4.1 built, carry-over recorded on `SPRINT-2026.4.2.md`).

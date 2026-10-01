@@ -33,6 +33,8 @@
 | Decided | [C39](../open-decisions.md#c39) Order Lifecycle (09.01), Provisioning folded into Approve (09.02), single-hop Approval (09.04): organization purchasing only — an individual customer's self-serve subscribe (07.01) is untouched. 09.03 Workflow Orchestration deliberately not built as a generic engine (one hard-coded process, no second consumer) | [order-lifecycle](../../../02-requirements/FRD/order-lifecycle/requirement.md) | REQ-ORD-001 |
 | Decided | [C39](../open-decisions.md#c39) Knowledge Articles (11.01.01) built; 11.01.02 AI Knowledge carried — no vector-store/embeddings decision exists | [knowledge-base](../../../02-requirements/FRD/knowledge-base/requirement.md) | REQ-KNW-001 |
 | Not built | [C39](../open-decisions.md#c39) 13b Connectors & Webhooks and 16 Analytics & Data Platform: both P1/stretch under C4/C5, and neither has a real consumer yet — carried further |
+| Added | [C56](../open-decisions.md#c56) Provisioning contract (answer to D6, option B): EIS notifies each hosted product of subscription start, suspension, resumption and cancellation; the product creates or changes the tenant and reports back. FRD is a documents-only stub; the delivery mechanism (D13 events or D19 webhooks) is not decided | [provisioning-contract](../../../02-requirements/FRD/provisioning-contract/requirement.md) | REQ-ORD-002 |
+| Decided | [C58](../open-decisions.md#c58) Vector store for 11.01.02 AI Knowledge: **pgvector** in the existing PostgreSQL database. Embedding model Not specified (depends on D8, LLM provider). 11.01.02 stays carried until D8 is decided; no FRD change yet | - | - |
 
 ### FRDs in this sprint
 
@@ -40,6 +42,7 @@
 |---|---|---|---|
 | [order-lifecycle](../../../02-requirements/FRD/order-lifecycle/requirement.md) | REQ-ORD-001 | 09.01.01, 09.02.01 (folded into approval), 09.04.01 (single-hop) | Approved |
 | [knowledge-base](../../../02-requirements/FRD/knowledge-base/requirement.md) | REQ-KNW-001 | 11.01.01 (11.01.02 AI Knowledge carried) | Approved |
+| [provisioning-contract](../../../02-requirements/FRD/provisioning-contract/requirement.md) | REQ-ORD-002 | 09.02.01 (provision, activate, suspend, deprovision — contract only) | Draft (stub) |
 
 ### Progress (as of 2026-09-28)
 
@@ -165,6 +168,7 @@ Full breakdown with APIs, services, entities and events: [applications/16-analyt
 - [C3](../open-decisions.md#c3) The [PO] sprint order is authoritative; the MVP is complete at the end of sprint 2027.1.3.
 - [C4](../open-decisions.md#c4), [C5](../open-decisions.md#c5), [C6](../open-decisions.md#c6) MVP, priority and phase as shown above.
 - [C31](../open-decisions.md#c31) Corrected sprint sequence: 10 moved out, 11a and 13b moved/kept in as shown above.
+- [C56](../open-decisions.md#c56) Provisioning contract; [C58](../open-decisions.md#c58) pgvector for AI knowledge.
 - Sprint goal, team, capacity and status are Not specified.
 
 Details: [open-decisions.md](../open-decisions.md).
