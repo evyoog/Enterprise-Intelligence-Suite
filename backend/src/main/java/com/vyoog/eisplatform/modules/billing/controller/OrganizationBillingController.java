@@ -3,6 +3,7 @@ package com.vyoog.eisplatform.modules.billing.controller;
 import com.vyoog.eisplatform.modules.billing.dto.*;
 import com.vyoog.eisplatform.modules.billing.service.BillingDetailsService;
 import com.vyoog.eisplatform.modules.billing.service.BillingOwnerResolver;
+import com.vyoog.eisplatform.modules.billing.service.CheckoutService;
 import com.vyoog.eisplatform.modules.billing.service.InvoiceService;
 import com.vyoog.eisplatform.modules.billing.service.PaymentMethodService;
 import com.vyoog.eisplatform.modules.billing.service.PaymentService;
@@ -39,6 +40,7 @@ public class OrganizationBillingController {
     private final PaymentService paymentService;
     private final PaymentMethodService paymentMethodService;
     private final RazorpayProperties razorpayProperties;
+    private final CheckoutService checkoutService;
 
     @GetMapping("/overview")
     public BillingOverviewResponse overview(@AuthenticationPrincipal Jwt jwt) {
@@ -58,6 +60,29 @@ public class OrganizationBillingController {
             recent,
             razorpayProperties.isConfigured()
         );
+    }
+
+    /** C55 (REQ-BIL-001.18): read by any active member, same as invoices. */
+    @GetMapping("/checkout")
+    public CheckoutSummaryDto checkout(@AuthenticationPrincipal Jwt jwt,
+                                       @RequestParam(required = false) Long invoiceId,
+                                       @RequestParam(required = false) Long subscriptionId) {
+        Long orgId = ownerResolver.resolveMembership(currentCustomerResolver.resolve(jwt).getId()).getOrganizationId();
+        if (invoiceId != null) {
+            return checkoutService.summaryForInvoice(null, orgId, invoiceId);
+        }
+        if (subscriptionId != null) {
+            return checkoutService.summaryForSubscription(null, orgId, subscriptionId);
+        }
+        throw new IllegalArgumentException("invoiceId or subscriptionId is required");
+    }
+
+    /** C55 (REQ-BIL-001.19): a write — organization admins only, like Pay. */
+    @PostMapping("/invoices/{invoiceId}/offline")
+    public OfflineInvoiceResultDto payByInvoice(@AuthenticationPrincipal Jwt jwt, @PathVariable Long invoiceId) {
+        Customer customer = currentCustomerResolver.resolve(jwt);
+        OrganizationMember member = ownerResolver.requireManageOrganizationBilling(customer.getId());
+        return checkoutService.chooseOffline(null, member.getOrganizationId(), customer.getId(), invoiceId);
     }
 
     @GetMapping("/details")

@@ -2,7 +2,7 @@ import type { ComponentType } from 'react'
 import {
   Building2, KeyRound, LayoutDashboard, LayoutGrid, Layers, Package, ScrollText, Settings, ShieldCheck,
   SlidersHorizontal, Store, UserCheck, UserCog, UsersRound, Palette, Boxes, Activity, ClipboardList, BookOpen,
-  LifeBuoy, Star, Handshake, CreditCard, PlugZap,
+  LifeBuoy, Star, Handshake, CreditCard, PlugZap, Landmark,
 } from 'lucide-react'
 import type { MyPermissions } from '../../api/myPermissionsApi'
 
@@ -141,6 +141,7 @@ export function buildAppNavigation({ isAdmin, permissions }: NavAccess): AppNavS
       children: [
         { key: 'adminBillingInvoices', labelKey: 'billingInvoicesPayments', to: '/admin/billing', icon: CreditCard },
         { key: 'adminPaymentGateway', labelKey: 'paymentGateway', to: '/admin/billing/payment-gateway', icon: PlugZap },
+        { key: 'adminBillingSettings', labelKey: 'billingSettings', to: '/admin/billing/settings', icon: Landmark },
       ],
     })
   }

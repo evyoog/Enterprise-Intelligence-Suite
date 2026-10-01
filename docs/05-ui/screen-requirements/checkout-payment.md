@@ -12,6 +12,8 @@
 
 Shared presentation rules (theme, status chips, money formatting, responsive, loading/empty/error, toasts, accessibility, i18n, gateway banner): [billing-ui-standards.md](billing-ui-standards.md). Colours come only from the unified MUI theme ([C45](../../01-business/roadmap/open-decisions.md#c45), `frontend/src/theme.ts`), in light and dark mode.
 
+> **Built 2026-10-01** (`frontend/src/pages/CheckoutPage.tsx`) with the engineering defaults listed under [C55](../../01-business/roadmap/open-decisions.md#c55) until the FRD open questions are answered. Card network marks are text labels (no licensed assets in the repo).
+
 ## Page structure
 
 ### Desktop (≥ 1024 px)

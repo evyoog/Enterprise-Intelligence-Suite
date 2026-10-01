@@ -404,6 +404,20 @@ Raised from the sprint 2026.3.3 development plan.
 
 **Still open:** who may use Pay by invoice; payment terms (days until due) and reminder emails; the bank details printed on invoices (fields) and where admins maintain them; whether activation waits for payment (REQ-BIL-001 Open question 3); whether a purchase-order number field is needed; Terms & Conditions and Privacy Policy URLs (no legal routes exist in the app today); which other online methods (netbanking, wallets) are offered.
 
+**Built (Phase 2, 2026-10-01, at the user's request "do code"):** the checkout screen `/checkout?productId|subscriptionId|invoiceId[&scope=organization]` (the C48 link `/checkout/:productId` now redirects to it; Billing → **Pay** opens it in place of the Pay-invoice dialog), the admin **Record offline payment** dialog and the **Billing settings** page (`/admin/billing/settings`), with schema change `V014__checkout_offline_payment.sql`. Until the open questions above are answered, the build uses these **engineering defaults** (each a single place in code, to be replaced by the decided rule):
+
+| Open question | Default built | Where |
+|---|---|---|
+| Who may use Pay by invoice (OQ 9) | Every customer | `CheckoutService.payByInvoiceAllowed` |
+| Payment terms / due date (OQ 10) | Due date = issue date (as [C47](#c47)); no reminder emails | `InvoiceService` |
+| Activation before payment (REQ-BIL-001 OQ 3) | Unchanged: subscriptions activate as today | — |
+| Bank detail fields (OQ 11) | Account name, bank, account number (required); IFSC, SWIFT/BIC (optional); kept in table `billing_settings`, not in the secrets file (not secrets) | `OfflinePaymentService` |
+| Terms / Privacy URLs (OQ 12) | Consent text without links; checkbox still required | `checkout.consent` |
+| Other online methods (OQ 14) | No method prefill; Razorpay shows what the account has enabled | `razorpayCheckout.ts` |
+| Partial offline payments (OQ 16) | Refused: the amount must equal the invoice total; only OPEN invoices with route OFFLINE | `OfflinePaymentService.recordOfflinePayment` |
+| Refund / reconcile of offline payments | Refused by the API and hidden in the UI (settled outside Razorpay) | `PaymentService`, `AdminBillingPage` |
+| Pending online payment | Poll every 5 s for up to 2 min, then "taking longer than usual" | `CheckoutPage` |
+
 **Reason:** organizations commonly pay by bank transfer against an invoice rather than by card; offering both routes in one checkout keeps a single flow (C44) while BR-BIL-001 keeps EIS out of card-data scope.
 
 ### DN-2 Sprint scope, length and dates

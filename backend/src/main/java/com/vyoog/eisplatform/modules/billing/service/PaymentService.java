@@ -57,6 +57,9 @@ public class PaymentService {
         if (invoice.getStatus() != InvoiceStatus.OPEN) {
             throw new BillingConflictException("Only an OPEN invoice can be paid.");
         }
+        // C55: the customer's latest choice of route — paying online after
+        // first choosing Pay by invoice switches the invoice back to ONLINE.
+        invoice.setPaymentRoute(com.vyoog.eisplatform.modules.billing.model.PaymentRoute.ONLINE);
         Payment payment = new Payment();
         payment.setInvoiceId(invoice.getId());
         payment.setCurrency(invoice.getCurrency());
@@ -194,6 +197,12 @@ public class PaymentService {
         if (payment.getStatus() != PaymentStatus.CAPTURED && payment.getStatus() != PaymentStatus.PARTIALLY_REFUNDED) {
             throw new BillingConflictException("Only a captured payment can be refunded.");
         }
+        if (OfflinePaymentService.OFFLINE.equals(payment.getProvider())) {
+            // C55: an offline payment was never taken through Razorpay, so
+            // there is nothing there to refund; how offline refunds are
+            // handled is Not specified.
+            throw new BillingConflictException("Offline payments cannot be refunded through the payment gateway.");
+        }
         long refundable = payment.getAmount() - payment.getRefundedAmount();
         if (request.amount() <= 0 || request.amount() > refundable) {
             throw new BillingConflictException("The refund amount must be greater than zero and not more than " + refundable + ".");
@@ -227,7 +236,7 @@ public class PaymentService {
         requireConfigured();
         Payment payment = paymentRepository.findById(paymentId)
             .orElseThrow(() -> new ResourceNotFoundException("Payment not found"));
-        if (payment.getProviderPaymentId() == null) {
+        if (payment.getProviderPaymentId() == null || OfflinePaymentService.OFFLINE.equals(payment.getProvider())) {
             return toDto(payment, invoiceService.getById(payment.getInvoiceId()), null);
         }
         RazorpayPaymentInfo info = razorpayClient.fetchPayment(payment.getProviderPaymentId());
@@ -284,6 +293,6 @@ public class PaymentService {
     private PaymentDto toDto(Payment p, Invoice invoice, List<RefundDto> refunds) {
         return new PaymentDto(p.getId(), p.getInvoiceId(), invoice.getInvoiceNumber(), null, p.getStatus(), p.getCurrency(),
             p.getAmount(), p.getRefundedAmount(), p.getMethodType(), p.getMethodNetwork(), p.getMethodLast4(),
-            p.getProviderPaymentId(), p.getFailureReason(), p.getCreatedAt(), p.getCapturedAt(), refunds, null);
+            p.getProviderPaymentId(), p.getFailureReason(), p.getCreatedAt(), p.getCapturedAt(), refunds, null, p.getOfflineReference());
     }
 }

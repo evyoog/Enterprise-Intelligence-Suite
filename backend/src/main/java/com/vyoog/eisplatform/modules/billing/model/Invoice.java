@@ -85,6 +85,12 @@ public class Invoice {
     @Column(name = "bill_to_snapshot", length = 1000)
     private String billToSnapshot;
 
+    /** C55 (REQ-BIL-001.19): the route the customer chose at checkout —
+     * null until a route is chosen. */
+    @Enumerated(EnumType.STRING)
+    @Column(name = "payment_route", length = 10)
+    private PaymentRoute paymentRoute;
+
     @LastModifiedDate
     @Column(name = "updated_at")
     private Instant updatedAt;

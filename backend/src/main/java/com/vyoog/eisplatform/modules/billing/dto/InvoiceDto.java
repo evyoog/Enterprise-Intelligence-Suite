@@ -1,6 +1,7 @@
 package com.vyoog.eisplatform.modules.billing.dto;
 
 import com.vyoog.eisplatform.modules.billing.model.InvoiceStatus;
+import com.vyoog.eisplatform.modules.billing.model.PaymentRoute;
 import com.vyoog.eisplatform.modules.product.model.Currency;
 
 import java.time.Instant;
@@ -24,6 +25,7 @@ public record InvoiceDto(
     Instant issuedAt,
     Instant dueAt,
     String billToSnapshot,
+    PaymentRoute paymentRoute,
     String ownerLabel,
     List<InvoiceLineDto> lines,
     List<PaymentDto> payments

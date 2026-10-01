@@ -8,6 +8,7 @@ import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import java.time.Instant;
+import java.time.LocalDate;
 
 /** One attempt to pay an invoice through Razorpay. {@link #providerPaymentId}
  * is null until Razorpay Checkout returns a result (BR-5: only a verified
@@ -68,4 +69,22 @@ public class Payment {
 
     @Column(name = "captured_at")
     private Instant capturedAt;
+
+    /** C55 (REQ-BIL-001.20): set only for a payment an admin recorded by
+     * hand ({@link #provider} {@code OFFLINE}, {@link #methodType} {@code OFFLINE}). */
+    @Enumerated(EnumType.STRING)
+    @Column(name = "offline_method", length = 20)
+    private OfflinePaymentMethod offlineMethod;
+
+    @Column(name = "offline_reference", length = 100)
+    private String offlineReference;
+
+    @Column(name = "received_on")
+    private LocalDate receivedOn;
+
+    @Column(name = "recorded_by_customer_id")
+    private Long recordedByCustomerId;
+
+    @Column(length = 500)
+    private String note;
 }

@@ -41,9 +41,10 @@ import { ProviderApplicationPage } from './pages/ProviderApplicationPage'
 import { AdminPartnersPage } from './pages/admin/AdminPartnersPage'
 import { BillingPage, OrganizationBillingPage } from './pages/BillingPage'
 import { LoginPage } from './pages/LoginPage'
-import { CheckoutPage } from './pages/CheckoutPage'
+import { CheckoutPage, LegacyCheckoutRedirect } from './pages/CheckoutPage'
 import { AdminBillingPage } from './pages/admin/AdminBillingPage'
 import { AdminPaymentGatewayPage } from './pages/admin/AdminPaymentGatewayPage'
+import { AdminBillingSettingsPage } from './pages/admin/AdminBillingSettingsPage'
 import { AdminPartnerDetailPage } from './pages/admin/AdminPartnerDetailPage'
 import { RequireAdmin } from './components/routing/RequireAdmin'
 import { RequireAuth } from './components/routing/RequireAuth'
@@ -138,7 +139,8 @@ function MainApp() {
               customer (RequireAuth is a bookmark/reload safety net — the
               Subscribe button itself already routes signed-out visitors to
               /login first, with ?returnTo back here). */}
-          <Route path="/checkout/:productId" element={<RequireAuth><CheckoutPage /></RequireAuth>} />
+          <Route path="/checkout" element={<RequireAuth><CheckoutPage /></RequireAuth>} />
+          <Route path="/checkout/:productId" element={<LegacyCheckoutRedirect />} />
 
           {/* "settings" is a category (see the sidebar's expandable Settings
               group), so a bare /admin/settings visit redirects to its first
@@ -171,6 +173,7 @@ function MainApp() {
             <Route path="partners/:id" element={<AdminPartnerDetailPage />} />
             <Route path="billing" element={<AdminBillingPage />} />
             <Route path="billing/payment-gateway" element={<AdminPaymentGatewayPage />} />
+            <Route path="billing/settings" element={<AdminBillingSettingsPage />} />
           </Route>
         </Route>
       </Routes>

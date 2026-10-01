@@ -4,6 +4,67 @@ import type { Currency } from './productsApi'
 export type InvoiceStatus = 'OPEN' | 'PAID' | 'PARTIALLY_REFUNDED' | 'REFUNDED' | 'VOID'
 export type PaymentStatus = 'CREATED' | 'CAPTURED' | 'FAILED' | 'PARTIALLY_REFUNDED' | 'REFUNDED'
 export type PaymentMethodType = 'CARD' | 'UPI'
+export type PaymentRoute = 'ONLINE' | 'OFFLINE'
+export type OfflinePaymentMethod = 'BANK_TRANSFER' | 'NEFT_RTGS' | 'CHEQUE'
+
+/** C55 (REQ-BIL-001.18): one row of the checkout's "Your order" panel. */
+export interface CheckoutItem {
+  productId?: number
+  productName: string
+  imageUrl?: string
+  planName?: string
+  billingPeriod?: string
+  periodStart?: string
+  periodEnd?: string
+  amount: number
+  /** Present only if the subscription carries a quantity (D14). */
+  quantity?: number
+}
+
+export interface TaxLine {
+  name: string
+  ratePercent?: number
+  amount: number
+}
+
+export interface CheckoutSummary {
+  /** Absent when the subscription produced no invoice (a $0 plan). */
+  invoiceId?: number
+  invoiceNumber?: string
+  invoiceStatus?: InvoiceStatus
+  paymentRoute?: PaymentRoute
+  subscriptionId?: number
+  subscriptionStatus?: string
+  currency: string
+  items: CheckoutItem[]
+  subtotal: number
+  taxLines: TaxLine[]
+  total: number
+  dueAt?: string
+  billingEmail?: string
+  gatewayConfigured: boolean
+  payByInvoiceAllowed: boolean
+}
+
+export interface OfflineBankDetails {
+  accountName?: string
+  bankName?: string
+  accountNumber?: string
+  ifsc?: string
+  swiftBic?: string
+  updatedAt?: string
+}
+
+export interface OfflineInvoiceResult {
+  invoiceId: number
+  invoiceNumber: string
+  total: number
+  currency: string
+  dueAt?: string
+  billingEmail?: string
+  bankDetails: OfflineBankDetails
+  subscriptionStatus?: string
+}
 
 export interface BillingDetails {
   id: number
@@ -57,6 +118,8 @@ export interface Payment {
   createdAt: string
   capturedAt?: string
   refunds?: { id: number; amount: number; reason: string; status: string; createdAt: string }[]
+  /** C55: bank/cheque reference of an OFFLINE payment. */
+  offlineReference?: string
   webhookEvents?: { eventType: string; receivedAt: string }[]
 }
 
@@ -73,6 +136,8 @@ export interface Invoice {
   issuedAt: string
   dueAt?: string
   billToSnapshot?: string
+  /** C55: what the customer chose at checkout; absent until chosen. */
+  paymentRoute?: PaymentRoute
   ownerLabel?: string
   lines?: InvoiceLine[]
   payments?: Payment[]
@@ -140,6 +205,10 @@ interface Page<T> {
 function scopedApi(base: string) {
   return {
     overview: () => apiRequest<BillingOverview>(`${base}/overview`),
+    checkout: (params: { invoiceId?: number; subscriptionId?: number }) =>
+      apiRequest<CheckoutSummary>(`${base}/checkout?${params.invoiceId != null ? `invoiceId=${params.invoiceId}` : `subscriptionId=${params.subscriptionId}`}`),
+    payByInvoice: (invoiceId: number) =>
+      apiRequest<OfflineInvoiceResult>(`${base}/invoices/${invoiceId}/offline`, { method: 'POST' }),
     // 404 (not a nullable 200) when nothing is saved yet — callers catch it
     // and treat it as "no billing details yet", same convention as
     // reviewsApi.getMine elsewhere in this app.
@@ -182,6 +251,12 @@ export const adminBillingApi = {
   paymentDetail: (paymentId: number) => apiRequest<Payment>(`/admin/billing/payments/${paymentId}`),
   refund: (paymentId: number, amount: number, reason: string) =>
     apiRequest<Payment>(`/admin/billing/payments/${paymentId}/refunds`, { method: 'POST', body: JSON.stringify({ amount, reason }) }),
+  recordOfflinePayment: (invoiceId: number, body: {
+    amount: number; receivedOn: string; method: OfflinePaymentMethod; reference: string; note?: string
+  }) => apiRequest<Invoice>(`/admin/billing/invoices/${invoiceId}/offline-payments`, { method: 'POST', body: JSON.stringify(body) }),
+  offlineBankDetails: () => apiRequest<OfflineBankDetails>('/admin/billing/settings/offline'),
+  saveOfflineBankDetails: (body: { accountName: string; bankName: string; accountNumber: string; ifsc?: string; swiftBic?: string }) =>
+    apiRequest<OfflineBankDetails>('/admin/billing/settings/offline', { method: 'PUT', body: JSON.stringify(body) }),
   reconcile: (paymentId: number) => apiRequest<Payment>(`/admin/billing/payments/${paymentId}/reconcile`, { method: 'POST' }),
   gatewayStatus: () => apiRequest<GatewayStatus>('/admin/billing/gateway'),
   testGateway: () => apiRequest<void>('/admin/billing/gateway/test', { method: 'POST' }),

@@ -2,6 +2,10 @@ package com.vyoog.eisplatform.modules.billing.controller;
 
 import com.vyoog.eisplatform.modules.billing.dto.GatewayStatusDto;
 import com.vyoog.eisplatform.modules.billing.dto.InvoiceDto;
+import com.vyoog.eisplatform.modules.billing.dto.OfflineBankDetailsDto;
+import com.vyoog.eisplatform.modules.billing.dto.RecordOfflinePaymentRequest;
+import com.vyoog.eisplatform.modules.billing.dto.SaveOfflineBankDetailsRequest;
+import com.vyoog.eisplatform.modules.billing.service.OfflinePaymentService;
 import com.vyoog.eisplatform.modules.billing.dto.PaymentDto;
 import com.vyoog.eisplatform.modules.billing.dto.RefundRequest;
 import com.vyoog.eisplatform.modules.billing.service.GatewayStatusService;
@@ -28,6 +32,7 @@ public class AdminBillingController {
     private final InvoiceService invoiceService;
     private final PaymentService paymentService;
     private final GatewayStatusService gatewayStatusService;
+    private final OfflinePaymentService offlinePaymentService;
 
     @GetMapping("/invoices")
     public Page<InvoiceDto> invoices(@RequestParam(defaultValue = "0") int page) {
@@ -37,6 +42,27 @@ public class AdminBillingController {
     @GetMapping("/invoices/{invoiceId}")
     public InvoiceDto invoiceDetail(@PathVariable Long invoiceId) {
         return invoiceService.getAdminInvoiceDetail(invoiceId);
+    }
+
+    /** C55 (REQ-BIL-001.20). */
+    @PostMapping("/invoices/{invoiceId}/offline-payments")
+    public InvoiceDto recordOfflinePayment(@AuthenticationPrincipal Jwt jwt, @PathVariable Long invoiceId,
+                                           @Valid @RequestBody RecordOfflinePaymentRequest request) {
+        Customer admin = currentCustomerResolver.resolve(jwt);
+        return offlinePaymentService.recordOfflinePayment(admin.getId(), invoiceId, request);
+    }
+
+    /** C55 (REQ-BIL-001.21). */
+    @GetMapping("/settings/offline")
+    public OfflineBankDetailsDto offlineBankDetails() {
+        return offlinePaymentService.bankDetails();
+    }
+
+    @PutMapping("/settings/offline")
+    public OfflineBankDetailsDto saveOfflineBankDetails(@AuthenticationPrincipal Jwt jwt,
+                                                        @Valid @RequestBody SaveOfflineBankDetailsRequest request) {
+        Customer admin = currentCustomerResolver.resolve(jwt);
+        return offlinePaymentService.saveBankDetails(admin.getId(), request);
     }
 
     @GetMapping("/payments")
