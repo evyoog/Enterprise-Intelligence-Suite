@@ -98,6 +98,13 @@ export function buildAppNavigation({ isAdmin, permissions }: NavAccess): AppNavS
   }
 
   const admin: AppNavItem[] = []
+  // Platform admin dashboard (C53): first item, same position the GoodFood
+  // reference image's own sidebar gives "Dashboard" — but the admin INDEX
+  // route stays Platforms (C44's own documented landing-page decision);
+  // this is a destination a platform admin navigates to, not the default.
+  if (platform('VIEW_PLATFORM_DASHBOARD')) {
+    admin.push({ key: 'platformDashboard', labelKey: 'platformDashboard', to: '/admin/dashboard', icon: LayoutDashboard })
+  }
   if (platform('MANAGE_CATALOG')) {
     admin.push(
       { key: 'platforms', labelKey: 'platforms', to: '/admin', icon: Layers, matchPrefixes: ['/admin/platforms'] },

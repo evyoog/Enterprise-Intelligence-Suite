@@ -16,4 +16,10 @@ public interface InvoiceRepository extends JpaRepository<Invoice, Long> {
     List<Invoice> findByOwnerOrganizationIdAndStatus(Long ownerOrganizationId, InvoiceStatus status);
     List<Invoice> findByOwnerCustomerIdAndStatusIn(Long ownerCustomerId, List<InvoiceStatus> statuses);
     List<Invoice> findByOwnerOrganizationIdAndStatusIn(Long ownerOrganizationId, List<InvoiceStatus> statuses);
+
+    /** Platform admin dashboard (C53): every owner's paid/partially-refunded
+     * invoices, filtered to a date window in Java by the caller — same style
+     * as {@link com.vyoog.eisplatform.modules.billing.service.InvoiceService#spentInPeriod},
+     * just without a single owner to scope the query by. */
+    List<Invoice> findByStatusIn(List<InvoiceStatus> statuses);
 }

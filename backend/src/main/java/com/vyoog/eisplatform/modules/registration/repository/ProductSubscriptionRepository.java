@@ -23,4 +23,7 @@ public interface ProductSubscriptionRepository extends JpaRepository<ProductSubs
     /** 07.04.01 Process expiry (sprint 2026.4.3): everything the nightly
      * {@code SubscriptionExpiryJob} needs to flip to EXPIRED. */
     List<ProductSubscription> findByStatusAndExpiresAtBefore(SubscriptionStatus status, Instant instant);
+
+    /** Platform admin dashboard (C53): subscriptions by status, platform-wide. */
+    long countByStatus(SubscriptionStatus status);
 }

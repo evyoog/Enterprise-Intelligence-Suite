@@ -17,6 +17,7 @@ import { AdminProductsPage } from './pages/admin/AdminProductsPage'
 import { EditProductPage } from './pages/admin/EditProductPage'
 import { PlatformsListPage } from './pages/admin/PlatformsListPage'
 import { PlatformDashboardPage } from './pages/admin/PlatformDashboardPage'
+import { PlatformAdminDashboardPage } from './pages/admin/PlatformAdminDashboardPage'
 import { EditPlatformPage } from './pages/admin/EditPlatformPage'
 import { ProductSettingsPage } from './pages/admin/settings/ProductSettingsPage'
 import { PlatformSettingsPage } from './pages/admin/settings/PlatformSettingsPage'
@@ -147,6 +148,7 @@ function MainApp() {
                 grouping is the primary mental model here. The flat cross-platform
                 list still exists at its own path for when that's actually needed. */}
             <Route index element={<PlatformsListPage />} />
+            <Route path="dashboard" element={<PlatformAdminDashboardPage />} />
             <Route path="apps" element={<AdminProductsPage />} />
             <Route path="products/:id/edit" element={<EditProductPage />} />
             <Route path="platforms" element={<PlatformsListPage />} />

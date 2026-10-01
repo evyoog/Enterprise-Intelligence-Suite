@@ -14,4 +14,7 @@ public interface ProductReviewRepository extends JpaRepository<ProductReview, Lo
     List<ProductReview> findByProductIdAndStatusOrderByCreatedAtDesc(Long productId, ReviewStatus status);
 
     List<ProductReview> findAllByOrderByCreatedAtDesc();
+
+    /** Platform admin dashboard (C53): reviews awaiting moderation. */
+    long countByStatus(ReviewStatus status);
 }

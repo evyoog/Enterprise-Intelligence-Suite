@@ -45,8 +45,8 @@ describe('buildAppNavigation', () => {
   it('shows a platform admin the full admin menu while permissions are unknown', () => {
     const nav = keys(buildAppNavigation({ isAdmin: true, permissions: null }))
     expect(nav.administration).toEqual([
-      'platforms', 'apps', 'registrations', 'privilegedAccess', 'roles', 'permissions', 'auditLog', 'adminServiceStatus',
-      'adminKnowledgeBase', 'adminSupportTickets', 'adminReviews', 'adminPartners', 'adminBilling', 'settings',
+      'platformDashboard', 'platforms', 'apps', 'registrations', 'privilegedAccess', 'roles', 'permissions', 'auditLog',
+      'adminServiceStatus', 'adminKnowledgeBase', 'adminSupportTickets', 'adminReviews', 'adminPartners', 'adminBilling', 'settings',
     ])
   })
 
