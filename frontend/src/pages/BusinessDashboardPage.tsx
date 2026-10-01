@@ -1,8 +1,8 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import {
-  Alert, Box, Button, Chip, CircularProgress, Container, Grid, LinearProgress,
-  Paper, Table, TableBody, TableCell, TableHead, TableRow, Typography, useTheme,
+  Alert, Box, Button, Chip, CircularProgress, Grid, LinearProgress,
+  Paper, Table, TableBody, TableCell, TableHead, TableRow, TableSortLabel, Typography, useTheme,
 } from '@mui/material'
 import { ArrowDownRight, ArrowUpRight } from 'lucide-react'
 import { Link as RouterLink, useNavigate } from 'react-router-dom'
@@ -68,6 +68,8 @@ function spendTrend(thisPeriod: Record<string, number>, lastPeriod: Record<strin
  * monitoring, no ticketing-by-customer API) rather than inventing numbers —
  * see BusinessDashboardService's own javadoc.
  */
+type SortKey = 'productName' | 'subscriptionStatus' | 'assignedMembers' | 'totalLaunches' | 'lastUsedAt'
+
 export function BusinessDashboardPage() {
   const { t } = useTranslation()
   const navigate = useNavigate()
@@ -75,6 +77,46 @@ export function BusinessDashboardPage() {
   const [error, setError] = useState<string | null>(null)
   const { formatDate: formatDateInTimeZone } = useLocalePreference()
   const formatDate = (iso?: string) => iso ? formatDateInTimeZone(iso) : '—'
+
+  // C54: click-to-filter on the donut/bar charts, sortable table — all
+  // client-side over the applications list the page already has.
+  const [subscriptionFilter, setSubscriptionFilter] = useState<'ACTIVE' | 'OTHER' | null>(null)
+  const [productFilter, setProductFilter] = useState<string | null>(null)
+  const [sortKey, setSortKey] = useState<SortKey>('productName')
+  const [sortDir, setSortDir] = useState<'asc' | 'desc'>('asc')
+
+  const toggleSort = (key: SortKey) => {
+    if (sortKey === key) {
+      setSortDir((d) => (d === 'asc' ? 'desc' : 'asc'))
+    } else {
+      setSortKey(key)
+      setSortDir('asc')
+    }
+  }
+
+  const filteredApplications = useMemo(() => {
+    if (!dashboard) return []
+    let rows = dashboard.applications
+    if (subscriptionFilter) {
+      rows = rows.filter((a) => (subscriptionFilter === 'ACTIVE' ? a.subscriptionStatus === 'ACTIVE' : a.subscriptionStatus !== 'ACTIVE'))
+    }
+    if (productFilter) {
+      rows = rows.filter((a) => a.productName === productFilter)
+    }
+    const dir = sortDir === 'asc' ? 1 : -1
+    return [...rows].sort((a, b) => {
+      switch (sortKey) {
+        case 'productName': return dir * a.productName.localeCompare(b.productName)
+        case 'subscriptionStatus': return dir * (a.subscriptionStatus ?? '').localeCompare(b.subscriptionStatus ?? '')
+        case 'assignedMembers': return dir * (a.assignedMembers - b.assignedMembers)
+        case 'totalLaunches': return dir * (a.totalLaunches - b.totalLaunches)
+        case 'lastUsedAt': return dir * ((a.lastUsedAt ?? '').localeCompare(b.lastUsedAt ?? ''))
+        default: return 0
+      }
+    })
+  }, [dashboard, subscriptionFilter, productFilter, sortKey, sortDir])
+
+  const clearFilters = () => { setSubscriptionFilter(null); setProductFilter(null) }
 
   useEffect(() => {
     businessDashboardApi.get()
@@ -101,7 +143,9 @@ export function BusinessDashboardPage() {
 
   return (
     <Box>
-      <Container maxWidth="lg" disableGutters sx={{ pb: 4 }}>
+      {/* C54: full width — the app shell's main content area already has
+          no cap of its own; this page no longer adds one. */}
+      <Box sx={{ pb: 4 }}>
         {error && <Alert severity="error">{error}</Alert>}
 
         {!error && !dashboard && (
@@ -145,6 +189,8 @@ export function BusinessDashboardPage() {
                     items={dashboard.applications
                       .map((a) => ({ label: a.productName, value: a.totalLaunches }))
                       .sort((a, b) => b.value - a.value)}
+                    selectedLabel={productFilter}
+                    onItemClick={(item) => setProductFilter((current) => (current === item.label ? null : item.label))}
                   />
                 </Paper>
               </Grid>
@@ -154,6 +200,11 @@ export function BusinessDashboardPage() {
                   <DonutChart
                     centerValue={String(dashboard.applications.length)}
                     centerLabel="applications"
+                    selectedLabel={subscriptionFilter === 'ACTIVE' ? 'Active subscription' : subscriptionFilter === 'OTHER' ? 'Not subscribed / inactive' : null}
+                    onSegmentClick={(segment) => {
+                      const value = segment.label === 'Active subscription' ? 'ACTIVE' : 'OTHER'
+                      setSubscriptionFilter((current) => (current === value ? null : value))
+                    }}
                     segments={[
                       {
                         label: 'Active subscription',
@@ -170,22 +221,55 @@ export function BusinessDashboardPage() {
                 </Paper>
               </Grid>
             </Grid>
+            {(subscriptionFilter || productFilter) && (
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1.5 }}>
+                <Typography variant="body2" sx={{ color: 'text.secondary' }}>Filtered:</Typography>
+                {subscriptionFilter && (
+                  <Chip size="small" label={subscriptionFilter === 'ACTIVE' ? 'Active subscription' : 'Not subscribed / inactive'} onDelete={() => setSubscriptionFilter(null)} />
+                )}
+                {productFilter && <Chip size="small" label={productFilter} onDelete={() => setProductFilter(null)} />}
+                <Button size="small" onClick={clearFilters}>Clear filter</Button>
+              </Box>
+            )}
             <Paper variant="outlined">
               <Table size="small">
                 <TableHead>
                   <TableRow>
-                    <TableCell>Application</TableCell>
-                    <TableCell>Subscription</TableCell>
-                    <TableCell align="right">Assigned members</TableCell>
-                    <TableCell align="right">Total launches</TableCell>
-                    <TableCell align="right">Last used</TableCell>
+                    <TableCell sortDirection={sortKey === 'productName' ? sortDir : false}>
+                      <TableSortLabel active={sortKey === 'productName'} direction={sortKey === 'productName' ? sortDir : 'asc'} onClick={() => toggleSort('productName')}>
+                        Application
+                      </TableSortLabel>
+                    </TableCell>
+                    <TableCell sortDirection={sortKey === 'subscriptionStatus' ? sortDir : false}>
+                      <TableSortLabel active={sortKey === 'subscriptionStatus'} direction={sortKey === 'subscriptionStatus' ? sortDir : 'asc'} onClick={() => toggleSort('subscriptionStatus')}>
+                        Subscription
+                      </TableSortLabel>
+                    </TableCell>
+                    <TableCell align="right" sortDirection={sortKey === 'assignedMembers' ? sortDir : false}>
+                      <TableSortLabel active={sortKey === 'assignedMembers'} direction={sortKey === 'assignedMembers' ? sortDir : 'asc'} onClick={() => toggleSort('assignedMembers')}>
+                        Assigned members
+                      </TableSortLabel>
+                    </TableCell>
+                    <TableCell align="right" sortDirection={sortKey === 'totalLaunches' ? sortDir : false}>
+                      <TableSortLabel active={sortKey === 'totalLaunches'} direction={sortKey === 'totalLaunches' ? sortDir : 'asc'} onClick={() => toggleSort('totalLaunches')}>
+                        Total launches
+                      </TableSortLabel>
+                    </TableCell>
+                    <TableCell align="right" sortDirection={sortKey === 'lastUsedAt' ? sortDir : false}>
+                      <TableSortLabel active={sortKey === 'lastUsedAt'} direction={sortKey === 'lastUsedAt' ? sortDir : 'asc'} onClick={() => toggleSort('lastUsedAt')}>
+                        Last used
+                      </TableSortLabel>
+                    </TableCell>
                   </TableRow>
                 </TableHead>
                 <TableBody>
                   {dashboard.applications.length === 0 && (
                     <TableRow><TableCell colSpan={5} sx={{ color: 'text.secondary' }}>No applications assigned yet.</TableCell></TableRow>
                   )}
-                  {dashboard.applications.map((app) => (
+                  {dashboard.applications.length > 0 && filteredApplications.length === 0 && (
+                    <TableRow><TableCell colSpan={5} sx={{ color: 'text.secondary' }}>No applications match this filter.</TableCell></TableRow>
+                  )}
+                  {filteredApplications.map((app) => (
                     <TableRow key={app.productId}>
                       <TableCell>{app.productName}</TableCell>
                       <TableCell>
@@ -285,7 +369,7 @@ export function BusinessDashboardPage() {
             </Box>
           </>
         )}
-      </Container>
+      </Box>
     </Box>
   )
 }

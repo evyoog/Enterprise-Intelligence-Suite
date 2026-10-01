@@ -17,4 +17,9 @@ public interface SupportTicketRepository extends JpaRepository<SupportTicket, Lo
      * every status except the terminal RESOLVED/CLOSED pair (TicketStatus's
      * own javadoc). */
     long countByStatusIn(Collection<TicketStatus> statuses);
+
+    /** Demo data seeding (C54, {@code DemoDataSeeder}) idempotency check —
+     * subjects aren't unique by constraint, but the seeder always uses the
+     * same fixed "Demo: ..." subjects, so this is enough to never re-insert. */
+    boolean existsBySubject(String subject);
 }

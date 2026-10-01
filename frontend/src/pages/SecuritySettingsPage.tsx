@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import {
-  Alert, Box, Button, Chip, CircularProgress, Container, Paper, Table, TableBody, TableCell,
+  Alert, Box, Button, Chip, CircularProgress, Paper, Table, TableBody, TableCell,
   TableHead, TableRow, TextField, Typography,
 } from '@mui/material'
 import { ApiError } from '../api/client'
@@ -141,7 +141,7 @@ export function SecuritySettingsPage() {
 
   return (
     <Box>
-      <Container maxWidth="sm" disableGutters sx={{ pb: 4 }}>
+      <Box sx={{ pb: 4 }}>
         <PageHeader title={t('security.title')} subtitle={t('security.subtitle')} />
 
         {loadError && <Alert severity="error">{loadError}</Alert>}
@@ -341,7 +341,7 @@ export function SecuritySettingsPage() {
 
         {/* Sprint 2026.3.3, REQ-IAM-004: request elevated access and see your own requests. */}
         <PrivilegedAccessRequestsCard />
-      </Container>
+      </Box>
     </Box>
   )
 }

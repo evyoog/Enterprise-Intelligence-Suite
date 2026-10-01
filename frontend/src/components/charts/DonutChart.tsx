@@ -1,4 +1,4 @@
-import { Box, Typography, useTheme } from '@mui/material'
+import { Box, ButtonBase, Typography, useTheme } from '@mui/material'
 import type { Theme } from '@mui/material/styles'
 
 export interface DonutSegment {
@@ -24,12 +24,17 @@ function toneColor(theme: Theme, tone: DonutSegment['tone']): string {
  * the "table view" a screen-reader user (or anyone else) needs — the ring
  * itself is `aria-hidden`, and the one real accessible description lives on
  * the legend's own `aria-label`.
+ *
+ * Optionally click-to-filter (C54): passing `onSegmentClick` turns each
+ * legend row into a toggle, same as `BarList`'s own `onItemClick`.
  */
-export function DonutChart({ segments, centerLabel, centerValue, size = 160 }: {
+export function DonutChart({ segments, centerLabel, centerValue, size = 160, onSegmentClick, selectedLabel }: {
   segments: DonutSegment[]
   centerLabel?: string
   centerValue?: string
   size?: number
+  onSegmentClick?: (segment: DonutSegment) => void
+  selectedLabel?: string | null
 }) {
   const theme = useTheme()
   const total = segments.reduce((sum, s) => sum + s.value, 0)
@@ -69,11 +74,30 @@ export function DonutChart({ segments, centerLabel, centerValue, size = 160 }: {
       >
         {segments.map((segment) => {
           const pct = total > 0 ? Math.round((segment.value / total) * 100) : 0
-          return (
-            <Box component="li" key={segment.label} sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+          const dimmed = Boolean(selectedLabel && selectedLabel !== segment.label)
+          const content = (
+            <>
               <Box sx={{ width: 10, height: 10, borderRadius: '50%', bgcolor: toneColor(theme, segment.tone), flexShrink: 0 }} />
-              <Typography variant="body2" sx={{ flex: 1 }}>{segment.label}</Typography>
+              <Typography variant="body2" sx={{ flex: 1, fontWeight: selectedLabel === segment.label ? 700 : 400 }}>{segment.label}</Typography>
               <Typography variant="body2" sx={{ color: 'text.secondary' }}>{segment.value} ({pct}%)</Typography>
+            </>
+          )
+          if (!onSegmentClick) {
+            return (
+              <Box component="li" key={segment.label} sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                {content}
+              </Box>
+            )
+          }
+          return (
+            <Box component="li" key={segment.label} sx={{ opacity: dimmed ? 0.5 : 1 }}>
+              <ButtonBase
+                onClick={() => onSegmentClick(segment)}
+                aria-pressed={selectedLabel === segment.label}
+                sx={{ display: 'flex', alignItems: 'center', gap: 1, width: '100%', textAlign: 'left', borderRadius: 1, px: 0.5, '&:hover': { bgcolor: 'action.hover' } }}
+              >
+                {content}
+              </ButtonBase>
             </Box>
           )
         })}

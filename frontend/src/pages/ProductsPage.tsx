@@ -249,10 +249,13 @@ export function ProductsPage() {
         </Container>
       </Box>
 
+      {/* C54: full width in the signed-in catalog view — the app shell's
+          main content area already has no cap; the public marketing page
+          below keeps its considered reading-width layout. */}
       <Container
         component={inShell ? 'div' : 'main'}
         id={inShell ? undefined : 'main-content'}
-        maxWidth="lg"
+        maxWidth={inShell ? false : 'lg'}
         disableGutters={inShell}
         sx={{ py: inShell ? 3 : 5 }}
       >
