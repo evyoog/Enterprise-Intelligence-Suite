@@ -80,7 +80,13 @@ public class RbacSeeder implements ApplicationRunner {
             // payment and seeing every customer's invoices/payments is a
             // distinct, sensitive responsibility from every other admin
             // capability above.
-            "MANAGE_BILLING")
+            "MANAGE_BILLING",
+            // Platform admin dashboard (C53): a read-only, platform-wide
+            // overview spanning every domain above (organizations, catalog,
+            // subscriptions, billing, support, reviews) — its own permission
+            // since being able to SEE a cross-domain summary is distinct
+            // from being able to manage any one of those domains.
+            "VIEW_PLATFORM_DASHBOARD")
     );
 
     private static final Map<String, List<String>> ORGANIZATION_ROLES = Map.of(

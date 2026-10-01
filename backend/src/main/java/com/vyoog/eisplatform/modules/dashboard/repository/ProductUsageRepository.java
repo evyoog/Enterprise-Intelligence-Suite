@@ -28,4 +28,12 @@ public interface ProductUsageRepository extends JpaRepository<ProductUsage, Long
      * aggregated across every customer instead of one. */
     @Query("SELECT u.productId FROM ProductUsage u GROUP BY u.productId ORDER BY SUM(u.launchCount) DESC")
     List<Long> topProductIdsByTotalLaunches(Pageable pageable);
+
+    /** Platform admin dashboard (C53): the same ranking as
+     * {@link #topProductIdsByTotalLaunches}, but with each product's own
+     * summed launch count alongside its id, for the bar chart — avoids a
+     * second round trip per product just to read the number already
+     * computed by this query's own {@code SUM}. */
+    @Query("SELECT u.productId, SUM(u.launchCount) FROM ProductUsage u GROUP BY u.productId ORDER BY SUM(u.launchCount) DESC")
+    List<Object[]> topProductsByTotalLaunches(Pageable pageable);
 }

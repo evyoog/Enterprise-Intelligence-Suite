@@ -23,6 +23,10 @@ public interface ProductRepository extends JpaRepository<Product, Long>, JpaSpec
     /** 03.01.02 Show featured products (sprint 2027.1.2). */
     List<Product> findByStatusAndFeaturedTrue(ProductStatus status);
 
+    /** Platform admin dashboard (C53): a count query instead of loading
+     * every row just to call {@code .size()}. */
+    long countByStatus(ProductStatus status);
+
     /** 02.01.02.01 Define product hierarchy — used by ProductStructureUsageGuard
      * to block deleting a product that other products still list as their parent. */
     boolean existsByParentProductId(Long parentProductId);

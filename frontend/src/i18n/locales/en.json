@@ -336,6 +336,7 @@
     },
     "nav": {
       "dashboard": "Business dashboard",
+      "platformDashboard": "Dashboard",
       "myProducts": "My products",
       "catalog": "Product catalog",
       "identityFederation": "Identity federation",

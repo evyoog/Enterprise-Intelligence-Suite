@@ -205,6 +205,18 @@ public class InvoiceService {
         return sumByCurrency(inRange, Invoice::getTotal);
     }
 
+    /** Platform admin dashboard (C53): the same computation as
+     * {@link #spentInPeriod}, across every owner instead of one — platform-
+     * wide revenue for the business dashboard's own 01.02.01 figure, applied
+     * to the whole platform. */
+    public java.util.Map<String, Long> platformSpentInPeriod(Instant from, Instant to) {
+        List<Invoice> paid = invoiceRepository.findByStatusIn(List.of(InvoiceStatus.PAID, InvoiceStatus.PARTIALLY_REFUNDED));
+        List<Invoice> inRange = paid.stream()
+            .filter(i -> !i.getIssuedAt().isBefore(from) && i.getIssuedAt().isBefore(to))
+            .toList();
+        return sumByCurrency(inRange, Invoice::getTotal);
+    }
+
     private java.util.Map<String, Long> sumByCurrency(List<Invoice> invoices, java.util.function.ToLongFunction<Invoice> amount) {
         java.util.Map<String, Long> result = new java.util.LinkedHashMap<>();
         for (Invoice invoice : invoices) {

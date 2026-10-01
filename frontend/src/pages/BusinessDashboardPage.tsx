@@ -2,11 +2,14 @@ import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import {
   Alert, Box, Button, Chip, CircularProgress, Container, Grid, LinearProgress,
-  Paper, Table, TableBody, TableCell, TableHead, TableRow, Typography,
+  Paper, Table, TableBody, TableCell, TableHead, TableRow, Typography, useTheme,
 } from '@mui/material'
+import { ArrowDownRight, ArrowUpRight } from 'lucide-react'
 import { Link as RouterLink, useNavigate } from 'react-router-dom'
 import { ApiError } from '../api/client'
 import { businessDashboardApi, type BusinessDashboard } from '../api/businessDashboardApi'
+import { BarList } from '../components/charts/BarList'
+import { DonutChart } from '../components/charts/DonutChart'
 import { PageHeader } from '../components/layout/PageHeader'
 import { OrganizationMfaPolicyCard } from '../components/organization/OrganizationMfaPolicyCard'
 import { OrganizationGroupsCard } from '../components/organization/OrganizationGroupsCard'
@@ -14,11 +17,27 @@ import { OrganizationMembersCard } from '../components/organization/Organization
 import { OrganizationPrivilegedAccessCard } from '../components/organization/OrganizationPrivilegedAccessCard'
 import { useLocalePreference } from '../theming/LocalePreferenceProvider'
 
-function StatTile({ label, value, sub }: { label: string; value: string; sub?: string }) {
+function StatTile({ label, value, sub, trendPercent, action }: {
+  label: string; value: string; sub?: string; trendPercent?: number; action?: React.ReactNode
+}) {
+  const theme = useTheme()
+  const trendColor = trendPercent !== undefined && trendPercent >= 0 ? theme.palette.success.main : theme.palette.error.main
   return (
     <Paper variant="outlined" sx={{ p: 2.5, flex: 1, minWidth: 160 }}>
-      <Typography variant="body2" sx={{ color: 'text.secondary' }}>{label}</Typography>
+      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+        <Typography variant="body2" sx={{ color: 'text.secondary' }}>{label}</Typography>
+        {action}
+      </Box>
       <Typography variant="h4" sx={{ fontWeight: 700, mt: 0.5 }}>{value}</Typography>
+      {trendPercent !== undefined && (
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, mt: 0.5 }}>
+          {trendPercent >= 0 ? <ArrowUpRight size={14} color={trendColor} /> : <ArrowDownRight size={14} color={trendColor} />}
+          <Typography variant="caption" sx={{ color: trendPercent >= 0 ? 'success.main' : 'error.main', fontWeight: 600 }}>
+            {Math.abs(trendPercent).toFixed(1)}%
+          </Typography>
+          <Typography variant="caption" sx={{ color: 'text.secondary' }}>vs last period</Typography>
+        </Box>
+      )}
       {sub && <Typography variant="caption" sx={{ color: 'text.secondary' }}>{sub}</Typography>}
     </Paper>
   )
@@ -26,6 +45,19 @@ function StatTile({ label, value, sub }: { label: string; value: string; sub?: s
 
 function SectionTitle({ children }: { children: React.ReactNode }) {
   return <Typography variant="h6" sx={{ fontWeight: 700, mb: 1.5, mt: 4 }}>{children}</Typography>
+}
+
+/** A trend needs one currency present on both sides to mean anything — with
+ * more than one currency, or a zero last-period base (nothing to compare a
+ * percentage against), this returns no trend rather than a misleading one. */
+function spendTrend(thisPeriod: Record<string, number>, lastPeriod: Record<string, number>) {
+  const currencies = new Set([...Object.keys(thisPeriod), ...Object.keys(lastPeriod)])
+  if (currencies.size !== 1) return null
+  const currency = [...currencies][0]
+  const last = lastPeriod[currency] ?? 0
+  const current = thisPeriod[currency] ?? 0
+  if (last === 0) return null
+  return { currency, current, trendPercent: ((current - last) / last) * 100 }
 }
 
 /**
@@ -105,6 +137,39 @@ export function BusinessDashboardPage() {
             />
 
             <SectionTitle>Applications &amp; usage</SectionTitle>
+            <Grid container spacing={2} sx={{ mb: 2 }}>
+              <Grid size={{ xs: 12, sm: 7 }}>
+                <Paper variant="outlined" sx={{ p: 2.5, height: '100%' }}>
+                  <Typography variant="subtitle2" sx={{ fontWeight: 700, mb: 2 }}>Launches by application</Typography>
+                  <BarList
+                    items={dashboard.applications
+                      .map((a) => ({ label: a.productName, value: a.totalLaunches }))
+                      .sort((a, b) => b.value - a.value)}
+                  />
+                </Paper>
+              </Grid>
+              <Grid size={{ xs: 12, sm: 5 }}>
+                <Paper variant="outlined" sx={{ p: 2.5, height: '100%' }}>
+                  <Typography variant="subtitle2" sx={{ fontWeight: 700, mb: 2 }}>Applications by subscription</Typography>
+                  <DonutChart
+                    centerValue={String(dashboard.applications.length)}
+                    centerLabel="applications"
+                    segments={[
+                      {
+                        label: 'Active subscription',
+                        value: dashboard.applications.filter((a) => a.subscriptionStatus === 'ACTIVE').length,
+                        tone: 'success',
+                      },
+                      {
+                        label: 'Not subscribed / inactive',
+                        value: dashboard.applications.filter((a) => a.subscriptionStatus !== 'ACTIVE').length,
+                        tone: 'neutral',
+                      },
+                    ]}
+                  />
+                </Paper>
+              </Grid>
+            </Grid>
             <Paper variant="outlined">
               <Table size="small">
                 <TableHead>
@@ -139,15 +204,20 @@ export function BusinessDashboardPage() {
 
             <SectionTitle>Billing</SectionTitle>
             <Alert severity="info" sx={{ mb: 1.5 }}>{dashboard.billing.note}</Alert>
-            {Object.keys(dashboard.billing.spentThisPeriodByCurrency).length > 0 && (
-              <Box sx={{ display: 'flex', gap: 2, mb: 1.5 }}>
-                <Typography variant="body2">
-                  Spent this period:{' '}
-                  {Object.entries(dashboard.billing.spentThisPeriodByCurrency)
-                    .map(([cur, amt]) => `${(amt / 100).toFixed(2)} ${cur}`).join(', ')}
-                </Typography>
-              </Box>
-            )}
+            {Object.keys(dashboard.billing.spentThisPeriodByCurrency).length > 0 && (() => {
+              const trend = spendTrend(dashboard.billing.spentThisPeriodByCurrency, dashboard.billing.spentLastPeriodByCurrency)
+              return (
+                <Box sx={{ display: 'flex', gap: 2, mb: 1.5, flexWrap: 'wrap' }}>
+                  <StatTile
+                    label="Spent this period"
+                    value={Object.entries(dashboard.billing.spentThisPeriodByCurrency)
+                      .map(([cur, amt]) => `${(amt / 100).toFixed(2)} ${cur}`).join(', ')}
+                    trendPercent={trend?.trendPercent}
+                    action={<Button component={RouterLink} to="/billing" size="small">View Report</Button>}
+                  />
+                </Box>
+              )
+            })()}
             <Paper variant="outlined">
               <Table size="small">
                 <TableHead>

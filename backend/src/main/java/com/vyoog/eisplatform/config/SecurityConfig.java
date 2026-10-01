@@ -181,6 +181,10 @@ public class SecurityConfig {
                 // customer's invoices is a distinct, sensitive
                 // responsibility from every other admin capability above.
                 .requestMatchers("/admin/billing/**").access(permissions.platformPermission("MANAGE_BILLING"))
+                // Platform admin dashboard (C53): a read-only, cross-domain
+                // overview — its own permission, distinct from every single-
+                // domain admin capability above (see RbacSeeder's own comment).
+                .requestMatchers("/admin/platform-dashboard/**").access(permissions.platformPermission("VIEW_PLATFORM_DASHBOARD"))
                 // Razorpay calls this directly — no Vyoog user token exists
                 // on that request. Trusted only via its own signature
                 // (BR-5/BR-6), verified inside PaymentService, never by a
