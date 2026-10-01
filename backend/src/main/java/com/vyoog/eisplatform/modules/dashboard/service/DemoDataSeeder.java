@@ -59,12 +59,12 @@ import java.util.stream.Collectors;
  * subscription, a real member with real product access) with the usage and
  * billing history that a platform running for months would naturally have
  * accumulated. Every insert is idempotent (checked before written) and runs
- * on every startup, same pattern as {@link com.vyoog.eisplatform.modules.product.service.CatalogSeeder}
+ * on every startup, same pattern as {@code PlatformAdministrationSeeder}
  * and {@code RbacSeeder}. See {@code docs/07-database/demo-data.md} for the
  * exact scope and the "never point this at a database with real customer
  * data" warning.
  *
- * <p>Runs after {@code CatalogSeeder} (implicit ordering via {@code @Order}
+ * <p>Runs after the catalog is populated (implicit ordering via {@code @Order}
  * is not declared — this seeder only reads the catalog, product
  * subscriptions and org membership that other flows (registration, catalog
  * seeding, self-serve subscribe) create first; on a fresh database with none
@@ -73,9 +73,9 @@ import java.util.stream.Collectors;
 // Never runs under the "test" profile (@ActiveProfiles("test") everywhere
 // in this suite) — demo tickets/reviews would otherwise land in the shared
 // H2 test database and could skew exact-count assertions in modules this
-// seeder has no reason to touch during automated tests. CatalogSeeder and
-// RbacSeeder don't need this: they seed foundational reference data
-// (the catalog, roles/permissions) many tests actually depend on existing.
+// seeder has no reason to touch during automated tests. RbacSeeder
+// does not need this: it seeds foundational reference data
+// (roles/permissions) many tests actually depend on existing.
 @Profile("!test")
 @Component
 @RequiredArgsConstructor

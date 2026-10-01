@@ -85,7 +85,10 @@ export async function apiRequest<T>(path: string, options: RequestInit = {}): Pr
   }
 
   if (response.status === 204) return undefined as T
-  return response.json()
+  // A controller returning null (e.g. "no billing details yet") answers 200
+  // with an empty body, which response.json() rejects.
+  const text = await response.text()
+  return (text ? JSON.parse(text) : null) as T
 }
 
 /** For the handful of endpoints that return a file (Billing & Payments'

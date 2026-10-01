@@ -40,10 +40,10 @@ COPY nginx.conf /etc/nginx/templates/default.conf
 # definition / compose env), or the nginx template renders an empty port and
 # every /api request fails.
 ENV BACKEND_HOST=backend
-# ENV BACKEND_PORT=8081
+ENV BACKEND_PORT=8081
 
 # Expose the port
-# EXPOSE 80
+EXPOSE 80
 
 # Start Nginx
 CMD ["nginx", "-g", "daemon off;"]
