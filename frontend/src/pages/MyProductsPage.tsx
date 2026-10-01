@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import {
-  Alert, Box, Button, Chip, CircularProgress, Container, Grid, IconButton,
+  Alert, Box, Button, Chip, CircularProgress, Grid, IconButton,
   Paper, Switch, Typography,
 } from '@mui/material'
 import { ChevronDown, ChevronUp, Settings2, Star } from 'lucide-react'
@@ -63,9 +63,9 @@ export function MyProductsPage() {
   if (state.kind === 'error') {
     return (
       <Box>
-        <Container maxWidth="md" disableGutters sx={{ pb: 4 }}>
+        <Box sx={{ pb: 4 }}>
           <Alert severity="error">{state.message}</Alert>
-        </Container>
+        </Box>
       </Box>
     )
   }
@@ -139,7 +139,7 @@ export function MyProductsPage() {
 
   return (
     <Box>
-      <Container maxWidth="md" disableGutters sx={{ pb: 4 }}>
+      <Box sx={{ pb: 4 }}>
         <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 3, gap: 1, flexWrap: 'wrap' }}>
           <Typography variant="h4" sx={{ fontWeight: 700 }}>Your dashboard</Typography>
           <Box sx={{ display: 'flex', gap: 1 }}>
@@ -235,7 +235,7 @@ export function MyProductsPage() {
           }
           return null
         })}
-      </Container>
+      </Box>
     </Box>
   )
 }

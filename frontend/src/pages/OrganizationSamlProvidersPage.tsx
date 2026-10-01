@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import {
-  Alert, Box, Button, Chip, CircularProgress, Container, IconButton, List, ListItem,
+  Alert, Box, Button, Chip, CircularProgress, IconButton, List, ListItem,
   ListItemText, Paper, TextField, ToggleButton, ToggleButtonGroup, Typography,
 } from '@mui/material'
 import { Pencil, Trash2 } from 'lucide-react'
@@ -147,7 +147,7 @@ export function OrganizationSamlProvidersPage() {
 
   return (
     <Box>
-      <Container maxWidth="md" disableGutters sx={{ pb: 4 }}>
+      <Box sx={{ pb: 4 }}>
         <PageHeader title="Identity Federation" subtitle="Let your organization's members sign in through your own SAML identity provider" />
 
         {organizationId !== null && (
@@ -290,7 +290,7 @@ export function OrganizationSamlProvidersPage() {
         />
 
         <OidcProvidersSection refreshKey={oidcRefresh} onChanged={load} />
-      </Container>
+      </Box>
     </Box>
   )
 }
