@@ -4,7 +4,7 @@
 **BRD:** Not specified
 **Owner:** Product owner
 **Approved by / on:** Not yet approved. Cannot be approved until the open questions below marked **Blocks approval** are answered.
-**Decision:** [C46](../../../01-business/roadmap/open-decisions.md#c46)
+**Decision:** [C46](../../../01-business/roadmap/open-decisions.md#c46), [C50](../../../01-business/roadmap/open-decisions.md#c50) (billing scope), [C51](../../../01-business/roadmap/open-decisions.md#c51) (tax, see REQ-BIL-002)
 
 | Field | Value |
 |---|---|
@@ -28,7 +28,7 @@
 | 08.05.02 | Format currency | Yes (uses existing platform currencies) |
 | 01.02.01 | View spending (moved to Billing by [C19](../../../01-business/roadmap/open-decisions.md#c19)) | Yes |
 
-Not covered: 08.01 Pricing (price books, promotions), 08.02.01 Usage billing, 08.05.01 Tax, 08.05.02 Convert currency — pending decisions D3 and D4 (see Open questions).
+Not covered: 08.01 Pricing (price books, promotions), 08.02.01 Usage billing — later, per [C50](../../../01-business/roadmap/open-decisions.md#c50) (not MVP); 08.05.01 Tax — see [REQ-BIL-002](../tax-rules/requirement.md); 08.05.02 Convert currency — Not specified.
 
 ## Summary
 Customers (individuals, and organization admins for their organization) can keep billing details, see invoices, pay them through **Razorpay Checkout**, save and manage payment methods, see payment history, and download invoice and receipt documents. Platform administrators can see all invoices and payments, refund payments, and see whether the payment gateway is configured.
@@ -47,7 +47,7 @@ EIS never collects, transmits or stores full card numbers or CVV ([BR-BIL-001](.
 | ID | Requirement | Priority |
 |---|---|---|
 | REQ-BIL-001.1 | A customer can view and edit billing details: billing name, billing email, address line 1, address line 2, city, state/region, postal code, country, and an optional tax ID. | Must |
-| REQ-BIL-001.2 | An invoice is generated and finalized when a paid subscription starts or renews (individual subscription, approved organization order, or renewal job). It holds one line per plan with the billing period, quantity, unit price, amount, currency, subtotal, tax and total. | Must |
+| REQ-BIL-001.2 | An invoice is generated and finalized when a paid subscription starts or renews (individual subscription, approved organization order, or renewal job). It holds one line per plan with the billing period, quantity, unit price, amount, currency, subtotal, and total. Each line also shows the tax name, tax rate and tax amount calculated by [REQ-BIL-002](../tax-rules/requirement.md), and the invoice records which tax method was used (Admin rate or Tax service). | Must |
 | REQ-BIL-001.3 | Every invoice has a unique invoice number that never changes once finalized. | Must |
 | REQ-BIL-001.4 | A customer can list their invoices (filter by status and date) and open an invoice's detail. | Must |
 | REQ-BIL-001.5 | A customer can pay an OPEN invoice. The backend creates a Razorpay order for the invoice total; the UI opens Razorpay Checkout with that order; after completion the backend verifies Razorpay's signature before recording the payment. | Must |
@@ -67,8 +67,8 @@ EIS never collects, transmits or stores full card numbers or CVV ([BR-BIL-001](.
 ## Out of scope
 - Collecting card numbers, CVV or bank details in any EIS screen or API ([BR-BIL-001](../../../03-business-rules/BR-BIL-001-no-raw-card-data.md)).
 - Automatic charging of saved methods for renewals (auto-debit / e-mandate) — pending decision D15 (auto-renew).
-- Price books, promotions, coupons, usage billing — pending decision D3.
-- Tax calculation rules — pending decision D4.
+- Price books, promotions, coupons, usage billing — later, per [C50](../../../01-business/roadmap/open-decisions.md#c50).
+- Tax calculation rules — see [REQ-BIL-002](../tax-rules/requirement.md).
 - Adjusting or crediting invoices, credit notes — Not specified.
 - A second payment provider (for example Stripe for international customers) — Not specified.
 - Partner payouts and revenue sharing (14.03).
@@ -95,8 +95,8 @@ EIS never collects, transmits or stores full card numbers or CVV ([BR-BIL-001](.
 ## Open questions
 | # | Question | Blocks approval |
 |---|---|---|
-| 1 | **Tax (D4):** how is tax calculated — GST only, provider-calculated, or admin-configured rates per region? Until answered, invoices carry a tax field but no rule fills it. | Yes |
-| 2 | **Billing scope (D3):** confirm the MVP excludes price books, promotions and usage billing. | Yes |
+| 1 | ~~Tax (D4)~~ — **Answered — [C51](../../../01-business/roadmap/open-decisions.md#c51).** Tax rules and calculation are specified in [REQ-BIL-002](../tax-rules/requirement.md) (Admin rate or Tax service per region, admin rate as fallback). REQ-BIL-002 has its own open questions that block its approval. | No |
+| 2 | ~~Billing scope (D3)~~ — **Answered — [C50](../../../01-business/roadmap/open-decisions.md#c50).** The MVP includes recurring subscription billing, invoices, card/UPI payments, tax and currency; price books, promotions and usage billing are later, not MVP. | No |
 | 3 | **Activation vs payment:** should a subscription or approved order become active only after its first invoice is paid, or immediately (with the invoice due later)? Today activation happens on subscribe / approval. | Yes |
 | 4 | **Invoice number format and due date:** format (for example a prefix plus sequence per financial year) and payment terms (days until due) are Not specified. | Yes |
 | 5 | **Who handles organization billing (D16):** organization admins only (`MANAGE_ORGANIZATION`), or a separate assignable billing permission? | Yes |

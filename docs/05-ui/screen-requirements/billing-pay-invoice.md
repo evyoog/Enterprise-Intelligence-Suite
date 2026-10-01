@@ -6,18 +6,20 @@
 | Opened from | [Billing](billing.md) → **Pay** on an OPEN invoice |
 | Permissions | Same as Billing |
 
-## Step 1 — Confirm (EIS dialog)
-Read-only summary: invoice number, billing period, plan, subtotal, tax, **total**, currency, bill-to name. Option: **Pay with** the default saved method (if any) or **another method**. Buttons: **Pay {total}** (disabled when the gateway is not configured), **Cancel**.
+Shared presentation rules: [billing-ui-standards.md](billing-ui-standards.md). Three-step progress indicator (Review → Pay securely → Confirmation) shown throughout.
 
-## Step 2 — Razorpay Checkout
+## Step 1 — Review (EIS dialog)
+An order-summary card: invoice number, billing period, plan, subtotal, **one line per tax** (name, rate, amount — [REQ-BIL-002](../../02-requirements/FRD/tax-rules/requirement.md)), **total** in large type, currency, bill-to name. A method selector lists saved payment methods as the same card-style tiles used in the Billing screen, with the default method preselected, plus an **another method** option. Buttons: **Pay {total}** (disabled when the gateway is not configured), **Cancel**.
+
+## Step 2 — Pay securely (Razorpay Checkout)
 Opens with the Razorpay order created by the backend for this invoice. Card and UPI entry happen only there ([BR-BIL-001](../../03-business-rules/BR-BIL-001-no-raw-card-data.md)).
 
-## Step 3 — Result
+## Step 3 — Confirmation
 | State | When | Message | Actions | i18n key |
 |---|---|---|---|---|
 | Processing | Checkout returned; backend verifying | "Confirming your payment…" (spinner, no action) | — | `billing.pay.processing` |
-| Success | Signature verified, payment captured | "Payment received. Invoice {number} is paid." | **Download receipt**, **Close** | `billing.pay.success` |
-| Pending | Result not yet confirmed (awaiting webhook) | "Your payment is being confirmed. This page updates automatically." | **Close** | `billing.pay.pending` |
+| Pending | Result not yet confirmed (awaiting webhook); polls the payment's status every 5 seconds (interval Not specified by any source — chosen as a reasonable balance between promptness and load) | "Your payment is being confirmed. This page updates automatically." Status updates announced via `aria-live="polite"` | **Close** | `billing.pay.pending` |
+| Success | Signature verified, payment captured | A green check icon, "Payment received. Invoice {number} is paid." | **Download receipt**, **Back to invoices** | `billing.pay.success` |
 | Failed | Razorpay reported failure | "Payment failed: {reason}." | **Retry payment**, **Close** | `billing.pay.failed` |
 | Cancelled | Customer closed checkout | "Payment was cancelled. The invoice is still open." | **Retry payment**, **Close** | `billing.pay.cancelled` |
 | Not configured | Gateway credentials missing | "Online payments are not available yet." | **Close** | `billing.gateway.notConfigured` |

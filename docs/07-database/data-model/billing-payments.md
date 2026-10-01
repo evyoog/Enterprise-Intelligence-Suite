@@ -1,6 +1,6 @@
 # Data model — Billing & Payments
 
-Proposed for [REQ-BIL-001](../../02-requirements/FRD/billing-payments/requirement.md). Final column types are set in the migration when the feature is built. Workbook entities used: Invoice (DE), Payment (DE). No card numbers or CVV are stored anywhere ([BR-BIL-001](../../03-business-rules/BR-BIL-001-no-raw-card-data.md)).
+Proposed for [REQ-BIL-001](../../02-requirements/FRD/billing-payments/requirement.md) and [REQ-BIL-002](../../02-requirements/FRD/tax-rules/requirement.md). Final column types are set in the migration when the feature is built. Workbook entities used: Invoice (DE), Payment (DE). No card numbers or CVV are stored anywhere ([BR-BIL-001](../../03-business-rules/BR-BIL-001-no-raw-card-data.md)).
 
 Ownership: every record belongs to **either** a customer (individual) **or** an organization, never both.
 
@@ -24,11 +24,26 @@ Ownership: every record belongs to **either** a customer (individual) **or** an 
 | status | Yes | OPEN, PAID, PARTIALLY_REFUNDED, REFUNDED, VOID |
 | currency | Yes | Plan currency |
 | subtotal, tax_amount, total | Yes | Smallest currency unit |
+| tax_method_used | Yes | `ADMIN_RATE`, `TAX_SERVICE`, or null when no tax rule applied ([REQ-BIL-002.3](../../02-requirements/FRD/tax-rules/requirement.md)) |
 | period_start, period_end, issued_at, due_at | Yes (due_at rule Not specified) | |
 | bill_to_snapshot | Yes | Billing details copied at issue |
 
 ## invoice_line
-id, invoice_id, description, period_start, period_end, quantity, unit_amount, amount.
+id, invoice_id, description, period_start, period_end, quantity, unit_amount, amount, **tax_name**, **tax_rate**, **tax_amount** (the last three copied from the tax rule in force at issue time, per [REQ-BIL-002.5](../../02-requirements/FRD/tax-rules/requirement.md); null/0 when no rule applied).
+
+## tax_rule
+| Attribute | Required | Description |
+|---|---|---|
+| id | Yes | Primary key |
+| region_id | Yes | FK to `platform_region` ([REQ-GOV-001.2](../../02-requirements/FRD/platform-administration/requirement.md)) |
+| tax_name | Yes | For example "GST" |
+| rate | Yes | Percentage, 0–100, up to 2 decimals |
+| method | Yes | `ADMIN_RATE`, `TAX_SERVICE` |
+| effective_from | Yes | Date this rate takes effect |
+| status | Yes | ENABLED, DISABLED |
+| updated_at, updated_by | Yes | |
+
+At most one ENABLED row per (region_id, effective_from) — [BR-2](../../02-requirements/FRD/tax-rules/business-rules.md).
 
 ## payment
 | Attribute | Required | Description |

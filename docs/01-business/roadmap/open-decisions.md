@@ -55,6 +55,9 @@ Raised from the sprint 2026.3.3 development plan.
 3. **C4 to C6, C12 to C14:** clean up the [WB] MVP, Priority, AI, Journey, Phase, microservice and API mappings. → Decided 2026-09-25: see [C4](#c4), [C5](#c5), [C6](#c6), [C12](#c12), [C13](#c13), [C14](#c14).
 4. **Business rules and acceptance criteria:** none exist in any document, and the repository's `CLAUDE.md` requires them before implementation. → Decided 2026-09-25: see [DN-4](#dn-4-business-rules-and-acceptance-criteria).
 5. **Application codes:** assign `APP-<CODE>` codes to the 16 EIS applications so requirements and stories can use `REQ-`, `FTR-` and `STORY-` IDs. The only example in the templates is `APP-CAT`. → Decided 2026-09-25: see [DN-5](#dn-5-application-codes).
+6. **D3 Billing scope for the MVP** (REQ-BIL-001 Open question 2): confirm the MVP excludes price books, promotions and usage billing. → Decided 2026-10-01: see [C50](#c50).
+7. **D4 Tax calculation** (REQ-BIL-001 Open question 1): how is tax calculated — GST only, provider-calculated, or admin-configured rates per region? → Decided 2026-10-01: see [C51](#c51).
+8. **D5 Entitlements:** is an entitlement a stored grant or derived at runtime from active subscriptions? → Decided 2026-10-01: see [C52](#c52).
 
 ---
 
@@ -359,6 +362,21 @@ Raised from the sprint 2026.3.3 development plan.
 
 **Reason:** three separate concerns (what it is, what it costs, what people think of it) read better as three tabs than one page everyone has to scroll past to reach the part they want, and a static bar chart is a missed chance to also let a visitor narrow the reviews to what they actually care about.
 
+### C50
+**Decision (product owner, 2026-10-01):** Billing scope for the MVP (answer to [D3](#decisions-needed), option B). The MVP includes recurring subscription billing, invoices, card and UPI payments, tax and currency. Later (not MVP): usage billing (08.02.01), price books beyond plan prices (08.01.01), promotions and coupons (08.01.02).
+
+**Reason:** covers every plan type that exists today; usage billing needs metering that does not exist.
+
+### C51
+**Decision (product owner, 2026-10-01):** Tax calculation (answer to [D4](#decisions-needed), options B and C together). Each region has a tax method: **Admin rate** (admins set the tax name and rate per region in EIS) or **Tax service** (calculated by an external tax service). The admin rate is the fallback whenever the tax service is not configured, unavailable, or returns an error. Which tax service is used is **Not specified** (Razorpay processes payments but is not a tax-calculation service) — this interpretation is recorded here and is **to confirm by the product owner**.
+
+**Reason:** gives every region a working tax rule today (the admin rate), without blocking on a tax-service vendor choice that has not been made.
+
+### C52
+**Decision (product owner, 2026-10-01):** Entitlements (answer to [D5](#decisions-needed), option A). An entitlement is derived at runtime from an ACTIVE subscription plus its plan's included features and usage limits (fields from REQ-CAT-002). No new entitlement table. Quota consumption (counting usage against limits) is out of scope because no usage metering exists ([C50](#c50)). Licensing and quantity (07.03, D14) are not decided.
+
+**Reason:** the data already exists on the subscription and its plan; a derived check avoids a second, duplicate store that could drift from the subscription it is supposed to describe.
+
 ### DN-2 Sprint scope, length and dates
 **Decision:**
 - **Sprint length:** sprints are **calendar months**. Sprint `.1`, `.2` and `.3` are the first, second and third months of the PI's calendar quarter. Example: 2026.3.3 = 1–30 Sep 2026; 2026.4.1 = 1–31 Oct 2026.
@@ -437,5 +455,8 @@ These documents are **not** changed by this file. Update them to match:
 | C46 | REQ-BIL-001 built (see C47 for the pragmatic assumptions made along the way). Add the Razorpay credentials to `config/secrets.env` when provided, then register the webhook (`/admin/billing/payment-gateway` shows the exact URL). Load `config/secrets.env` in `scripts/dev.sh` and the Docker `env_file` (BR-SEC-001) |
 | C47 | Answer the FRD's own open questions (tax, invoice number/terms, organization-billing permission, invoice legal fields, refund/payment-method policy) as real product decisions, then update the code where this decision's assumption differs from the answer. Build the real Razorpay Customer/Token API integration before relying on saved payment methods for unattended auto-charging (also needed for D15). Replace the plain-text invoice/receipt document with a formatted one once Open question 8 is answered |
 | C48 | If plan selection is ever added to individual self-serve subscribe (today there is none — `/me/subscriptions` always uses the product's single implicit plan), `/checkout/:productId` needs a plan picker before its billing-details step. The "newest OPEN invoice = the one just created" simplification would need a real subscription-scoped invoice lookup if this flow is ever used for more than one purchase at a time (e.g. a cart) |
+| C50 | REQ-BIL-001 `requirement.md`: Open question 2 (billing scope) answered; Out of scope wording updated to "later, per C50". Price books (08.01.01), promotions (08.01.02) and usage billing (08.02.01) remain carried with no FRD and no sprint scheduled |
+| C51 | Create FRD `tax-rules` (REQ-BIL-002, Draft; blocked by its own open questions — see the FRD); add to `SPRINT-2026.4.3.md` scope. Update REQ-BIL-001's Open question 1 (tax) to point to REQ-BIL-002, and its invoice-line requirement (REQ-BIL-001.2) to show the tax name/rate/amount and method used. Which external tax service to use is still **Not specified** — confirm with the product owner before REQ-BIL-002 can be approved |
+| C52 | Create FRD `entitlements` (REQ-SUB-002, Draft); add to `SPRINT-2026.4.3.md` scope. 07.02.02 Quota (consumption/enforcement), 07.03 License & Quota Management (quantity, D14) and an entitlement grant/revoke history remain carried — still pending, respectively, usage metering (C50), a licensing/quantity decision, and a store this decision deliberately does not create |
 
 **Done (2026-09-26), no longer follow-up:** C31 (sprint pages 2026.4.1 through 2027.2.2, and the "Sprint" field on application pages 02, 03, 04, 05, 10, 11, 12, 13, 15, all updated to the corrected sequence — this superseded the older "C21: add the general policy engine to `SPRINT-2027.2.2.md`" and "C16, C17: add the deferred functions to `SPRINT-2027.1.3.md`" rows, and the "C21: add the agent controls to `SPRINT-2027.1.2.md`" row, which are now folded into C31's own sprint pages); C32–C35 (FRDs written and Approved, sprint 2026.4.1 built, carry-over recorded on `SPRINT-2026.4.2.md`).
