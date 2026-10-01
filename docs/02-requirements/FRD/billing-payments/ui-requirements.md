@@ -11,6 +11,8 @@ Shared presentation standards (theme, `<DataTable>`/`<FilterBar>`, status chips,
 | Pay invoice (dialog and result states) | opened from `/billing` | Same as Billing | [billing-pay-invoice.md](../../../05-ui/screen-requirements/billing-pay-invoice.md) |
 | Billing admin (tabs: Invoices, Payments) | `/admin/billing` | `MANAGE_BILLING` | [admin-billing.md](../../../05-ui/screen-requirements/admin-billing.md) |
 | Payment gateway | `/admin/billing/payment-gateway` | `MANAGE_BILLING` | [admin-payment-gateway.md](../../../05-ui/screen-requirements/admin-payment-gateway.md) |
+| Checkout payment (steps: Billing details, Payment, Complete) — REQ-BIL-001.18/.19 | `/checkout?subscriptionId=…` or `?invoiceId=…` | Owner of the subscription/invoice; organization billing user (Open question 5) | [checkout-payment.md](../../../05-ui/screen-requirements/checkout-payment.md) |
+| Billing settings (offline bank details) — REQ-BIL-001.21 | `/admin/billing/settings` | `MANAGE_BILLING` | [admin-billing-settings.md](../../../05-ui/screen-requirements/admin-billing-settings.md) |
 
 Screens for the related FRDs built alongside this one:
 

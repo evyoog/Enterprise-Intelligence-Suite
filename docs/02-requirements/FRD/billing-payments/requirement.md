@@ -4,7 +4,7 @@
 **BRD:** Not specified
 **Owner:** Product owner
 **Approved by / on:** Not yet approved. Cannot be approved until the open questions below marked **Blocks approval** are answered.
-**Decision:** [C46](../../../01-business/roadmap/open-decisions.md#c46), [C50](../../../01-business/roadmap/open-decisions.md#c50) (billing scope), [C51](../../../01-business/roadmap/open-decisions.md#c51) (tax, see REQ-BIL-002)
+**Decision:** [C46](../../../01-business/roadmap/open-decisions.md#c46), [C50](../../../01-business/roadmap/open-decisions.md#c50) (billing scope), [C51](../../../01-business/roadmap/open-decisions.md#c51) (tax, see REQ-BIL-002), [C55](../../../01-business/roadmap/open-decisions.md#c55) (checkout, pay by invoice)
 
 | Field | Value |
 |---|---|
@@ -63,6 +63,10 @@ EIS never collects, transmits or stores full card numbers or CVV ([BR-BIL-001](.
 | REQ-BIL-001.15 | Amounts are shown using the platform's configured currencies and formatting. | Must |
 | REQ-BIL-001.16 | The business dashboard's spending card (01.02.01) shows the total paid in the current and previous period from paid invoices, replacing the current "not available" note. | Must |
 | REQ-BIL-001.17 | Every payment, refund, reconcile, payment-method change and billing-details change is written to the audit log. | Must |
+| REQ-BIL-001.18 | **Checkout payment screen** ([C55](../../../01-business/roadmap/open-decisions.md#c55)): a three-step flow (Billing details → Payment → Complete) used (a) when an individual subscribes to a paid plan, (b) when paying an OPEN invoice from Billing, and (c) after an organization order is approved and its invoice is issued. Payment options: card, UPI and other online methods (all through Razorpay), and Pay by invoice (offline, REQ-BIL-001.19). Card entry follows BR-BIL-001: the card panel shows read-only placeholder fields and Pay opens Razorpay Checkout with the card method preselected (see C55 for why). A Terms & Conditions / Privacy Policy consent checkbox must be ticked before Pay. Screen: [checkout-payment.md](../../../05-ui/screen-requirements/checkout-payment.md). | Must |
+| REQ-BIL-001.19 | **Offline pay-by-invoice:** selecting Pay by invoice generates and finalizes the invoice (if not already issued), records the route OFFLINE on it, shows payment instructions and the offline bank details (REQ-BIL-001.21), and emails the invoice to the billing email. The invoice stays OPEN until a payment is recorded (REQ-BIL-001.20). Who may use it: Open question 9. Due date: Open question 4. | Must |
+| REQ-BIL-001.20 | **Record offline payment** (platform admin, `MANAGE_BILLING`): on an OPEN invoice, record amount received, date received (not in the future), method (bank transfer, NEFT/RTGS, cheque), reference number (required) and an optional note. The amount must equal the open amount (partial offline payments: Not specified). Recording marks the invoice PAID, creates a payment with method type OFFLINE, makes the receipt available, and is audited. | Must |
+| REQ-BIL-001.21 | **Offline bank details:** the bank details printed on offline invoices and on the checkout's offline result are maintained by a platform billing administrator (`MANAGE_BILLING`) in admin settings. Fields: account name, bank name, account number, IFSC, SWIFT/BIC — to confirm (Open question 11). They are not secrets and are not stored in the common secrets file. | Must |
 
 ## Out of scope
 - Collecting card numbers, CVV or bank details in any EIS screen or API ([BR-BIL-001](../../../03-business-rules/BR-BIL-001-no-raw-card-data.md)).
@@ -103,3 +107,11 @@ EIS never collects, transmits or stores full card numbers or CVV ([BR-BIL-001](.
 | 6 | **Refund policy:** who may request refunds (admins only?), and are partial refunds allowed? This FRD assumes admins only, full or partial. | No — confirm in review |
 | 7 | **Payment methods offered:** cards and UPI are assumed. Netbanking, wallets? | No — confirm in review |
 | 8 | **Invoice document legal fields:** which company details, registration and tax numbers must appear on invoices and receipts. | Yes |
+| 9 | **Who may use Pay by invoice ([C55](../../../01-business/roadmap/open-decisions.md#c55)):** all customers, organizations only, selected organizations, or above an amount? | Yes |
+| 10 | **Payment terms for offline invoices:** days until due, and whether reminder emails are sent. (Extends Open question 4 for the offline route.) | Yes |
+| 11 | **Offline bank details fields:** confirm account name, bank name, account number, IFSC, SWIFT/BIC, and that they are maintained in admin settings (not the secrets file). | Yes |
+| 12 | **Terms & Conditions and Privacy Policy URLs** for the checkout consent checkbox — no legal routes exist in the app today. | Yes |
+| 13 | **Purchase-order number:** is a PO number field needed at checkout for organizations? | No — confirm in review |
+| 14 | **Other online methods:** which methods (netbanking, wallets, others) the "Other online methods" option offers. (Refines Open question 7.) | No — confirm in review |
+| 15 | **Card-panel approach:** re-verify against Razorpay's current documentation that no provider-hosted embeddable card fields exist; if they do, the card panel uses them instead of placeholder fields (C55). | No — confirm before Phase 2 build |
+| 16 | **Partial offline payments:** may an admin record less than the open amount? Today the amount must equal it. | No — confirm in review |

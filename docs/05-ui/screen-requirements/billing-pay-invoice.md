@@ -1,5 +1,7 @@
 # Screen: Pay invoice (dialog and result states)
 
+> **To be superseded ([C55](../../01-business/roadmap/open-decisions.md#c55)):** once REQ-BIL-001.18 is approved and built, **Pay** on an OPEN invoice opens the [Checkout payment](checkout-payment.md) screen instead of this dialog. This file stays as the record of the current behaviour until then.
+
 | Field | Value |
 |---|---|
 | Requirement | [REQ-BIL-001.5–.7](../../02-requirements/FRD/billing-payments/requirement.md) |

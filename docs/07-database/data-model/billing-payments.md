@@ -25,6 +25,7 @@ Ownership: every record belongs to **either** a customer (individual) **or** an 
 | currency | Yes | Plan currency |
 | subtotal, tax_amount, total | Yes | Smallest currency unit |
 | tax_method_used | Yes | `ADMIN_RATE`, `TAX_SERVICE`, or null when no tax rule applied ([REQ-BIL-002.3](../../02-requirements/FRD/tax-rules/requirement.md)) |
+| payment_route | No | `ONLINE`, `OFFLINE` — what the customer chose at checkout ([C55](../../01-business/roadmap/open-decisions.md#c55), REQ-BIL-001.19); null until a route is chosen |
 | period_start, period_end, issued_at, due_at | Yes (due_at rule Not specified) | |
 | bill_to_snapshot | Yes | Billing details copied at issue |
 
@@ -54,9 +55,26 @@ At most one ENABLED row per (region_id, effective_from) — [BR-2](../../02-requ
 | provider_order_id, provider_payment_id | Yes / when known | Razorpay IDs |
 | status | Yes | CREATED, CAPTURED, FAILED, PARTIALLY_REFUNDED, REFUNDED |
 | amount, refunded_amount, currency | Yes | Smallest unit |
-| method_type, method_network, method_last4 | When known | Display only |
+| method_type, method_network, method_last4 | When known | Display only. `method_type` gains `OFFLINE` (C55) |
 | failure_reason | No | As returned by Razorpay |
 | created_at, captured_at | | |
+| offline_method | OFFLINE only | `BANK_TRANSFER`, `NEFT_RTGS`, `CHEQUE` (REQ-BIL-001.20) |
+| offline_reference | OFFLINE only | Bank/cheque reference number |
+| received_on | OFFLINE only | Date the money was received (not in the future) |
+| recorded_by | OFFLINE only | Admin who recorded it |
+| note | No | Admin note |
+
+For an OFFLINE payment, `provider` is `OFFLINE` and the Razorpay IDs are null.
+
+## billing_settings
+Single row, platform-wide (REQ-BIL-001.21). Not secrets — never in the secrets file.
+
+| Attribute | Required | Description |
+|---|---|---|
+| id | Yes | Primary key |
+| offline_account_name, offline_bank_name, offline_account_number | When set | Printed on offline invoices |
+| offline_ifsc, offline_swift_bic | No | Field list to confirm (FRD Open question 11) |
+| updated_at, updated_by | Yes | |
 
 ## payment_refund
 id, payment_id, provider_refund_id, amount, reason, status, requested_by, created_at.
