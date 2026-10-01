@@ -51,7 +51,7 @@ function renderDetail() {
           <Routes>
             <Route path="/products/:id" element={<ProductDetailPage />} />
             <Route path="/login" element={<div>Sign in page</div>} />
-            <Route path="/checkout/:productId" element={<div>Checkout page</div>} />
+            <Route path="/cart" element={<div>Cart page</div>} />
           </Routes>
         </LocalePreferenceProvider>
       </ThemeModeProvider>
@@ -66,7 +66,7 @@ describe('ProductDetailPage', () => {
     getMine.mockRejectedValue(new ApiError(404, 'Review not found'))
   })
 
-  it('sends a signed-out visitor to sign in first, with a way back to checkout', async () => {
+  it('sends a signed-out visitor to sign in first, with a way back to the cart', async () => {
     getProduct.mockResolvedValue(product)
     getRatings.mockResolvedValue({ averageRating: null, reviewCount: 0, reviews: [] })
     renderDetail()
@@ -75,14 +75,14 @@ describe('ProductDetailPage', () => {
     expect(await screen.findByText('Sign in page')).toBeInTheDocument()
   })
 
-  it('sends a signed-in customer straight to checkout', async () => {
+  it('adds the product to the cart for a signed-in customer (C59)', async () => {
     authState = { isAuthenticated: true }
     getProduct.mockResolvedValue(product)
     getRatings.mockResolvedValue({ averageRating: null, reviewCount: 0, reviews: [] })
     renderDetail()
 
     await userEvent.setup().click(await screen.findByRole('button', { name: 'Subscribe' }))
-    expect(await screen.findByText('Checkout page')).toBeInTheDocument()
+    expect(await screen.findByText('Cart page')).toBeInTheDocument()
   })
 
   it('shows the product-access flow showcase', async () => {

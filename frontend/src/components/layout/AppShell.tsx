@@ -10,6 +10,7 @@ import { useAuth } from '../../auth/AuthProvider'
 import { myPermissionsApi, type MyPermissions } from '../../api/myPermissionsApi'
 import { useThemeMode } from '../../theming/ThemeModeProvider'
 import { NotificationBell } from './NotificationBell'
+import { CartButton } from '../cart/CartButton'
 import { TopBarSearch } from './TopBarSearch'
 import { AppShellContext } from './appShellContext'
 import { appHomePath, buildAppNavigation, isNavItemActive, type AppNavItem } from './appNavigation'
@@ -206,6 +207,7 @@ export function AppShell() {
                   <SearchIcon size={19} />
                 </IconButton>
               )}
+              <CartButton />
               <NotificationBell />
               <Tooltip title={t('theme.toggle')}>
                 <IconButton

@@ -11,12 +11,12 @@ Requirement: [REQ-MKT-003](../../02-requirements/FRD/cart-checkout/requirement.m
 | Method | Path | Purpose | Success | Errors |
 |---|---|---|---|---|
 | GET | `/me/cart` | The cart with items, subtotal, tax lines (or `taxCalculatedAtPayment: true`), total, item count, and whether the caller continues as `INDIVIDUAL` or `ORGANIZATION_MEMBER` | 200 | — |
-| POST | `/me/cart/items` | Add `{ productId, planId }`. If the product is already in the cart, its plan is replaced (BR-3) | 201 (new item) / 200 (plan replaced) | 400, 404, 409 |
-| PATCH | `/me/cart/items/{itemId}` | Change plan `{ planId }` (same product only, BR-4), or confirm a changed price `{ confirmPrice: true }` (BR-7) | 200 | 400, 404 |
-| DELETE | `/me/cart/items/{itemId}` | Remove one item. **Undo** re-adds it with `POST /me/cart/items` (same product and plan) | 204 | 404 |
+| POST | `/me/cart/items` | Add `{ productId, planId }`. If the product is already in the cart, its plan is replaced (BR-3). Returns the whole cart | 201 | 400, 404 |
+| PATCH | `/me/cart/items/{itemId}` | Change plan `{ planId }` (same product only, BR-4), or confirm a changed price `{ confirmPrice: true }` (BR-7). Returns the whole cart | 200 | 400, 404 |
+| DELETE | `/me/cart/items/{itemId}` | Remove one item and return the cart. **Undo** re-adds it with `POST /me/cart/items` (same product and plan) | 200 | 404 |
 | DELETE | `/me/cart` | Clear the cart | 204 | — |
 | POST | `/me/cart/validate` | Re-check every item (BR-6). Returns the per-item issues and does not change the cart | 200 | — |
-| POST | `/me/cart/checkout` | Validate again, then: **individual** — create the subscriptions and their invoice, empty the cart, and return the checkout ID (the invoice ID used by `/checkout?invoiceId=…`, REQ-BIL-001.18); **organization member** — create the order for approval (REQ-ORD-001), empty the cart, and return the order ID. Idempotent per cart (BR-10) | 201 | 400, 409 |
+| POST | `/me/cart/checkout` | Validate again, then: **individual** — create the subscriptions and their invoice, empty the cart, and return the checkout ID (the invoice ID used by `/checkout?invoiceId=…`, REQ-BIL-001.18); **organization member** — create one order per item for approval (REQ-ORD-001), empty the cart, and return the order IDs. Idempotent per cart (BR-10) | 201 | 400, 409 |
 
 ## Request / response
 ```json
@@ -50,11 +50,11 @@ Requirement: [REQ-MKT-003](../../02-requirements/FRD/cart-checkout/requirement.m
 
 // POST /me/cart/checkout — individual
 { "kind": "INVOICE", "invoiceId": 9 }
-// POST /me/cart/checkout — organization member
-{ "kind": "ORDER", "orderId": 15 }
+// POST /me/cart/checkout — organization member (one order per item, C59 default)
+{ "kind": "ORDER", "orderIds": [15, 16] }
 ```
 
-Amounts are in the currency's smallest unit, as in [billing-payments.md](billing-payments.md). A cart with items in more than one currency is not specified (it depends on REQ-MKT-003 Open question 1).
+Amounts are in the currency's smallest unit, as in [billing-payments.md](billing-payments.md). Each item also returns `plans` (the product's paid plans, for **Change plan**). A cart with items in more than one currency cannot be checked out (`CURRENCY_MISMATCH`, C59 default).
 
 ## Validation issue codes
 | Code | When (BR-6) | Extra fields |
@@ -63,6 +63,7 @@ Amounts are in the currency's smallest unit, as in [billing-payments.md](billing
 | `PRICE_CHANGED` | Current price ≠ `unitPriceAtAdd` and not yet confirmed | `oldPrice`, `newPrice` |
 | `ALREADY_SUBSCRIBED` | An ACTIVE subscription to the product exists for the caller (or their organization) | — |
 | `MISSING_DEPENDENCY` | A required product is neither owned nor in the cart | `requiredProductId`, `requiredProductName` |
+| `CURRENCY_MISMATCH` | The item's currency differs from the first item's (one invoice has one currency — C59 default) | — |
 
 ## Errors
 Same error body and codes as [billing-payments.md](billing-payments.md#errors), plus:

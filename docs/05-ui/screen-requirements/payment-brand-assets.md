@@ -5,7 +5,7 @@
 | Requirement | [REQ-BIL-001.23](../../02-requirements/FRD/billing-payments/requirement.md); used by [REQ-MKT-003](../../02-requirements/FRD/cart-checkout/requirement.md) |
 | Decision | [C59](../../01-business/roadmap/open-decisions.md#c59) |
 | Used on | [checkout-payment.md](checkout-payment.md) (method tiles, saved cards, "Powered by Razorpay"), [cart.md](cart.md) (trust line), Billing → Payment methods ([billing.md](billing.md)) |
-| Asset folder (Phase 2) | `frontend/src/assets/payment-logos/` with `ATTRIBUTION.md` |
+| Asset folder | `frontend/src/assets/payment-logos/` with `ATTRIBUTION.md`; component `frontend/src/components/payments/PaymentLogos.tsx` picks up `<brand>.svg` / `<brand>-dark.svg` automatically (built 2026-10-01; no files yet, so names show as text labels) |
 
 ## Rules
 1. **Official files only.** Each brand logo comes from that brand's official brand or media kit, or from a maintained open-source payment-icon package whose licence permits commercial use. Never copied or traced from the reference screenshots.

@@ -456,6 +456,26 @@ This replaces the earlier recommendation of no separate cart, where Buy went str
 
 FRD: [REQ-MKT-003 Cart and checkout](../../02-requirements/FRD/cart-checkout/requirement.md) (Draft). Screens: [cart.md](../../05-ui/screen-requirements/cart.md) and the redesigned [checkout-payment.md](../../05-ui/screen-requirements/checkout-payment.md), with logos per [payment-brand-assets.md](../../05-ui/screen-requirements/payment-brand-assets.md).
 
+**Built (2026-10-01, at the product owner's request "start develop the code", before REQ-MKT-003 and the REQ-BIL-001 changes were marked Approved):** the cart (`/cart`, module `cart`, `/me/cart` API, tables `cart` and `cart_item`, migration `V015__cart_checkout.sql`), Buy → cart on every Subscribe button, the top-bar cart badge, and the redesigned checkout. Until the open questions are answered, the build uses these **engineering defaults** (each in one place in code):
+
+| Open question | Default built | Where |
+|---|---|---|
+| REQ-MKT-003 OQ 1 — several products, one invoice | Yes: an individual's cart is billed on **one invoice**, one line per subscription (`invoice_line.subscription_id`; the invoice's own `subscription_id` is the first item's). All items must share a currency (`CURRENCY_MISMATCH` issue otherwise). An organization member's cart becomes **one order per item**, because a REQ-ORD-001 order holds one product | `CartService.checkout`, `InvoiceService.generateForSubscriptions` |
+| OQ 2 — organization admin's own cart | Goes through approval like any member's (existing REQ-ORD-001 rules) | `CartService.checkout` |
+| OQ 3 — cart expiry | None | — |
+| OQ 5 — anonymous add to cart | No anonymous cart; Buy signs the visitor in, then adds the item (`/cart?add=…`) | `useBuy`, `CartPage` |
+| OQ 6 — second Buy, persistence, audit | Replaces the plan; stored on the server; cart changes not audited | `CartService` |
+| OQ 7 — fees line | None | — |
+| OQ 8 — price-change confirmation | Per item (**Confirm new price**) | `CartPage`, `PATCH /me/cart/items/{id}` |
+| Who is an "organization member" | A customer with an ACTIVE organization membership | `CartService.membership` |
+| Default plan for a product-level Buy | The product's Monthly paid plan, else its first paid plan; a product with no paid plan keeps the free-plan flow | `CartPage` |
+| Repeated checkout (BR-10) | A second checkout within 2 minutes of a successful one returns the same invoice or orders; the cart row is locked during checkout | `CartService.checkout` |
+| Tax in the cart | No tax lines (REQ-BIL-002 tax engine not built); "Tax calculated at payment" without billing details | `CartService.toDto` |
+| REQ-BIL-001 OQ 19 — wallet brands | Generic wallet icon | `CheckoutPage` |
+| REQ-BIL-001 OQ 22 — Cart crumb for an invoice paid from Billing | Hidden | `CheckoutPage` `Breadcrumb` |
+| REQ-BIL-001.23 — logo files | No official file obtained yet (brand kits not reachable from the build environment); each brand shows as its name in a text chip until a file and its licence are recorded in `frontend/src/assets/payment-logos/ATTRIBUTION.md` | `PaymentLogos` |
+| Legal links (OQ 12, 20) | Not rendered (URLs unknown); consent text names them without links | `CheckoutPage` |
+
 **Numbering note:** the request for this decision called the earlier billing decisions C46 (Razorpay), C47 (no coupons or usage billing), C48 (tax), C49 (entitlements) and C50 (offline Pay by invoice). In this file they are [C46](#c46), [C50](#c50), [C51](#c51), [C52](#c52) and [C55](#c55). C47–C49 were already used for other records. C50 (offline Pay by invoice) in the request is [C55](#c55) here, and it was already recorded, so it is not recorded again.
 
 **Reason:** one cart lets a customer review several purchases, re-checks them before paying, and gives organization members a single path into the existing order approval.

@@ -114,8 +114,12 @@ public class BillingController {
     }
 
     @PostMapping("/invoices/{invoiceId}/payments")
-    public CreatePaymentResponse createPayment(@AuthenticationPrincipal Jwt jwt, @PathVariable Long invoiceId) {
+    public CreatePaymentResponse createPayment(@AuthenticationPrincipal Jwt jwt, @PathVariable Long invoiceId,
+                                               @Valid @RequestBody(required = false) CreatePaymentRequest request) {
         Customer customer = currentCustomerResolver.resolve(jwt);
+        if (request != null && request.paymentMethodId() != null) {
+            paymentMethodService.requireUsableForPayment(customer.getId(), null, request.paymentMethodId());
+        }
         return paymentService.createPaymentForInvoice(customer.getId(), null, invoiceId);
     }
 

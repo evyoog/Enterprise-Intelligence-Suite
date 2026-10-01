@@ -1,11 +1,11 @@
+import { useBuy } from '../components/cart/useBuy'
 import { useEffect, useMemo, useState } from 'react'
 import {
   ArrowRight, FileText, LifeBuoy, MessageSquare,
   Package, Plug, ShieldCheck, Sparkles, Zap,
 } from 'lucide-react'
-import { Link as RouterLink, useNavigate } from 'react-router-dom'
+import { Link as RouterLink } from 'react-router-dom'
 import { productsApi, type BillingPeriod, type Product } from '../api/productsApi'
-import { useAuth } from '../auth/AuthProvider'
 import { useAuthModal } from '../auth/AuthModalContext'
 import { SiteNavbar } from '../components/layout/SiteNavbar'
 import { accentFor, iconFor } from '../utils/accentColor'
@@ -37,8 +37,6 @@ function planFor(product: Product, period: BillingPeriod) {
  */
 export function HomePage() {
   const authModal = useAuthModal()
-  const auth = useAuth()
-  const navigate = useNavigate()
   const [products, setProducts] = useState<Product[]>([])
   const [yearly, setYearly] = useState(false)
 
@@ -49,14 +47,8 @@ export function HomePage() {
   // C48: same rule everywhere Subscribe appears — straight to this
   // product's checkout when signed in, or a full-page sign-in (with a way
   // back here) when not, never an instant action from this card itself.
-  const handleSubscribeClick = (productId: number) => {
-    const checkoutPath = `/checkout/${productId}`
-    if (!auth.isAuthenticated) {
-      navigate(`/login?returnTo=${encodeURIComponent(checkoutPath)}`)
-      return
-    }
-    navigate(checkoutPath)
-  }
+  const handleSubscribeClick = useBuy()
+
 
   const hasYearlyTier = useMemo(
     () => products.some((p) => p.plans.some((plan) => plan.billingPeriod === 'YEARLY')),

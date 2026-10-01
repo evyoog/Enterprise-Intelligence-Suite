@@ -43,6 +43,6 @@ describe('HomePage', () => {
 
     const subscribeButtons = screen.getAllByRole('button', { name: 'Subscribe' })
     await userEvent.setup().click(subscribeButtons[0])
-    expect(mockNavigate).toHaveBeenCalledWith(`/login?returnTo=${encodeURIComponent('/checkout/1')}`)
+    expect(mockNavigate).toHaveBeenCalledWith(`/login?returnTo=${encodeURIComponent('/cart?add=1')}`)
   })
 })

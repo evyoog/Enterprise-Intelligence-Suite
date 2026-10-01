@@ -127,13 +127,25 @@ public class CheckoutService {
 
         List<CheckoutItemDto> items;
         if (invoice != null) {
-            items = invoice.getLines().stream().map(line -> new CheckoutItemDto(
-                product != null ? product.getId() : null,
-                product != null ? product.getName() : line.getDescription(),
-                product != null ? product.getImageUrl() : null,
-                plan != null ? plan.getName() : null,
-                plan != null ? plan.getBillingPeriod().name() : null,
-                line.getPeriodStart(), line.getPeriodEnd(), line.getAmount(), null)).toList();
+            // C59: each line names its own subscription (a cart invoice
+            // bills several products); older lines fall back to the
+            // invoice's single subscription.
+            items = invoice.getLines().stream().map(line -> {
+                Long lineSubscriptionId = line.getSubscriptionId() != null ? line.getSubscriptionId() : invoice.getSubscriptionId();
+                ProductSubscription lineSubscription = subscription != null && subscription.getId().equals(lineSubscriptionId)
+                    ? subscription : subscriptionRepository.findById(lineSubscriptionId).orElse(null);
+                Product lineProduct = lineSubscription == null ? null
+                    : productRepository.findById(lineSubscription.getProductId()).orElse(null);
+                ProductPlan linePlan = lineSubscription == null || lineSubscription.getPlanId() == null ? null
+                    : productPlanRepository.findById(lineSubscription.getPlanId()).orElse(null);
+                return new CheckoutItemDto(
+                    lineProduct != null ? lineProduct.getId() : null,
+                    lineProduct != null ? lineProduct.getName() : line.getDescription(),
+                    lineProduct != null ? lineProduct.getImageUrl() : null,
+                    linePlan != null ? linePlan.getName() : null,
+                    linePlan != null ? linePlan.getBillingPeriod().name() : null,
+                    line.getPeriodStart(), line.getPeriodEnd(), line.getAmount(), null);
+            }).toList();
         } else if (product != null) {
             items = List.of(new CheckoutItemDto(product.getId(), product.getName(), product.getImageUrl(),
                 plan != null ? plan.getName() : null, plan != null ? plan.getBillingPeriod().name() : null,

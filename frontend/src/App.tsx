@@ -42,6 +42,7 @@ import { AdminPartnersPage } from './pages/admin/AdminPartnersPage'
 import { BillingPage, OrganizationBillingPage } from './pages/BillingPage'
 import { LoginPage } from './pages/LoginPage'
 import { CheckoutPage, LegacyCheckoutRedirect } from './pages/CheckoutPage'
+import { CartPage } from './pages/CartPage'
 import { AdminBillingPage } from './pages/admin/AdminBillingPage'
 import { AdminPaymentGatewayPage } from './pages/admin/AdminPaymentGatewayPage'
 import { AdminBillingSettingsPage } from './pages/admin/AdminBillingSettingsPage'
@@ -139,6 +140,7 @@ function MainApp() {
               customer (RequireAuth is a bookmark/reload safety net — the
               Subscribe button itself already routes signed-out visitors to
               /login first, with ?returnTo back here). */}
+          <Route path="/cart" element={<RequireAuth><CartPage /></RequireAuth>} />
           <Route path="/checkout" element={<RequireAuth><CheckoutPage /></RequireAuth>} />
           <Route path="/checkout/:productId" element={<LegacyCheckoutRedirect />} />
 

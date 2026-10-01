@@ -4,6 +4,7 @@
 |---|---|
 | Requirement | [REQ-MKT-003.1–.9](../../02-requirements/FRD/cart-checkout/requirement.md) |
 | Decision | [C59](../../01-business/roadmap/open-decisions.md#c59) |
+| Built | 2026-10-01 — `frontend/src/pages/CartPage.tsx` (defaults under C59) |
 | Route | `/cart`, inside the signed-in tool frame ([application-layout.md](application-layout.md)) |
 | Entry points | **Buy** / **Subscribe** on any paid plan (catalog, product detail, plan comparison); the cart icon in the top bar; **Edit cart** and the breadcrumb's **Cart** step on the [checkout](checkout-payment.md) |
 | Permissions | Any signed-in user, for their own cart only. Visitors who are not signed in are asked to sign in first (REQ-MKT-003 Open question 5) |

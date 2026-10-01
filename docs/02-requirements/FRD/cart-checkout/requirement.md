@@ -4,6 +4,7 @@
 **BRD:** Not specified
 **Owner:** Product owner
 **Approved by / on:** Not yet approved. The open questions marked **Blocks approval** must be answered first.
+**Built:** 2026-10-01 at the product owner's request, with the engineering defaults recorded under [C59](../../../01-business/roadmap/open-decisions.md#c59). Test cases: [TESTPLAN-MKT-003](../../../../test-cases/functional/cart-checkout/TESTPLAN-MKT-003.md).
 **Decision:** [C59](../../../01-business/roadmap/open-decisions.md#c59) (cart, answer to D17). Related: [C55](../../../01-business/roadmap/open-decisions.md#c55) (checkout, Pay by invoice), [C50](../../../01-business/roadmap/open-decisions.md#c50) (no coupons or promotions), [C51](../../../01-business/roadmap/open-decisions.md#c51) (tax, REQ-BIL-002).
 
 | Field | Value |

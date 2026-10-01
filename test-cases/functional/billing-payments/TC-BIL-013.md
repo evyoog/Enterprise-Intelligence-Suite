@@ -18,10 +18,10 @@ No Razorpay credentials in `config/secrets.env`.
 2. Try to select Card.
 
 ## Expected Result
-Banner "Online payments are not available yet."; Card, UPI and Other online methods are `aria-disabled` and cannot be selected; Pay by invoice can be selected.
+Banner "Online payments are not available yet."; Card, UPI, Netbanking and Wallets are `aria-disabled` and cannot be selected; Pay by invoice can be selected.
 
 ## Automated coverage
-- `frontend/src/pages/CheckoutPage.test.tsx` — "disables online options when the gateway is not configured but keeps Pay by invoice"
+- `frontend/src/pages/CheckoutPage.test.tsx` — "disables the online tiles when the gateway is not configured but keeps Pay by invoice"
 
 ## Actual Result
 The automated tests passed on 2026-10-01.
