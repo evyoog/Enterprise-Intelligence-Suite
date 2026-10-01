@@ -1,3 +1,4 @@
+import { Activity as PHActivity } from 'lucide-react'
 import { useCallback, useEffect, useState, type HTMLAttributes } from 'react'
 import { useTranslation } from 'react-i18next'
 import {
@@ -112,7 +113,7 @@ export function ServiceStatusAdminPage() {
 
   return (
     <Box sx={{ pb: 4 }}>
-      <PageHeader title={t('serviceStatus.admin.title')} subtitle={t('serviceStatus.admin.subtitle')} />
+      <PageHeader icon={PHActivity} accent="emerald" area="operations" title={t('serviceStatus.admin.title')} subtitle={t('serviceStatus.admin.subtitle')} />
       {page && !page.enabled && <Alert severity="info" sx={{ mb: 2 }}>{t('serviceStatus.admin.disabled')}</Alert>}
       {error && <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>}
       {notice && <Alert severity="success" sx={{ mb: 2 }} onClose={() => setNotice(null)}>{notice}</Alert>}

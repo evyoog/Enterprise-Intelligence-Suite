@@ -67,14 +67,24 @@ At most one ENABLED row per (region_id, effective_from) — [BR-2](../../02-requ
 For an OFFLINE payment, `provider` is `OFFLINE` and the Razorpay IDs are null.
 
 ## billing_settings
-Single row, platform-wide (REQ-BIL-001.21). Not secrets — never in the secrets file.
+Single row, platform-wide (REQ-BIL-001.21; extended by [C60](../../01-business/roadmap/open-decisions.md#c60), migration `V016__billing_settings_full.sql`). Not secrets — never in the secrets file (Razorpay keys stay in `config/secrets.env`, BR-SEC-001).
 
 | Attribute | Required | Description |
 |---|---|---|
 | id | Yes | Primary key |
+| business_legal_name, business_trade_name, business_gstin, business_pan, business_cin | Legal name when set | Invoice issuer (C60) |
+| business_address_line1/2, business_city, business_state, business_postal_code, business_country | Line 1, city, state, postal code, country when set | Registered address |
+| business_email, business_phone, business_website | Email when set | Billing contact |
+| invoice_prefix | Yes (default `INV`) | Prefix of new invoice numbers |
+| payment_terms_days | Yes (default 0, 0–365) | Due date = issue date + days |
+| invoice_footer_note | No | Printed on invoices and receipts |
 | offline_account_name, offline_bank_name, offline_account_number | When set | Printed on offline invoices |
-| offline_ifsc, offline_swift_bic | No | Field list to confirm (FRD Open question 11) |
-| updated_at, updated_by | Yes | |
+| offline_branch_name, offline_account_type (CURRENT/SAVINGS), offline_ifsc, offline_micr, offline_swift_bic, offline_iban, offline_upi_id | No | More bank details (C60) |
+| offline_cheque_payable_to, offline_cheque_address, offline_instructions | No | Cheque and instructions (C60) |
+| offline_bank_transfer_enabled, offline_neft_rtgs_enabled, offline_cheque_enabled | Yes (default true) | Accepted offline methods |
+| method_card_enabled, method_upi_enabled, method_netbanking_enabled, method_wallet_enabled, method_pay_by_invoice_enabled | Yes (default true) | Checkout methods |
+| checkout_display_name, checkout_description, checkout_theme_color | No | Razorpay Checkout appearance |
+| updated_at, updated_by_customer_id | Yes | |
 
 ## payment_refund
 id, payment_id, provider_refund_id, amount, reason, status, requested_by, created_at.

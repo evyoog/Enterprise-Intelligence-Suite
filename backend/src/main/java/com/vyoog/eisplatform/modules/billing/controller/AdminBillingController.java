@@ -1,5 +1,11 @@
 package com.vyoog.eisplatform.modules.billing.controller;
 
+import com.vyoog.eisplatform.modules.billing.dto.BusinessProfileDto;
+import com.vyoog.eisplatform.modules.billing.dto.PaymentMethodSettingsDto;
+import com.vyoog.eisplatform.modules.billing.dto.SaveBusinessProfileRequest;
+import com.vyoog.eisplatform.modules.billing.dto.SavePaymentMethodSettingsRequest;
+import com.vyoog.eisplatform.modules.billing.service.BillingSettingsService;
+
 import com.vyoog.eisplatform.modules.billing.dto.GatewayStatusDto;
 import com.vyoog.eisplatform.modules.billing.dto.InvoiceDto;
 import com.vyoog.eisplatform.modules.billing.dto.OfflineBankDetailsDto;
@@ -33,6 +39,7 @@ public class AdminBillingController {
     private final PaymentService paymentService;
     private final GatewayStatusService gatewayStatusService;
     private final OfflinePaymentService offlinePaymentService;
+    private final BillingSettingsService billingSettingsService;
 
     @GetMapping("/invoices")
     public Page<InvoiceDto> invoices(@RequestParam(defaultValue = "0") int page) {
@@ -63,6 +70,31 @@ public class AdminBillingController {
                                                         @Valid @RequestBody SaveOfflineBankDetailsRequest request) {
         Customer admin = currentCustomerResolver.resolve(jwt);
         return offlinePaymentService.saveBankDetails(admin.getId(), request);
+    }
+
+    /** C60: business profile (invoice issuer) and invoicing rules. */
+    @GetMapping("/settings/business")
+    public BusinessProfileDto businessProfile() {
+        return billingSettingsService.businessProfile();
+    }
+
+    @PutMapping("/settings/business")
+    public BusinessProfileDto saveBusinessProfile(@AuthenticationPrincipal Jwt jwt, @Valid @RequestBody SaveBusinessProfileRequest request) {
+        Customer admin = currentCustomerResolver.resolve(jwt);
+        return billingSettingsService.saveBusinessProfile(admin.getId(), request);
+    }
+
+    /** C60: checkout payment methods and Razorpay Checkout appearance (not secrets). */
+    @GetMapping("/settings/payment-methods")
+    public PaymentMethodSettingsDto paymentMethodSettings() {
+        return billingSettingsService.paymentMethods();
+    }
+
+    @PutMapping("/settings/payment-methods")
+    public PaymentMethodSettingsDto savePaymentMethodSettings(@AuthenticationPrincipal Jwt jwt,
+                                                              @Valid @RequestBody SavePaymentMethodSettingsRequest request) {
+        Customer admin = currentCustomerResolver.resolve(jwt);
+        return billingSettingsService.savePaymentMethods(admin.getId(), request);
     }
 
     @GetMapping("/payments")

@@ -1,3 +1,5 @@
+import { Layers as PHLayers } from 'lucide-react'
+import { PageHeader } from '../../components/layout/PageHeader'
 import { useEffect, useState } from 'react'
 import { Box, Button, CircularProgress, Typography } from '@mui/material'
 import { ArrowLeft } from 'lucide-react'
@@ -25,12 +27,8 @@ export function EditPlatformPage() {
         Back to Platform
       </Button>
 
-      <Typography variant="h4" sx={{ fontWeight: 700, mb: 1 }}>
-        Edit platform
-      </Typography>
-      <Typography sx={{ color: 'text.secondary', mb: 4 }}>
-        Update this platform's name, description, or logo.
-      </Typography>
+      <PageHeader icon={PHLayers} accent="indigo" area="catalog" title="Edit platform"
+        subtitle="Update this platform's name, description, or logo." />
 
       {error && <Typography color="error" role="alert">{error}</Typography>}
 

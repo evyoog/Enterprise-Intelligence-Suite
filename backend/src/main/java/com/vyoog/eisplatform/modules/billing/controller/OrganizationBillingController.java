@@ -1,5 +1,8 @@
 package com.vyoog.eisplatform.modules.billing.controller;
 
+import com.vyoog.eisplatform.modules.billing.service.BillingSettingsService;
+import com.vyoog.eisplatform.modules.billing.service.OfflinePaymentService;
+
 import com.vyoog.eisplatform.modules.billing.dto.*;
 import com.vyoog.eisplatform.modules.billing.service.BillingDetailsService;
 import com.vyoog.eisplatform.modules.billing.service.BillingOwnerResolver;
@@ -41,6 +44,8 @@ public class OrganizationBillingController {
     private final PaymentMethodService paymentMethodService;
     private final RazorpayProperties razorpayProperties;
     private final CheckoutService checkoutService;
+    private final BillingSettingsService billingSettingsService;
+    private final OfflinePaymentService offlinePaymentService;
 
     @GetMapping("/overview")
     public BillingOverviewResponse overview(@AuthenticationPrincipal Jwt jwt) {
@@ -115,7 +120,7 @@ public class OrganizationBillingController {
             @AuthenticationPrincipal Jwt jwt, @PathVariable Long invoiceId, @RequestParam String type) {
         Long orgId = ownerResolver.resolveMembership(currentCustomerResolver.resolve(jwt).getId()).getOrganizationId();
         var invoice = invoiceService.resolveOwn(null, orgId, invoiceId);
-        return InvoiceDocuments.render(invoice, type);
+        return InvoiceDocuments.render(invoice, type, billingSettingsService.businessProfile(), offlinePaymentService.bankDetails());
     }
 
     @PostMapping("/invoices/{invoiceId}/payments")
@@ -123,6 +128,9 @@ public class OrganizationBillingController {
                                                @Valid @RequestBody(required = false) CreatePaymentRequest request) {
         Customer customer = currentCustomerResolver.resolve(jwt);
         OrganizationMember member = ownerResolver.requireManageOrganizationBilling(customer.getId());
+        if (request != null) {
+            billingSettingsService.requireOnlineMethodEnabled(request.method());
+        }
         if (request != null && request.paymentMethodId() != null) {
             paymentMethodService.requireUsableForPayment(null, member.getOrganizationId(), request.paymentMethodId());
         }

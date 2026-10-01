@@ -1,3 +1,4 @@
+import { BookOpen as PHBookOpen } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Box, Button, CircularProgress, Paper, TextField, Typography } from '@mui/material'
@@ -33,7 +34,7 @@ export function KnowledgeBasePage() {
 
   return (
     <Box>
-      <PageHeader title={t('knowledgeBase.title')} subtitle={t('knowledgeBase.subtitle')} />
+      <PageHeader icon={PHBookOpen} accent="cyan" area="help" title={t('knowledgeBase.title')} subtitle={t('knowledgeBase.subtitle')} />
       <TextField
         fullWidth
         sx={{ mb: 3 }}

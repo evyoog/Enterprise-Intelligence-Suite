@@ -1,3 +1,4 @@
+import { Search as PHSearch } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Box, Chip, Paper, TextField, Typography } from '@mui/material'
@@ -35,7 +36,7 @@ export function GlobalSearchPage() {
 
   return (
     <Box>
-      <PageHeader title={t('search.title')} />
+      <PageHeader icon={PHSearch} accent="blue" title={t('search.title')} />
       <TextField
         fullWidth
         sx={{ mb: 3 }}

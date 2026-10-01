@@ -1,3 +1,4 @@
+import { UserCheck as PHUserCheck } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Alert, Box, Button, Chip, CircularProgress, IconButton, Tab, Tabs, TextField, Typography } from '@mui/material'
@@ -32,7 +33,7 @@ export function RegistrationsAdminPage() {
 
   return (
     <>
-      <PageHeader
+      <PageHeader icon={PHUserCheck} accent="teal" area="administration"
         title="Registrations"
         subtitle="Every organization and individual that has registered with Vyoog."
         action={(

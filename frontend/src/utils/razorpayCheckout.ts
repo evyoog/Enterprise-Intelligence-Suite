@@ -54,6 +54,8 @@ export async function openRazorpayCheckout(options: {
   /** C55: preselects a method inside Razorpay's window ("card", "upi").
    * Card/UPI details are still entered only there (BR-BIL-001). */
   method?: 'card' | 'upi' | 'netbanking' | 'wallet'
+  /** C60: header colour from Billing settings (default brand blue). */
+  themeColor?: string
 }): Promise<RazorpayResult> {
   await loadCheckoutScript()
   return new Promise((resolve, reject) => {
@@ -72,7 +74,7 @@ export async function openRazorpayCheckout(options: {
         }),
       modal: { ondismiss: () => reject(new Error('cancelled')) },
       ...(options.method ? { prefill: { method: options.method } } : {}),
-      theme: { color: '#4c63ff' },
+      theme: { color: options.themeColor ?? '#4c63ff' },
     })
     checkout.open()
   })

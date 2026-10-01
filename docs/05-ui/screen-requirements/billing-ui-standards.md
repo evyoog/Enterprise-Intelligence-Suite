@@ -3,6 +3,7 @@
 Applies to every screen listed in [billing-payments ui-requirements.md](../../02-requirements/FRD/billing-payments/ui-requirements.md), [tax-rules ui-requirements.md](../../02-requirements/FRD/tax-rules/ui-requirements.md) and [entitlements ui-requirements.md](../../02-requirements/FRD/entitlements/ui-requirements.md). These are presentation requirements only — they add no business rules; where a rule is needed, the feature's own FRD is the source.
 
 ## Brand and theme
+C60 corporate design: page headers with icon, accent and brand stripe; accent-coloured settings sections and status tiles ([ui-ux-redesign.md](../../08-architecture/ui-ux-redesign.md#corporate-multi-colour-design-system-c60-2026-10-01)).
 Use the unified MUI theme from [C45](../../01-business/roadmap/open-decisions.md#c45) (`frontend/src/theme.ts`). Every billing screen supports light and dark mode with no hard-coded colours — all colour comes from theme tokens.
 
 ## Shared components

@@ -18,7 +18,7 @@ Another customer's or organization's record returns a generic **404**. When the 
 | GET | `/me/billing/invoices` | List invoices (`status`, `from`, `to`, `page`) | No |
 | GET | `/me/billing/invoices/{invoiceId}` | Invoice detail with lines and payments | No |
 | GET | `/me/billing/invoices/{invoiceId}/document` | Download document; `type=invoice` (any finalized invoice) or `type=receipt` (PAID only) | No |
-| POST | `/me/billing/invoices/{invoiceId}/payments` | Start a payment: creates a Razorpay order for the invoice total; returns the order ID, amount, currency and the public key ID for Checkout. Optional body ([C59](../../01-business/roadmap/open-decisions.md#c59), REQ-BIL-001.22, Draft): `paymentMethodId` (a saved method of the caller; refused if expired) and `method` (`card`, `upi`, `netbanking`, `wallet`) for the Checkout preselection. No card data is ever accepted (BR-BIL-001) | Yes |
+| POST | `/me/billing/invoices/{invoiceId}/payments` | Start a payment: creates a Razorpay order for the invoice total; returns the order ID, amount, currency and the public key ID for Checkout. Optional body ([C59](../../01-business/roadmap/open-decisions.md#c59), REQ-BIL-001.22, Draft): `paymentMethodId` (a saved method of the caller; refused if expired) and `method` (`card`, `upi`, `netbanking`, `wallet`) for the Checkout preselection; a method switched off in Billing settings is refused with 400 (C60). No card data is ever accepted (BR-BIL-001) | Yes |
 | POST | `/me/billing/payments/{paymentId}/confirm` | Submit the Checkout result (Razorpay order ID, payment ID, signature); backend verifies the signature, then records the payment | Yes |
 | GET | `/me/billing/payments` | Payment history (`status`, `from`, `to`, `page`) | No |
 | GET | `/me/billing/payment-methods` | Saved payment methods (display fields only) | No |
@@ -44,7 +44,11 @@ The existing `POST /me/billing/invoices/{invoiceId}/payments` is used by the Car
 | POST | `/admin/billing/gateway/test` | Test connection | Yes |
 | POST | `/admin/billing/invoices/{invoiceId}/offline-payments` | **Record offline payment** (REQ-BIL-001.20): body `amount`, `receivedOn` (date, not in the future), `method` (`BANK_TRANSFER`, `NEFT_RTGS`, `CHEQUE`), `reference` (required), `note` (optional). Amount must equal the open amount. Marks the invoice PAID, creates a payment with method type OFFLINE, audited | No |
 | GET | `/admin/billing/settings/offline` | Offline bank details (REQ-BIL-001.21) | No |
-| PUT | `/admin/billing/settings/offline` | Save offline bank details: `accountName`, `bankName`, `accountNumber`, `ifsc`, `swiftBic` (field list to confirm, FRD Open question 11) | No |
+| PUT | `/admin/billing/settings/offline` | Save offline payment details: `accountName`*, `bankName`*, `branchName`, `accountNumber`*, `accountType` (CURRENT/SAVINGS), `ifsc`, `micr`, `swiftBic`, `iban`, `upiId`, `chequePayableTo`, `chequeAddress`, `instructions`, `bankTransferEnabled`, `neftRtgsEnabled`, `chequeEnabled` (at least one on) — C60 | No |
+| GET | `/admin/billing/settings/business` | Business profile and invoicing (C60) | No |
+| PUT | `/admin/billing/settings/business` | Save `legalName`*, `tradeName`, `gstin`, `pan`, `cin`, `addressLine1`*, `addressLine2`, `city`*, `state`*, `postalCode`*, `country`*, `email`*, `phone`, `website`, `invoicePrefix`* (2–10 letters/digits), `paymentTermsDays`* (0–365), `invoiceFooterNote` | No |
+| GET | `/admin/billing/settings/payment-methods` | Checkout methods and Razorpay Checkout appearance (C60) | No |
+| PUT | `/admin/billing/settings/payment-methods` | Save `cardEnabled`, `upiEnabled`, `netbankingEnabled`, `walletEnabled`, `payByInvoiceEnabled` (at least one on), `checkoutDisplayName`, `checkoutDescription`, `checkoutThemeColor` (`#RRGGBB`) | No |
 
 ## Webhook endpoint
 | Method | Path | Authentication | Purpose |

@@ -294,7 +294,10 @@ export function CheckoutPage() {
       const order = await api.createPayment(invoice, { method, ...(paymentMethodId ? { paymentMethodId } : {}) })
       const razorpay = await openRazorpayCheckout({
         keyId: order.keyId, orderId: order.providerOrderId, amount: order.amount, currency: order.currency,
-        name: 'eVyoog', description: summary.invoiceNumber ?? '', method,
+        // C60: name, description and colour come from Billing settings when set.
+        name: summary.checkoutName || 'eVyoog',
+        description: summary.checkoutDescription ? `${summary.checkoutDescription} · ${summary.invoiceNumber ?? ''}` : summary.invoiceNumber ?? '',
+        method, themeColor: summary.checkoutThemeColor || undefined,
       })
       const payment = await api.confirmPayment(order.paymentId, razorpay)
       goTo('complete')
@@ -685,7 +688,11 @@ function PaymentStep({
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'))
   const groupRef = useRef<HTMLDivElement>(null)
 
-  const available = OPTIONS.filter((o) => o.key !== 'offline' || summary.payByInvoiceAllowed)
+  // C60: tiles a billing administrator switched off are not shown at all.
+  const offered = (key: OptionKey) => key === 'offline'
+    ? summary.payByInvoiceAllowed
+    : !summary.enabledMethods || summary.enabledMethods.includes(RAZORPAY_METHOD[key])
+  const available = OPTIONS.filter((o) => offered(o.key))
   const enabled = (key: OptionKey) => key === 'offline' ? summary.payByInvoiceAllowed : summary.gatewayConfigured
   const enabledKeys = available.filter((o) => enabled(o.key)).map((o) => o.key)
   const focusKey = option && enabledKeys.includes(option) ? option : enabledKeys[0]

@@ -1,3 +1,4 @@
+import { ShieldCheck as PHShieldCheck } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import {
@@ -142,7 +143,7 @@ export function SecuritySettingsPage() {
   return (
     <Box>
       <Box sx={{ pb: 4 }}>
-        <PageHeader title={t('security.title')} subtitle={t('security.subtitle')} />
+        <PageHeader icon={PHShieldCheck} accent="emerald" area="account" title={t('security.title')} subtitle={t('security.subtitle')} />
 
         {loadError && <Alert severity="error">{loadError}</Alert>}
 

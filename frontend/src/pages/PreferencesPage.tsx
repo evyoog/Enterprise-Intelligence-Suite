@@ -1,3 +1,4 @@
+import { SlidersHorizontal as PHSlidersHorizontal } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import {
   Box, Container, FormControl, FormControlLabel, FormLabel, MenuItem, Paper,
@@ -38,7 +39,7 @@ export function PreferencesPage() {
         disableGutters={inShell}
         sx={inShell ? { pb: 4 } : { pt: '112px', pb: 8 }}
       >
-        <PageHeader title={t('preferences.title')} subtitle={t('preferences.subtitle')} />
+        <PageHeader icon={PHSlidersHorizontal} accent="teal" area="account" title={t('preferences.title')} subtitle={t('preferences.subtitle')} />
 
         <Paper variant="outlined" sx={{ p: 3, mb: 3 }}>
           <Typography variant="h6" component="h2" sx={{ fontWeight: 700, mb: 2 }}>

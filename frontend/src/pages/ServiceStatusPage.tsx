@@ -1,3 +1,4 @@
+import { Activity as PHActivity } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Alert, Box, CircularProgress, Paper, Table, TableBody, TableCell, TableHead, TableRow, Typography } from '@mui/material'
@@ -28,7 +29,7 @@ export function ServiceStatusPage() {
 
   return (
     <Box sx={{ pb: 4 }}>
-      <PageHeader title={t('serviceStatus.title')} subtitle={t('serviceStatus.subtitle')} />
+      <PageHeader icon={PHActivity} accent="emerald" title={t('serviceStatus.title')} subtitle={t('serviceStatus.subtitle')} />
       {error && <Alert severity="error">{error}</Alert>}
       {!error && page === null && <Box sx={{ display: 'flex', justifyContent: 'center', py: 8 }}><CircularProgress size={28} /></Box>}
       {page && !page.enabled && <Alert severity="info">{t('serviceStatus.disabled')}</Alert>}

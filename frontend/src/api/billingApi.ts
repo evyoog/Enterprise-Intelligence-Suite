@@ -46,14 +46,69 @@ export interface CheckoutSummary {
   billingEmail?: string
   gatewayConfigured: boolean
   payByInvoiceAllowed: boolean
+  /** C60: online methods offered (Billing settings), in tile order. */
+  enabledMethods?: CheckoutMethod[]
+  /** C60: Razorpay Checkout appearance from Billing settings. */
+  checkoutName?: string
+  checkoutDescription?: string
+  checkoutThemeColor?: string
 }
 
+export type BankAccountType = 'CURRENT' | 'SAVINGS'
+
+/** C55, extended by C60. Not secrets. */
 export interface OfflineBankDetails {
   accountName?: string
   bankName?: string
+  branchName?: string
   accountNumber?: string
+  accountType?: BankAccountType
   ifsc?: string
   swiftBic?: string
+  iban?: string
+  micr?: string
+  upiId?: string
+  chequePayableTo?: string
+  chequeAddress?: string
+  instructions?: string
+  bankTransferEnabled?: boolean
+  neftRtgsEnabled?: boolean
+  chequeEnabled?: boolean
+  updatedAt?: string
+}
+
+/** C60: the invoice issuer and invoicing rules. */
+export interface BusinessProfile {
+  legalName?: string
+  tradeName?: string
+  gstin?: string
+  pan?: string
+  cin?: string
+  addressLine1?: string
+  addressLine2?: string
+  city?: string
+  state?: string
+  postalCode?: string
+  country?: string
+  email?: string
+  phone?: string
+  website?: string
+  invoicePrefix: string
+  paymentTermsDays: number
+  invoiceFooterNote?: string
+  updatedAt?: string
+}
+
+/** C60: payment methods offered at checkout and Razorpay Checkout appearance. */
+export interface PaymentMethodSettings {
+  cardEnabled: boolean
+  upiEnabled: boolean
+  netbankingEnabled: boolean
+  walletEnabled: boolean
+  payByInvoiceEnabled: boolean
+  checkoutDisplayName?: string
+  checkoutDescription?: string
+  checkoutThemeColor?: string
   updatedAt?: string
 }
 
@@ -262,8 +317,14 @@ export const adminBillingApi = {
     amount: number; receivedOn: string; method: OfflinePaymentMethod; reference: string; note?: string
   }) => apiRequest<Invoice>(`/admin/billing/invoices/${invoiceId}/offline-payments`, { method: 'POST', body: JSON.stringify(body) }),
   offlineBankDetails: () => apiRequest<OfflineBankDetails>('/admin/billing/settings/offline'),
-  saveOfflineBankDetails: (body: { accountName: string; bankName: string; accountNumber: string; ifsc?: string; swiftBic?: string }) =>
+  saveOfflineBankDetails: (body: Omit<OfflineBankDetails, 'updatedAt'>) =>
     apiRequest<OfflineBankDetails>('/admin/billing/settings/offline', { method: 'PUT', body: JSON.stringify(body) }),
+  businessProfile: () => apiRequest<BusinessProfile>('/admin/billing/settings/business'),
+  saveBusinessProfile: (body: Omit<BusinessProfile, 'updatedAt'>) =>
+    apiRequest<BusinessProfile>('/admin/billing/settings/business', { method: 'PUT', body: JSON.stringify(body) }),
+  paymentMethodSettings: () => apiRequest<PaymentMethodSettings>('/admin/billing/settings/payment-methods'),
+  savePaymentMethodSettings: (body: Omit<PaymentMethodSettings, 'updatedAt'>) =>
+    apiRequest<PaymentMethodSettings>('/admin/billing/settings/payment-methods', { method: 'PUT', body: JSON.stringify(body) }),
   reconcile: (paymentId: number) => apiRequest<Payment>(`/admin/billing/payments/${paymentId}/reconcile`, { method: 'POST' }),
   gatewayStatus: () => apiRequest<GatewayStatus>('/admin/billing/gateway'),
   testGateway: () => apiRequest<void>('/admin/billing/gateway/test', { method: 'POST' }),

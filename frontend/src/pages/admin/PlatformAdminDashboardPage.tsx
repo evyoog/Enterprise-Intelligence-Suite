@@ -1,3 +1,4 @@
+import { LayoutDashboard as PHLayoutDashboard } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { Alert, Box, Button, Chip, CircularProgress, Grid, Paper, Typography, useTheme } from '@mui/material'
 import { ArrowDownRight, ArrowUpRight } from 'lucide-react'
@@ -89,7 +90,7 @@ export function PlatformAdminDashboardPage() {
 
   return (
     <Box>
-      <PageHeader title="Platform dashboard" subtitle="Platform-wide overview, real time" />
+      <PageHeader icon={PHLayoutDashboard} accent="violet" area="administration" title="Platform dashboard" subtitle="Platform-wide overview, real time" />
 
       <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap', mt: 2 }}>
         <StatTile

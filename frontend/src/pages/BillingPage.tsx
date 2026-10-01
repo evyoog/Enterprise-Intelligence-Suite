@@ -1,3 +1,4 @@
+import { Wallet as PHWallet } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useNavigate } from 'react-router-dom'
@@ -43,7 +44,7 @@ function BillingScreen({ api }: { api: BillingScope }) {
 
   return (
     <>
-      <PageHeader title={t('billing.title')} subtitle={t('billing.subtitle')} />
+      <PageHeader icon={PHWallet} accent="blue" title={t('billing.title')} subtitle={t('billing.subtitle')} />
       {overview && !overview.gatewayConfigured && (
         <Alert severity="info" sx={{ mb: 2 }}>{t('billing.gateway.notConfigured')}</Alert>
       )}

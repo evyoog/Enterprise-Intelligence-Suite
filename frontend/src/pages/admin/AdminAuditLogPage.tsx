@@ -1,3 +1,4 @@
+import { ScrollText as PHScrollText } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import {
   Box, Chip, CircularProgress, MenuItem, Pagination, Paper, Select, Table,
@@ -38,7 +39,7 @@ export function AdminAuditLogPage() {
 
   return (
     <>
-      <PageHeader title="Audit Log" subtitle="Every security and administrative event recorded across the platform." />
+      <PageHeader icon={PHScrollText} accent="cyan" area="compliance" title="Audit Log" subtitle="Every security and administrative event recorded across the platform." />
 
       <Select
         size="small"

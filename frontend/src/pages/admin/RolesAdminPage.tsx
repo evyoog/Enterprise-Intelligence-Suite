@@ -1,3 +1,4 @@
+import { UserCog as PHUserCog } from 'lucide-react'
 import { useCallback, useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import {
@@ -98,7 +99,7 @@ export function RolesAdminPage() {
 
   return (
     <>
-      <PageHeader
+      <PageHeader icon={PHUserCog} accent="violet" area="accessControl"
         title={t('adminRbac.rolesTitle')}
         subtitle={t('adminRbac.rolesSubtitle')}
         action={<Button variant="contained" onClick={() => open('new')}>{t('adminRbac.newRole')}</Button>}

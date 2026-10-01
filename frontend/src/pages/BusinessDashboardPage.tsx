@@ -1,3 +1,4 @@
+import { LayoutDashboard as PHLayoutDashboard } from 'lucide-react'
 import { useEffect, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import {
@@ -154,7 +155,7 @@ export function BusinessDashboardPage() {
 
         {dashboard && (
           <>
-            <PageHeader
+            <PageHeader icon={PHLayoutDashboard} accent="violet" area="organization"
               title={dashboard.organization.name}
               subtitle="Business dashboard"
               action={<Button variant="outlined" onClick={() => navigate('/organization/identity-federation')}>Identity Federation</Button>}

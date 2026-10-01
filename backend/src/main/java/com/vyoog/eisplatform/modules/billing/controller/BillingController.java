@@ -1,5 +1,8 @@
 package com.vyoog.eisplatform.modules.billing.controller;
 
+import com.vyoog.eisplatform.modules.billing.service.BillingSettingsService;
+import com.vyoog.eisplatform.modules.billing.service.OfflinePaymentService;
+
 import com.vyoog.eisplatform.modules.billing.dto.*;
 import com.vyoog.eisplatform.modules.billing.service.BillingDetailsService;
 import com.vyoog.eisplatform.modules.billing.service.CheckoutService;
@@ -42,6 +45,8 @@ public class BillingController {
     private final PaymentMethodService paymentMethodService;
     private final RazorpayProperties razorpayProperties;
     private final CheckoutService checkoutService;
+    private final BillingSettingsService billingSettingsService;
+    private final OfflinePaymentService offlinePaymentService;
 
     @GetMapping("/overview")
     public BillingOverviewResponse overview(@AuthenticationPrincipal Jwt jwt) {
@@ -110,13 +115,16 @@ public class BillingController {
             @AuthenticationPrincipal Jwt jwt, @PathVariable Long invoiceId, @RequestParam String type) {
         Customer customer = currentCustomerResolver.resolve(jwt);
         var invoice = invoiceService.resolveOwn(customer.getId(), null, invoiceId);
-        return InvoiceDocuments.render(invoice, type);
+        return InvoiceDocuments.render(invoice, type, billingSettingsService.businessProfile(), offlinePaymentService.bankDetails());
     }
 
     @PostMapping("/invoices/{invoiceId}/payments")
     public CreatePaymentResponse createPayment(@AuthenticationPrincipal Jwt jwt, @PathVariable Long invoiceId,
                                                @Valid @RequestBody(required = false) CreatePaymentRequest request) {
         Customer customer = currentCustomerResolver.resolve(jwt);
+        if (request != null) {
+            billingSettingsService.requireOnlineMethodEnabled(request.method());
+        }
         if (request != null && request.paymentMethodId() != null) {
             paymentMethodService.requireUsableForPayment(customer.getId(), null, request.paymentMethodId());
         }

@@ -1,3 +1,4 @@
+import { LifeBuoy as PHLifeBuoy } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Alert, Box, Button, Chip, Paper, TextField, Typography } from '@mui/material'
@@ -42,7 +43,7 @@ export function MyTicketsPage() {
 
   return (
     <Box>
-      <PageHeader title={t('support.myTickets.title')} subtitle={t('support.myTickets.subtitle')} />
+      <PageHeader icon={PHLifeBuoy} accent="rose" area="support" title={t('support.myTickets.title')} subtitle={t('support.myTickets.subtitle')} />
       {loadError && <Alert severity="error" sx={{ mb: 2 }}>{loadError}</Alert>}
 
       <Paper variant="outlined" sx={{ p: 2.5, mb: 3 }}>

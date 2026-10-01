@@ -1,3 +1,5 @@
+import { LayoutGrid as PHLayoutGrid } from 'lucide-react'
+import { PageHeader } from '../../components/layout/PageHeader'
 import { useState } from 'react'
 import { Box, Button, Dialog, DialogContent, DialogTitle, IconButton, Paper, Typography } from '@mui/material'
 import { Plus, X } from 'lucide-react'
@@ -53,17 +55,12 @@ export function AdminProductsPage() {
 
   return (
     <>
-      <Box sx={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 2, mb: 0.5 }}>
-        <Typography variant="h4" sx={{ fontWeight: 700 }}>
-          All Apps
-        </Typography>
-        <Button variant="contained" startIcon={<Plus size={16} />} onClick={() => setCreateOpen(true)}>
-          Add App
-        </Button>
-      </Box>
-      <Typography sx={{ color: 'text.secondary', mb: 3 }}>
-        Every app across every platform.
-      </Typography>
+      <PageHeader icon={PHLayoutGrid} accent="blue" area="catalog" title="All Apps" subtitle="Every app across every platform."
+        action={(
+          <Button variant="contained" startIcon={<Plus size={16} />} onClick={() => setCreateOpen(true)}>
+            Add App
+          </Button>
+        )} />
 
       <Box sx={{ display: 'flex', gap: 2, mb: 4, flexWrap: 'wrap' }}>
         <StatTile label="Total apps" value={products?.length ?? 0} color="text.primary" />

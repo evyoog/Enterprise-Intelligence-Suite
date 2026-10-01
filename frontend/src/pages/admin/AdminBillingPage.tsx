@@ -1,3 +1,4 @@
+import { CreditCard as PHCreditCard } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import {
@@ -28,7 +29,7 @@ export function AdminBillingPage() {
 
   return (
     <>
-      <PageHeader title={t('admin.billing.title')} subtitle={t('admin.billing.subtitle')} />
+      <PageHeader icon={PHCreditCard} accent="blue" title={t('admin.billing.title')} subtitle={t('admin.billing.subtitle')} />
       <Tabs value={tab} onChange={(_, v) => setTab(v)} sx={{ mb: 3, borderBottom: '1px solid', borderColor: 'divider' }}>
         <Tab value="invoices" label={t('billing.tabs.invoices')} />
         <Tab value="payments" label={t('billing.tabs.history')} />
@@ -96,6 +97,7 @@ function InvoicesTab() {
 }
 
 const OFFLINE_METHODS: OfflinePaymentMethod[] = ['BANK_TRANSFER', 'NEFT_RTGS', 'CHEQUE']
+const METHOD_FLAG = { BANK_TRANSFER: 'bankTransferEnabled', NEFT_RTGS: 'neftRtgsEnabled', CHEQUE: 'chequeEnabled' } as const
 
 function todayIso() {
   const d = new Date()
@@ -117,6 +119,13 @@ export function RecordOfflinePaymentDialog({ invoice, onClose, onDone }: {
   const [confirming, setConfirming] = useState(false)
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  // C60: only the offline methods accepted in Billing settings can be recorded.
+  const [accepted, setAccepted] = useState<OfflinePaymentMethod[]>(OFFLINE_METHODS)
+  useEffect(() => {
+    adminBillingApi.offlineBankDetails()
+      .then((d) => setAccepted(OFFLINE_METHODS.filter((m) => d[METHOD_FLAG[m]] !== false)))
+      .catch(() => {})
+  }, [])
 
   const amountMinor = Math.round(parseFloat(amount || '0') * 100)
   const errors = {
@@ -160,7 +169,7 @@ export function RecordOfflinePaymentDialog({ invoice, onClose, onDone }: {
               slotProps={{ inputLabel: { shrink: true }, htmlInput: { max: todayIso() } }} />
             <TextField select label={t('admin.billing.offline.method')} value={method} required
               onChange={(e) => setMethod(e.target.value as OfflinePaymentMethod)} error={Boolean(shown('method'))} helperText={shown('method')}>
-              {OFFLINE_METHODS.map((m) => <MenuItem key={m} value={m}>{t(`admin.billing.offline.methods.${m}`)}</MenuItem>)}
+              {accepted.map((m) => <MenuItem key={m} value={m}>{t(`admin.billing.offline.methods.${m}`)}</MenuItem>)}
             </TextField>
             <TextField label={t('admin.billing.offline.reference')} value={reference} required
               onChange={(e) => setReference(e.target.value)} error={Boolean(shown('reference'))} helperText={shown('reference')}

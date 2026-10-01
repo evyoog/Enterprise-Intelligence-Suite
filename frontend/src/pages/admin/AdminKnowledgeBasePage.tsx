@@ -1,3 +1,4 @@
+import { BookOpen as PHBookOpen } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import {
@@ -72,7 +73,7 @@ export function AdminKnowledgeBasePage() {
 
   return (
     <Box>
-      <PageHeader
+      <PageHeader icon={PHBookOpen} accent="cyan" area="content"
         title={t('knowledgeBase.admin.title')}
         action={<Button variant="contained" onClick={openNew}>{t('knowledgeBase.admin.newArticle')}</Button>}
       />

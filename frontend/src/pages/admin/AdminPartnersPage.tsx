@@ -1,3 +1,4 @@
+import { Handshake as PHHandshake } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Alert, Box, Chip, Paper, Typography } from '@mui/material'
@@ -28,7 +29,7 @@ export function AdminPartnersPage() {
 
   return (
     <Box>
-      <PageHeader title={t('partners.admin.title')} />
+      <PageHeader icon={PHHandshake} accent="pink" area="partners" title={t('partners.admin.title')} />
       {loadError && <Alert severity="error" sx={{ mb: 2 }}>{loadError}</Alert>}
 
       <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
