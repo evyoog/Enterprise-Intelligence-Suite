@@ -363,7 +363,8 @@
       "partners": "Socios",
       "billing": "Facturación",
       "billingInvoicesPayments": "Facturas y pagos",
-      "paymentGateway": "Pasarela de pago"
+      "paymentGateway": "Pasarela de pago",
+      "billingSettings": "Configuración de facturación"
     },
     "catalogTitle": "Catálogo de productos",
     "catalogSubtitle": "Busque y filtre los productos disponibles en la plataforma."
@@ -818,7 +819,35 @@
         "refundable": "Reembolsable hasta {{amount}}",
         "confirm": "Reembolsar"
       },
-      "reconcile": "Reconciliar"
+      "reconcile": "Reconciliar",
+      "offline": {
+        "action": "Registrar pago sin conexión",
+        "title": "Registrar pago sin conexión",
+        "amount": "Importe recibido",
+        "amountHelp": "Debe ser igual al total de la factura ({{amount}}).",
+        "amountMismatch": "El importe debe ser igual al total de la factura.",
+        "date": "Fecha de recepción",
+        "dateFuture": "La fecha no puede ser futura.",
+        "method": "Método",
+        "methods": {
+          "BANK_TRANSFER": "Transferencia bancaria",
+          "NEFT_RTGS": "NEFT/RTGS",
+          "CHEQUE": "Cheque"
+        },
+        "reference": "Número de referencia",
+        "note": "Nota (opcional)",
+        "tooLong": "Este valor es demasiado largo.",
+        "required": "Este campo es obligatorio.",
+        "submit": "Registrar pago",
+        "confirm": "¿Marcar la factura {{number}} como pagada?",
+        "confirmAction": "Marcar como pagada",
+        "recorded": "Pago sin conexión registrado. La factura {{number}} está pagada.",
+        "route": "Ruta"
+      },
+      "routes": {
+        "ONLINE": "En línea",
+        "OFFLINE": "Sin conexión"
+      }
     },
     "paymentGateway": {
       "title": "Pasarela de pago",
@@ -843,28 +872,170 @@
       "connected": "Conectado.",
       "testFailed": "No se pudo conectar con Razorpay.",
       "notConfiguredGuidance": "Agregue las credenciales de Razorpay al archivo común de secretos y reinicie el backend."
+    },
+    "billingSettings": {
+      "title": "Configuración de facturación",
+      "subtitle": "Datos bancarios impresos en las facturas sin conexión y mostrados a los clientes que eligen Pagar con factura.",
+      "bankTitle": "Datos bancarios para pagos sin conexión",
+      "accountName": "Titular de la cuenta",
+      "bankName": "Banco",
+      "accountNumber": "Número de cuenta",
+      "ifsc": "IFSC",
+      "swift": "SWIFT / BIC",
+      "save": "Guardar",
+      "cancel": "Cancelar",
+      "saved": "Datos bancarios guardados.",
+      "empty": "Aún no hay datos bancarios. Las facturas sin conexión dirán 'Los datos bancarios estarán en tu factura.' hasta que los añadas.",
+      "unsaved": "Tienes cambios sin guardar.",
+      "lastUpdated": "Última actualización {{date}}",
+      "retry": "Reintentar",
+      "required": "Este campo es obligatorio.",
+      "tooLong": "Máximo {{max}} caracteres.",
+      "ifscLength": "El IFSC debe tener 11 caracteres.",
+      "swiftLength": "El SWIFT / BIC debe tener 8 u 11 caracteres.",
+      "loadError": "No se pudieron cargar los datos bancarios."
     }
   },
   "checkout": {
     "title": "Pago",
+    "stepperLabel": "Progreso del pago",
     "steps": {
       "details": "Datos de facturación",
       "payment": "Pago",
-      "done": "Listo"
+      "complete": "Completado"
     },
-    "billingDetails": "Confirme sus datos de facturación",
-    "saveAndContinue": "Guardar y continuar",
-    "continueToPayment": "Continuar al pago",
-    "free": "Gratis",
-    "payTitle": "Detalles del pago",
-    "payNow": "Pagar {{amount}}",
-    "gatewayUnavailable": "Su suscripción está activa. Los pagos en línea aún no están disponibles — le facturaremos cuando lo estén.",
-    "viewInBilling": "Ver en Facturación",
-    "paidTitle": "Pago recibido — todo listo.",
-    "freeTitle": "Se ha suscrito.",
-    "goToMyProducts": "Ir a Mis productos",
-    "loadError": "No se pudo cargar este producto.",
-    "paymentCancelled": "El pago fue cancelado. Puede intentarlo de nuevo.",
-    "paymentFailed": "El pago falló. Inténtelo de nuevo."
+    "details": {
+      "title": "Datos de facturación",
+      "name": "Nombre completo o empresa",
+      "email": "Correo de facturación",
+      "address1": "Dirección línea 1",
+      "address2": "Dirección línea 2 (opcional)",
+      "city": "Ciudad",
+      "state": "Estado / región",
+      "postalCode": "Código postal",
+      "country": "País",
+      "taxId": "NIF / ID fiscal (opcional)",
+      "edit": "Editar",
+      "continue": "Continuar al pago",
+      "back": "Atrás",
+      "required": "Este campo es obligatorio.",
+      "invalidEmail": "Introduce un correo válido.",
+      "tooLong": "Este valor es demasiado largo."
+    },
+    "payment": {
+      "title": "Método de pago",
+      "subtitle": "Elige cómo quieres pagar.",
+      "noOptions": "No hay opciones de pago disponibles ahora. Contacta con soporte."
+    },
+    "option": {
+      "card": {
+        "title": "Tarjeta",
+        "description": "Tarjeta de crédito o débito"
+      },
+      "upi": {
+        "title": "UPI",
+        "description": "Paga con cualquier app UPI"
+      },
+      "other": {
+        "title": "Otros métodos en línea",
+        "description": "Banca en línea, monederos y más"
+      },
+      "offline": {
+        "title": "Pagar con factura",
+        "description": "Transferencia bancaria, NEFT/RTGS o cheque"
+      }
+    },
+    "card": {
+      "lead": "Introducirás los datos de tu tarjeta en la ventana de pago segura después de pulsar Pagar.",
+      "number": "Número de tarjeta",
+      "name": "Nombre en la tarjeta",
+      "expiry": "Caducidad (MM/AA)",
+      "cvv": "CVV",
+      "cvvHelp": "El código de 3 o 4 dígitos del reverso de tu tarjeta.",
+      "secureNote": "Los datos de la tarjeta los gestiona nuestro proveedor de pagos y eVyoog nunca los almacena.",
+      "save": "Guardar esta tarjeta en el proveedor de pagos para futuros pagos"
+    },
+    "upi": {
+      "note": "Completarás el pago UPI en la ventana de pago segura."
+    },
+    "other": {
+      "note": "Elegirás banca en línea, un monedero u otro método en la ventana de pago segura."
+    },
+    "offline": {
+      "terms": "Emitiremos una factura con nuestros datos bancarios. Tu suscripción se activa como siempre; paga antes de la fecha de vencimiento.",
+      "emailTo": "La factura se enviará a {{email}}."
+    },
+    "pay": "Pagar {{amount}}",
+    "generateInvoice": "Generar factura",
+    "consent": "Acepto los Términos del servicio y la Política de privacidad.",
+    "genericError": "Algo salió mal. Inténtalo de nuevo.",
+    "loadError": "No se pudo cargar tu pedido.",
+    "summary": {
+      "title": "Resumen del pedido",
+      "subtotal": "Subtotal",
+      "noTax": "Impuestos: ninguno para esta región",
+      "total": "Total",
+      "trust": "Pago seguro. Los datos de la tarjeta nunca pasan por los servidores de eVyoog.",
+      "qty": "Cant. {{qty}}",
+      "toggle": "Mostrar resumen del pedido ({{total}})"
+    },
+    "period": {
+      "MONTHLY": "Mensual",
+      "YEARLY": "Anual"
+    },
+    "result": {
+      "success": {
+        "title": "Pago realizado"
+      },
+      "pending": {
+        "title": "Confirmando tu pago…",
+        "slow": "Está tardando más de lo habitual. Puedes salir de esta página; actualizaremos tu facturación cuando se confirme el pago."
+      },
+      "failed": {
+        "title": "El pago ha fallado"
+      },
+      "cancelled": "El pago se canceló.",
+      "stillOpen": "Tu factura sigue abierta. No se ha cobrado nada.",
+      "tryAgain": "Reintentar",
+      "chooseAnother": "Elegir otro método",
+      "free": {
+        "title": "Ya estás suscrito"
+      },
+      "offline": {
+        "title": "Factura generada",
+        "bankTitle": "Paga a esta cuenta bancaria",
+        "noBank": "Los datos bancarios aún no están disponibles. Nuestro equipo te enviará las instrucciones de pago.",
+        "quote": "Indica el número de factura {{number}} como referencia del pago.",
+        "emailed": "Hemos enviado la factura a {{email}}.",
+        "subscriptionStatus": "Estado de la suscripción: {{status}}"
+      },
+      "invoiceNumber": "Número de factura",
+      "amountPaid": "Importe pagado",
+      "method": "Método",
+      "date": "Fecha",
+      "total": "Total",
+      "dueDate": "Fecha de vencimiento"
+    },
+    "bank": {
+      "accountName": "Titular de la cuenta",
+      "bankName": "Banco",
+      "accountNumber": "Número de cuenta",
+      "ifsc": "IFSC",
+      "swift": "SWIFT / BIC",
+      "copy": "Copiar",
+      "copied": "Copiado",
+      "copyField": "Copiar {{field}}"
+    },
+    "actions": {
+      "downloadReceipt": "Descargar recibo",
+      "downloadInvoice": "Descargar factura",
+      "goToMyProducts": "Ir a Mis productos",
+      "viewBilling": "Ver facturación"
+    },
+    "toast": {
+      "paid": "Pago recibido.",
+      "invoiceGenerated": "Factura generada.",
+      "failed": "El pago no se completó."
+    }
   }
 }

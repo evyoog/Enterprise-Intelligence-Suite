@@ -250,12 +250,12 @@ public class InvoiceService {
             : null;
         return new InvoiceDto(invoice.getId(), invoice.getInvoiceNumber(), invoice.getStatus(), invoice.getCurrency(),
             invoice.getSubtotal(), invoice.getTaxAmount(), invoice.getTotal(), invoice.getPeriodStart(), invoice.getPeriodEnd(),
-            invoice.getIssuedAt(), invoice.getDueAt(), invoice.getBillToSnapshot(), ownerLabel, lines, payments);
+            invoice.getIssuedAt(), invoice.getDueAt(), invoice.getBillToSnapshot(), invoice.getPaymentRoute(), ownerLabel, lines, payments);
     }
 
     private com.vyoog.eisplatform.modules.billing.dto.PaymentDto toBarePaymentDto(com.vyoog.eisplatform.modules.billing.model.Payment p) {
         return new com.vyoog.eisplatform.modules.billing.dto.PaymentDto(p.getId(), p.getInvoiceId(), null, null, p.getStatus(),
             p.getCurrency(), p.getAmount(), p.getRefundedAmount(), p.getMethodType(), p.getMethodNetwork(), p.getMethodLast4(),
-            p.getProviderPaymentId(), p.getFailureReason(), p.getCreatedAt(), p.getCapturedAt(), null, null);
+            p.getProviderPaymentId(), p.getFailureReason(), p.getCreatedAt(), p.getCapturedAt(), null, null, p.getOfflineReference());
     }
 }

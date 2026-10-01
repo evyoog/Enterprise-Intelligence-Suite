@@ -1,5 +1,7 @@
 # Screen: Pay invoice (dialog and result states)
 
+> **Superseded ([C55](../../01-business/roadmap/open-decisions.md#c55), built 2026-10-01):** **Pay** on an OPEN invoice now opens the [Checkout payment](checkout-payment.md) screen (`/checkout?invoiceId=…`); this dialog was removed. Kept as the record of the earlier behaviour.
+
 | Field | Value |
 |---|---|
 | Requirement | [REQ-BIL-001.5–.7](../../02-requirements/FRD/billing-payments/requirement.md) |

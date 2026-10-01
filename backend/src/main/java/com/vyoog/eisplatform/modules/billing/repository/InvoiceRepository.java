@@ -27,6 +27,9 @@ public interface InvoiceRepository extends JpaRepository<Invoice, Long> {
      * just without a single owner to scope the query by. */
     List<Invoice> findByStatusIn(List<InvoiceStatus> statuses);
 
+    /** C55: the checkout's invoice for a subscription, newest first. */
+    List<Invoice> findBySubscriptionIdOrderByIssuedAtDescIdDesc(Long subscriptionId);
+
     /** Demo data seeding (C54, {@code DemoDataSeeder}) only: backdates a
      * freshly-generated invoice's issue/due date into a past period, by a
      * bulk update that bypasses the {@code @CreatedDate} auditing listener

@@ -26,6 +26,10 @@ Another customer's or organization's record returns a generic **404**. When the 
 | POST | `/me/billing/payment-methods/setup/confirm` | Submit the Razorpay result; backend verifies it, then stores the token reference and display fields | Yes |
 | POST | `/me/billing/payment-methods/{methodId}/default` | Set as default (refused for expired cards) | No |
 | DELETE | `/me/billing/payment-methods/{methodId}` | Remove; also deletes the token at Razorpay | Yes |
+| GET | `/me/billing/checkout?subscriptionId=…` or `?invoiceId=…` | **Checkout summary** (REQ-BIL-001.18, C55): items (product, plan, billing period, term dates, amount; quantity only if one exists), subtotal, tax lines from REQ-BIL-002 (name, rate, amount), total, currency, the invoice it pays, available payment options, `gatewayConfigured`, `payByInvoiceAllowed` (rule: FRD Open question 9) | No |
+| POST | `/me/billing/invoices/{invoiceId}/offline` | **Choose Pay by invoice** (REQ-BIL-001.19): sets the invoice route to OFFLINE, keeps it OPEN, sends the invoice email to the billing email; returns invoice number, due date (rule Not specified), bank details (REQ-BIL-001.21; empty if not set yet) and the document download link. Refused with 403 if the caller may not use Pay by invoice | No |
+
+The existing `POST /me/billing/invoices/{invoiceId}/payments` is used by the Card, UPI and Other online options; its response tells the UI which Razorpay method to preselect (body field `method`: `card`, `upi` or `other`). No request to EIS ever carries a card number, expiry or CVV ([BR-BIL-001](../../03-business-rules/BR-BIL-001-no-raw-card-data.md)).
 
 ## Admin endpoints (`MANAGE_BILLING`)
 | Method | Path | Purpose | Razorpay needed |
@@ -38,6 +42,9 @@ Another customer's or organization's record returns a generic **404**. When the 
 | POST | `/admin/billing/payments/{paymentId}/reconcile` | Fetch current status from Razorpay and update | Yes |
 | GET | `/admin/billing/gateway` | Gateway status (never returns secrets; key ID masked) | No |
 | POST | `/admin/billing/gateway/test` | Test connection | Yes |
+| POST | `/admin/billing/invoices/{invoiceId}/offline-payments` | **Record offline payment** (REQ-BIL-001.20): body `amount`, `receivedOn` (date, not in the future), `method` (`BANK_TRANSFER`, `NEFT_RTGS`, `CHEQUE`), `reference` (required), `note` (optional). Amount must equal the open amount. Marks the invoice PAID, creates a payment with method type OFFLINE, audited | No |
+| GET | `/admin/billing/settings/offline` | Offline bank details (REQ-BIL-001.21) | No |
+| PUT | `/admin/billing/settings/offline` | Save offline bank details: `accountName`, `bankName`, `accountNumber`, `ifsc`, `swiftBic` (field list to confirm, FRD Open question 11) | No |
 
 ## Webhook endpoint
 | Method | Path | Authentication | Purpose |
@@ -51,7 +58,9 @@ Security configuration must allow this path without a user token; every other bi
 |---|---|---|
 | 400 | `VALIDATION_ERROR` | Invalid fields (billing details, refund amount, missing consent) |
 | 404 | `NOT_FOUND` | Not the caller's record, or does not exist |
-| 409 | `INVALID_STATE` | Paying a non-OPEN invoice; refunding more than refundable; defaulting an expired card |
+| 409 | `INVALID_STATE` | Paying a non-OPEN invoice; refunding more than refundable; defaulting an expired card; recording an offline payment on a non-OPEN invoice |
+| 400 | `VALIDATION_ERROR` | Offline payment amount not equal to the open amount, date in the future, missing reference |
+| 403 | `PAY_BY_INVOICE_NOT_ALLOWED` | Caller may not use Pay by invoice (FRD Open question 9) |
 | 400 | `SIGNATURE_INVALID` | Checkout or setup result fails signature verification |
 | 503 | `PAYMENT_GATEWAY_NOT_CONFIGURED` | Razorpay credentials missing |
 | 502 | `PAYMENT_GATEWAY_ERROR` | Razorpay returned an error (its message is passed through) |

@@ -4,7 +4,7 @@
 |---|---|
 | Requirement | [REQ-BIL-001.9, .12](../../02-requirements/FRD/billing-payments/requirement.md) |
 | Route | `/admin/billing` |
-| Sidebar | Admin → **Billing** (children: Invoices & payments, Payment gateway, [Tax](admin-tax-rules.md)) |
+| Sidebar | Admin → **Billing** (children: Invoices & payments, Payment gateway, [Tax](admin-tax-rules.md), [Billing settings](admin-billing-settings.md)) |
 | Permissions | `MANAGE_BILLING` (platform ADMIN). Others: route hidden; API returns 403 |
 | Layout | One screen, two tabs |
 
@@ -32,6 +32,19 @@ Actions:
 
   The dialog shows "Refundable: {refundable} of {captured}" and a live preview of the resulting payment status (CAPTURED → PARTIALLY_REFUNDED or REFUNDED) as the amount is typed. Buttons: **Refund {amount}** (confirmation: "Refund {amount} to the customer? This cannot be undone."), **Cancel**.
 - **Reconcile** fetches the payment's current status from Razorpay and shows what changed.
+
+## Record offline payment (dialog) — REQ-BIL-001.20, [C55](../../01-business/roadmap/open-decisions.md#c55)
+On an OPEN invoice whose route is **OFFLINE**, the invoice detail shows **Record offline payment**. It is not shown for ONLINE invoices (whether an admin may record an offline payment against an ONLINE-route invoice: Not specified). It does not need Razorpay, so it stays enabled when the gateway is not configured.
+
+| Field | Type | Required | Validation | i18n key |
+|---|---|---|---|---|
+| Amount received | Money | Yes | Must equal the open amount (partial offline payments: Not specified, FRD Open question 16) | `admin.billing.offline.amount` |
+| Date received | Date | Yes | Not in the future | `admin.billing.offline.date` |
+| Method | Select: Bank transfer, NEFT/RTGS, Cheque | Yes | One selected | `admin.billing.offline.method` |
+| Reference number | Text | Yes | Non-blank, max 100 | `admin.billing.offline.reference` |
+| Note | Text | No | Max 500 | `admin.billing.offline.note` |
+
+Buttons: **Record payment**, **Cancel**. Confirmation: **"Mark invoice {number} as paid?"**. On success: invoice PAID, a payment with method type OFFLINE in Payments, receipt downloadable, audit entry, success toast. On a refused value: field error, nothing changes. axe test (FRD AC-30).
 
 ## States
 Loading skeletons matching the table/card layout; empty ("No invoices yet." / "No payments yet."); backend errors shown as-is with **Retry**; gateway-not-configured banner as on the customer screen.

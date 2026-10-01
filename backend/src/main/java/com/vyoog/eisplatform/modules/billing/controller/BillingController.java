@@ -2,6 +2,7 @@ package com.vyoog.eisplatform.modules.billing.controller;
 
 import com.vyoog.eisplatform.modules.billing.dto.*;
 import com.vyoog.eisplatform.modules.billing.service.BillingDetailsService;
+import com.vyoog.eisplatform.modules.billing.service.CheckoutService;
 import com.vyoog.eisplatform.modules.billing.service.InvoiceService;
 import com.vyoog.eisplatform.modules.billing.service.PaymentMethodService;
 import com.vyoog.eisplatform.modules.billing.service.PaymentService;
@@ -40,6 +41,7 @@ public class BillingController {
     private final PaymentService paymentService;
     private final PaymentMethodService paymentMethodService;
     private final RazorpayProperties razorpayProperties;
+    private final CheckoutService checkoutService;
 
     @GetMapping("/overview")
     public BillingOverviewResponse overview(@AuthenticationPrincipal Jwt jwt) {
@@ -57,6 +59,29 @@ public class BillingController {
             recent,
             razorpayProperties.isConfigured()
         );
+    }
+
+    /** C55 (REQ-BIL-001.18): the checkout screen's summary — by invoice, or
+     * by the subscription a Subscribe just created. */
+    @GetMapping("/checkout")
+    public CheckoutSummaryDto checkout(@AuthenticationPrincipal Jwt jwt,
+                                       @RequestParam(required = false) Long invoiceId,
+                                       @RequestParam(required = false) Long subscriptionId) {
+        Customer customer = currentCustomerResolver.resolve(jwt);
+        if (invoiceId != null) {
+            return checkoutService.summaryForInvoice(customer.getId(), null, invoiceId);
+        }
+        if (subscriptionId != null) {
+            return checkoutService.summaryForSubscription(customer.getId(), null, subscriptionId);
+        }
+        throw new IllegalArgumentException("invoiceId or subscriptionId is required");
+    }
+
+    /** C55 (REQ-BIL-001.19): Pay by invoice. */
+    @PostMapping("/invoices/{invoiceId}/offline")
+    public OfflineInvoiceResultDto payByInvoice(@AuthenticationPrincipal Jwt jwt, @PathVariable Long invoiceId) {
+        Customer customer = currentCustomerResolver.resolve(jwt);
+        return checkoutService.chooseOffline(customer.getId(), null, customer.getId(), invoiceId);
     }
 
     @GetMapping("/details")

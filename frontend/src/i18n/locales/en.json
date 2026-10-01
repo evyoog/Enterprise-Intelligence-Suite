@@ -363,7 +363,8 @@
       "partners": "Partners",
       "billing": "Billing",
       "billingInvoicesPayments": "Invoices & payments",
-      "paymentGateway": "Payment gateway"
+      "paymentGateway": "Payment gateway",
+      "billingSettings": "Billing settings"
     },
     "catalogTitle": "Product catalog",
     "catalogSubtitle": "Search and filter the products available on the platform."
@@ -818,7 +819,35 @@
         "refundable": "Refundable up to {{amount}}",
         "confirm": "Refund"
       },
-      "reconcile": "Reconcile"
+      "reconcile": "Reconcile",
+      "offline": {
+        "action": "Record offline payment",
+        "title": "Record offline payment",
+        "amount": "Amount received",
+        "amountHelp": "Must equal the invoice total ({{amount}}).",
+        "amountMismatch": "The amount must equal the invoice total.",
+        "date": "Date received",
+        "dateFuture": "The date cannot be in the future.",
+        "method": "Method",
+        "methods": {
+          "BANK_TRANSFER": "Bank transfer",
+          "NEFT_RTGS": "NEFT/RTGS",
+          "CHEQUE": "Cheque"
+        },
+        "reference": "Reference number",
+        "note": "Note (optional)",
+        "tooLong": "This value is too long.",
+        "required": "This field is required.",
+        "submit": "Record payment",
+        "confirm": "Mark invoice {{number}} as paid?",
+        "confirmAction": "Mark as paid",
+        "recorded": "Offline payment recorded. Invoice {{number}} is paid.",
+        "route": "Route"
+      },
+      "routes": {
+        "ONLINE": "Online",
+        "OFFLINE": "Offline"
+      }
     },
     "paymentGateway": {
       "title": "Payment gateway",
@@ -843,28 +872,170 @@
       "connected": "Connected.",
       "testFailed": "Could not reach Razorpay.",
       "notConfiguredGuidance": "Add the Razorpay credentials to the common secrets file, then restart the backend."
+    },
+    "billingSettings": {
+      "title": "Billing settings",
+      "subtitle": "Bank details printed on offline invoices and shown to customers who choose Pay by invoice.",
+      "bankTitle": "Offline payment bank details",
+      "accountName": "Account name",
+      "bankName": "Bank name",
+      "accountNumber": "Account number",
+      "ifsc": "IFSC",
+      "swift": "SWIFT / BIC",
+      "save": "Save",
+      "cancel": "Cancel",
+      "saved": "Bank details saved.",
+      "empty": "No bank details yet. Offline invoices will say 'Bank details will be on your invoice.' until you add them.",
+      "unsaved": "You have unsaved changes.",
+      "lastUpdated": "Last updated {{date}}",
+      "retry": "Retry",
+      "required": "This field is required.",
+      "tooLong": "Maximum {{max}} characters.",
+      "ifscLength": "IFSC must be 11 characters.",
+      "swiftLength": "SWIFT / BIC must be 8 or 11 characters.",
+      "loadError": "Could not load the bank details."
     }
   },
   "checkout": {
     "title": "Checkout",
+    "stepperLabel": "Checkout progress",
     "steps": {
       "details": "Billing details",
       "payment": "Payment",
-      "done": "Done"
+      "complete": "Complete"
     },
-    "billingDetails": "Confirm your billing details",
-    "saveAndContinue": "Save & continue",
-    "continueToPayment": "Continue to payment",
-    "free": "Free",
-    "payTitle": "Payment details",
-    "payNow": "Pay {{amount}}",
-    "gatewayUnavailable": "Your subscription is active. Online payments aren't available yet — we'll invoice you once they are.",
-    "viewInBilling": "View in Billing",
-    "paidTitle": "Payment received — you're all set.",
-    "freeTitle": "You're subscribed.",
-    "goToMyProducts": "Go to My Products",
-    "loadError": "Could not load this product.",
-    "paymentCancelled": "Payment was cancelled. You can try again.",
-    "paymentFailed": "Payment failed. Please try again."
+    "details": {
+      "title": "Billing details",
+      "name": "Full name or company",
+      "email": "Billing email",
+      "address1": "Address line 1",
+      "address2": "Address line 2 (optional)",
+      "city": "City",
+      "state": "State / region",
+      "postalCode": "Postal code",
+      "country": "Country",
+      "taxId": "Tax ID (optional)",
+      "edit": "Edit",
+      "continue": "Continue to payment",
+      "back": "Back",
+      "required": "This field is required.",
+      "invalidEmail": "Enter a valid email address.",
+      "tooLong": "This value is too long."
+    },
+    "payment": {
+      "title": "Payment method",
+      "subtitle": "Choose how you would like to pay.",
+      "noOptions": "No payment options are available right now. Please contact support."
+    },
+    "option": {
+      "card": {
+        "title": "Card",
+        "description": "Credit or debit card"
+      },
+      "upi": {
+        "title": "UPI",
+        "description": "Pay with any UPI app"
+      },
+      "other": {
+        "title": "Other online methods",
+        "description": "Net banking, wallets and more"
+      },
+      "offline": {
+        "title": "Pay by invoice",
+        "description": "Bank transfer, NEFT/RTGS or cheque"
+      }
+    },
+    "card": {
+      "lead": "You will enter your card details in the secure payment window after you select Pay.",
+      "number": "Card number",
+      "name": "Name on card",
+      "expiry": "Expiry (MM/YY)",
+      "cvv": "CVV",
+      "cvvHelp": "The 3 or 4 digit code on the back of your card.",
+      "secureNote": "Card details are handled by our payment provider and are never stored by eVyoog.",
+      "save": "Save this card with the payment provider for future payments"
+    },
+    "upi": {
+      "note": "You will complete the UPI payment in the secure payment window."
+    },
+    "other": {
+      "note": "You will choose net banking, a wallet or another method in the secure payment window."
+    },
+    "offline": {
+      "terms": "We will issue an invoice with our bank details. Your subscription is activated as usual; please pay by the due date.",
+      "emailTo": "The invoice will be emailed to {{email}}."
+    },
+    "pay": "Pay {{amount}}",
+    "generateInvoice": "Generate invoice",
+    "consent": "I agree to the Terms of Service and the Privacy Policy.",
+    "genericError": "Something went wrong. Please try again.",
+    "loadError": "Could not load your order.",
+    "summary": {
+      "title": "Order summary",
+      "subtotal": "Subtotal",
+      "noTax": "Tax: none for this region",
+      "total": "Total",
+      "trust": "Secure payment. Card details never touch eVyoog servers.",
+      "qty": "Qty {{qty}}",
+      "toggle": "Show order summary ({{total}})"
+    },
+    "period": {
+      "MONTHLY": "Monthly",
+      "YEARLY": "Yearly"
+    },
+    "result": {
+      "success": {
+        "title": "Payment successful"
+      },
+      "pending": {
+        "title": "Confirming your payment…",
+        "slow": "This is taking longer than usual. You can leave this page; we will update your billing when the payment is confirmed."
+      },
+      "failed": {
+        "title": "Payment failed"
+      },
+      "cancelled": "Payment was cancelled.",
+      "stillOpen": "Your invoice is still open. No money has been taken.",
+      "tryAgain": "Try again",
+      "chooseAnother": "Choose another method",
+      "free": {
+        "title": "You're subscribed"
+      },
+      "offline": {
+        "title": "Invoice generated",
+        "bankTitle": "Pay to this bank account",
+        "noBank": "Bank details are not available yet. Our team will contact you with payment instructions.",
+        "quote": "Quote invoice number {{number}} as the payment reference.",
+        "emailed": "We have emailed the invoice to {{email}}.",
+        "subscriptionStatus": "Subscription status: {{status}}"
+      },
+      "invoiceNumber": "Invoice number",
+      "amountPaid": "Amount paid",
+      "method": "Method",
+      "date": "Date",
+      "total": "Total",
+      "dueDate": "Due date"
+    },
+    "bank": {
+      "accountName": "Account name",
+      "bankName": "Bank",
+      "accountNumber": "Account number",
+      "ifsc": "IFSC",
+      "swift": "SWIFT / BIC",
+      "copy": "Copy",
+      "copied": "Copied",
+      "copyField": "Copy {{field}}"
+    },
+    "actions": {
+      "downloadReceipt": "Download receipt",
+      "downloadInvoice": "Download invoice",
+      "goToMyProducts": "Go to My Products",
+      "viewBilling": "View billing"
+    },
+    "toast": {
+      "paid": "Payment received.",
+      "invoiceGenerated": "Invoice generated.",
+      "failed": "Payment did not go through."
+    }
   }
 }

@@ -12,6 +12,7 @@ interface RazorpayCheckoutOptions {
   description: string
   handler: (response: { razorpay_order_id: string; razorpay_payment_id: string; razorpay_signature: string }) => void
   modal?: { ondismiss?: () => void }
+  prefill?: { method?: string }
   theme?: { color?: string }
 }
 
@@ -50,6 +51,9 @@ export async function openRazorpayCheckout(options: {
   currency: string
   name: string
   description: string
+  /** C55: preselects a method inside Razorpay's window ("card", "upi").
+   * Card/UPI details are still entered only there (BR-BIL-001). */
+  method?: 'card' | 'upi'
 }): Promise<RazorpayResult> {
   await loadCheckoutScript()
   return new Promise((resolve, reject) => {
@@ -67,6 +71,7 @@ export async function openRazorpayCheckout(options: {
           signature: response.razorpay_signature,
         }),
       modal: { ondismiss: () => reject(new Error('cancelled')) },
+      ...(options.method ? { prefill: { method: options.method } } : {}),
       theme: { color: '#4c63ff' },
     })
     checkout.open()

@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
+import { useNavigate } from 'react-router-dom'
 import {
   Alert, Box, Button, Chip, CircularProgress, Dialog, DialogActions, DialogContent, DialogTitle,
   FormControlLabel, Paper, Radio, RadioGroup, Tab, Table, TableBody, TableCell, TableHead,
@@ -55,7 +56,7 @@ function BillingScreen({ api }: { api: BillingScope }) {
       </Tabs>
 
       {tab === 'overview' && <OverviewTab overview={overview} onGoToInvoices={() => setTab('invoices')} onGoToMethods={() => setTab('methods')} />}
-      {tab === 'invoices' && <InvoicesTab api={api} gatewayConfigured={overview?.gatewayConfigured ?? false} onPaid={reload} />}
+      {tab === 'invoices' && <InvoicesTab api={api} />}
       {tab === 'methods' && <PaymentMethodsTab api={api} gatewayConfigured={overview?.gatewayConfigured ?? false} onChanged={reload} />}
       {tab === 'history' && <PaymentHistoryTab api={api} />}
       {tab === 'details' && <BillingDetailsTab api={api} />}
@@ -137,10 +138,14 @@ function OverviewTab({ overview, onGoToInvoices, onGoToMethods }: {
   )
 }
 
-function InvoicesTab({ api, gatewayConfigured, onPaid }: { api: BillingScope; gatewayConfigured: boolean; onPaid: () => void }) {
+function InvoicesTab({ api }: { api: BillingScope }) {
   const { t } = useTranslation()
+  const navigate = useNavigate()
   const [invoices, setInvoices] = useState<Invoice[] | null>(null)
-  const [payTarget, setPayTarget] = useState<Invoice | null>(null)
+  // C55: Pay opens the checkout screen, which offers every payment option
+  // (online options are disabled there when the gateway is not configured).
+  const payInvoice = (inv: Invoice) => navigate(
+    `/checkout?invoiceId=${inv.id}${api === organizationBillingApi ? '&scope=organization' : ''}`)
 
   const load = () => api.invoices().then((p) => setInvoices(p.content)).catch(() => setInvoices([]))
   // eslint-disable-next-line react-hooks/exhaustive-deps -- load is redefined each render from api; api is the real dependency
@@ -148,7 +153,6 @@ function InvoicesTab({ api, gatewayConfigured, onPaid }: { api: BillingScope; ga
 
   return (
     <>
-      <PayInvoiceDialog api={api} invoice={payTarget} onClose={() => setPayTarget(null)} onPaid={() => { setPayTarget(null); load(); onPaid() }} />
       <Paper variant="outlined">
         <Table size="small">
           <TableHead>
@@ -175,7 +179,7 @@ function InvoicesTab({ api, gatewayConfigured, onPaid }: { api: BillingScope; ga
                 <TableCell align="right">{money(inv.total, inv.currency)}</TableCell>
                 <TableCell align="right">
                   {inv.status === 'OPEN' && (
-                    <Button size="small" disabled={!gatewayConfigured} onClick={() => setPayTarget(inv)}>{t('billing.invoices.pay')}</Button>
+                    <Button size="small" onClick={() => payInvoice(inv)}>{t('billing.invoices.pay')}</Button>
                   )}
                   <Button size="small" onClick={() => api.downloadDocument(inv.id, 'invoice')}>{t('billing.invoices.downloadInvoice')}</Button>
                   {(inv.status === 'PAID' || inv.status === 'PARTIALLY_REFUNDED' || inv.status === 'REFUNDED') && (
@@ -188,56 +192,6 @@ function InvoicesTab({ api, gatewayConfigured, onPaid }: { api: BillingScope; ga
         </Table>
       </Paper>
     </>
-  )
-}
-
-function PayInvoiceDialog({ api, invoice, onClose, onPaid }: {
-  api: BillingScope; invoice: Invoice | null; onClose: () => void; onPaid: () => void
-}) {
-  const { t } = useTranslation()
-  const [state, setState] = useState<'idle' | 'processing' | 'failed' | 'cancelled'>('idle')
-  const [error, setError] = useState<string | null>(null)
-
-  if (!invoice) return null
-
-  const pay = async () => {
-    setState('processing')
-    setError(null)
-    try {
-      const order = await api.createPayment(invoice.id)
-      const result = await openRazorpayCheckout({
-        keyId: order.keyId, orderId: order.providerOrderId, amount: order.amount, currency: order.currency,
-        name: 'eVyoog', description: `Invoice ${invoice.invoiceNumber}`,
-      })
-      await api.confirmPayment(order.paymentId, result)
-      onPaid()
-    } catch (e) {
-      if (e instanceof Error && e.message === 'cancelled') {
-        setState('cancelled')
-      } else {
-        setState('failed')
-        setError(e instanceof ApiError ? e.message : t('billing.gateway.notConfigured'))
-      }
-    }
-  }
-
-  return (
-    <Dialog open onClose={onClose}>
-      <DialogTitle>{t('billing.pay.title')}</DialogTitle>
-      <DialogContent sx={{ minWidth: 320 }}>
-        <Typography variant="body2" sx={{ mb: 1 }}>{invoice.invoiceNumber}</Typography>
-        <Typography variant="h6" component="p" sx={{ fontWeight: 700, mb: 2 }}>{money(invoice.total, invoice.currency)}</Typography>
-        {state === 'processing' && <Alert severity="info">{t('billing.pay.processing')}</Alert>}
-        {state === 'failed' && <Alert severity="error">{error}</Alert>}
-        {state === 'cancelled' && <Alert severity="warning">{t('billing.pay.cancelled')}</Alert>}
-      </DialogContent>
-      <DialogActions>
-        <Button onClick={onClose}>{t('common.cancel')}</Button>
-        <Button variant="contained" disabled={state === 'processing'} onClick={pay}>
-          {t('billing.pay.action', { amount: money(invoice.total, invoice.currency) })}
-        </Button>
-      </DialogActions>
-    </Dialog>
   )
 }
 

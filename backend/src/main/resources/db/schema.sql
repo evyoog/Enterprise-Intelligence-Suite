@@ -792,6 +792,8 @@ CREATE TABLE invoice (
     issued_at TIMESTAMP NOT NULL DEFAULT now(),
     due_at TIMESTAMP,
     bill_to_snapshot VARCHAR(1000),
+    -- C55 (REQ-BIL-001.19): what the customer chose at checkout; null until chosen.
+    payment_route VARCHAR(10) CHECK (payment_route IN ('ONLINE', 'OFFLINE')),
     updated_at TIMESTAMP NOT NULL DEFAULT now(),
     CHECK (num_nonnulls(owner_customer_id, owner_organization_id) = 1)
 );
@@ -826,7 +828,13 @@ CREATE TABLE payment (
     method_last4 VARCHAR(4),
     failure_reason VARCHAR(500),
     created_at TIMESTAMP NOT NULL DEFAULT now(),
-    captured_at TIMESTAMP
+    captured_at TIMESTAMP,
+    -- C55 (REQ-BIL-001.20): an offline payment recorded by a billing admin.
+    offline_method VARCHAR(20) CHECK (offline_method IN ('BANK_TRANSFER', 'NEFT_RTGS', 'CHEQUE')),
+    offline_reference VARCHAR(100),
+    received_on DATE,
+    recorded_by_customer_id BIGINT REFERENCES customer(id),
+    note VARCHAR(500)
 );
 CREATE INDEX idx_payment_invoice ON payment (invoice_id);
 CREATE UNIQUE INDEX idx_payment_provider_order ON payment (provider_order_id) WHERE provider_order_id IS NOT NULL;
@@ -864,6 +872,19 @@ CREATE TABLE payment_method (
 );
 CREATE INDEX idx_payment_method_customer_status ON payment_method (owner_customer_id, status);
 CREATE INDEX idx_payment_method_organization_status ON payment_method (owner_organization_id, status);
+
+-- C55 (REQ-BIL-001.21): offline bank details printed on offline invoices.
+-- One platform-wide row. Not secrets (BR-SEC-001 does not apply).
+CREATE TABLE billing_settings (
+    id BIGSERIAL PRIMARY KEY,
+    offline_account_name VARCHAR(200),
+    offline_bank_name VARCHAR(200),
+    offline_account_number VARCHAR(34),
+    offline_ifsc VARCHAR(11),
+    offline_swift_bic VARCHAR(11),
+    updated_at TIMESTAMP NOT NULL DEFAULT now(),
+    updated_by_customer_id BIGINT REFERENCES customer(id)
+);
 
 CREATE TABLE payment_webhook_event (
     id BIGSERIAL PRIMARY KEY,

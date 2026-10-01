@@ -25,6 +25,8 @@ public record PaymentDto(
     Instant createdAt,
     Instant capturedAt,
     List<RefundDto> refunds,
-    List<WebhookEventDto> webhookEvents
+    List<WebhookEventDto> webhookEvents,
+    /** C55: the bank/cheque reference of an OFFLINE payment; null otherwise. */
+    String offlineReference
 ) {
 }
