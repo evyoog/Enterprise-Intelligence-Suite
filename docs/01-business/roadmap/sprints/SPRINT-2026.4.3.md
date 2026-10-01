@@ -30,6 +30,8 @@
 | Decided | [C50](../open-decisions.md#c50) Billing scope for the MVP: recurring subscription billing, invoices, card/UPI payments, tax and currency. Usage billing, price books and promotions are later, not MVP | [billing-payments](../../../02-requirements/FRD/billing-payments/requirement.md) | REQ-BIL-001 |
 | Decided | [C51](../open-decisions.md#c51) Tax calculation: each region has a tax method (Admin rate or Tax service), admin rate as fallback. Which tax service is Not specified | [tax-rules](../../../02-requirements/FRD/tax-rules/requirement.md) | REQ-BIL-002 |
 | Decided | [C52](../open-decisions.md#c52) Entitlements are derived at runtime from ACTIVE subscriptions and their plans' included features/usage limits — no entitlement table | [entitlements](../../../02-requirements/FRD/entitlements/requirement.md) | REQ-SUB-002 |
+| Moved in | [C59](../open-decisions.md#c59) Marketplace Checkout (03.03, application 03 Marketplace) pulled forward from [2027.1.2](SPRINT-2027.1.2.md), built with Billing: a dedicated cart (Buy → `/cart`), purchase validation, Proceed to checkout (individual) or Submit order for approval (organization member). The checkout screen is redesigned (REQ-BIL-001.18, .22, .23). Configure options and Apply discount (03.03.01.03/.04) stay out ([C40](../open-decisions.md#c40), [C50](../open-decisions.md#c50)) | [cart-checkout](../../../02-requirements/FRD/cart-checkout/requirement.md) | REQ-MKT-003 |
+| Decided | [C55](../open-decisions.md#c55) Checkout payment screen with online payment and offline Pay by invoice; admin records offline payments; offline bank details (built 2026-10-01 with engineering defaults) | [billing-payments](../../../02-requirements/FRD/billing-payments/requirement.md) | REQ-BIL-001.18–.21 |
 
 ### FRDs in this sprint
 
@@ -39,6 +41,7 @@
 | [billing-payments](../../../02-requirements/FRD/billing-payments/requirement.md) | REQ-BIL-001 | 08.02.02 (generate, finalize invoice), 08.03.01, 08.03.02, 08.04.01 (invoice, receipt, download), 08.05.02 (format currency), 01.02.01 (view spending) | Draft |
 | [tax-rules](../../../02-requirements/FRD/tax-rules/requirement.md) | REQ-BIL-002 | 08.05.01 (configure tax rules, calculate tax, validate tax) | Draft |
 | [entitlements](../../../02-requirements/FRD/entitlements/requirement.md) | REQ-SUB-002 | 07.02.01 (validate entitlement, check feature access — derived, read-only), 07.02.02 (check quota, limit value only) | Draft |
+| [cart-checkout](../../../02-requirements/FRD/cart-checkout/requirement.md) | REQ-MKT-003 | 03.03.01 (select product, select plan, accept terms, submit order), 03.03.02 (validate eligibility, validate dependencies) | Draft |
 
 ### Progress (as of 2026-09-30)
 
@@ -126,6 +129,7 @@ Full breakdown with APIs, services, entities and events: [applications/08-billin
 - [C3](../open-decisions.md#c3) The [PO] sprint order is authoritative; the MVP is complete at the end of sprint 2027.1.3.
 - [C4](../open-decisions.md#c4), [C5](../open-decisions.md#c5), [C6](../open-decisions.md#c6) MVP, priority and phase as shown above.
 - [C10](../open-decisions.md#c10) Application 01 is named "Enterprise Intelligence Suite".
+- [C59](../open-decisions.md#c59) Cart and Marketplace Checkout (03.03) pulled forward into this sprint.
 - Sprint goal, team, capacity and status are Not specified.
 
 Details: [open-decisions.md](../open-decisions.md).

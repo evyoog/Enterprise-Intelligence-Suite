@@ -18,7 +18,7 @@ Another customer's or organization's record returns a generic **404**. When the 
 | GET | `/me/billing/invoices` | List invoices (`status`, `from`, `to`, `page`) | No |
 | GET | `/me/billing/invoices/{invoiceId}` | Invoice detail with lines and payments | No |
 | GET | `/me/billing/invoices/{invoiceId}/document` | Download document; `type=invoice` (any finalized invoice) or `type=receipt` (PAID only) | No |
-| POST | `/me/billing/invoices/{invoiceId}/payments` | Start a payment: creates a Razorpay order for the invoice total; returns the order ID, amount, currency and the public key ID for Checkout | Yes |
+| POST | `/me/billing/invoices/{invoiceId}/payments` | Start a payment: creates a Razorpay order for the invoice total; returns the order ID, amount, currency and the public key ID for Checkout. Optional body ([C59](../../01-business/roadmap/open-decisions.md#c59), REQ-BIL-001.22, Draft): `paymentMethodId` (a saved method of the caller; refused if expired) and `method` (`card`, `upi`, `netbanking`, `wallet`) for the Checkout preselection. No card data is ever accepted (BR-BIL-001) | Yes |
 | POST | `/me/billing/payments/{paymentId}/confirm` | Submit the Checkout result (Razorpay order ID, payment ID, signature); backend verifies the signature, then records the payment | Yes |
 | GET | `/me/billing/payments` | Payment history (`status`, `from`, `to`, `page`) | No |
 | GET | `/me/billing/payment-methods` | Saved payment methods (display fields only) | No |
