@@ -89,7 +89,7 @@
       "enabledHint": "Emails before subscriptions renew, sent once a day until renewal.",
       "daysLabel": "Start reminding",
       "daysSuffix": "days before",
-      "timeZoneHint": "Change it under Language & Formats.",
+      "timeZoneHint": "Reminders are sent at this time zone. This is your account time zone, also used for dates and times across EIS.",
       "summaryOff": "Renewal reminders are off."
     },
     "appearanceDescription": "Customize how EIS looks for you.",
@@ -146,7 +146,7 @@
     },
     "themeHint": "Choose the appearance of EIS.",
     "languageHint": "The language used across EIS.",
-    "timeZoneHint": "Used for times and reminders.",
+    "timeZoneHint": "Used for dates, times and renewal reminders.",
     "dateFormatHint": "How dates are written.",
     "timeFormatHint": "12-hour or 24-hour clock.",
     "weekStartHint": "Used where EIS shows weeks or calendars.",
@@ -161,7 +161,9 @@
       "notificationsHint": "Email and in-app",
       "renewals": "Renewal Reminders",
       "renewalsHint": "Before subscriptions renew"
-    }
+    },
+    "timeZoneSearch": "Search city or region",
+    "timeZoneNone": "No matching time zone"
   },
   "common": {
     "loading": "Loading…",

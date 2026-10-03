@@ -8,11 +8,12 @@ import { useAuth } from '../auth/AuthProvider'
 import { RenewalRemindersCard } from '../components/preferences/RenewalRemindersCard'
 import { NotificationPreferencesSection } from '../components/preferences/NotificationPreferencesSection'
 import { AccentPicker } from '../components/preferences/AccentPicker'
+import { TimeZonePicker } from '../components/preferences/TimeZonePicker'
 import { CONTROL_COLUMN, PreferenceRow, PreferenceSection } from '../components/preferences/PreferenceLayout'
 import { SiteNavbar } from '../components/layout/SiteNavbar'
 import { useInAppShell } from '../components/layout/appShellContext'
 import { useThemeMode, type ThemeMode } from '../theming/ThemeModeProvider'
-import { useLocalePreference, SUPPORTED_REGIONS, SUPPORTED_TIMEZONES } from '../theming/LocalePreferenceProvider'
+import { useLocalePreference, SUPPORTED_REGIONS } from '../theming/LocalePreferenceProvider'
 import { DATE_FORMATS, TIME_FORMATS, WEEK_STARTS, type DateFormat, type TimeFormat, type WeekStart } from '../theming/formatOptions'
 import { SUPPORTED_LANGUAGES } from '../i18n'
 
@@ -199,13 +200,7 @@ function FormatsPanel() {
           </CompactSelect>
         )} />
       <PreferenceRow label={t('preferences.timeZone')} hint={t('preferences.timeZoneHint')} labelId="timezone-label"
-        control={(
-          <CompactSelect id="timezone" value={timeZone} onChange={setTimeZone}>
-            {/* The browser's own zone may not be in the short list; show it rather than a blank field. */}
-            {!SUPPORTED_TIMEZONES.some((z) => z.code === timeZone) && <MenuItem value={timeZone}>{timeZone}</MenuItem>}
-            {SUPPORTED_TIMEZONES.map((z) => <MenuItem key={z.code} value={z.code}>{z.label}</MenuItem>)}
-          </CompactSelect>
-        )} />
+        control={<TimeZonePicker value={timeZone} onChange={setTimeZone} labelId="timezone-label" />} />
       <PreferenceRow label={t('preferences.dateFormat')} hint={t('preferences.dateFormatHint')} labelId="date-format-label"
         control={(
           <CompactSelect id="date-format" value={dateFormat} onChange={(v) => setDateFormat(v as DateFormat)}>

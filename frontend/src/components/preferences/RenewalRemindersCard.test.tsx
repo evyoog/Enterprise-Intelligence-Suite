@@ -53,6 +53,19 @@ describe('RenewalRemindersCard', () => {
     expect(await screen.findByText('Reminder settings saved.')).toBeInTheDocument()
   })
 
+  it('lets the user pick any time zone for reminders and updates the summary', async () => {
+    const user = userEvent.setup()
+    renderWithProviders(<RenewalRemindersCard />)
+    const zone = await screen.findByRole('combobox', { name: 'Time zone' })
+    expect((zone as HTMLInputElement).value).toMatch(/^Asia\/Kolkata/)
+    await user.clear(zone)
+    await user.type(zone, 'new york')
+    await user.click(await screen.findByRole('option', { name: /^America\/New York/ }))
+    expect(screen.getByRole('status')).toHaveTextContent('Daily reminder from 7 days before renewal at 09:00 America/New_York.')
+    // It is the account time zone, shared with Language & Formats.
+    expect(localStorage.getItem('vyoog-timezone')).toBe('America/New_York')
+  })
+
   it('explains that turning reminders off does not stop renewal', async () => {
     const user = userEvent.setup()
     renderWithProviders(<RenewalRemindersCard />)

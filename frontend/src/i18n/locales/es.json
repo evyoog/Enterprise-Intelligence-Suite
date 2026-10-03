@@ -89,7 +89,7 @@
       "enabledHint": "Correos antes de que se renueven las suscripciones, una vez al día hasta la renovación.",
       "daysLabel": "Empezar a recordar",
       "daysSuffix": "días antes",
-      "timeZoneHint": "Cámbiela en Idioma y formatos.",
+      "timeZoneHint": "Los recordatorios se envían en esta zona horaria. Es la zona horaria de su cuenta, usada también para fechas y horas en EIS.",
       "summaryOff": "Los recordatorios de renovación están desactivados."
     },
     "appearanceDescription": "Personalice el aspecto de EIS.",
@@ -146,7 +146,7 @@
     },
     "themeHint": "Elija la apariencia de EIS.",
     "languageHint": "El idioma usado en EIS.",
-    "timeZoneHint": "Se usa para horas y recordatorios.",
+    "timeZoneHint": "Se usa para fechas, horas y recordatorios de renovación.",
     "dateFormatHint": "Cómo se escriben las fechas.",
     "timeFormatHint": "Reloj de 12 o de 24 horas.",
     "weekStartHint": "Se usa donde EIS muestra semanas o calendarios.",
@@ -161,7 +161,9 @@
       "notificationsHint": "Correo y en la aplicación",
       "renewals": "Recordatorios de renovación",
       "renewalsHint": "Antes de que se renueven las suscripciones"
-    }
+    },
+    "timeZoneSearch": "Buscar ciudad o región",
+    "timeZoneNone": "Ninguna zona horaria coincide"
   },
   "common": {
     "loading": "Cargando…",

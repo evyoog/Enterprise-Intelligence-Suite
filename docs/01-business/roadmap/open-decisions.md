@@ -566,6 +566,7 @@ Screen: [preferences.md](../../05-ui/screen-requirements/preferences.md). Tests:
 - Rows: label and hint on the left, controls in one fixed 220 px column on the right so every control starts on the same edge; selects 220 px, days input 96 px, time 160 px, compact switches. Rows stack when the panel itself is narrower than 560 px (container query).
 - Phones (below 900 px): the navigation becomes a **Section** selector above the panel. Tablets: narrower navigation without hints.
 - Renewal Reminders: summary in a light box, **Save reminder settings** at the bottom-right of the panel.
+- **International time zones (2026-10-03, product owner):** the time zone is a searchable picker over every IANA zone (not 7 presets), on Language & Formats **and** on Renewal Reminders; both edit the account time zone that reminder emails already use (`RenewalReminderService` reads `CustomerPreference.timeZone`, else the platform default). The admin platform-default reminder zone (Billing settings) uses the same picker. The backend already accepted any valid zone; no backend change.
 - Small fixes found while checking the page: languages show their own names (English, Español) on this page; a browser time zone outside the short list is shown instead of a blank field; "Browser default" wording.
 
 Screen: [preferences.md](../../05-ui/screen-requirements/preferences.md).

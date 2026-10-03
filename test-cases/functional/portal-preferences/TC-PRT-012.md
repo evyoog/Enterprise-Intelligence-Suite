@@ -17,9 +17,10 @@ Platform defaults 7 days, 09:00, Asia/Kolkata.
 2. Type 10 days.
 3. Type 45, then 3, and save.
 4. Turn reminders off.
+5. Search the Time zone field for "new york" and pick America/New York.
 
 ## Expected Result
-Summary reads "Daily reminder from 7 days before renewal at 09:00 Asia/Kolkata." and then "…from 10 days…"; 45 is refused and Save disabled; 3 saves; turning off explains that subscriptions still renew.
+Summary reads "Daily reminder from 7 days before renewal at 09:00 Asia/Kolkata." and then "…from 10 days…"; 45 is refused and Save disabled; 3 saves; turning off explains that subscriptions still renew. Choosing America/New_York updates the summary to "…at 09:00 America/New_York." and sets the account time zone.
 
 ## Automated coverage
 - `frontend/src/components/preferences/RenewalRemindersCard.test.tsx` — all tests
