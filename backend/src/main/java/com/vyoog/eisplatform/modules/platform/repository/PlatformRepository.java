@@ -7,6 +7,6 @@ import java.util.Optional;
 
 public interface PlatformRepository extends JpaRepository<Platform, Long> {
 
-    /** Used by {@code CatalogSeeder} to seed each eVyoog product suite idempotently. */
+    /** Looks a platform up by its unique name. */
     Optional<Platform> findByName(String name);
 }

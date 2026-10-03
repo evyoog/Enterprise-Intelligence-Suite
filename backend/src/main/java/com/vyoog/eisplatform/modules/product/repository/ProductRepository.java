@@ -17,7 +17,7 @@ public interface ProductRepository extends JpaRepository<Product, Long>, JpaSpec
 
     List<Product> findByStatus(ProductStatus status);
 
-    /** Used by {@code CatalogSeeder} to seed each eVyoog product suite's flagship app idempotently. */
+    /** Looks a product up by its unique name. */
     Optional<Product> findByName(String name);
 
     /** 03.01.02 Show featured products (sprint 2027.1.2). */
