@@ -1,6 +1,6 @@
 import { apiRequest } from './client'
 
-export type NotificationCategory = 'SECURITY' | 'SUBSCRIPTION' | 'ORGANIZATION' | 'PRIVILEGED_ACCESS' | 'SYSTEM' | 'ORDER'
+export type NotificationCategory = 'SECURITY' | 'SUBSCRIPTION' | 'ORGANIZATION' | 'PRIVILEGED_ACCESS' | 'SYSTEM' | 'ORDER' | 'BILLING'
 export type NotificationSeverity = 'INFO' | 'WARNING' | 'CRITICAL'
 
 export interface Notification {

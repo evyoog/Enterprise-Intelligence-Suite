@@ -27,8 +27,15 @@ describe('RenewalRemindersCard', () => {
 
   it('shows the platform defaults and the schedule', async () => {
     renderWithProviders(<RenewalRemindersCard />)
-    expect(await screen.findByText("You'll get a reminder every day from 7 days before each renewal, at 09:00 (Asia/Kolkata).")).toBeInTheDocument()
+    expect(await screen.findByText('Daily reminder from 7 days before renewal at 09:00 Asia/Kolkata.')).toBeInTheDocument()
     expect(screen.getByText('Leave empty for the platform default: 7 days.')).toBeInTheDocument()
+  })
+
+  it('updates the summary as the values change', async () => {
+    const user = userEvent.setup()
+    renderWithProviders(<RenewalRemindersCard />)
+    await user.type(await screen.findByLabelText('Start reminding (days before renewal)'), '10')
+    expect(screen.getByRole('status')).toHaveTextContent('Daily reminder from 10 days before renewal at 09:00 Asia/Kolkata.')
   })
 
   it('saves own days and refuses an out-of-range value', async () => {
@@ -55,7 +62,7 @@ describe('RenewalRemindersCard', () => {
 
   it('has no detectable a11y violations', async () => {
     const { container } = renderWithProviders(<RenewalRemindersCard />)
-    await screen.findByText('Renewal reminders')
+    await screen.findByText('Daily reminder from 7 days before renewal at 09:00 Asia/Kolkata.')
     expect(await axe(container)).toHaveNoViolations()
   })
 })

@@ -1,6 +1,7 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from 'react'
 import { ThemeProvider } from '@mui/material'
 import { getTheme } from '../theme'
+import { DEFAULT_ACCENT, isAccentKey, type AccentKey } from './accentPalette'
 
 export type ThemeMode = 'light' | 'dark' | 'system'
 
@@ -14,12 +15,17 @@ interface ThemeModeContextValue {
   // both, independently).
   reducedMotion: boolean
   setReducedMotion: (value: boolean) => void
+  // C67: the user's platform accent (primary colour). Stored in this browser
+  // — the account preference API has no field for it.
+  accent: AccentKey
+  setAccent: (value: AccentKey) => void
 }
 
 const ThemeModeContext = createContext<ThemeModeContextValue | null>(null)
 
 const STORAGE_KEY = 'vyoog-theme-mode'
 const REDUCED_MOTION_STORAGE_KEY = 'vyoog-reduced-motion'
+const ACCENT_STORAGE_KEY = 'vyoog-accent'
 
 function systemPrefersDark(): boolean {
   return typeof window !== 'undefined' && window.matchMedia('(prefers-color-scheme: dark)').matches
@@ -33,6 +39,16 @@ function readStoredMode(): ThemeMode {
     // localStorage unavailable (private browsing, etc.) — fall through to default.
   }
   return 'system'
+}
+
+function readStoredAccent(): AccentKey {
+  try {
+    const stored = localStorage.getItem(ACCENT_STORAGE_KEY)
+    if (isAccentKey(stored)) return stored
+  } catch {
+    // localStorage unavailable — fall through to the default accent.
+  }
+  return DEFAULT_ACCENT
 }
 
 function readStoredReducedMotion(): boolean {
@@ -55,6 +71,7 @@ export function ThemeModeProvider({ children }: { children: ReactNode }) {
   const [mode, setModeState] = useState<ThemeMode>(readStoredMode)
   const [systemDark, setSystemDark] = useState(systemPrefersDark)
   const [reducedMotion, setReducedMotionState] = useState<boolean>(readStoredReducedMotion)
+  const [accent, setAccentState] = useState<AccentKey>(readStoredAccent)
 
   useEffect(() => {
     const media = window.matchMedia('(prefers-color-scheme: dark)')
@@ -85,12 +102,21 @@ export function ThemeModeProvider({ children }: { children: ReactNode }) {
     }
   }, [])
 
+  const setAccent = useCallback((next: AccentKey) => {
+    setAccentState(next)
+    try {
+      localStorage.setItem(ACCENT_STORAGE_KEY, next)
+    } catch {
+      // Best-effort — see setMode's own comment.
+    }
+  }, [])
+
   const resolvedMode: 'light' | 'dark' = mode === 'system' ? (systemDark ? 'dark' : 'light') : mode
 
-  const theme = useMemo(() => getTheme(resolvedMode), [resolvedMode])
+  const theme = useMemo(() => getTheme(resolvedMode, accent), [resolvedMode, accent])
   const contextValue = useMemo(
-    () => ({ mode, resolvedMode, setMode, reducedMotion, setReducedMotion }),
-    [mode, resolvedMode, setMode, reducedMotion, setReducedMotion]
+    () => ({ mode, resolvedMode, setMode, reducedMotion, setReducedMotion, accent, setAccent }),
+    [mode, resolvedMode, setMode, reducedMotion, setReducedMotion, accent, setAccent]
   )
 
   return (

@@ -1,17 +1,17 @@
 import { useCallback, useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { Alert, Box, Button, FormControlLabel, Skeleton, Snackbar, Switch, TextField, Typography } from '@mui/material'
-import { BellRing } from 'lucide-react'
+import { Alert, Box, Button, InputAdornment, Skeleton, Snackbar, Switch, TextField, Typography } from '@mui/material'
 import { ApiError } from '../../api/client'
 import { renewalsApi, type RenewalReminderPreferences } from '../../api/renewalsApi'
-import { SettingsSection } from '../settings/SettingsSection'
+import { PreferenceRow, PreferenceSection } from './PreferenceLayout'
 
 const TIME = /^([01]\d|2[0-3]):[0-5]\d$/
 
 /**
- * REQ-SUB-004.8 (C64): the user's renewal reminder settings on Preferences.
- * Empty days or time = the platform default. Turning reminders off stops the
- * emails only, never the renewal itself (.10).
+ * REQ-SUB-004.8 (C64): the user's renewal reminder settings on Preferences,
+ * laid out as C67 preference rows. Empty days or time = the platform default.
+ * Turning reminders off stops the emails only, never the renewal itself
+ * (.10). Saved with its own button, as before.
  */
 export function RenewalRemindersCard() {
   const { t } = useTranslation()
@@ -35,14 +35,20 @@ export function RenewalRemindersCard() {
     .catch((e) => setLoadError(e instanceof ApiError ? e.message : t('preferences.renewalReminders.loadError'))), [t])
   useEffect(() => { void load() }, [load])
 
+  const section = (children: React.ReactNode) => (
+    <PreferenceSection id="renewal-reminders" title={t('preferences.renewalReminders.title')} description={t('preferences.renewalReminders.description')}>
+      {children}
+    </PreferenceSection>
+  )
+
   if (loadError) {
-    return (
-      <Alert severity="error" sx={{ mt: 3 }} action={<Button onClick={() => void load()}>{t('preferences.renewalReminders.retry')}</Button>}>
+    return section(
+      <Alert severity="error" sx={{ mt: 1 }} action={<Button onClick={() => void load()}>{t('preferences.renewalReminders.retry')}</Button>}>
         {loadError}
-      </Alert>
+      </Alert>,
     )
   }
-  if (!prefs) return <Skeleton variant="rounded" height={220} sx={{ mt: 3 }} />
+  if (!prefs) return section(<Skeleton variant="rounded" height={200} sx={{ mt: 1 }} />)
 
   const daysNumber = days === '' ? null : Number(days)
   const daysError = daysNumber !== null && (!Number.isInteger(daysNumber) || daysNumber < prefs.minDays || daysNumber > prefs.maxDays)
@@ -61,39 +67,46 @@ export function RenewalRemindersCard() {
       .finally(() => setBusy(false))
   }
 
-  return (
-    <Box sx={{ mt: 3 }}>
-      <SettingsSection id="renewal-reminders" icon={BellRing} accent="amber" title={t('preferences.renewalReminders.title')}
-        description={t('preferences.renewalReminders.description')}>
-        <FormControlLabel control={<Switch checked={enabled} onChange={(e) => setEnabled(e.target.checked)} />}
-          label={t('preferences.renewalReminders.enabled')} />
-        {!enabled && <Alert severity="info" sx={{ mt: 1 }}>{t('preferences.renewalReminders.offNote')}</Alert>}
-        <Box sx={{ display: 'grid', gap: 2, mt: 2, gridTemplateColumns: { xs: '1fr', sm: 'repeat(2, minmax(0, 1fr))' } }}>
-          <TextField label={t('preferences.renewalReminders.days')} value={days} disabled={!enabled}
-            onChange={(e) => setDays(e.target.value.replace(/[^0-9]/g, ''))}
-            error={Boolean(daysError)} helperText={daysError ?? t('preferences.renewalReminders.platformDays', { days: prefs.platformDaysBefore })}
-            slotProps={{ htmlInput: { inputMode: 'numeric', min: prefs.minDays, max: prefs.maxDays } }} />
-          <TextField label={t('preferences.renewalReminders.time')} type="time" value={time} disabled={!enabled}
-            onChange={(e) => setTime(e.target.value)}
-            error={Boolean(timeError)} helperText={timeError ?? t('preferences.renewalReminders.platformTime', { time: prefs.platformSendTime })}
-            slotProps={{ inputLabel: { shrink: true } }} />
-        </Box>
-        <Typography variant="body2" sx={{ color: 'text.secondary', mt: 2 }}>
-          {t('preferences.renewalReminders.timeZone', { zone: prefs.effectiveTimeZone })}
+  return section(
+    <>
+      <PreferenceRow label={t('preferences.renewalReminders.enabled')} labelId="renewal-enabled-label"
+        hint={enabled ? t('preferences.renewalReminders.enabledHint') : t('preferences.renewalReminders.offNote')}
+        control={<Switch checked={enabled} onChange={(e) => setEnabled(e.target.checked)} slotProps={{ input: { 'aria-labelledby': 'renewal-enabled-label' } }} />} />
+      <PreferenceRow label={t('preferences.renewalReminders.daysLabel')} labelFor="renewal-days"
+        hint={daysError
+          ? <Typography component="span" variant="body2" color="error">{daysError}</Typography>
+          : t('preferences.renewalReminders.platformDays', { days: prefs.platformDaysBefore })}
+        control={(
+          <TextField id="renewal-days" size="small" value={days} disabled={!enabled} placeholder={String(prefs.platformDaysBefore)}
+            onChange={(e) => setDays(e.target.value.replace(/[^0-9]/g, ''))} error={Boolean(daysError)} sx={{ width: '100%' }}
+            slotProps={{
+              htmlInput: { inputMode: 'numeric', min: prefs.minDays, max: prefs.maxDays, 'aria-label': t('preferences.renewalReminders.days') },
+              input: { endAdornment: <InputAdornment position="end">{t('preferences.renewalReminders.daysSuffix')}</InputAdornment> },
+            }} />
+        )} />
+      <PreferenceRow label={t('preferences.renewalReminders.time')} labelFor="renewal-time"
+        hint={timeError
+          ? <Typography component="span" variant="body2" color="error">{timeError}</Typography>
+          : t('preferences.renewalReminders.platformTime', { time: prefs.platformSendTime })}
+        control={(
+          <TextField id="renewal-time" size="small" type="time" value={time} disabled={!enabled} error={Boolean(timeError)}
+            onChange={(e) => setTime(e.target.value)} sx={{ width: '100%' }} />
+        )} />
+      <PreferenceRow label={t('preferences.timeZone')} hint={t('preferences.renewalReminders.timeZoneHint')}
+        control={<Typography variant="body2" sx={{ fontWeight: 600 }}>{prefs.effectiveTimeZone}</Typography>} />
+
+      <Box sx={{ mt: 1.5, pt: 2, borderTop: '1px solid', borderColor: 'divider', display: 'flex', alignItems: 'center', gap: 2, flexWrap: 'wrap' }}>
+        <Typography variant="body2" role="status" sx={{ flex: 1, minWidth: 220, color: enabled ? 'text.primary' : 'text.secondary' }}>
+          {enabled
+            ? t('preferences.renewalReminders.summary', { days: shownDays, time: shownTime, zone: prefs.effectiveTimeZone })
+            : t('preferences.renewalReminders.summaryOff')}
         </Typography>
-        {enabled && (
-          <Typography variant="body2" role="status" sx={{ mt: 1, fontWeight: 600 }}>
-            {t('preferences.renewalReminders.summary', { days: shownDays, time: shownTime, zone: prefs.effectiveTimeZone })}
-          </Typography>
-        )}
-        {saveError && <Alert severity="error" sx={{ mt: 2 }}>{saveError}</Alert>}
-        <Box sx={{ display: 'flex', justifyContent: 'flex-end', mt: 2 }}>
-          <Button variant="contained" disabled={busy || Boolean(daysError) || Boolean(timeError)} onClick={save}>
-            {t('preferences.renewalReminders.save')}
-          </Button>
-        </Box>
-      </SettingsSection>
+        <Button variant="contained" disabled={busy || Boolean(daysError) || Boolean(timeError)} onClick={save}>
+          {t('preferences.renewalReminders.save')}
+        </Button>
+      </Box>
+      {saveError && <Alert severity="error" sx={{ mt: 2 }}>{saveError}</Alert>}
       <Snackbar open={Boolean(toast)} autoHideDuration={4000} onClose={() => setToast(null)} message={toast ?? ''} />
-    </Box>
+    </>,
   )
 }
