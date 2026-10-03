@@ -26,6 +26,10 @@ vi.mock('../api/registrationApi', async () => {
       renew: (id: number) => renew(id),
       changePlan: (id: number, planId: number | null) => changePlan(id, planId),
     },
+    organizationApi: {
+      ...actual.organizationApi,
+      listOrganizationSubscriptions: () => Promise.reject(new ApiError(403, 'Forbidden')),
+    },
   }
 })
 

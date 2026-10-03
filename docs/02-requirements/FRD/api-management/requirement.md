@@ -56,6 +56,8 @@ API management inside the existing backend ([C61](../../../01-business/roadmap/o
 | Versioning (OQ 3) | Path prefix: every endpoint is also served at `/v1/…`; today's paths stay as aliases. Every response has the header `API-Version: 1` | `ApiVersionFilter` |
 | Scopes (OQ 4) | None | — |
 | Expired key | Rejected like a revoked key (401) | `ApiKeyService` |
+| Keys creating keys | Not allowed: a key cannot create another key (403); keys are created when signed in | `ApiKeyController` |
+| Rate-limit configuration | `app.rate-limit.per-key`, `per-user`, `per-ip` in `application.yml` | `ApiManagementConfig` |
 
 ## Out of scope
 - Registering or proxying third-party APIs; a developer portal; deprecation policy.

@@ -2,7 +2,7 @@ import type { ComponentType } from 'react'
 import {
   Building2, KeyRound, LayoutDashboard, LayoutGrid, Layers, Package, ScrollText, Settings, ShieldCheck,
   SlidersHorizontal, Store, UserCheck, UserCog, UsersRound, Palette, Boxes, Activity, ClipboardList, BookOpen,
-  LifeBuoy, Star, Handshake, CreditCard, PlugZap, Landmark,
+  LifeBuoy, Star, Handshake, CreditCard, PlugZap, Landmark, Radio, Cable,
 } from 'lucide-react'
 import type { MyPermissions } from '../../api/myPermissionsApi'
 
@@ -142,6 +142,17 @@ export function buildAppNavigation({ isAdmin, permissions }: NavAccess): AppNavS
         { key: 'adminBillingInvoices', labelKey: 'billingInvoicesPayments', to: '/admin/billing', icon: CreditCard },
         { key: 'adminPaymentGateway', labelKey: 'paymentGateway', to: '/admin/billing/payment-gateway', icon: PlugZap },
         { key: 'adminBillingSettings', labelKey: 'billingSettings', to: '/admin/billing/settings', icon: Landmark },
+      ],
+    })
+  }
+  // REQ-INT-001/REQ-INT-002 (C61, C62): platform events and API-key usage.
+  if (platform('MANAGE_INTEGRATIONS')) {
+    admin.push({
+      key: 'adminIntegrations', labelKey: 'integrations', to: '/admin/integrations/events', icon: Cable,
+      matchPrefixes: ['/admin/integrations'],
+      children: [
+        { key: 'adminPlatformEvents', labelKey: 'platformEvents', to: '/admin/integrations/events', icon: Radio },
+        { key: 'adminApiKeys', labelKey: 'apiKeys', to: '/admin/integrations/api-keys', icon: KeyRound },
       ],
     })
   }

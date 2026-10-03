@@ -6,6 +6,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.oauth2.server.resource.web.authentication.BearerTokenAuthenticationFilter;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
@@ -30,12 +31,18 @@ public class SecurityConfig {
 
     private final KeycloakJwtAuthenticationConverter keycloakJwtAuthenticationConverter;
     private final PermissionAuthorizationManagerFactory permissions;
+    private final ApiKeyAuthenticationFilter apiKeyAuthenticationFilter;
+    private final RateLimitFilter rateLimitFilter;
 
     public SecurityConfig(
             KeycloakJwtAuthenticationConverter keycloakJwtAuthenticationConverter,
-            PermissionAuthorizationManagerFactory permissions) {
+            PermissionAuthorizationManagerFactory permissions,
+            ApiKeyAuthenticationFilter apiKeyAuthenticationFilter,
+            RateLimitFilter rateLimitFilter) {
         this.keycloakJwtAuthenticationConverter = keycloakJwtAuthenticationConverter;
         this.permissions = permissions;
+        this.apiKeyAuthenticationFilter = apiKeyAuthenticationFilter;
+        this.rateLimitFilter = rateLimitFilter;
     }
 
     @Bean
@@ -44,6 +51,10 @@ public class SecurityConfig {
             .cors(cors -> cors.configurationSource(corsConfigurationSource()))
             .csrf(csrf -> csrf.disable())
             .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+            // REQ-INT-001 (C61): X-API-Key authentication before the bearer-token
+            // filter, rate limiting once the caller is known.
+            .addFilterBefore(apiKeyAuthenticationFilter, BearerTokenAuthenticationFilter.class)
+            .addFilterAfter(rateLimitFilter, BearerTokenAuthenticationFilter.class)
             .authorizeHttpRequests(auth -> auth
                 // Order matters here: rules are evaluated top-to-bottom, first match
                 // wins. The ADMIN-only GET /products/admin is a specific case of the
@@ -184,6 +195,9 @@ public class SecurityConfig {
                 // Platform admin dashboard (C53): a read-only, cross-domain
                 // overview — its own permission, distinct from every single-
                 // domain admin capability above (see RbacSeeder's own comment).
+                // REQ-INT-001/REQ-INT-002 (C61, C62): platform events and
+                // API-key administration — its own permission.
+                .requestMatchers("/admin/events/**", "/admin/api-keys/**").access(permissions.platformPermission("MANAGE_INTEGRATIONS"))
                 .requestMatchers("/admin/platform-dashboard/**").access(permissions.platformPermission("VIEW_PLATFORM_DASHBOARD"))
                 // Razorpay calls this directly — no Vyoog user token exists
                 // on that request. Trusted only via its own signature

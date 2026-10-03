@@ -76,6 +76,8 @@ class BusinessDashboardServiceTest {
         subscription.setProductId(product.getId());
         subscription.setOwnerType(RegistrationOwnerType.ORGANIZATION);
         subscription.setOwnerOrganizationId(org.getId());
+        // REQ-SUB-003: seats follow the organization's licensed seats.
+        subscription.setQuantity(Math.max(1, org.getLicensedSeats()));
         subscription.setStatus(SubscriptionStatus.ACTIVE);
         subscription.setStartedAt(Instant.now());
         subscriptionRepository.save(subscription);

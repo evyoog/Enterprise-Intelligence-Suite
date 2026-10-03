@@ -49,6 +49,7 @@ public class PaymentService {
     private final CustomerRepository customerRepository;
     private final NotificationService notificationService;
     private final AuditService auditService;
+    private final PaymentEvents paymentEvents;
 
     @Transactional
     public CreatePaymentResponse createPaymentForInvoice(Long customerId, Long organizationId, Long invoiceId) {
@@ -99,12 +100,14 @@ public class PaymentService {
             notify(invoice, "Payment received", "Invoice " + invoice.getInvoiceNumber() + " is paid.");
             auditService.recordSuccess("PAYMENT_CAPTURED", null, invoice.getOwnerCustomerId(), null,
                 "Payment", payment.getId().toString(), invoice.getOwnerOrganizationId(), "Payment captured for invoice " + invoice.getInvoiceNumber());
+            paymentEvents.captured(payment);
         } else {
             payment.setStatus(PaymentStatus.FAILED);
             payment.setFailureReason(info.failureReason());
             paymentRepository.save(payment);
             auditService.recordSuccess("PAYMENT_FAILED", null, invoice.getOwnerCustomerId(), null,
                 "Payment", payment.getId().toString(), invoice.getOwnerOrganizationId(), "Payment failed for invoice " + invoice.getInvoiceNumber());
+            paymentEvents.failed(payment);
         }
         return toDto(payment, invoice, null);
     }
@@ -160,6 +163,7 @@ public class PaymentService {
             payment.setCapturedAt(Instant.now());
             paymentRepository.save(payment);
             invoiceService.markPaid(invoiceService.getById(payment.getInvoiceId()));
+            paymentEvents.captured(payment);
         });
     }
 
@@ -172,6 +176,7 @@ public class PaymentService {
             payment.setStatus(PaymentStatus.FAILED);
             payment.setFailureReason(paymentEntity.path("error_description").asText(null));
             paymentRepository.save(payment);
+            paymentEvents.failed(payment);
         });
     }
 
@@ -247,6 +252,8 @@ public class PaymentService {
             payment.setStatus(PaymentStatus.CAPTURED);
             payment.setCapturedAt(Instant.now());
             invoiceService.markPaid(invoiceService.getById(payment.getInvoiceId()));
+            payment = paymentRepository.save(payment);
+            paymentEvents.captured(payment);
         }
         payment = paymentRepository.save(payment);
         return toDto(payment, invoiceService.getById(payment.getInvoiceId()), null);

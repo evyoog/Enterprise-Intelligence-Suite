@@ -15,6 +15,9 @@ import com.vyoog.eisplatform.modules.registration.dto.UpdateMfaPolicyRequest;
 import com.vyoog.eisplatform.modules.registration.model.Customer;
 import com.vyoog.eisplatform.modules.registration.service.CurrentCustomerResolver;
 import com.vyoog.eisplatform.modules.registration.service.OrganizationSelfService;
+import com.vyoog.eisplatform.modules.registration.service.SubscriptionSeatService;
+import com.vyoog.eisplatform.modules.registration.dto.SeatSummaryDto;
+import com.vyoog.eisplatform.modules.registration.dto.ChangeSeatsRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -39,6 +42,7 @@ public class OrganizationController {
 
     private final CurrentCustomerResolver currentCustomerResolver;
     private final OrganizationSelfService organizationSelfService;
+    private final SubscriptionSeatService subscriptionSeatService;
 
     @GetMapping
     public OrganizationDto myOrganization(@AuthenticationPrincipal Jwt jwt) {
@@ -102,6 +106,24 @@ public class OrganizationController {
     public List<OrgProductAccessDto> myOrgProducts(@AuthenticationPrincipal Jwt jwt) {
         Customer customer = currentCustomerResolver.resolve(jwt);
         return organizationSelfService.listMyOrgProducts(customer.getId());
+    }
+
+    /** REQ-SUB-003 (C63): the organization's subscriptions with their seats
+     * — MANAGE_ORGANIZATION (checked in the service). */
+    @GetMapping("/subscriptions")
+    public List<SubscriptionDto> organizationSubscriptions(@AuthenticationPrincipal Jwt jwt) {
+        return subscriptionSeatService.listOrganizationSubscriptions(currentCustomerResolver.resolve(jwt).getId());
+    }
+
+    @GetMapping("/subscriptions/{subscriptionId}/seats")
+    public SeatSummaryDto seats(@AuthenticationPrincipal Jwt jwt, @PathVariable Long subscriptionId) {
+        return subscriptionSeatService.summary(currentCustomerResolver.resolve(jwt).getId(), subscriptionId);
+    }
+
+    @PatchMapping("/subscriptions/{subscriptionId}/seats")
+    public SeatSummaryDto changeSeats(@AuthenticationPrincipal Jwt jwt, @PathVariable Long subscriptionId,
+                                      @Valid @RequestBody ChangeSeatsRequest request) {
+        return subscriptionSeatService.changeSeats(currentCustomerResolver.resolve(jwt).getId(), subscriptionId, request.quantity());
     }
 
     @GetMapping("/subscription")

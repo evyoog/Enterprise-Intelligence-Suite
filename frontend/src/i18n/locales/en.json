@@ -364,7 +364,10 @@
       "billing": "Billing",
       "billingInvoicesPayments": "Invoices & payments",
       "paymentGateway": "Payment gateway",
-      "billingSettings": "Billing settings"
+      "billingSettings": "Billing settings",
+      "integrations": "Integrations",
+      "platformEvents": "Platform events",
+      "apiKeys": "API keys"
     },
     "catalogTitle": "Product catalog",
     "catalogSubtitle": "Search and filter the products available on the platform.",
@@ -383,7 +386,8 @@
       "compliance": "Compliance",
       "product": "Product",
       "account": "Account",
-      "help": "Help"
+      "help": "Help",
+      "integrations": "Integrations"
     }
   },
   "mfaReset": {
@@ -543,7 +547,28 @@
       "planLabel": "Plan",
       "save": "Save"
     },
-    "confirmCancel": "This permanently cancels your subscription to {{product}}. Continue?"
+    "confirmCancel": "This permanently cancels your subscription to {{product}}. Continue?",
+    "seats": {
+      "sectionTitle": "Organization subscriptions",
+      "sectionBody": "Seats are shared by your organization's active members. A change takes effect immediately.",
+      "usage": "Seats: {{inUse}} in use of {{quantity}}",
+      "usageLabel": "Seats in use for {{product}}",
+      "label": "Seats",
+      "remove": "Remove a seat",
+      "add": "Add a seat",
+      "save": "Save",
+      "minimum": "Minimum {{minimum}} — seats in use",
+      "notChangeable": "Seats can be changed on active or suspended subscriptions.",
+      "confirmTitle": "Change seats from {{from}} to {{to}}?",
+      "confirmBody": "This takes effect immediately. Billing for seat changes is not set up yet, so nothing is charged or credited now.",
+      "confirm": "Change seats",
+      "updated": "Seats updated.",
+      "error": "Could not change the seats."
+    },
+    "renewal": {
+      "autoRenewOn": "Auto-renew on",
+      "renewsOn": "Renews on {{date}}"
+    }
   },
   "orders": {
     "title": "Orders",
@@ -1077,6 +1102,61 @@
         },
         "securityNote": "For security, Razorpay keys are never typed into, stored by, or shown on this screen. Only whether each key is set, and the key ID masked."
       }
+    },
+    "events": {
+      "title": "Platform events",
+      "subtitle": "Every business event the platform has published, its delivery status and any failures to retry.",
+      "loadError": "Could not load the events.",
+      "retryLoad": "Retry",
+      "retried": "Event queued for another attempt.",
+      "retryError": "Could not retry the event.",
+      "onThisPage": "On this page",
+      "caption": "{{count}} events",
+      "empty": "No events match these filters.",
+      "view": "View",
+      "viewEvent": "View {{type}} event {{id}}",
+      "retry": "Retry",
+      "retryEvent": "Retry {{type}} event {{id}}",
+      "close": "Close",
+      "noReceipts": "No handler has processed this event.",
+      "status": {
+        "PENDING": "Pending",
+        "DELIVERED": "Delivered",
+        "FAILED": "Failed"
+      },
+      "filter": {
+        "type": "Event type",
+        "allTypes": "All event types",
+        "status": "Status",
+        "allStatuses": "All statuses",
+        "from": "From",
+        "to": "To",
+        "clear": "Clear"
+      },
+      "col": {
+        "occurred": "Occurred",
+        "type": "Event type",
+        "aggregate": "Aggregate",
+        "status": "Status",
+        "attempts": "Attempts",
+        "nextAttempt": "Next attempt",
+        "actions": "Actions"
+      },
+      "field": {
+        "eventId": "Event ID",
+        "delivered": "Delivered",
+        "lastError": "Last error",
+        "payload": "Payload",
+        "receipts": "Handler receipts"
+      }
+    },
+    "apiKeys": {
+      "title": "API keys",
+      "subtitle": "Every API key on the platform, who owns it and how much it is used.",
+      "caption": "{{count}} API keys",
+      "owner": "Owner",
+      "requests": "Requests",
+      "empty": "No API keys have been created."
     }
   },
   "checkout": {
@@ -1314,6 +1394,51 @@
       "alreadySubscribed": "You already have an active subscription to {{product}}.",
       "missingDependency": "{{product}} requires {{required}}.",
       "currencyMismatch": "This item is priced in a different currency from the rest of your cart. Check out separately."
+    }
+  },
+  "apiKeys": {
+    "title": "API keys",
+    "description": "Use a key to call the EIS API from your own integrations. A key acts with your permissions, except platform administration.",
+    "create": "Create key",
+    "createTitle": "Create an API key",
+    "createdTitle": "Your new API key",
+    "name": "Name",
+    "nameHelp": "For example the integration that will use it.",
+    "nameRequired": "Enter a name for the key.",
+    "expiresOn": "Expires on (optional)",
+    "expiresHelp": "Leave empty for a key that does not expire.",
+    "createButton": "Create",
+    "createError": "Could not create the key.",
+    "copyWarning": "Copy this key now. You won't be able to see it again.",
+    "yourKey": "API key",
+    "copy": "Copy key",
+    "copied": "Key copied.",
+    "done": "Done",
+    "cancel": "Cancel",
+    "empty": "No API keys yet.",
+    "loadError": "Could not load the API keys.",
+    "retry": "Retry",
+    "revoke": "Revoke",
+    "revokeNamed": "Revoke {{name}}",
+    "revokeTitle": "Revoke {{name}}?",
+    "revokeBody": "Integrations using it stop working immediately. This cannot be undone.",
+    "revoked": "API key revoked.",
+    "revokeError": "Could not revoke the key.",
+    "never": "Never",
+    "neverUsed": "Not used yet",
+    "status": {
+      "ACTIVE": "Active",
+      "REVOKED": "Revoked",
+      "EXPIRED": "Expired"
+    },
+    "col": {
+      "name": "Name",
+      "key": "Key",
+      "status": "Status",
+      "created": "Created",
+      "expires": "Expires",
+      "lastUsed": "Last used",
+      "actions": "Actions"
     }
   }
 }

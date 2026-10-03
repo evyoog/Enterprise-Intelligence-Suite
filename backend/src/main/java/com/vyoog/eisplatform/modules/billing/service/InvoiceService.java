@@ -56,6 +56,8 @@ public class InvoiceService {
     private final NotificationService notificationService;
     private final AuditService auditService;
     private final BillingSettingsService billingSettingsService;
+    /** REQ-INT-002 (C62): InvoiceGenerated. */
+    private final com.vyoog.eisplatform.modules.integration.service.OutboxService outboxService;
 
     /** Called after a subscription is created or renewed. Silently does
      * nothing for a zero-amount plan (nothing to bill) — most of this
@@ -149,6 +151,17 @@ public class InvoiceService {
         auditService.recordSuccess("INVOICE_GENERATED", null, invoice.getOwnerCustomerId(), null,
             "Invoice", invoice.getId().toString(), invoice.getOwnerOrganizationId(),
             "Invoice " + invoice.getInvoiceNumber() + " generated for " + productNames);
+        java.util.Map<String, Object> payload = new java.util.LinkedHashMap<>();
+        payload.put("invoiceId", invoice.getId());
+        payload.put("invoiceNumber", invoice.getInvoiceNumber());
+        payload.put("ownerCustomerId", invoice.getOwnerCustomerId());
+        payload.put("ownerOrganizationId", invoice.getOwnerOrganizationId());
+        payload.put("subscriptionIds", billed.stream().map(b -> b.subscription().getId()).toList());
+        payload.put("currency", invoice.getCurrency().name());
+        payload.put("total", invoice.getTotal());
+        payload.put("dueAt", invoice.getDueAt() == null ? null : invoice.getDueAt().toString());
+        outboxService.publish(com.vyoog.eisplatform.modules.integration.service.PlatformEventTypes.INVOICE_GENERATED,
+            com.vyoog.eisplatform.modules.integration.service.PlatformEventTypes.AGGREGATE_INVOICE, invoice.getId(), payload);
         return invoice;
     }
 

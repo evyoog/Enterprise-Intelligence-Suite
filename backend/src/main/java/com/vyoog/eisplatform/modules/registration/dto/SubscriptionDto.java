@@ -12,6 +12,10 @@ public record SubscriptionDto(
     Instant startedAt,
     Instant expiresAt,
     Long planId,
-    String planName
+    String planName,
+    /** REQ-SUB-003: seats (1 for individual subscriptions). */
+    int quantity,
+    /** REQ-SUB-004: renewed automatically on {@code expiresAt}. */
+    boolean autoRenew
 ) {
 }

@@ -3,6 +3,8 @@ package com.vyoog.eisplatform.modules.registration.service;
 import com.vyoog.eisplatform.common.exception.ResourceNotFoundException;
 import com.vyoog.eisplatform.modules.audit.service.AuditService;
 import com.vyoog.eisplatform.modules.billing.service.InvoiceService;
+import com.vyoog.eisplatform.modules.integration.service.OutboxService;
+import com.vyoog.eisplatform.modules.integration.service.PlatformEventTypes;
 import com.vyoog.eisplatform.modules.notification.model.NotificationCategory;
 import com.vyoog.eisplatform.modules.notification.model.NotificationSeverity;
 import com.vyoog.eisplatform.modules.notification.service.NotificationService;
@@ -26,6 +28,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -46,6 +49,8 @@ public class SubscriptionService {
     private final ProductPlanRepository productPlanRepository;
     private final ProductSubscriptionRepository subscriptionRepository;
     private final CustomerRepository customerRepository;
+    private final com.vyoog.eisplatform.modules.registration.repository.OrganizationRepository organizationRepository;
+    private final com.vyoog.eisplatform.modules.registration.repository.OrganizationMemberRepository memberRepository;
     private final NotificationService notificationService;
     private final AuditService auditService;
     /** REQ-BIL-001.2: generating an invoice is a side effect of subscribing
@@ -54,6 +59,22 @@ public class SubscriptionService {
      * when or whether a subscription activates (FRD Open question 3, still
      * open — decision C47). */
     private final InvoiceService invoiceService;
+    /** REQ-INT-002 (C62): lifecycle events, written in the same transaction. */
+    private final OutboxService outboxService;
+
+    /** REQ-INT-002.8: IDs, status and dates only (BR-2). */
+    private void publish(String eventType, ProductSubscription subscription) {
+        Map<String, Object> payload = new LinkedHashMap<>();
+        payload.put("subscriptionId", subscription.getId());
+        payload.put("productId", subscription.getProductId());
+        payload.put("planId", subscription.getPlanId());
+        payload.put("ownerType", subscription.getOwnerType() == null ? null : subscription.getOwnerType().name());
+        payload.put("ownerCustomerId", subscription.getOwnerCustomerId());
+        payload.put("ownerOrganizationId", subscription.getOwnerOrganizationId());
+        payload.put("status", subscription.getStatus() == null ? null : subscription.getStatus().name());
+        payload.put("expiresAt", subscription.getExpiresAt() == null ? null : subscription.getExpiresAt().toString());
+        outboxService.publish(eventType, PlatformEventTypes.AGGREGATE_SUBSCRIPTION, subscription.getId(), payload);
+    }
 
     /** Every mutation below starts here — resolves the subscription and
      * confirms it belongs to this individual customer, or refuses with the
@@ -135,6 +156,7 @@ public class SubscriptionService {
                 "You're now subscribed to " + product.getName() + "."));
         auditService.recordSuccess("SUBSCRIPTION_CREATED", null, customerId, null,
             "ProductSubscription", productId.toString(), null, "Customer subscribed to product " + productId);
+        publish(PlatformEventTypes.SUBSCRIPTION_CREATED, subscription);
         invoiceService.generateForSubscription(subscription.getId());
 
         return toDto(subscription, product.getName());
@@ -172,6 +194,7 @@ public class SubscriptionService {
                 "You're now subscribed to " + product.getName() + "."));
         auditService.recordSuccess("SUBSCRIPTION_CREATED", null, customerId, null,
             "ProductSubscription", productId.toString(), null, "Customer subscribed to product " + productId + " from the cart");
+        publish(PlatformEventTypes.SUBSCRIPTION_CREATED, subscription);
         return subscription.getId();
     }
 
@@ -196,6 +219,14 @@ public class SubscriptionService {
                 created.setOwnerOrganizationId(organizationId);
                 return created;
             });
+        if (subscription.getId() == null) {
+            // REQ-SUB-003 engineering default: start at the organization's
+            // licensed seats (at least the active members, at least 1).
+            int licensed = organizationRepository.findById(organizationId).map(o -> o.getLicensedSeats()).orElse(0);
+            long active = memberRepository.countByOrganizationIdAndStatus(organizationId,
+                com.vyoog.eisplatform.modules.registration.model.MembershipStatus.ACTIVE);
+            subscription.setQuantity((int) Math.min(SubscriptionSeatService.MAX_SEATS, Math.max(1, Math.max(licensed, active))));
+        }
         subscription.setStatus(SubscriptionStatus.ACTIVE);
         subscription.setStartedAt(Instant.now());
         subscription.setExpiresAt(null);
@@ -204,6 +235,7 @@ public class SubscriptionService {
 
         auditService.recordSuccess("SUBSCRIPTION_CREATED", null, null, null,
             "ProductSubscription", productId.toString(), organizationId, "Organization subscribed to product " + productId);
+        publish(PlatformEventTypes.SUBSCRIPTION_CREATED, subscription);
         invoiceService.generateForSubscription(subscription.getId());
 
         return toDto(subscription, product.getName());
@@ -227,7 +259,9 @@ public class SubscriptionService {
             subscription.getStartedAt(),
             subscription.getExpiresAt(),
             subscription.getPlanId(),
-            planName
+            planName,
+            subscription.getQuantity(),
+            subscription.isAutoRenew()
         );
     }
 
@@ -253,6 +287,7 @@ public class SubscriptionService {
         notify(subscription, "Subscription suspended", "Your subscription has been suspended.");
         auditService.recordSuccess("SUBSCRIPTION_SUSPENDED", null, customerId, null,
             "ProductSubscription", subscriptionId.toString(), null, "Subscription suspended");
+        publish(PlatformEventTypes.SUBSCRIPTION_SUSPENDED, subscription);
         return toDto(subscription);
     }
 
@@ -268,6 +303,7 @@ public class SubscriptionService {
         notify(subscription, "Subscription reactivated", "Your subscription has been reactivated.");
         auditService.recordSuccess("SUBSCRIPTION_REACTIVATED", null, customerId, null,
             "ProductSubscription", subscriptionId.toString(), null, "Subscription reactivated");
+        publish(PlatformEventTypes.SUBSCRIPTION_RESUMED, subscription);
         return toDto(subscription);
     }
 
@@ -284,6 +320,7 @@ public class SubscriptionService {
         notify(subscription, "Subscription cancelled", "Your subscription has been cancelled.");
         auditService.recordSuccess("SUBSCRIPTION_CANCELLED", null, customerId, null,
             "ProductSubscription", subscriptionId.toString(), null, "Subscription cancelled");
+        publish(PlatformEventTypes.SUBSCRIPTION_CANCELLED, subscription);
         return toDto(subscription);
     }
 
@@ -329,6 +366,7 @@ public class SubscriptionService {
         notify(subscription, "Subscription renewed", "Your subscription has been renewed.");
         auditService.recordSuccess("SUBSCRIPTION_RENEWED", null, customerId, null,
             "ProductSubscription", subscriptionId.toString(), null, "Subscription renewed until " + newExpiry);
+        publish(PlatformEventTypes.SUBSCRIPTION_RENEWED, subscription);
         invoiceService.generateForSubscription(subscription.getId());
         return toDto(subscription);
     }
@@ -372,6 +410,7 @@ public class SubscriptionService {
         subscription = subscriptionRepository.save(subscription);
         auditService.recordSuccess("SUBSCRIPTION_PLAN_CHANGED", null, customerId, null,
             "ProductSubscription", subscriptionId.toString(), null, "Plan changed to " + request.planId());
+        publish(PlatformEventTypes.SUBSCRIPTION_CHANGED, subscription);
         return toDto(subscription);
     }
 }

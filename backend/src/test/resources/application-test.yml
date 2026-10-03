@@ -55,6 +55,17 @@ spring:
 # context to start; no test actually calls Keycloak or a real CORS-checked browser.
 app:
   cors-allowed-origins: http://localhost:5173
+  # REQ-INT-002: tests drive OutboxDispatcher directly; the 5-second
+  # scheduled run would otherwise race with assertions on PENDING events.
+  events:
+    dispatcher:
+      enabled: false
+  # REQ-INT-001: the whole suite shares one client IP and the jwt() test
+  # subject; RateLimitFilterTest sets its own small limits.
+  rate-limit:
+    per-key: 1000000
+    per-user: 1000000
+    per-ip: 1000000
 
 vyoog:
   keycloak:

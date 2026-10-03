@@ -364,7 +364,10 @@
       "billing": "Facturación",
       "billingInvoicesPayments": "Facturas y pagos",
       "paymentGateway": "Pasarela de pago",
-      "billingSettings": "Configuración de facturación"
+      "billingSettings": "Configuración de facturación",
+      "integrations": "Integraciones",
+      "platformEvents": "Eventos de la plataforma",
+      "apiKeys": "Claves de API"
     },
     "catalogTitle": "Catálogo de productos",
     "catalogSubtitle": "Busque y filtre los productos disponibles en la plataforma.",
@@ -383,7 +386,8 @@
       "compliance": "Cumplimiento",
       "product": "Producto",
       "account": "Cuenta",
-      "help": "Ayuda"
+      "help": "Ayuda",
+      "integrations": "Integraciones"
     }
   },
   "mfaReset": {
@@ -543,7 +547,28 @@
       "planLabel": "Plan",
       "save": "Guardar"
     },
-    "confirmCancel": "Esto cancela permanentemente tu suscripción a {{product}}. ¿Continuar?"
+    "confirmCancel": "Esto cancela permanentemente tu suscripción a {{product}}. ¿Continuar?",
+    "seats": {
+      "sectionTitle": "Suscripciones de la organización",
+      "sectionBody": "Los puestos se comparten entre los miembros activos de su organización. Un cambio se aplica de inmediato.",
+      "usage": "Puestos: {{inUse}} en uso de {{quantity}}",
+      "usageLabel": "Puestos en uso de {{product}}",
+      "label": "Puestos",
+      "remove": "Quitar un puesto",
+      "add": "Añadir un puesto",
+      "save": "Guardar",
+      "minimum": "Mínimo {{minimum}}: puestos en uso",
+      "notChangeable": "Los puestos se pueden cambiar en suscripciones activas o suspendidas.",
+      "confirmTitle": "¿Cambiar los puestos de {{from}} a {{to}}?",
+      "confirmBody": "El cambio se aplica de inmediato. La facturación de cambios de puestos aún no está configurada, así que ahora no se cobra ni se abona nada.",
+      "confirm": "Cambiar puestos",
+      "updated": "Puestos actualizados.",
+      "error": "No se pudieron cambiar los puestos."
+    },
+    "renewal": {
+      "autoRenewOn": "Renovación automática activada",
+      "renewsOn": "Se renueva el {{date}}"
+    }
   },
   "orders": {
     "title": "Pedidos",
@@ -1077,6 +1102,61 @@
         },
         "securityNote": "Por seguridad, las claves de Razorpay nunca se escriben, guardan ni muestran en esta pantalla. Solo si cada clave está configurada y el ID de clave enmascarado."
       }
+    },
+    "events": {
+      "title": "Eventos de la plataforma",
+      "subtitle": "Cada evento de negocio publicado por la plataforma, su estado de entrega y los fallos que se pueden reintentar.",
+      "loadError": "No se pudieron cargar los eventos.",
+      "retryLoad": "Reintentar",
+      "retried": "El evento se volverá a intentar.",
+      "retryError": "No se pudo reintentar el evento.",
+      "onThisPage": "En esta página",
+      "caption": "{{count}} eventos",
+      "empty": "Ningún evento coincide con estos filtros.",
+      "view": "Ver",
+      "viewEvent": "Ver el evento {{type}} {{id}}",
+      "retry": "Reintentar",
+      "retryEvent": "Reintentar el evento {{type}} {{id}}",
+      "close": "Cerrar",
+      "noReceipts": "Ningún manejador ha procesado este evento.",
+      "status": {
+        "PENDING": "Pendiente",
+        "DELIVERED": "Entregado",
+        "FAILED": "Fallido"
+      },
+      "filter": {
+        "type": "Tipo de evento",
+        "allTypes": "Todos los tipos",
+        "status": "Estado",
+        "allStatuses": "Todos los estados",
+        "from": "Desde",
+        "to": "Hasta",
+        "clear": "Limpiar"
+      },
+      "col": {
+        "occurred": "Fecha",
+        "type": "Tipo de evento",
+        "aggregate": "Agregado",
+        "status": "Estado",
+        "attempts": "Intentos",
+        "nextAttempt": "Próximo intento",
+        "actions": "Acciones"
+      },
+      "field": {
+        "eventId": "ID del evento",
+        "delivered": "Entregado",
+        "lastError": "Último error",
+        "payload": "Contenido",
+        "receipts": "Recibos de manejadores"
+      }
+    },
+    "apiKeys": {
+      "title": "Claves de API",
+      "subtitle": "Todas las claves de API de la plataforma, su propietario y su uso.",
+      "caption": "{{count}} claves de API",
+      "owner": "Propietario",
+      "requests": "Solicitudes",
+      "empty": "No se ha creado ninguna clave de API."
     }
   },
   "checkout": {
@@ -1314,6 +1394,51 @@
       "alreadySubscribed": "Ya tienes una suscripción activa a {{product}}.",
       "missingDependency": "{{product}} requiere {{required}}.",
       "currencyMismatch": "Este artículo tiene un precio en otra moneda que el resto de tu carrito. Págalo por separado."
+    }
+  },
+  "apiKeys": {
+    "title": "Claves de API",
+    "description": "Use una clave para llamar a la API de EIS desde sus propias integraciones. La clave actúa con sus permisos, salvo la administración de la plataforma.",
+    "create": "Crear clave",
+    "createTitle": "Crear una clave de API",
+    "createdTitle": "Su nueva clave de API",
+    "name": "Nombre",
+    "nameHelp": "Por ejemplo, la integración que la usará.",
+    "nameRequired": "Escriba un nombre para la clave.",
+    "expiresOn": "Caduca el (opcional)",
+    "expiresHelp": "Déjelo vacío para una clave que no caduca.",
+    "createButton": "Crear",
+    "createError": "No se pudo crear la clave.",
+    "copyWarning": "Copie esta clave ahora. No podrá volver a verla.",
+    "yourKey": "Clave de API",
+    "copy": "Copiar clave",
+    "copied": "Clave copiada.",
+    "done": "Listo",
+    "cancel": "Cancelar",
+    "empty": "Todavía no hay claves de API.",
+    "loadError": "No se pudieron cargar las claves de API.",
+    "retry": "Reintentar",
+    "revoke": "Revocar",
+    "revokeNamed": "Revocar {{name}}",
+    "revokeTitle": "¿Revocar {{name}}?",
+    "revokeBody": "Las integraciones que la usan dejan de funcionar de inmediato. No se puede deshacer.",
+    "revoked": "Clave de API revocada.",
+    "revokeError": "No se pudo revocar la clave.",
+    "never": "Nunca",
+    "neverUsed": "Aún no se ha usado",
+    "status": {
+      "ACTIVE": "Activa",
+      "REVOKED": "Revocada",
+      "EXPIRED": "Caducada"
+    },
+    "col": {
+      "name": "Nombre",
+      "key": "Clave",
+      "status": "Estado",
+      "created": "Creada",
+      "expires": "Caduca",
+      "lastUsed": "Último uso",
+      "actions": "Acciones"
     }
   }
 }

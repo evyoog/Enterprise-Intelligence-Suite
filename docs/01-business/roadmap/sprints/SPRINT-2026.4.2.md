@@ -113,7 +113,7 @@ Full breakdown: [applications/13-integration-api-platform.md](../applications/13
 
 ### Related code already in this repository
 
-New this sprint: `backend/…/modules/events` (outbox, dispatcher, admin API), `backend/…/modules/apikeys` (API keys, rate limiting, `/v1` alias); `frontend/src/pages/admin/AdminPlatformEventsPage.tsx`, `frontend/src/pages/admin/AdminApiKeysPage.tsx`, `frontend/src/components/security/ApiKeysSection.tsx`.
+New this sprint: `backend/…/modules/integration` (outbox, dispatcher, admin events API; API keys), `backend/…/config` (`ApiKeyAuthenticationFilter`, `RateLimitFilter`, `ApiVersionFilter`); `frontend/src/pages/admin/AdminPlatformEventsPage.tsx`, `frontend/src/pages/admin/AdminApiKeysPage.tsx`, `frontend/src/components/security/ApiKeysSection.tsx`.
 
 ## EIS 15a Administration & Governance: platform administration
 

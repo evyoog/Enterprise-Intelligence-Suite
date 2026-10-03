@@ -8,6 +8,8 @@ import com.vyoog.eisplatform.modules.registration.model.Organization;
 import com.vyoog.eisplatform.modules.registration.model.OrganizationMember;
 import com.vyoog.eisplatform.modules.registration.repository.OrganizationMemberRepository;
 import com.vyoog.eisplatform.modules.registration.repository.OrganizationRepository;
+import com.vyoog.eisplatform.modules.registration.repository.ProductSubscriptionRepository;
+import com.vyoog.eisplatform.modules.registration.model.SubscriptionStatus;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -30,6 +32,7 @@ public class OrganizationMemberService {
 
     private final OrganizationMemberRepository memberRepository;
     private final OrganizationRepository organizationRepository;
+    private final ProductSubscriptionRepository subscriptionRepository;
 
     /** Throws if the organization has no free seat left. Callers must call
      * this immediately before inserting the new ACTIVE member row, inside
@@ -50,6 +53,16 @@ public class OrganizationMemberService {
                     + "Ask your Vyoog account manager to increase your seat limit, or free a seat first."
             );
         }
+        // REQ-SUB-003.4 (C63, BR-4): every ACTIVE organization subscription's
+        // seat quantity is also a limit on the pool of active members.
+        subscriptionRepository.findByOwnerOrganizationId(organizationId).stream()
+            .filter(s -> s.getStatus() == SubscriptionStatus.ACTIVE)
+            .filter(s -> activeCount >= s.getQuantity())
+            .findFirst()
+            .ifPresent(s -> {
+                throw new SeatLimitExceededException("All " + s.getQuantity() + " seats of a subscription are in use. "
+                    + "Add seats to the subscription, or free a seat first.");
+            });
     }
 
     public OrganizationMember addMember(Long organizationId, Long customerId, OrgRole orgRole) {

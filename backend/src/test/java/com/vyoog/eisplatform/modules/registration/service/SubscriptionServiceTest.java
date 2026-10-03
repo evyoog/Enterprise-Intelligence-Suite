@@ -50,6 +50,8 @@ class SubscriptionServiceTest {
     private OrganizationRepository organizationRepository;
     @Autowired
     private ProductSubscriptionRepository subscriptionRepository;
+    @Autowired
+    private com.vyoog.eisplatform.modules.integration.repository.OutboxEventRepository outboxEventRepository;
 
     private Product newProduct() {
         Product product = new Product();
@@ -231,5 +233,21 @@ class SubscriptionServiceTest {
         Long someCustomerId = newCustomer().getId();
         assertThatThrownBy(() -> subscriptionService.suspendSubscription(someCustomerId, orgSubscriptionId))
             .isInstanceOf(ResourceNotFoundException.class);
+    }
+
+    /** REQ-INT-002.8 (C62): lifecycle changes publish their events in the same transaction. */
+    @Test
+    void lifecycleChangesPublishPlatformEvents() {
+        Product product = newProduct();
+        Long customerId = newCustomer().getId();
+        Long subscriptionId = subscriptionService.subscribe(customerId, product.getId()).id();
+        subscriptionService.suspendSubscription(customerId, subscriptionId);
+        subscriptionService.reactivateSubscription(customerId, subscriptionId);
+        subscriptionService.cancelSubscription(customerId, subscriptionId);
+
+        var events = outboxEventRepository.findByAggregateTypeAndAggregateIdOrderByIdAsc("Subscription", subscriptionId.toString());
+        assertThat(events).extracting(e -> e.getEventType())
+            .containsExactly("SubscriptionCreated", "SubscriptionSuspended", "SubscriptionResumed", "SubscriptionCancelled");
+        assertThat(events.get(0).getPayload()).contains("\"subscriptionId\":" + subscriptionId, "\"status\":\"ACTIVE\"");
     }
 }

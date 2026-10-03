@@ -10,6 +10,7 @@ import { ApiError } from '../api/client'
 import { productsApi, type ProductPlan } from '../api/productsApi'
 import { myProductsApi, type Subscription, type SubscriptionStatus } from '../api/registrationApi'
 import { PageHeader } from '../components/layout/PageHeader'
+import { OrganizationSubscriptionsSection } from '../components/subscriptions/OrganizationSubscriptionsSection'
 
 type Action = 'suspend' | 'reactivate' | 'cancel' | 'renew'
 
@@ -84,6 +85,9 @@ export function MySubscriptionsPage() {
           />
         ))}
       </Box>
+
+      {/* REQ-SUB-003 (C63): organization subscriptions and their seats (MANAGE_ORGANIZATION only). */}
+      <OrganizationSubscriptionsSection />
 
       {planDialogFor && (
         <ChangePlanDialog
