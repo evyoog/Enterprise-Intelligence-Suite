@@ -62,12 +62,12 @@
     "appearance": "Apariencia",
     "theme": "Tema",
     "reducedMotion": "Reducir movimiento",
-    "reducedMotionHint": "Desactiva las animaciones de entrada y el movimiento al pasar el cursor de esta aplicación, además de lo que ya prefiera tu sistema operativo.",
+    "reducedMotionHint": "Desactiva el movimiento innecesario de la interfaz, además de lo que ya prefiera su sistema operativo.",
     "languageAndFormats": "Idioma y formatos",
     "language": "Idioma",
     "region": "Región",
     "regionHint": "Define el formato de fechas y números, salvo que elija un formato de fecha u hora abajo.",
-    "browserDefault": "Usar el valor predeterminado de mi navegador",
+    "browserDefault": "Según el navegador",
     "timeZone": "Zona horaria",
     "renewalReminders": {
       "title": "Recordatorios de renovación",
@@ -110,7 +110,7 @@
     },
     "accent": {
       "label": "Color de acento",
-      "hint": "Elija el color de botones, enlaces, elementos seleccionados y foco en su interfaz de EIS.",
+      "hint": "Elija el color usado en su interfaz de EIS.",
       "indigo": "Índigo",
       "blue": "Azul",
       "violet": "Violeta",
@@ -143,6 +143,24 @@
       "securityOff": "Los correos de seguridad están desactivados. Seguirá viendo las alertas de seguridad en el menú de notificaciones.",
       "loadError": "No se pudo cargar su configuración de notificaciones.",
       "saveError": "No se pudo guardar su configuración de notificaciones."
+    },
+    "themeHint": "Elija la apariencia de EIS.",
+    "languageHint": "El idioma usado en EIS.",
+    "timeZoneHint": "Se usa para horas y recordatorios.",
+    "dateFormatHint": "Cómo se escriben las fechas.",
+    "timeFormatHint": "Reloj de 12 o de 24 horas.",
+    "weekStartHint": "Se usa donde EIS muestra semanas o calendarios.",
+    "nav": {
+      "heading": "Preferencias",
+      "selector": "Sección",
+      "appearance": "Apariencia",
+      "appearanceHint": "Tema, movimiento y acento",
+      "formats": "Idioma y formatos",
+      "formatsHint": "Idioma, región y formatos",
+      "notifications": "Notificaciones",
+      "notificationsHint": "Correo y en la aplicación",
+      "renewals": "Recordatorios de renovación",
+      "renewalsHint": "Antes de que se renueven las suscripciones"
     }
   },
   "common": {

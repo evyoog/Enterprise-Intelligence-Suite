@@ -62,12 +62,12 @@
     "appearance": "Appearance",
     "theme": "Theme",
     "reducedMotion": "Reduce motion",
-    "reducedMotionHint": "Turns off this app's own entrance animations and hover motion, on top of whatever your operating system already prefers.",
+    "reducedMotionHint": "Turns off unnecessary interface motion, on top of what your operating system already prefers.",
     "languageAndFormats": "Language & Formats",
     "language": "Language",
     "region": "Region",
     "regionHint": "Sets date and number formatting unless you choose a date or time format below.",
-    "browserDefault": "Use my browser's default",
+    "browserDefault": "Browser default",
     "timeZone": "Time zone",
     "renewalReminders": {
       "title": "Renewal Reminders",
@@ -110,7 +110,7 @@
     },
     "accent": {
       "label": "Accent color",
-      "hint": "Choose the color used for buttons, links, selected items and focus across your EIS interface.",
+      "hint": "Choose the color used across your EIS interface.",
       "indigo": "Indigo",
       "blue": "Blue",
       "violet": "Violet",
@@ -143,6 +143,24 @@
       "securityOff": "Security emails are off. You'll still see security alerts in the notification menu.",
       "loadError": "Could not load your notification settings.",
       "saveError": "Could not save your notification settings."
+    },
+    "themeHint": "Choose the appearance of EIS.",
+    "languageHint": "The language used across EIS.",
+    "timeZoneHint": "Used for times and reminders.",
+    "dateFormatHint": "How dates are written.",
+    "timeFormatHint": "12-hour or 24-hour clock.",
+    "weekStartHint": "Used where EIS shows weeks or calendars.",
+    "nav": {
+      "heading": "Preferences",
+      "selector": "Section",
+      "appearance": "Appearance",
+      "appearanceHint": "Theme, motion and accent",
+      "formats": "Language & Formats",
+      "formatsHint": "Language, region and formats",
+      "notifications": "Notifications",
+      "notificationsHint": "Email and in-app",
+      "renewals": "Renewal Reminders",
+      "renewalsHint": "Before subscriptions renew"
     }
   },
   "common": {
