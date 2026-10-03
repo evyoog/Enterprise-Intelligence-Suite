@@ -1,3 +1,5 @@
+import { Globe as PHGlobe } from 'lucide-react'
+import { PageHeader } from '../../../components/layout/PageHeader'
 import { useEffect, useState } from 'react'
 import {
   Alert, Box, Button, Chip, Divider, IconButton, Paper, Switch, TextField, Typography,
@@ -22,14 +24,7 @@ import {
 export function CommonSettingsPage() {
   return (
     <Box sx={{ maxWidth: 720, display: 'flex', flexDirection: 'column', gap: 3 }}>
-      <Box>
-        <Typography variant="h4" sx={{ fontWeight: 700, mb: 1 }}>
-          Common
-        </Typography>
-        <Typography sx={{ color: 'text.secondary' }}>
-          Platform-wide currencies, regions and feature flags.
-        </Typography>
-      </Box>
+      <PageHeader icon={PHGlobe} accent="teal" area="settings" title="Common" subtitle="Platform-wide currencies, regions and feature flags." />
       <LanguagesSection />
       <CurrenciesSection />
       <RegionsSection />

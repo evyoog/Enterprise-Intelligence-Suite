@@ -1,3 +1,4 @@
+import { KeyRound as PHKeyRound } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import {
@@ -148,7 +149,7 @@ export function OrganizationSamlProvidersPage() {
   return (
     <Box>
       <Box sx={{ pb: 4 }}>
-        <PageHeader title="Identity Federation" subtitle="Let your organization's members sign in through your own SAML identity provider" />
+        <PageHeader icon={PHKeyRound} accent="indigo" area="organization" title="Identity Federation" subtitle="Let your organization's members sign in through your own SAML identity provider" />
 
         {organizationId !== null && (
           <Alert severity="info" sx={{ mb: 3 }}>

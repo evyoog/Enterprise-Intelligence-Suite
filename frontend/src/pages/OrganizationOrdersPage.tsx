@@ -1,3 +1,4 @@
+import { ClipboardList as PHClipboardList } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import {
@@ -88,7 +89,7 @@ export function OrganizationOrdersPage() {
 
   return (
     <Box>
-      <PageHeader title={t('orders.title')} subtitle={t('orders.subtitle')} />
+      <PageHeader icon={PHClipboardList} accent="amber" area="organization" title={t('orders.title')} subtitle={t('orders.subtitle')} />
 
       {actionError && <Alert severity="error" sx={{ mb: 2 }} onClose={() => setActionError(null)}>{actionError}</Alert>}
 

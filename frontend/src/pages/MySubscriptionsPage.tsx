@@ -1,3 +1,4 @@
+import { Repeat as PHRepeat } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import {
@@ -59,7 +60,7 @@ export function MySubscriptionsPage() {
 
   return (
     <Box>
-      <PageHeader
+      <PageHeader icon={PHRepeat} accent="violet" area="workspace"
         title={t('subscriptions.title')}
         subtitle={t('subscriptions.subtitle')}
         action={<Button component={RouterLink} to="/my/products" size="small" variant="outlined">{t('subscriptions.backToDashboard')}</Button>}

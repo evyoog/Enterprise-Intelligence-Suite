@@ -1,4 +1,6 @@
-import { Box, Typography } from '@mui/material'
+import { Layers as PHLayers } from 'lucide-react'
+import { PageHeader } from '../../../components/layout/PageHeader'
+import { Box } from '@mui/material'
 import { platformsApi } from '../../../api/platformsApi'
 import { PlatformForm } from '../../../components/admin/PlatformForm'
 
@@ -6,12 +8,7 @@ import { PlatformForm } from '../../../components/admin/PlatformForm'
 export function PlatformSettingsPage() {
   return (
     <Box sx={{ maxWidth: 560 }}>
-      <Typography variant="h4" sx={{ fontWeight: 700, mb: 1 }}>
-        Platform
-      </Typography>
-      <Typography sx={{ color: 'text.secondary', mb: 4 }}>
-        Add a new high-level platform (e.g. Thittam) to group apps under.
-      </Typography>
+      <PageHeader icon={PHLayers} accent="indigo" area="settings" title="Platform" subtitle="Add a new high-level platform (e.g. Thittam) to group apps under." />
 
       <PlatformForm
         onSubmit={platformsApi.create}

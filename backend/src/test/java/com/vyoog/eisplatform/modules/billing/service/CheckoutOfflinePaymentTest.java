@@ -171,7 +171,8 @@ class CheckoutOfflinePaymentTest {
     void bankDetailsAreSavedAndShownOnTheOfflineResult() {
         Customer admin = newCustomer();
         offlinePaymentService.saveBankDetails(admin.getId(),
-            new SaveOfflineBankDetailsRequest("eVyoog Pvt Ltd", "HDFC Bank", "50200012345678", "hdfc0001234", ""));
+            new SaveOfflineBankDetailsRequest("eVyoog Pvt Ltd", "HDFC Bank", null, "50200012345678", null, "hdfc0001234", "",
+                null, null, null, null, null, null, null, null, null));
 
         Customer customer = newCustomer();
         Invoice invoice = newOpenInvoice(customer);

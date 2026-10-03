@@ -1,3 +1,4 @@
+import { Package as PHPackage } from 'lucide-react'
 import { useBuy } from '../components/cart/useBuy'
 import { useEffect, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
@@ -110,7 +111,7 @@ export function ProductDetailPage() {
 
   return (
     <Box sx={{ maxWidth: 880 }}>
-      <PageHeader title={product.name} subtitle={product.category} />
+      <PageHeader icon={PHPackage} accent="blue" area="product" title={product.name} subtitle={product.category} />
 
       <Paper variant="outlined" sx={{ p: 3, mb: 3 }}>
         <Box sx={{ display: 'flex', gap: 2.5, flexWrap: 'wrap' }}>

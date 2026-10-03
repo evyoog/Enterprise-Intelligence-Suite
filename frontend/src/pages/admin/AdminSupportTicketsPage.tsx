@@ -1,3 +1,4 @@
+import { LifeBuoy as PHLifeBuoy } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import {
@@ -87,7 +88,7 @@ export function AdminSupportTicketsPage() {
 
   return (
     <Box>
-      <PageHeader title={t('support.admin.title')} />
+      <PageHeader icon={PHLifeBuoy} accent="rose" area="support" title={t('support.admin.title')} />
       {loadError && <Alert severity="error" sx={{ mb: 2 }}>{loadError}</Alert>}
 
       <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>

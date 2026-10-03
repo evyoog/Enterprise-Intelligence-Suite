@@ -1,3 +1,5 @@
+import { Package as PHPackage } from 'lucide-react'
+import { PageHeader } from '../../components/layout/PageHeader'
 import { useEffect, useState } from 'react'
 import { Alert, Box, Button, Chip, CircularProgress, Typography } from '@mui/material'
 import { ArrowLeft } from 'lucide-react'
@@ -44,15 +46,9 @@ export function EditProductPage() {
         Back
       </Button>
 
-      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
-        <Typography variant="h4" sx={{ fontWeight: 700 }}>
-          Edit app
-        </Typography>
-        {product && <Chip size="small" label={`Version ${product.version}`} />}
-      </Box>
-      <Typography sx={{ color: 'text.secondary', mb: 2 }}>
-        Update this app's details, pricing, SSO status, or availability.
-      </Typography>
+      <PageHeader icon={PHPackage} accent="blue" area="catalog" title="Edit app"
+        subtitle="Update this app's details, pricing, SSO status, or availability."
+        action={product ? <Chip color="primary" variant="outlined" label={`Version ${product.version}`} /> : undefined} />
 
       {product && (
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 3 }}>

@@ -23,6 +23,12 @@ public record CheckoutSummaryDto(
     Instant dueAt,
     String billingEmail,
     boolean gatewayConfigured,
-    boolean payByInvoiceAllowed
+    boolean payByInvoiceAllowed,
+    /** C60: online methods offered (card, upi, netbanking, wallet), in tile order. */
+    java.util.List<String> enabledMethods,
+    /** C60: Razorpay Checkout appearance, from Billing settings; null = defaults. */
+    String checkoutName,
+    String checkoutDescription,
+    String checkoutThemeColor
 ) {
 }

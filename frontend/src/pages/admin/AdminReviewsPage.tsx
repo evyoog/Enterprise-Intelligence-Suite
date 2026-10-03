@@ -1,3 +1,4 @@
+import { Star as PHStar } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Alert, Box, Button, Chip, Paper, Rating, Typography } from '@mui/material'
@@ -38,7 +39,7 @@ export function AdminReviewsPage() {
 
   return (
     <Box>
-      <PageHeader title={t('reviews.admin.title')} />
+      <PageHeader icon={PHStar} accent="amber" area="content" title={t('reviews.admin.title')} />
       {loadError && <Alert severity="error" sx={{ mb: 2 }}>{loadError}</Alert>}
 
       <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>

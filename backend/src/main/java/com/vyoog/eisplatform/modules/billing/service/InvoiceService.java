@@ -55,6 +55,7 @@ public class InvoiceService {
     private final CustomerRepository customerRepository;
     private final NotificationService notificationService;
     private final AuditService auditService;
+    private final BillingSettingsService billingSettingsService;
 
     /** Called after a subscription is created or renewed. Silently does
      * nothing for a zero-amount plan (nothing to bill) — most of this
@@ -135,9 +136,12 @@ public class InvoiceService {
             invoice.getLines().add(line);
         }
 
-        invoice.setDueAt(invoice.getIssuedAt() != null ? invoice.getIssuedAt() : Instant.now());
+        // C60: due date = issue date + the payment terms set in Billing settings (0 = due on issue, as C47).
+        var settings = billingSettingsService.current();
+        Instant issued = invoice.getIssuedAt() != null ? invoice.getIssuedAt() : Instant.now();
+        invoice.setDueAt(issued.plus(settings.getPaymentTermsDays(), java.time.temporal.ChronoUnit.DAYS));
         invoice = invoiceRepository.save(invoice);
-        invoice.setInvoiceNumber(formatInvoiceNumber(invoice));
+        invoice.setInvoiceNumber(formatInvoiceNumber(invoice, settings.getInvoicePrefix()));
         invoice = invoiceRepository.save(invoice);
 
         String productNames = String.join(", ", billed.stream().map(b -> b.product().getName()).toList());
@@ -152,9 +156,11 @@ public class InvoiceService {
      * this pass uses {@code INV-<year>-<id, zero-padded to 6>}, unique and
      * immutable once set (BR-3), easy to read, and never needs a separate
      * per-year counter since the id itself is already unique. */
-    private String formatInvoiceNumber(Invoice invoice) {
+    private String formatInvoiceNumber(Invoice invoice, String prefix) {
         int year = invoice.getIssuedAt().atZone(ZoneOffset.UTC).getYear();
-        return "INV-" + year + "-" + String.format("%06d", invoice.getId());
+        // C60: the prefix is set in Billing settings (default "INV"); numbers already issued never change.
+        String p = prefix == null || prefix.isBlank() ? "INV" : prefix;
+        return p + "-" + year + "-" + String.format("%06d", invoice.getId());
     }
 
     private long toMinorUnits(BigDecimal price) {

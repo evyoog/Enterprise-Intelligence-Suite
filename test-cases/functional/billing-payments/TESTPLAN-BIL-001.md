@@ -13,3 +13,6 @@ TC-BIL-009 to TC-BIL-018 cover the three-step checkout (payment options, consent
 
 ## Redesigned checkout (C59, REQ-BIL-001.18, .22, .23)
 TC-BIL-019 to TC-BIL-023 cover the redesigned Payment step (breadcrumb, billing summary, Amount due, method tiles, cart summary), Netbanking and Wallets preselection, saved cards, the Complete order button and the payment brand assets. Cart-side cases are in [TESTPLAN-MKT-003](../cart-checkout/TESTPLAN-MKT-003.md).
+
+## Billing settings (C60, REQ-BIL-001.24)
+TC-BIL-024 to TC-BIL-028: business profile and invoicing (prefix, payment terms, issuer on documents), full offline details and accepted methods, payment-method switches and Razorpay Checkout appearance, the Razorpay credentials view (BR-SEC-001), accessibility.

@@ -1,3 +1,4 @@
+import { Handshake as PHHandshake } from 'lucide-react'
 import { useState, type FormEvent } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Alert, Box, Button, Paper, TextField, Typography } from '@mui/material'
@@ -49,7 +50,7 @@ export function ProviderApplicationPage() {
   if (submitted) {
     return (
       <Box>
-        <PageHeader title={t('partners.apply.title')} />
+        <PageHeader icon={PHHandshake} accent="pink" area="partners" title={t('partners.apply.title')} />
         <Alert severity="success">{t('partners.apply.submitted')}</Alert>
       </Box>
     )
@@ -57,7 +58,7 @@ export function ProviderApplicationPage() {
 
   return (
     <Box>
-      <PageHeader title={t('partners.apply.title')} subtitle={t('partners.apply.subtitle')} />
+      <PageHeader icon={PHHandshake} accent="pink" area="partners" title={t('partners.apply.title')} subtitle={t('partners.apply.subtitle')} />
       <Paper variant="outlined" sx={{ p: 2.5, maxWidth: 480 }}>
         {error && <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>}
         <Box component="form" onSubmit={handleSubmit} sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>

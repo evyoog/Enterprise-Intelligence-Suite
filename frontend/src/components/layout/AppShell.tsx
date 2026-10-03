@@ -4,6 +4,7 @@ import {
   AppBar, Avatar, Box, Collapse, Divider, Drawer, IconButton, List, ListItemButton, ListItemIcon,
   ListItemText, ListSubheader, Menu, MenuItem, Toolbar, Tooltip, Typography, useMediaQuery, useTheme,
 } from '@mui/material'
+import { alpha } from '@mui/material/styles'
 import { ChevronDown, ChevronRight, LogOut, Menu as MenuIcon, Moon, Palette, Search as SearchIcon, Sun, UserCog } from 'lucide-react'
 import { Link as RouterLink, Navigate, Outlet, useLocation, useNavigate } from 'react-router-dom'
 import { useAuth } from '../../auth/AuthProvider'
@@ -11,6 +12,7 @@ import { myPermissionsApi, type MyPermissions } from '../../api/myPermissionsApi
 import { useThemeMode } from '../../theming/ThemeModeProvider'
 import { NotificationBell } from './NotificationBell'
 import { CartButton } from '../cart/CartButton'
+import { accentColor, accentFor, BRAND_STRIPE } from '../../theming/accents'
 import { TopBarSearch } from './TopBarSearch'
 import { AppShellContext } from './appShellContext'
 import { appHomePath, buildAppNavigation, isNavItemActive, type AppNavItem } from './appNavigation'
@@ -72,8 +74,31 @@ export function AppShell() {
   const home = appHomePath(auth.isAdmin)
   const closeMobile = () => setMobileOpen(false)
 
-  const renderItem = (item: AppNavItem, nested = false) => {
+  // C60: every menu item has its own accent colour, so sections are easy to scan.
+  const navIcon = (item: AppNavItem, nested: boolean, active: boolean) => {
     const Icon = item.icon
+    const color = accentColor(accentFor(item.key), theme.palette.mode)
+    return (
+      <ListItemIcon sx={{ minWidth: 38 }}>
+        <Box aria-hidden sx={{
+          width: nested ? 24 : 28, height: nested ? 24 : 28, borderRadius: 2, display: 'grid', placeItems: 'center',
+          color: active ? (theme.palette.mode === 'dark' ? '#0b1220' : '#fff') : color, bgcolor: active ? color : alpha(color, theme.palette.mode === 'dark' ? 0.18 : 0.1),
+          transition: 'background-color .15s, color .15s',
+        }}>
+          <Icon size={nested ? 14 : 16} />
+        </Box>
+      </ListItemIcon>
+    )
+  }
+  const activeSx = (item: AppNavItem) => {
+    const color = accentColor(accentFor(item.key), theme.palette.mode)
+    return {
+      '&.Mui-selected, &.Mui-selected:hover': { bgcolor: alpha(color, theme.palette.mode === 'dark' ? 0.16 : 0.09) },
+      '&.Mui-selected .MuiListItemText-primary': { fontWeight: 700, color: 'text.primary' },
+    }
+  }
+
+  const renderItem = (item: AppNavItem, nested = false) => {
     const active = isNavItemActive(item, location.pathname)
     if (item.children) {
       const open = openGroups[item.key] ?? active
@@ -84,7 +109,7 @@ export function AppShell() {
             aria-expanded={open}
             sx={{ borderRadius: 1.5, mx: 1 }}
           >
-            <ListItemIcon sx={{ minWidth: 34 }}><Icon size={18} /></ListItemIcon>
+            {navIcon(item, false, false)}
             <ListItemText primary={t(`appShell.nav.${item.labelKey}`)} />
             {open ? <ChevronDown size={16} /> : <ChevronRight size={16} />}
           </ListItemButton>
@@ -104,9 +129,9 @@ export function AppShell() {
         selected={active}
         aria-current={active ? 'page' : undefined}
         onClick={closeMobile}
-        sx={{ borderRadius: 1.5, mx: 1, pl: nested ? 4 : 2 }}
+        sx={{ borderRadius: 1.5, mx: 1, pl: nested ? 4 : 2, ...activeSx(item) }}
       >
-        <ListItemIcon sx={{ minWidth: 34 }}><Icon size={nested ? 16 : 18} /></ListItemIcon>
+        {navIcon(item, nested, active)}
         <ListItemText primary={t(`appShell.nav.${item.labelKey}`)} />
       </ListItemButton>
     )
@@ -127,7 +152,7 @@ export function AppShell() {
           </Typography>
         </Box>
       </Toolbar>
-      <Divider />
+      <Box aria-hidden sx={{ height: 3, backgroundImage: BRAND_STRIPE }} />
       <Box component="nav" aria-label={t('appShell.sidebarLabel')} sx={{ flexGrow: 1, overflowY: 'auto', py: 1 }}>
         {sections.map((section) => (
           <List

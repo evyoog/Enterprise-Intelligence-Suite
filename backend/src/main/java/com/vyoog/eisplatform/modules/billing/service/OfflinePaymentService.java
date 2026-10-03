@@ -9,6 +9,7 @@ import com.vyoog.eisplatform.modules.billing.dto.SaveOfflineBankDetailsRequest;
 import com.vyoog.eisplatform.modules.billing.model.BillingSettings;
 import com.vyoog.eisplatform.modules.billing.model.Invoice;
 import com.vyoog.eisplatform.modules.billing.model.InvoiceStatus;
+import com.vyoog.eisplatform.modules.billing.model.OfflinePaymentMethod;
 import com.vyoog.eisplatform.modules.billing.model.Payment;
 import com.vyoog.eisplatform.modules.billing.model.PaymentRoute;
 import com.vyoog.eisplatform.modules.billing.model.PaymentStatus;
@@ -58,6 +59,10 @@ public class OfflinePaymentService {
             // Partial offline payments: Not specified (FRD Open question 16).
             throw new IllegalArgumentException("The amount received must equal the open amount of the invoice.");
         }
+        if (!acceptedMethod(request.method())) {
+            // C60: the admin has switched this offline method off.
+            throw new IllegalArgumentException("This offline payment method is not accepted.");
+        }
         if (request.receivedOn().isAfter(LocalDate.now(ZoneOffset.UTC))) {
             throw new IllegalArgumentException("The date received cannot be in the future.");
         }
@@ -93,18 +98,43 @@ public class OfflinePaymentService {
     }
 
     public OfflineBankDetailsDto bankDetails() {
-        return settingsRepository.findFirstByOrderByIdAsc().map(this::toDto)
-            .orElse(new OfflineBankDetailsDto(null, null, null, null, null, null));
+        return settingsRepository.findFirstByOrderByIdAsc().map(this::toDto).orElse(OfflineBankDetailsDto.empty());
+    }
+
+    private boolean acceptedMethod(OfflinePaymentMethod method) {
+        OfflineBankDetailsDto d = bankDetails();
+        return switch (method) {
+            case BANK_TRANSFER -> d.bankTransferEnabled();
+            case NEFT_RTGS -> d.neftRtgsEnabled();
+            case CHEQUE -> d.chequeEnabled();
+        };
     }
 
     @Transactional
-    public OfflineBankDetailsDto saveBankDetails(Long adminCustomerId, SaveOfflineBankDetailsRequest request) {
+    public OfflineBankDetailsDto saveBankDetails(Long adminCustomerId, SaveOfflineBankDetailsRequest r) {
+        boolean bankTransfer = r.bankTransferEnabled() == null || r.bankTransferEnabled();
+        boolean neftRtgs = r.neftRtgsEnabled() == null || r.neftRtgsEnabled();
+        boolean cheque = r.chequeEnabled() == null || r.chequeEnabled();
+        if (!bankTransfer && !neftRtgs && !cheque) {
+            throw new IllegalArgumentException("Accept at least one offline payment method.");
+        }
         BillingSettings settings = settingsRepository.findFirstByOrderByIdAsc().orElseGet(BillingSettings::new);
-        settings.setOfflineAccountName(request.accountName().trim());
-        settings.setOfflineBankName(request.bankName().trim());
-        settings.setOfflineAccountNumber(request.accountNumber().trim());
-        settings.setOfflineIfsc(blankToNull(request.ifsc()));
-        settings.setOfflineSwiftBic(blankToNull(request.swiftBic()));
+        settings.setOfflineAccountName(r.accountName().trim());
+        settings.setOfflineBankName(r.bankName().trim());
+        settings.setOfflineBranchName(text(r.branchName()));
+        settings.setOfflineAccountNumber(r.accountNumber().trim());
+        settings.setOfflineAccountType(text(r.accountType()));
+        settings.setOfflineIfsc(code(r.ifsc()));
+        settings.setOfflineSwiftBic(code(r.swiftBic()));
+        settings.setOfflineIban(code(r.iban()));
+        settings.setOfflineMicr(text(r.micr()));
+        settings.setOfflineUpiId(text(r.upiId()));
+        settings.setOfflineChequePayableTo(text(r.chequePayableTo()));
+        settings.setOfflineChequeAddress(text(r.chequeAddress()));
+        settings.setOfflineInstructions(text(r.instructions()));
+        settings.setOfflineBankTransferEnabled(bankTransfer);
+        settings.setOfflineNeftRtgsEnabled(neftRtgs);
+        settings.setOfflineChequeEnabled(cheque);
         settings.setUpdatedByCustomerId(adminCustomerId);
         settings = settingsRepository.save(settings);
         auditService.recordSuccess("OFFLINE_BANK_DETAILS_SAVED", null, adminCustomerId, null,
@@ -112,12 +142,19 @@ public class OfflinePaymentService {
         return toDto(settings);
     }
 
-    private String blankToNull(String value) {
+    private static String text(String value) {
+        return value == null || value.isBlank() ? null : value.trim();
+    }
+
+    private static String code(String value) {
         return value == null || value.isBlank() ? null : value.trim().toUpperCase();
     }
 
     private OfflineBankDetailsDto toDto(BillingSettings s) {
-        return new OfflineBankDetailsDto(s.getOfflineAccountName(), s.getOfflineBankName(), s.getOfflineAccountNumber(),
-            s.getOfflineIfsc(), s.getOfflineSwiftBic(), s.getUpdatedAt());
+        return new OfflineBankDetailsDto(s.getOfflineAccountName(), s.getOfflineBankName(), s.getOfflineBranchName(),
+            s.getOfflineAccountNumber(), s.getOfflineAccountType(), s.getOfflineIfsc(), s.getOfflineSwiftBic(), s.getOfflineIban(),
+            s.getOfflineMicr(), s.getOfflineUpiId(), s.getOfflineChequePayableTo(), s.getOfflineChequeAddress(),
+            s.getOfflineInstructions(), s.isOfflineBankTransferEnabled(), s.isOfflineNeftRtgsEnabled(), s.isOfflineChequeEnabled(),
+            s.getUpdatedAt());
     }
 }

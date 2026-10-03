@@ -1,4 +1,6 @@
-import { Box, Typography } from '@mui/material'
+import { Package as PHPackage } from 'lucide-react'
+import { PageHeader } from '../../../components/layout/PageHeader'
+import { Box } from '@mui/material'
 import { productsApi } from '../../../api/productsApi'
 import { ProductForm } from '../../../components/admin/ProductForm'
 
@@ -6,12 +8,7 @@ import { ProductForm } from '../../../components/admin/ProductForm'
 export function ProductSettingsPage() {
   return (
     <Box sx={{ maxWidth: 560 }}>
-      <Typography variant="h4" sx={{ fontWeight: 700, mb: 1 }}>
-        App
-      </Typography>
-      <Typography sx={{ color: 'text.secondary', mb: 4 }}>
-        Add a new app to the Thittam platform.
-      </Typography>
+      <PageHeader icon={PHPackage} accent="blue" area="settings" title="App" subtitle="Add a new app to the Thittam platform." />
 
       <ProductForm
         onSubmit={productsApi.create}

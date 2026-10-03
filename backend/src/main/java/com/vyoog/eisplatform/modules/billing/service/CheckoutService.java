@@ -57,12 +57,14 @@ public class CheckoutService {
     private final OfflinePaymentService offlinePaymentService;
     private final NotificationService notificationService;
     private final AuditService auditService;
+    private final BillingSettingsService billingSettingsService;
 
     /** FRD Open question 9 (who may use Pay by invoice) is unanswered.
-     * Engineering default recorded in C55: every customer and organization
-     * may — this is the one place to change when the product owner decides. */
+     * C55 default: every customer and organization may. C60: a billing
+     * administrator can switch Pay by invoice off for everyone in Billing
+     * settings. Still the one place to change when the product owner decides. */
     public boolean payByInvoiceAllowed(Long customerId, Long organizationId) {
-        return true;
+        return billingSettingsService.payByInvoiceEnabled();
     }
 
     @Transactional(readOnly = true)
@@ -105,9 +107,15 @@ public class CheckoutService {
             + " is ready. Pay by bank transfer, NEFT/RTGS or cheque, quoting invoice number " + invoice.getInvoiceNumber()
             + " as the payment reference."
             + (bank.isComplete()
-                ? " Account name: " + bank.accountName() + ". Bank: " + bank.bankName() + ". Account number: " + bank.accountNumber()
-                    + (bank.ifsc() != null ? ". IFSC: " + bank.ifsc() : "") + (bank.swiftBic() != null ? ". SWIFT/BIC: " + bank.swiftBic() : "") + "."
-                : " Bank details are on your invoice.");
+                ? " Account name: " + bank.accountName() + ". Bank: " + bank.bankName()
+                    + (bank.branchName() != null ? " (" + bank.branchName() + ")" : "") + ". Account number: " + bank.accountNumber()
+                    + (bank.ifsc() != null ? ". IFSC: " + bank.ifsc() : "") + (bank.swiftBic() != null ? ". SWIFT/BIC: " + bank.swiftBic() : "")
+                    + (bank.iban() != null ? ". IBAN: " + bank.iban() : "") + "."
+                : " Bank details are on your invoice.")
+            + (bank.upiId() != null ? " UPI ID: " + bank.upiId() + "." : "")
+            + (bank.chequeEnabled() && bank.chequePayableTo() != null ? " Cheques payable to " + bank.chequePayableTo()
+                + (bank.chequeAddress() != null ? ", sent to " + bank.chequeAddress() : "") + "." : "")
+            + (bank.instructions() != null ? " " + bank.instructions() : "");
         notificationService.notify(actingCustomerId, billingEmail, NotificationCategory.BILLING, NotificationSeverity.INFO,
             "Invoice " + invoice.getInvoiceNumber(), body);
         auditService.recordSuccess("INVOICE_PAY_BY_INVOICE_CHOSEN", null, actingCustomerId, null,
@@ -121,6 +129,7 @@ public class CheckoutService {
     }
 
     private CheckoutSummaryDto toSummary(Long customerId, Long organizationId, Invoice invoice, ProductSubscription subscription) {
+        var settings = billingSettingsService.current();
         Product product = subscription == null ? null : productRepository.findById(subscription.getProductId()).orElse(null);
         ProductPlan plan = subscription == null || subscription.getPlanId() == null ? null
             : productPlanRepository.findById(subscription.getPlanId()).orElse(null);
@@ -174,7 +183,11 @@ public class CheckoutService {
             invoice != null ? invoice.getDueAt() : null,
             billingEmail(customerId, organizationId, customerId),
             razorpayProperties.isConfigured(),
-            payByInvoiceAllowed(customerId, organizationId));
+            payByInvoiceAllowed(customerId, organizationId),
+            billingSettingsService.enabledOnlineMethods(),
+            settings.getCheckoutDisplayName(),
+            settings.getCheckoutDescription(),
+            settings.getCheckoutThemeColor());
     }
 
     private String billingEmail(Long customerId, Long organizationId, Long fallbackCustomerId) {

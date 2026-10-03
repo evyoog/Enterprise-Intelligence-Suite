@@ -23,6 +23,7 @@ vi.mock('../../api/billingApi', async () => {
       refund: (id: number, amount: number, reason: string) => refund(id, amount, reason),
       reconcile: (id: number) => reconcile(id),
       recordOfflinePayment: (id: number, body: unknown) => recordOfflinePayment(id, body),
+      offlineBankDetails: () => Promise.resolve({ bankTransferEnabled: true, neftRtgsEnabled: true, chequeEnabled: true }),
     },
   }
 })

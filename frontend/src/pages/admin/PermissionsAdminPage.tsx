@@ -1,3 +1,4 @@
+import { ShieldCheck as PHShieldCheck } from 'lucide-react'
 import { useCallback, useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import {
@@ -73,7 +74,7 @@ export function PermissionsAdminPage() {
 
   return (
     <>
-      <PageHeader
+      <PageHeader icon={PHShieldCheck} accent="indigo" area="accessControl"
         title={t('adminRbac.permissionsTitle')}
         subtitle={t('adminRbac.permissionsSubtitle')}
         action={<Button variant="contained" onClick={() => open('new')}>{t('adminRbac.newPermission')}</Button>}

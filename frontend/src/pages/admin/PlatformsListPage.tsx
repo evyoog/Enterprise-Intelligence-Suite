@@ -1,3 +1,5 @@
+import { Layers as PHLayers } from 'lucide-react'
+import { PageHeader } from '../../components/layout/PageHeader'
 import { useEffect, useState } from 'react'
 import { Box, Button, CircularProgress, Grid, Typography } from '@mui/material'
 import { ArrowRight, Plus } from 'lucide-react'
@@ -36,24 +38,13 @@ export function PlatformsListPage() {
 
   return (
     <>
-      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 3.5 }}>
-        <Box>
-          <Typography variant="h4" sx={{ fontWeight: 700, mb: 0.5 }}>
-            Product
-          </Typography>
-          <Typography sx={{ color: 'text.secondary' }}>
-            Every product your apps are grouped under. Open one to see what's inside.
-          </Typography>
-        </Box>
-        <Button
-          component={RouterLink}
-          to="/admin/settings/platform"
-          variant="contained"
-          startIcon={<Plus size={16} />}
-        >
-          Add Product
-        </Button>
-      </Box>
+      <PageHeader icon={PHLayers} accent="indigo" area="catalog" title="Product"
+        subtitle="Every product your apps are grouped under. Open one to see what's inside."
+        action={(
+          <Button component={RouterLink} to="/admin/settings/platform" variant="contained" startIcon={<Plus size={16} />}>
+            Add Product
+          </Button>
+        )} />
 
       {error && <Typography color="error" role="alert">{error}</Typography>}
 

@@ -105,3 +105,16 @@ C45 took a different, honest path: instead of inventing a third palette, it unif
 4. Catalog merge (Platforms + Apps + Platform Dashboard) + move create-actions out of Settings.
 5. My Products merge (+ My Subscriptions).
 6. Retrofit the remaining admin list screens (Reviews, Partners, Tickets, Audit Log, Registrations, Service Status, Knowledge Base) onto `<DataTable>`/`<FilterBar>`, adding the two missing status filters found above.
+
+## Corporate multi-colour design system (C60, 2026-10-01)
+[C60](../01-business/roadmap/open-decisions.md#c60): one corporate look on every signed-in screen, in light and dark mode.
+
+| Piece | Where | What |
+|---|---|---|
+| Theme | `frontend/src/theme.ts` | Headings 700–800 weight; gradient primary button and tab indicator; tinted upper-case table headers; alerts with a left colour bar; cards and dialogs with 14–16 px radius; success `#047857`, warning `#b45309`, error `#e11d48` (lighter shades in dark mode) |
+| Accents | `frontend/src/theming/accents.ts` | Ten accents with light/dark shades; `accentFor(id)` gives a stable accent per menu item or section; `BRAND_STRIPE` gradient |
+| Page header | `components/layout/PageHeader.tsx` | Brand stripe, accent icon tile (`icon`, `accent`), translated area label (`area`), title, subtitle, actions. Every signed-in page passes its own icon and accent |
+| Sidebar | `components/layout/AppShell.tsx` | Each item has its own accent icon tile; the active item is filled with it; a brand stripe under the logo |
+| Settings building blocks | `components/settings/` | `SettingsSection` (accent bar + icon), `StatusTile`, `FieldGrid`, `SaveBar`, `useSettingsForm` — used first by Billing settings |
+
+Accents colour icons, section markers and status tiles only; text and controls keep the C45 brand primary/secondary, so contrast stays within WCAG AA (dark mode uses the lighter shade of each accent, with a dark glyph on filled tiles).

@@ -1,3 +1,4 @@
+import { ShieldAlert as PHShieldAlert } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { Box, Button, Chip, CircularProgress, Paper, TextField, Typography } from '@mui/material'
 import { ApiError } from '../../api/client'
@@ -40,7 +41,7 @@ export function AdminPrivilegedAccessPage() {
 
   return (
     <>
-      <PageHeader
+      <PageHeader icon={PHShieldAlert} accent="orange" area="accessControl"
         title="Privileged Access Requests"
         subtitle="Platform-scope requests for temporary elevated permissions, awaiting your decision."
       />
