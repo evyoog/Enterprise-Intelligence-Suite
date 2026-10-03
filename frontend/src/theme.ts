@@ -1,4 +1,5 @@
 import { alpha, createTheme, type Theme } from '@mui/material/styles'
+import { ACCENT_PALETTES, DEFAULT_ACCENT, type AccentKey } from './theming/accentPalette'
 
 // Shared shape/typography — only the palette actually changes between modes.
 // C60: corporate standard — firmer headings, tinted table headers, gradient
@@ -138,25 +139,21 @@ const base = {
  * white on #6366F1 is just under the WCAG AA 4.5:1 ratio. */
 export const BRAND_INDIGO = '#6366F1'
 
+// The default (indigo) primary lives in theming/accentPalette.ts (C67).
 const BRAND = {
-  primary: '#4F46E5',
-  primaryDark: '#4338CA',
-  primaryLight: BRAND_INDIGO,
   violet: '#7C3AED',
 }
 
-export function getTheme(mode: 'light' | 'dark'): Theme {
+/** `accent` (C67) is the user's platform accent: it replaces the primary
+ * palette only; backgrounds, text, borders and status colours stay neutral. */
+export function getTheme(mode: 'light' | 'dark', accent: AccentKey = DEFAULT_ACCENT): Theme {
+  const accentShades = ACCENT_PALETTES[accent] ?? ACCENT_PALETTES[DEFAULT_ACCENT]
   if (mode === 'dark') {
     return createTheme({
       ...base,
       palette: {
         mode: 'dark',
-        primary: {
-          main: '#818CF8',
-          dark: BRAND_INDIGO,
-          light: '#A5B4FC',
-          contrastText: '#0b1020',
-        },
+        primary: { ...accentShades.dark, contrastText: '#0b1020' },
         secondary: {
           main: '#A78BFA',
           dark: BRAND.violet,
@@ -184,12 +181,7 @@ export function getTheme(mode: 'light' | 'dark'): Theme {
     ...base,
     palette: {
       mode: 'light',
-      primary: {
-        main: BRAND.primary,
-        dark: BRAND.primaryDark,
-        light: BRAND.primaryLight,
-        contrastText: '#ffffff',
-      },
+      primary: { ...accentShades.light, contrastText: '#ffffff' },
       secondary: {
         main: BRAND.violet,
         dark: '#6D28D9',

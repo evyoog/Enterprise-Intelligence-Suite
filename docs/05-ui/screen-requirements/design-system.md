@@ -6,6 +6,7 @@ Decision: [C66](../../01-business/roadmap/open-decisions.md#c66). Supersedes the
 | Token | Light | Dark | Note |
 |---|---|---|---|
 | Brand indigo | #6366F1 | — | `BRAND_INDIGO`; default showcase colour |
+| User accent (C67) | per user | per user | Replaces Primary only; presets in `theming/accentPalette.ts`, chosen on [Preferences](preferences.md) |
 | Primary (text, buttons) | #4F46E5 | #818CF8 | #6366F1 with white text is 4.47:1, under AA, so solid buttons use #4F46E5 |
 | Background | #F7F8FC | #0B1020 | page |
 | Paper | #FFFFFF | #121829 | cards |

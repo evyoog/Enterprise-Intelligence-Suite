@@ -29,6 +29,7 @@
 | Decided | [C33](../open-decisions.md#c33) Plan Management: currency, usage limit, included features, usage price, overage charge, tier-pricing text — data fields only, no billing engine | [plan-management](../../../02-requirements/FRD/plan-management/requirement.md) | REQ-CAT-002 |
 | Decided | [C34](../open-decisions.md#c34) Member Lifecycle: Suspend/Reactivate/Remove and Review access; Invite/Create user carried to 2026.4.2 | [member-lifecycle](../../../02-requirements/FRD/member-lifecycle/requirement.md) | REQ-TEN-002 |
 | Decided | [C66](../open-decisions.md#c66) UI/UX redesign with the Product Catalog as reference; catalog showcase fields (platform colour, catalog visibility and order; app accent colour, feature tags, documentation/support links); public catalog API | [catalog-showcase](../../../02-requirements/FRD/catalog-showcase/requirement.md) | REQ-CAT-003 |
+| Decided | [C67](../open-decisions.md#c67) Preferences page redesign: four sections, personal accent colour, date/time/week formats, notification email categories on the existing API; renewal reminders unchanged | - (screen spec [preferences](../../../05-ui/screen-requirements/preferences.md)) | - |
 | Decided | [C35](../open-decisions.md#c35) Groups: create/add/remove member; Projects (05.04.02) carried to 2026.4.2 | [group-management](../../../02-requirements/FRD/group-management/requirement.md) | REQ-TEN-003 |
 
 ### FRDs in this sprint
@@ -68,6 +69,16 @@
 | Public catalog API, schema, migration V019 | Done | [API](../../../06-api/api-requirements/catalog-showcase.md), [data model](../../../07-database/data-model/catalog-showcase.md) |
 | Tests | Done | [TESTPLAN-CAT-003](../../../../test-cases/functional/catalog-showcase/TESTPLAN-CAT-003.md), TC-CAT-011–018 |
 | Other screens (dashboard, registrations, privileged access, roles, permissions, audit, status, KB, support, reviews, partners, billing, settings) | Theme only | Carried: restyle one area at a time ([C66](../open-decisions.md#c66) follow-up) |
+
+### Preferences redesign (C67, 2026-10-03)
+
+| Item | Status | Note |
+|---|---|---|
+| Single-column Preferences page (Appearance, Language & Formats, Notifications, Renewal Reminders) | Done | [preferences.md](../../../05-ui/screen-requirements/preferences.md) |
+| Personal accent colour (10 presets) applied to the theme primary | Done | Stored in the browser; AA contrast checked |
+| Date format, time format, first day of week | Done | Region default unless chosen; first day of week has no consumer yet |
+| Notification email categories on the existing opt-out API | Done | In-app shown as always on (backend always records) |
+| Tests | Done | [TESTPLAN-PRT-002](../../../../test-cases/functional/portal-preferences/TESTPLAN-PRT-002.md), TC-PRT-008–012 |
 
 The rest of 02 (Offering, Content, Localization) and 05.02 Tenant Lifecycle remain open for this sprint; continuing them needs the same FRD-first process as above.
 
@@ -142,7 +153,7 @@ Full breakdown: [applications/05-customer-tenant-management.md](../applications/
 - [C3](../open-decisions.md#c3) The [PO] sprint order is authoritative; the MVP is complete at the end of sprint 2027.1.3.
 - [C4](../open-decisions.md#c4), [C5](../open-decisions.md#c5), [C6](../open-decisions.md#c6) MVP, priority and phase as shown above.
 - [C31](../open-decisions.md#c31) Corrected sprint sequence: 05 Tenant pulled into this sprint.
-- [C32](../open-decisions.md#c32), [C33](../open-decisions.md#c33), [C34](../open-decisions.md#c34), [C35](../open-decisions.md#c35), [C66](../open-decisions.md#c66): see the FRDs above.
+- [C32](../open-decisions.md#c32), [C33](../open-decisions.md#c33), [C34](../open-decisions.md#c34), [C35](../open-decisions.md#c35), [C66](../open-decisions.md#c66), [C67](../open-decisions.md#c67): see the FRDs and sections above.
 - Sprint goal, team, capacity and status are Not specified.
 
 Details: [open-decisions.md](../open-decisions.md).
