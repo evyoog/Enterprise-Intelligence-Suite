@@ -13,7 +13,7 @@
 |---|---|---|
 | [TC-PRT-008](TC-PRT-008.md) | Page structure and labels | Passed |
 | [TC-PRT-009](TC-PRT-009.md) | Theme, reduced motion and accent color | Passed |
-| [TC-PRT-010](TC-PRT-010.md) | Date format, time format and first day of week | Passed |
+| [TC-PRT-010](TC-PRT-010.md) | Date format and time format | Passed |
 | [TC-PRT-011](TC-PRT-011.md) | Notification categories on the existing opt-out | Passed |
 | [TC-PRT-012](TC-PRT-012.md) | Renewal reminders unchanged, live summary | Passed |
 | [TC-PRT-013](TC-PRT-013.md) | Settings navigation layout | Passed |

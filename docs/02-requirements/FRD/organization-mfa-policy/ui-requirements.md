@@ -5,7 +5,7 @@ Screens and placement follow the sprint 2026.3.3 development plan: reuse existin
 ## Screens
 | Screen | Route | Roles | Wireframe |
 |---|---|---|---|
-| Organization MFA setting, on an existing organization page that already shows organization settings (`BusinessDashboardPage` or `SecuritySettingsPage`, whichever already shows organization settings) | Existing route of that page | Users allowed by the backend (`MANAGE_ORGANIZATION`) | Not specified |
+| Organization MFA setting, on Organization settings (`/organization/settings#mfa`, moved from `BusinessDashboardPage` by C69) — originally: on an existing organization page that already shows organization settings (`BusinessDashboardPage` or `SecuritySettingsPage`, whichever already shows organization settings) | Existing route of that page | Users allowed by the backend (`MANAGE_ORGANIZATION`) | Not specified |
 
 ## Fields and validation
 | Field | Type | Required | Validation | Error message (i18n key) |

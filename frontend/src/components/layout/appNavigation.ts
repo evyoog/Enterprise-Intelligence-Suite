@@ -2,7 +2,7 @@ import type { ComponentType } from 'react'
 import {
   Building2, KeyRound, LayoutDashboard, LayoutGrid, Layers, Package, ScrollText, Settings, ShieldCheck,
   SlidersHorizontal, Store, UserCheck, UserCog, UsersRound, Palette, Boxes, Activity, ClipboardList, BookOpen,
-  LifeBuoy, Star, Handshake, CreditCard, PlugZap, Landmark, Radio, Cable,
+  LifeBuoy, Star, Handshake, CreditCard, PlugZap, Landmark, Radio, Cable, Settings2,
 } from 'lucide-react'
 import type { MyPermissions } from '../../api/myPermissionsApi'
 
@@ -82,6 +82,10 @@ export function buildAppNavigation({ isAdmin, permissions }: NavAccess): AppNavS
   workspace.push({ key: 'becomeAPartner', labelKey: 'becomeAPartner', to: '/partners/apply', icon: Handshake })
 
   const organizationItems: AppNavItem[] = []
+  // C69: members, groups, MFA policy and privileged access (moved off the dashboard).
+  if (organization('MANAGE_ORGANIZATION')) {
+    organizationItems.push({ key: 'orgSettings', labelKey: 'orgSettings', to: '/organization/settings', icon: Settings2 })
+  }
   if (organization('MANAGE_ORGANIZATION')) {
     organizationItems.push({ key: 'identityFederation', labelKey: 'identityFederation', to: '/organization/identity-federation', icon: Building2 })
   }

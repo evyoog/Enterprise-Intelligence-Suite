@@ -31,10 +31,9 @@ The accent replaces the MUI primary palette for the whole interface immediately.
 |---|---|---|
 | Language | Existing languages, shown by their own names (English, Español) | Account and browser (unchanged) |
 | Region | Browser default + existing regions — date/number formatting | Account and browser (unchanged) |
-| Time zone | Existing time zones; a browser zone outside the list is shown as its IANA name | Account and browser (unchanged) |
+| Time zone | Searchable list of every IANA time zone the browser supports (type a city or region; each shows its current UTC offset, e.g. "Asia/Tokyo (GMT+9)") | Account and browser (unchanged) |
 | Date format | Region default, DD/MM/YYYY, MM/DD/YYYY, YYYY-MM-DD | Browser (`vyoog-date-format`) |
 | Time format | Region default, 12-hour, 24-hour | Browser (`vyoog-time-format`) |
-| First day of week | Region default, Sunday, Monday | Browser (`vyoog-week-start`); no calendar uses it yet |
 
 ## 3. Notifications — "Choose how you receive notifications from EIS."
 | Row | Control | Backend categories (email opt-out) |
@@ -49,7 +48,7 @@ The accent replaces the MUI primary palette for the whole interface immediately.
 Saves immediately to `PUT /me/notifications/preferences` (the same data the bell menu edits); on failure the switch reverts and an error is shown. Signed-in users only.
 
 ## 4. Renewal Reminders — "Configure reminders for upcoming subscription renewals."
-Unchanged behaviour (REQ-SUB-004.8): Send renewal reminders (switch), Start reminding (N days before; empty = platform default 7), Reminder time (empty = 09:00), Time zone (read-only, the account time zone), summary "Daily reminder from N days before renewal at HH:mm Zone." in a light box, updating live, and **Save reminder settings** at the bottom-right. Signed-in users only.
+Unchanged behaviour (REQ-SUB-004.8): Send renewal reminders (switch), Start reminding (N days before; empty = platform default 7), Reminder time (empty = 09:00), Time zone (the same searchable picker; it is the account time zone, so changing it here also changes it under Language & Formats and is saved to the account at once, not by the Save button), summary "Daily reminder from N days before renewal at HH:mm Zone." in a light box, updating live, and **Save reminder settings** at the bottom-right. Signed-in users only.
 
 ## States
 Loading: skeleton rows for Notifications and Renewal Reminders. Error: inline alert with Retry. Validation: renewal days range and time format shown under the label.

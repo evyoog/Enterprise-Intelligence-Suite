@@ -1,5 +1,5 @@
 import { createContext, useCallback, useContext, useMemo, useState, type ReactNode } from 'react'
-import { DATE_FORMATS, TIME_FORMATS, WEEK_STARTS, type DateFormat, type TimeFormat, type WeekStart } from './formatOptions'
+import { DATE_FORMATS, TIME_FORMATS, type DateFormat, type TimeFormat } from './formatOptions'
 
 // A short, real list of IANA time zones spanning Vyoog's actual customer
 // regions today (India-headquartered, per Organization.country data seen in
@@ -36,9 +36,6 @@ interface LocalePreferenceContextValue {
   setDateFormat: (value: DateFormat) => void
   timeFormat: TimeFormat
   setTimeFormat: (value: TimeFormat) => void
-  /** For calendars and week views; 'auto' follows the region. */
-  weekStart: WeekStart
-  setWeekStart: (value: WeekStart) => void
   timeZone: string
   setTimeZone: (timeZone: string) => void
   region: string | null
@@ -53,7 +50,6 @@ const STORAGE_KEY = 'vyoog-timezone'
 const REGION_STORAGE_KEY = 'vyoog-region'
 const DATE_FORMAT_KEY = 'vyoog-date-format'
 const TIME_FORMAT_KEY = 'vyoog-time-format'
-const WEEK_START_KEY = 'vyoog-week-start'
 
 function readStoredChoice<T extends string>(key: string, allowed: readonly T[]): T {
   try {
@@ -129,11 +125,9 @@ export function LocalePreferenceProvider({ children }: { children: ReactNode }) 
   const [region, setRegionState] = useState<string | null>(readStoredRegion)
   const [dateFormat, setDateFormatState] = useState<DateFormat>(() => readStoredChoice(DATE_FORMAT_KEY, DATE_FORMATS))
   const [timeFormat, setTimeFormatState] = useState<TimeFormat>(() => readStoredChoice(TIME_FORMAT_KEY, TIME_FORMATS))
-  const [weekStart, setWeekStartState] = useState<WeekStart>(() => readStoredChoice(WEEK_START_KEY, WEEK_STARTS))
 
   const setDateFormat = useCallback((next: DateFormat) => { setDateFormatState(next); storeChoice(DATE_FORMAT_KEY, next) }, [])
   const setTimeFormat = useCallback((next: TimeFormat) => { setTimeFormatState(next); storeChoice(TIME_FORMAT_KEY, next) }, [])
-  const setWeekStart = useCallback((next: WeekStart) => { setWeekStartState(next); storeChoice(WEEK_START_KEY, next) }, [])
 
   const setTimeZone = useCallback((next: string) => {
     setTimeZoneState(next)
@@ -184,10 +178,10 @@ export function LocalePreferenceProvider({ children }: { children: ReactNode }) 
   const value = useMemo(
     () => ({
       timeZone, setTimeZone, region, setRegion, formatDateTime, formatDate,
-      dateFormat, setDateFormat, timeFormat, setTimeFormat, weekStart, setWeekStart,
+      dateFormat, setDateFormat, timeFormat, setTimeFormat,
     }),
     [timeZone, setTimeZone, region, setRegion, formatDateTime, formatDate,
-      dateFormat, setDateFormat, timeFormat, setTimeFormat, weekStart, setWeekStart]
+      dateFormat, setDateFormat, timeFormat, setTimeFormat]
   )
 
   return <LocalePreferenceContext.Provider value={value}>{children}</LocalePreferenceContext.Provider>

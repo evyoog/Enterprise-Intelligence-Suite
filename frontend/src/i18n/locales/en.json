@@ -89,24 +89,18 @@
       "enabledHint": "Emails before subscriptions renew, sent once a day until renewal.",
       "daysLabel": "Start reminding",
       "daysSuffix": "days before",
-      "timeZoneHint": "Change it under Language & Formats.",
+      "timeZoneHint": "Reminders are sent at this time zone. This is your account time zone, also used for dates and times across EIS.",
       "summaryOff": "Renewal reminders are off."
     },
     "appearanceDescription": "Customize how EIS looks for you.",
     "languageDescription": "Choose your language, region, and formatting preferences.",
     "dateFormat": "Date format",
     "timeFormat": "Time format",
-    "weekStart": "First day of week",
     "regionDefault": "Region default",
     "timeFormatOption": {
       "auto": "Region default",
       "12h": "12-hour",
       "24h": "24-hour"
-    },
-    "weekStartOption": {
-      "auto": "Region default",
-      "sunday": "Sunday",
-      "monday": "Monday"
     },
     "accent": {
       "label": "Accent color",
@@ -146,10 +140,9 @@
     },
     "themeHint": "Choose the appearance of EIS.",
     "languageHint": "The language used across EIS.",
-    "timeZoneHint": "Used for times and reminders.",
+    "timeZoneHint": "Used for dates, times and renewal reminders.",
     "dateFormatHint": "How dates are written.",
     "timeFormatHint": "12-hour or 24-hour clock.",
-    "weekStartHint": "Used where EIS shows weeks or calendars.",
     "nav": {
       "heading": "Preferences",
       "selector": "Section",
@@ -161,7 +154,9 @@
       "notificationsHint": "Email and in-app",
       "renewals": "Renewal Reminders",
       "renewalsHint": "Before subscriptions renew"
-    }
+    },
+    "timeZoneSearch": "Search city or region",
+    "timeZoneNone": "No matching time zone"
   },
   "common": {
     "loading": "Loading…",
@@ -256,7 +251,8 @@
     "reviewSaveError": "Could not record this review.",
     "confirmRemove": "Remove {{name}} from this organization? This cannot be undone from here.",
     "approvalsTitle": "Privileged access approvals",
-    "noPending": "No pending requests."
+    "noPending": "No pending requests.",
+    "pageSubtitle": "Members, groups, MFA policy and privileged access for your organization."
   },
   "groups": {
     "title": "Groups",
@@ -460,7 +456,8 @@
       "billingSettings": "Billing settings",
       "integrations": "Integrations",
       "platformEvents": "Platform events",
-      "apiKeys": "API keys"
+      "apiKeys": "API keys",
+      "orgSettings": "Organization settings"
     },
     "catalogTitle": "Product catalog",
     "catalogSubtitle": "Search and filter the products available on the platform.",
@@ -1877,6 +1874,245 @@
       "previewName": "App name",
       "previewDescription": "The app description appears here.",
       "tagDuplicate": "This feature is already added."
+    }
+  },
+  "bizDash": {
+    "organization": "Organization",
+    "subtitle": "Business dashboard",
+    "identityFederation": "Identity Federation",
+    "loadError": "Could not load the business dashboard.",
+    "sectionUnavailable": "{{section}} is unavailable right now.",
+    "welcome": {
+      "morning": "Good morning, {{name}}",
+      "afternoon": "Good afternoon, {{name}}",
+      "evening": "Good evening, {{name}}",
+      "body": "Here's what's happening across your organization today.",
+      "unusedSeats_one": "{{count}} unused seat",
+      "unusedSeats_other": "{{count}} unused seats",
+      "overLimit": "Seat limit exceeded"
+    },
+    "status": {
+      "allOperational": "All systems operational",
+      "platformDown": "Platform unavailable",
+      "overall": {
+        "DEGRADED": "Degraded performance",
+        "PARTIAL_OUTAGE": "Partial outage",
+        "MAJOR_OUTAGE": "Major outage",
+        "MAINTENANCE": "Maintenance in progress"
+      }
+    },
+    "quick": {
+      "label": "Quick actions",
+      "myApps": "My applications",
+      "catalog": "Product catalog",
+      "members": "Members",
+      "billing": "Billing",
+      "support": "Support"
+    },
+    "kpi": {
+      "label": "Overview",
+      "seats": "Licensed seats",
+      "seatsUsed": "{{percent}}% used",
+      "manage": "Manage",
+      "members": "Active members",
+      "membersOf": "of {{count}} licensed seats",
+      "view": "View",
+      "apps": "Applications",
+      "appsActive_one": "{{count}} with an active subscription",
+      "appsActive_other": "{{count}} with an active subscription",
+      "explore": "Explore",
+      "launches": "Application launches",
+      "launchesAllTime": "All time, across your organization",
+      "analytics": "Analytics"
+    },
+    "analytics": {
+      "title": "Usage analytics",
+      "application": "Application",
+      "allApps": "All applications",
+      "subscription": "Subscription",
+      "allStatuses": "All statuses",
+      "refresh": "Refresh",
+      "usageByApp": "Usage by application",
+      "viewAll": "View all applications",
+      "openDetails": "Open details",
+      "barHint_one": "{{count}} launch · {{members}} assigned members",
+      "barHint_other": "{{count}} launches · {{members}} assigned members",
+      "allTimeNote": "Launch counts are all-time totals. EIS does not record launch history yet, so there is no time-period view."
+    },
+    "adoption": {
+      "title": "Adoption",
+      "rate": "Applications in use",
+      "rateHint": "{{launched}} of {{total}} applications launched at least once",
+      "mostUsed": "Most used",
+      "launches_one": "{{count}} launch",
+      "launches_other": "{{count}} launches",
+      "notLaunched": "Not launched yet",
+      "allLaunched": "Every application has been launched."
+    },
+    "health": {
+      "label": "Organization health",
+      "service": "Service health",
+      "viewStatus": "View service status",
+      "platform": "EIS platform",
+      "down": "Unavailable",
+      "federation": "Identity federation",
+      "connected": "Connected",
+      "notConfigured": "Not configured"
+    },
+    "seats": {
+      "title": "Seat utilization",
+      "manage": "Manage seats",
+      "utilization": "Seat utilization",
+      "licensed": "Licensed",
+      "used": "Used",
+      "available": "Available"
+    },
+    "subs": {
+      "title": "Subscription status",
+      "active": "Active subscription",
+      "other": "Not subscribed / inactive",
+      "apps": "applications"
+    },
+    "subStatus": {
+      "ACTIVE": "Active",
+      "PENDING_SUBSCRIPTION": "Pending",
+      "SUSPENDED": "Suspended",
+      "CANCELLED": "Cancelled",
+      "EXPIRED": "Expired",
+      "NONE": "Not subscribed"
+    },
+    "workspace": {
+      "label": "Your workspace",
+      "recent": "Recently used",
+      "favorites": "Favorites",
+      "used": "Used {{when}}",
+      "noRecent": "You haven't opened any applications yet.",
+      "noFavorites": "No favorite applications yet.",
+      "explore": "Explore applications",
+      "open": "Open",
+      "details": "Details",
+      "openLabel": "Open {{name}} (opens in a new tab)",
+      "detailsLabel": "View details for {{name}}",
+      "favorite": "Add {{name}} to favorites",
+      "unfavorite": "Remove {{name}} from favorites"
+    },
+    "account": {
+      "title": "Your account",
+      "role": "Role",
+      "mfa": "Two-step verification",
+      "mfaOn": "Enabled",
+      "mfaOff": "Not enabled",
+      "mfaRequired": "Required by your organization",
+      "identity": "Organization SSO",
+      "ssoConnected_one": "Connected ({{count}} provider)",
+      "ssoConnected_other": "Connected ({{count}} providers)",
+      "signedIn": "Signed in",
+      "permissions": "Your organization permissions",
+      "noPermissions": "No organization permissions.",
+      "more": "+{{count}} more",
+      "preferences": "Preferences",
+      "security": "Security settings",
+      "roles": {
+        "ORG_ADMIN": "Organization admin",
+        "MEMBER": "Member"
+      },
+      "status": {
+        "ACTIVE": "Active",
+        "SUSPENDED": "Suspended",
+        "INACTIVE": "Inactive"
+      }
+    },
+    "table": {
+      "title": "Applications",
+      "application": "Application",
+      "status": "Status",
+      "members": "Members",
+      "launches": "Launches",
+      "lastUsed": "Last used",
+      "action": "Action",
+      "noMatch": "No applications match these filters.",
+      "clear": "Clear filters",
+      "filtered": "Filtered by"
+    },
+    "empty": {
+      "noApps": "No applications yet.",
+      "exploreCatalog": "Explore Product Catalog"
+    },
+    "activity": {
+      "label": "Activity",
+      "title": "Recent activity",
+      "empty": "No recent activity.",
+      "failed": "failed",
+      "action": {
+        "LOGIN_SUCCESS": "Member signed in",
+        "LOGIN_FAILURE": "Sign-in failed",
+        "LOGOUT": "Member signed out",
+        "SUBSCRIPTION_CREATED": "Subscription created",
+        "SUBSCRIPTION_RENEWED": "Subscription renewed",
+        "SUBSCRIPTION_AUTO_RENEWED": "Subscription auto-renewed",
+        "SUBSCRIPTION_CANCELLED": "Subscription cancelled",
+        "SUBSCRIPTION_SUSPENDED": "Subscription suspended",
+        "SUBSCRIPTION_REACTIVATED": "Subscription reactivated",
+        "SUBSCRIPTION_PLAN_CHANGED": "Subscription plan changed",
+        "SUBSCRIPTION_SEATS_CHANGED": "Subscription seats changed",
+        "SUBSCRIPTION_EXPIRED": "Subscription expired",
+        "MEMBER_ROLE_CHANGED": "Member role changed",
+        "MEMBER_STATUS_CHANGED": "Member status changed",
+        "MEMBER_ACCESS_REVIEWED": "Member access reviewed",
+        "PRODUCT_ACCESS_GRANTED": "Application access granted",
+        "PRODUCT_ACCESS_REVOKED": "Application access removed",
+        "ORDER_SUBMITTED": "Order submitted",
+        "ORDER_APPROVED": "Order approved",
+        "ORDER_REJECTED": "Order rejected",
+        "TICKET_CREATED": "Support ticket created",
+        "TICKET_RESOLVED": "Support ticket resolved",
+        "INVOICE_GENERATED": "Invoice generated",
+        "PAYMENT_CAPTURED": "Payment received",
+        "MFA_POLICY_CHANGED": "MFA policy changed",
+        "GROUP_CREATED": "Group created",
+        "PRIVILEGED_ACCESS_REQUESTED": "Privileged access requested",
+        "PRIVILEGED_ACCESS_APPROVED": "Privileged access approved",
+        "SEAT_COUNT_CHANGED": "Seat count changed"
+      }
+    },
+    "attention": {
+      "title": "Attention required",
+      "caughtUp": "You're all caught up",
+      "caughtUpBody": "No actions require your attention.",
+      "generic": "Needs attention",
+      "review": "Review",
+      "types": {
+        "SERVICE_STATUS": "Service issue",
+        "SEAT_LIMIT_REACHED": "Seat limit reached",
+        "UNDERUTILIZED_SEATS": "Unused licensed seats",
+        "UNUSED_PRODUCT_ACCESS": "Unused application access",
+        "ORGANIZATION_MFA_REQUIRED": "Security action required",
+        "SUBSCRIPTION_EXPIRING_SOON": "Upcoming renewal",
+        "PRIVILEGED_ACCESS_PENDING": "Privileged access awaiting approval",
+        "PRIVILEGED_ACCESS_ACTIVE": "Active privileged access"
+      },
+      "actions": {
+        "SERVICE_STATUS": "View service status",
+        "SEAT_LIMIT_REACHED": "Manage members",
+        "UNDERUTILIZED_SEATS": "Manage members",
+        "UNUSED_PRODUCT_ACCESS": "Review access",
+        "ORGANIZATION_MFA_REQUIRED": "Review security",
+        "SUBSCRIPTION_EXPIRING_SOON": "View billing",
+        "PRIVILEGED_ACCESS_PENDING": "Review requests",
+        "PRIVILEGED_ACCESS_ACTIVE": "Review grants"
+      }
+    },
+    "billing": {
+      "title": "Billing",
+      "view": "View billing",
+      "activeSubs": "Active subscriptions",
+      "nextRenewal": "Next renewal",
+      "noRenewal": "No upcoming renewals",
+      "autoRenew": "Renews automatically",
+      "manualRenew": "Manual renewal",
+      "spent": "Spent this period",
+      "noSpend": "No paid invoices yet",
+      "vsLast": "vs last period"
     }
   }
 }

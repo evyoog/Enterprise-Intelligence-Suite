@@ -4,6 +4,8 @@ import { Alert, Box, Button, Skeleton, Snackbar, Switch, TextField, Typography }
 import { ApiError } from '../../api/client'
 import { renewalsApi, type RenewalReminderPreferences } from '../../api/renewalsApi'
 import { PreferenceRow, PreferenceSection } from './PreferenceLayout'
+import { TimeZonePicker } from './TimeZonePicker'
+import { useLocalePreference } from '../../theming/LocalePreferenceProvider'
 
 const TIME = /^([01]\d|2[0-3]):[0-5]\d$/
 
@@ -15,6 +17,11 @@ const TIME = /^([01]\d|2[0-3]):[0-5]\d$/
  */
 export function RenewalRemindersCard() {
   const { t } = useTranslation()
+  // The reminder clock is the account time zone (RenewalReminderService
+  // reads CustomerPreference.timeZone, else the platform default). The picker
+  // shows the zone the server will use; changing it is the same change as
+  // under Language & Formats, which PreferenceSync saves to the account.
+  const { setTimeZone } = useLocalePreference()
   const [prefs, setPrefs] = useState<RenewalReminderPreferences | null>(null)
   const [loadError, setLoadError] = useState<string | null>(null)
   const [enabled, setEnabled] = useState(true)
@@ -57,6 +64,11 @@ export function RenewalRemindersCard() {
   const shownDays = daysNumber ?? prefs.platformDaysBefore
   const shownTime = time || prefs.platformSendTime
 
+  const changeZone = (zone: string) => {
+    setTimeZone(zone)
+    setPrefs({ ...prefs, effectiveTimeZone: zone })
+  }
+
   const save = () => {
     if (daysError || timeError) return
     setBusy(true)
@@ -92,8 +104,8 @@ export function RenewalRemindersCard() {
           <TextField id="renewal-time" size="small" type="time" value={time} disabled={!enabled} error={Boolean(timeError)}
             onChange={(e) => setTime(e.target.value)} sx={{ width: 160 }} />
         )} />
-      <PreferenceRow label={t('preferences.timeZone')} hint={t('preferences.renewalReminders.timeZoneHint')}
-        control={<Typography variant="body2" sx={{ fontWeight: 600 }}>{prefs.effectiveTimeZone}</Typography>} />
+      <PreferenceRow label={t('preferences.timeZone')} hint={t('preferences.renewalReminders.timeZoneHint')} labelId="renewal-timezone-label"
+        control={<TimeZonePicker value={prefs.effectiveTimeZone} onChange={changeZone} labelId="renewal-timezone-label" />} />
 
       <Box sx={(theme) => ({
         mt: 1, px: 2, py: 1.5, borderRadius: 2, border: '1px solid', borderColor: 'divider',

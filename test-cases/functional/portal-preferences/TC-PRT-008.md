@@ -16,7 +16,7 @@ Signed-in user.
 1. Open Preferences.
 
 ## Expected Result
-The navigation lists four sections in order (Appearance, Language & Formats, Notifications, Renewal Reminders) and the panel shows the selected one (C68). Theme, language, region, time zone, date format, time format and first day of week are labelled selects; reduce motion is a labelled switch; accent color is a labelled radio group; no axe violations.
+The navigation lists four sections in order (Appearance, Language & Formats, Notifications, Renewal Reminders) and the panel shows the selected one (C68). Theme, language, region, time zone, date format and time format are labelled selects; reduce motion is a labelled switch; accent color is a labelled radio group; no axe violations.
 
 ## Automated coverage
 - `frontend/src/pages/PreferencesPage.test.tsx` — `shows a navigation of four sections and only the selected one`, `every control has an accessible, associated label`, `has no detectable a11y violations on any section`

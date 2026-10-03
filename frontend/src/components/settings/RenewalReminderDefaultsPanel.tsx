@@ -1,9 +1,9 @@
 import { useCallback } from 'react'
 import { useTranslation } from 'react-i18next'
-import { Alert, Box, Button, Chip, MenuItem, Paper, Skeleton, TextField, Typography } from '@mui/material'
+import { Alert, Box, Button, Chip, Paper, Skeleton, TextField, Typography } from '@mui/material'
 import { BellRing, CalendarClock } from 'lucide-react'
 import { adminRenewalsApi, type RenewalReminderDefaults } from '../../api/renewalsApi'
-import { SUPPORTED_TIMEZONES } from '../../theming/LocalePreferenceProvider'
+import { TimeZonePicker } from '../preferences/TimeZonePicker'
 import { FieldGrid, SettingsSection } from './SettingsSection'
 import { SaveBar } from './SaveBar'
 import { useSettingsForm } from './useSettingsForm'
@@ -42,7 +42,6 @@ export function RenewalReminderDefaultsPanel({ onSaved }: { onSaved: () => void 
   }
   const f = s.form
   const days = Math.min(30, Math.max(1, Number(f.daysBefore) || 1))
-  const zones = SUPPORTED_TIMEZONES.some((z) => z.code === f.timeZone) ? SUPPORTED_TIMEZONES : [{ code: f.timeZone, label: f.timeZone }, ...SUPPORTED_TIMEZONES]
   const save = () => { void s.submit().then((ok) => { if (ok) onSaved() }) }
 
   return (
@@ -59,11 +58,9 @@ export function RenewalReminderDefaultsPanel({ onSaved }: { onSaved: () => void 
               onChange={(e) => s.set('sendTime', e.target.value)}
               error={Boolean(s.shownError('sendTime'))} helperText={s.shownError('sendTime') ?? t('admin.billingSettings.reminders.timeHelp')}
               slotProps={{ inputLabel: { shrink: true } }} />
-            <TextField select label={t('admin.billingSettings.reminders.zone')} value={f.timeZone} required
-              onChange={(e) => s.set('timeZone', e.target.value)}
-              error={Boolean(s.shownError('timeZone'))} helperText={s.shownError('timeZone') ?? t('admin.billingSettings.reminders.zoneHelp')}>
-              {zones.map((z) => <MenuItem key={z.code} value={z.code}>{z.label}</MenuItem>)}
-            </TextField>
+            <TimeZonePicker fullWidth required label={t('admin.billingSettings.reminders.zone')} value={f.timeZone}
+              onChange={(zone) => s.set('timeZone', zone)}
+              error={Boolean(s.shownError('timeZone'))} helperText={s.shownError('timeZone') ?? t('admin.billingSettings.reminders.zoneHelp')} />
           </FieldGrid>
           <Alert severity="info" sx={{ mt: 2 }}>{t('admin.billingSettings.reminders.userNote')}</Alert>
         </SettingsSection>

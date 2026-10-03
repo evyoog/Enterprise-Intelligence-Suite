@@ -98,7 +98,7 @@ describe('PreferencesPage', () => {
     expect(screen.getByRole('radiogroup', { name: /accent color/i })).toBeInTheDocument()
     const user = userEvent.setup()
     await open(user, /Language & Formats/)
-    for (const name of [/language/i, /region/i, /time zone/i, /date format/i, /time format/i, /first day of week/i]) {
+    for (const name of [/language/i, /region/i, /time zone/i, /date format/i, /time format/i]) {
       expect(screen.getByRole('combobox', { name })).toBeInTheDocument()
     }
   })
@@ -153,18 +153,16 @@ describe('PreferencesPage', () => {
     expect(getComputedStyle(save).getPropertyValue('--variant-containedBg').trim()).toBe('#15803D')
   })
 
-  it('saves a date format, time format and first day of week', async () => {
+  it('saves a date format and time format', async () => {
     renderPage('/account/preferences?section=formats')
     const user = userEvent.setup()
     await user.click(screen.getByRole('combobox', { name: /date format/i }))
     await user.click(await screen.findByRole('option', { name: 'YYYY-MM-DD' }))
     await user.click(screen.getByRole('combobox', { name: /time format/i }))
     await user.click(await screen.findByRole('option', { name: '24-hour' }))
-    await user.click(screen.getByRole('combobox', { name: /first day of week/i }))
-    await user.click(await screen.findByRole('option', { name: 'Monday' }))
     expect(localStorage.getItem('vyoog-date-format')).toBe('YYYY-MM-DD')
     expect(localStorage.getItem('vyoog-time-format')).toBe('24h')
-    expect(localStorage.getItem('vyoog-week-start')).toBe('monday')
+    expect(screen.queryByRole('combobox', { name: /first day of week/i })).not.toBeInTheDocument()
   })
 
   it('maps notification switches onto the existing email opt-out categories', async () => {
