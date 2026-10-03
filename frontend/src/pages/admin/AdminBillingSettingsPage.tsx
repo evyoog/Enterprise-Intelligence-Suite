@@ -1,3 +1,4 @@
+import { RenewalReminderDefaultsPanel } from '../../components/settings/RenewalReminderDefaultsPanel'
 import { useCallback, useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useSearchParams } from 'react-router-dom'
@@ -7,6 +8,7 @@ import {
 } from '@mui/material'
 import { alpha } from '@mui/material/styles'
 import {
+  BellRing,
   BadgeCheck, Building2, CreditCard, Eye, FileText, Landmark, Mail, MapPin, Palette, PlugZap, ReceiptText, Settings2,
   Smartphone, Wallet, Banknote, ListChecks, MessageSquareText,
 } from 'lucide-react'
@@ -20,8 +22,8 @@ import { useSettingsForm } from '../../components/settings/useSettingsForm'
 import { RazorpayGatewayPanel } from '../../components/settings/RazorpayGatewayPanel'
 import { accentColor } from '../../theming/accents'
 
-type TabKey = 'business' | 'offline' | 'methods' | 'gateway'
-const TABS: TabKey[] = ['business', 'offline', 'methods', 'gateway']
+type TabKey = 'business' | 'offline' | 'methods' | 'gateway' | 'reminders'
+const TABS: TabKey[] = ['business', 'offline', 'methods', 'gateway', 'reminders']
 
 const RE = {
   gstin: /^[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z][0-9A-Z]Z[0-9A-Z]$/i,
@@ -102,6 +104,7 @@ export function AdminBillingSettingsPage() {
           <Tab value="offline" icon={<Landmark size={16} aria-hidden />} iconPosition="start" label={t('admin.billingSettings.tabs.offline')} id="tab-offline" aria-controls="panel-offline" />
           <Tab value="methods" icon={<ListChecks size={16} aria-hidden />} iconPosition="start" label={t('admin.billingSettings.tabs.methods')} id="tab-methods" aria-controls="panel-methods" />
           <Tab value="gateway" icon={<PlugZap size={16} aria-hidden />} iconPosition="start" label={t('admin.billingSettings.tabs.gateway')} id="tab-gateway" aria-controls="panel-gateway" />
+          <Tab value="reminders" icon={<BellRing size={16} aria-hidden />} iconPosition="start" label={t('admin.billingSettings.tabs.reminders')} id="tab-reminders" aria-controls="panel-reminders" />
         </Tabs>
       </Paper>
 
@@ -110,6 +113,7 @@ export function AdminBillingSettingsPage() {
         {tab === 'offline' && <OfflineTab onSaved={onSaved} />}
         {tab === 'methods' && <MethodsTab onSaved={onSaved} gatewayConfigured={overview.gateway?.configured ?? true} />}
         {tab === 'gateway' && <RazorpayGatewayPanel onStatus={(gateway) => setOverview((o) => ({ ...o, gateway }))} />}
+        {tab === 'reminders' && <RenewalReminderDefaultsPanel onSaved={onSaved} />}
       </Box>
 
       <Snackbar open={Boolean(toast)} autoHideDuration={4000} onClose={() => setToast(null)}>

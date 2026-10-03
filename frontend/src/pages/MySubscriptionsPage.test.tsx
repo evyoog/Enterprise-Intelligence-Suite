@@ -33,6 +33,9 @@ vi.mock('../api/registrationApi', async () => {
   }
 })
 
+const myRenewals = vi.fn()
+vi.mock('../api/renewalsApi', () => ({ renewalsApi: { myRenewals: () => myRenewals() }, adminRenewalsApi: {} }))
+
 const productGet = vi.fn()
 vi.mock('../api/productsApi', async () => {
   const actual = await vi.importActual<typeof import('../api/productsApi')>('../api/productsApi')
@@ -47,7 +50,19 @@ const suspendedSub = { ...activeSub, id: 2, status: 'SUSPENDED' as const }
 
 describe('MySubscriptionsPage', () => {
   beforeEach(() => {
-    for (const m of [listSubscriptions, suspend, reactivate, cancel, renew, changePlan, productGet]) m.mockReset()
+    for (const m of [listSubscriptions, suspend, reactivate, cancel, renew, changePlan, productGet, myRenewals]) m.mockReset()
+    myRenewals.mockResolvedValue([])
+  })
+
+  it('shows auto-renew, the renewal date and the next reminder (REQ-SUB-004)', async () => {
+    listSubscriptions.mockResolvedValue([activeSub])
+    myRenewals.mockResolvedValue([{ subscriptionId: 1, productName: 'Valam.ai', planName: null, autoRenew: true,
+      renewalDate: '2026-11-02T10:00:00Z', remindersEnabled: false, nextReminderAt: null }])
+    renderWithProviders(<MySubscriptionsPage />)
+    expect(await screen.findByText('Auto-renew on')).toBeInTheDocument()
+    expect(screen.getByText(/Renews on/)).toBeInTheDocument()
+    expect(screen.getByText(/Reminders are off/)).toBeInTheDocument()
+    expect(screen.getByRole('link', { name: 'Change reminder settings' })).toHaveAttribute('href', '/account/preferences')
   })
 
   it('suspends an active subscription', async () => {

@@ -6,13 +6,10 @@ import {
 } from '@mui/material'
 import { Copy, KeyRound, Plus } from 'lucide-react'
 import { ApiError } from '../../api/client'
-import { apiKeysApi, type ApiKey, type ApiKeyStatus } from '../../api/apiKeysApi'
+import { API_KEY_STATUS_COLOR, apiKeysApi, type ApiKey } from '../../api/apiKeysApi'
 import { SettingsSection } from '../settings/SettingsSection'
 import { useLocalePreference } from '../../theming/LocalePreferenceProvider'
 
-export const API_KEY_STATUS_COLOR: Record<ApiKeyStatus, 'success' | 'default' | 'warning'> = {
-  ACTIVE: 'success', REVOKED: 'default', EXPIRED: 'warning',
-}
 
 function tomorrow() {
   const d = new Date()

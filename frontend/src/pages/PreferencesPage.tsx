@@ -1,3 +1,5 @@
+import { useAuth } from '../auth/AuthProvider'
+import { RenewalRemindersCard } from '../components/preferences/RenewalRemindersCard'
 import { SlidersHorizontal as PHSlidersHorizontal } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import {
@@ -28,6 +30,7 @@ export function PreferencesPage() {
   const { timeZone, setTimeZone, region, setRegion } = useLocalePreference()
   // Signed in, the AppShell provides the frame; signed out, this is a public page.
   const inShell = useInAppShell()
+  const { isAuthenticated } = useAuth()
 
   return (
     <Box sx={inShell ? undefined : { minHeight: '100vh', bgcolor: 'background.default' }}>
@@ -121,6 +124,9 @@ export function PreferencesPage() {
             </Select>
           </FormControl>
         </Paper>
+
+        {/* REQ-SUB-004.8 (C64): renewal reminders, for signed-in users. */}
+        {isAuthenticated && <RenewalRemindersCard />}
       </Container>
     </Box>
   )

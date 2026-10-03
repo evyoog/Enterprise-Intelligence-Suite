@@ -11,6 +11,7 @@ const create = vi.fn()
 const revoke = vi.fn()
 
 vi.mock('../../api/apiKeysApi', () => ({
+  API_KEY_STATUS_COLOR: { ACTIVE: 'success', REVOKED: 'default', EXPIRED: 'warning' },
   apiKeysApi: { list: () => list(), create: (b: unknown) => create(b), revoke: (id: number) => revoke(id) },
   adminApiKeysApi: { list: vi.fn() },
 }))

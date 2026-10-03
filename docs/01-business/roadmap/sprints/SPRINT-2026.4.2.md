@@ -57,7 +57,7 @@
 | 05.03.01 Invite/Create user | Not started | Carried again — needs a decision on the identity-creation flow ([C34](../open-decisions.md#c34)) |
 | 05.04.02 Projects | Not started | Carried again — needs a decision on the Project resource model ([C35](../open-decisions.md#c35)) |
 
-The remaining 15.01.02 items remain open for this sprint; 13a's FRDs need approval of their open questions.
+The remaining 15.01.02 items remain open for this sprint; 13a's FRDs need approval of their open questions. Test plans: [TESTPLAN-INT-001](../../../../test-cases/functional/api-management/TESTPLAN-INT-001.md), [TESTPLAN-INT-002](../../../../test-cases/functional/event-platform/TESTPLAN-INT-002.md).
 
 ## EIS 05 Customer / Tenant Management (carry-over only)
 

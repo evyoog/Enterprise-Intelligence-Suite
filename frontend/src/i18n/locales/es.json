@@ -68,7 +68,26 @@
     "region": "Región",
     "regionHint": "Controla el formato de fechas y números (por ejemplo, el orden día/mes), independientemente de tu zona horaria.",
     "browserDefault": "Usar el valor predeterminado de mi navegador",
-    "timeZone": "Zona horaria"
+    "timeZone": "Zona horaria",
+    "renewalReminders": {
+      "title": "Recordatorios de renovación",
+      "description": "Correos antes de que se renueven sus suscripciones, una vez al día hasta la renovación.",
+      "enabled": "Enviar recordatorios de renovación",
+      "offNote": "Sus suscripciones se siguen renovando; solo se dejan de enviar los correos.",
+      "days": "Empezar a recordar (días antes de la renovación)",
+      "platformDays": "Déjelo vacío para el valor de la plataforma: {{days}} días.",
+      "daysRange": "Escriba un número de {{min}} a {{max}}.",
+      "time": "Enviar a las",
+      "platformTime": "Déjelo vacío para el valor de la plataforma: {{time}}.",
+      "timeFormat": "Escriba la hora como HH:mm.",
+      "timeZone": "Zona horaria: {{zone}} (cámbiela en Idioma y formatos).",
+      "summary": "Recibirá un recordatorio cada día desde {{days}} días antes de cada renovación, a las {{time}} ({{zone}}).",
+      "save": "Guardar recordatorios",
+      "saved": "Configuración de recordatorios guardada.",
+      "saveError": "No se pudo guardar la configuración de recordatorios.",
+      "loadError": "No se pudo cargar la configuración de recordatorios.",
+      "retry": "Reintentar"
+    }
   },
   "common": {
     "loading": "Cargando…",
@@ -567,7 +586,11 @@
     },
     "renewal": {
       "autoRenewOn": "Renovación automática activada",
-      "renewsOn": "Se renueva el {{date}}"
+      "renewsOn": "Se renueva el {{date}}",
+      "remindersOff": "Los recordatorios están desactivados.",
+      "changeReminders": "Cambiar la configuración de recordatorios",
+      "nextReminder": "Próximo recordatorio: {{date}}",
+      "noReminderLeft": "No hay recordatorio antes de esta renovación."
     }
   },
   "orders": {
@@ -924,7 +947,8 @@
         "business": "Empresa y facturas",
         "offline": "Pagos sin conexión",
         "methods": "Métodos de pago",
-        "gateway": "Pasarela Razorpay"
+        "gateway": "Pasarela Razorpay",
+        "reminders": "Recordatorios de renovación"
       },
       "overview": {
         "notSet": "Aún sin configurar",
@@ -1101,6 +1125,25 @@
           "body": "Usa Probar conexión. Los métodos en línea se activan para los clientes automáticamente."
         },
         "securityNote": "Por seguridad, las claves de Razorpay nunca se escriben, guardan ni muestran en esta pantalla. Solo si cada clave está configurada y el ID de clave enmascarado."
+      },
+      "reminders": {
+        "title": "Valores predeterminados de recordatorios",
+        "description": "Todos los usuarios empiezan con esta configuración. Los recordatorios se envían una vez al día desde estos días antes de una renovación hasta que se renueva.",
+        "days": "Días antes de la renovación",
+        "daysHelp": "De 1 a 30. Predeterminado 7.",
+        "daysRange": "Escriba un número de 1 a 30.",
+        "time": "Hora de envío",
+        "timeHelp": "En la zona horaria de cada destinatario.",
+        "timeFormat": "Escriba la hora como HH:mm.",
+        "zone": "Zona horaria predeterminada",
+        "zoneHelp": "Se usa cuando un usuario no ha elegido zona horaria.",
+        "userNote": "Los usuarios pueden elegir sus propios días y hora, o desactivar los recordatorios. Desactivarlos nunca detiene una renovación.",
+        "previewTitle": "Calendario de recordatorios",
+        "previewBody": "Para cada renovación, a las {{time}} ({{zone}}):",
+        "daysLeft_one": "1 día antes",
+        "daysLeft_other": "{{count}} días antes",
+        "renewalDay": "Renovación",
+        "saveError": "No se pudieron guardar los valores predeterminados."
       }
     },
     "events": {

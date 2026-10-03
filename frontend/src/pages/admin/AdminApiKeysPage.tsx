@@ -5,9 +5,8 @@ import {
 } from '@mui/material'
 import { KeyRound } from 'lucide-react'
 import { ApiError } from '../../api/client'
-import { adminApiKeysApi, type AdminApiKeyPage } from '../../api/apiKeysApi'
+import { adminApiKeysApi, API_KEY_STATUS_COLOR, type AdminApiKeyPage } from '../../api/apiKeysApi'
 import { PageHeader } from '../../components/layout/PageHeader'
-import { API_KEY_STATUS_COLOR } from '../../components/security/ApiKeysSection'
 import { useLocalePreference } from '../../theming/LocalePreferenceProvider'
 
 /** "/admin/integrations/api-keys" — REQ-INT-001.4 (C61), `MANAGE_INTEGRATIONS`:

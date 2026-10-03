@@ -6,6 +6,7 @@ import { renderWithProviders } from '../../test/renderWithProviders'
 import { AdminApiKeysPage } from './AdminApiKeysPage'
 
 vi.mock('../../api/apiKeysApi', () => ({
+  API_KEY_STATUS_COLOR: { ACTIVE: 'success', REVOKED: 'default', EXPIRED: 'warning' },
   apiKeysApi: {},
   adminApiKeysApi: {
     list: () => Promise.resolve({

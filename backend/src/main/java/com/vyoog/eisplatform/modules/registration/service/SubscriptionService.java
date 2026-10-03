@@ -184,8 +184,10 @@ public class SubscriptionService {
             });
         subscription.setStatus(SubscriptionStatus.ACTIVE);
         subscription.setStartedAt(Instant.now());
-        subscription.setExpiresAt(null);
         subscription.setPlanId(planId);
+        // REQ-SUB-004.1 (C64): a Monthly/Yearly plan gets a renewal date and auto-renew.
+        subscription.setExpiresAt(firstRenewalDate(planId, subscription.getStartedAt()));
+        subscription.setAutoRenew(true);
         subscription = subscriptionRepository.save(subscription);
 
         customerRepository.findById(customerId).ifPresent(customer ->
@@ -229,8 +231,10 @@ public class SubscriptionService {
         }
         subscription.setStatus(SubscriptionStatus.ACTIVE);
         subscription.setStartedAt(Instant.now());
-        subscription.setExpiresAt(null);
         subscription.setPlanId(planId);
+        // REQ-SUB-004.1 (C64): a Monthly/Yearly plan gets a renewal date and auto-renew.
+        subscription.setExpiresAt(firstRenewalDate(planId, subscription.getStartedAt()));
+        subscription.setAutoRenew(true);
         subscription = subscriptionRepository.save(subscription);
 
         auditService.recordSuccess("SUBSCRIPTION_CREATED", null, null, null,
@@ -324,6 +328,64 @@ public class SubscriptionService {
         return toDto(subscription);
     }
 
+    /** REQ-SUB-004.1: the end of the first billing period, or null for a
+     * one-time plan or no plan (no renewal date, no reminders). */
+    private Instant firstRenewalDate(Long planId, Instant start) {
+        BillingPeriod period = planId == null ? null
+            : productPlanRepository.findById(planId).map(ProductPlan::getBillingPeriod).orElse(null);
+        if (period == BillingPeriod.MONTHLY) {
+            return start.plus(30, ChronoUnit.DAYS);
+        }
+        if (period == BillingPeriod.YEARLY) {
+            return start.plus(365, ChronoUnit.DAYS);
+        }
+        return null;
+    }
+
+    /** REQ-SUB-004.9: what a renewal reminder says about a subscription. */
+    public record RenewalInfo(String productName, String planName, java.math.BigDecimal amount, String currency) {
+    }
+
+    public RenewalInfo renewalInfo(ProductSubscription subscription) {
+        Product product = productRepository.findById(subscription.getProductId()).orElse(null);
+        ProductPlan plan = subscription.getPlanId() == null ? null : productPlanRepository.findById(subscription.getPlanId()).orElse(null);
+        java.math.BigDecimal amount = plan != null ? plan.getPrice() : product != null ? product.getPrice() : null;
+        String currency = plan != null && plan.getCurrency() != null ? plan.getCurrency().name() : "USD";
+        return new RenewalInfo(product == null ? "Unknown product" : product.getName(), plan == null ? null : plan.getName(), amount, currency);
+    }
+
+    /**
+     * REQ-SUB-004.2 (C64, BR-2): renews one ACTIVE, auto-renewing subscription
+     * whose renewal date has come — the term moves one period on from the old
+     * renewal date, a renewal invoice is generated (charging a saved method
+     * automatically is not possible yet, see {@code RenewalService}),
+     * {@code SubscriptionRenewed} is published and the owner is notified.
+     * Returns false when nothing was due (already renewed, or no period).
+     */
+    @Transactional
+    public boolean autoRenew(Long subscriptionId) {
+        ProductSubscription subscription = subscriptionRepository.findById(subscriptionId).orElse(null);
+        if (subscription == null || subscription.getStatus() != SubscriptionStatus.ACTIVE || !subscription.isAutoRenew()
+                || subscription.getExpiresAt() == null || subscription.getExpiresAt().isAfter(Instant.now())) {
+            return false;
+        }
+        Instant oldRenewal = subscription.getExpiresAt();
+        Optional<Instant> next = nextExpiry(subscription, oldRenewal);
+        if (next.isEmpty()) {
+            return false;
+        }
+        subscription.setExpiresAt(next.get());
+        subscription = subscriptionRepository.save(subscription);
+        invoiceService.generateForSubscription(subscription.getId());
+        notify(subscription, "Subscription renewed", "Your subscription renewed automatically until "
+            + next.get().atZone(java.time.ZoneOffset.UTC).toLocalDate() + ". A renewal invoice is in Billing.");
+        auditService.recordSuccess("SUBSCRIPTION_AUTO_RENEWED", null, subscription.getOwnerCustomerId(), null,
+            "ProductSubscription", subscription.getId().toString(), subscription.getOwnerOrganizationId(),
+            "Auto-renewed from " + oldRenewal + " until " + next.get());
+        publish(PlatformEventTypes.SUBSCRIPTION_RENEWED, subscription);
+        return true;
+    }
+
     /** One calendar period, read off the subscription's own plan — a
      * ONE_TIME plan (or no plan at all) has nothing to extend. */
     private Optional<Instant> nextExpiry(ProductSubscription subscription, Instant from) {
@@ -378,8 +440,10 @@ public class SubscriptionService {
      * query never sees them. */
     @Transactional
     public int expireOverdueSubscriptions() {
+        // REQ-SUB-004 (C64): auto-renewing subscriptions are renewed by
+        // RenewalJob instead of expiring.
         List<ProductSubscription> overdue = subscriptionRepository
-            .findByStatusAndExpiresAtBefore(SubscriptionStatus.ACTIVE, Instant.now());
+            .findByStatusAndAutoRenewFalseAndExpiresAtBefore(SubscriptionStatus.ACTIVE, Instant.now());
         for (ProductSubscription subscription : overdue) {
             subscription.setStatus(SubscriptionStatus.EXPIRED);
             subscriptionRepository.save(subscription);

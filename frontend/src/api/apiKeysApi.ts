@@ -2,6 +2,11 @@ import { apiRequest } from './client'
 
 export type ApiKeyStatus = 'ACTIVE' | 'REVOKED' | 'EXPIRED'
 
+/** Chip colour per key status (key section and admin page). */
+export const API_KEY_STATUS_COLOR: Record<ApiKeyStatus, 'success' | 'default' | 'warning'> = {
+  ACTIVE: 'success', REVOKED: 'default', EXPIRED: 'warning',
+}
+
 export interface ApiKey {
   id: number
   name: string

@@ -62,6 +62,9 @@ app:
       enabled: false
   # REQ-INT-001: the whole suite shares one client IP and the jwt() test
   # subject; RateLimitFilterTest sets its own small limits.
+  # REQ-SUB-004: tests call RenewalService/RenewalReminderService directly.
+  renewals:
+    job-enabled: false
   rate-limit:
     per-key: 1000000
     per-user: 1000000

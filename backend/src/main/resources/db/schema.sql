@@ -929,6 +929,10 @@ CREATE TABLE billing_settings (
     checkout_display_name VARCHAR(100),
     checkout_description VARCHAR(255),
     checkout_theme_color VARCHAR(7),
+    -- REQ-SUB-004 (C64): renewal reminder defaults (proposed defaults — confirm).
+    reminder_lead_days INT NOT NULL DEFAULT 7 CHECK (reminder_lead_days BETWEEN 1 AND 30),
+    reminder_send_time VARCHAR(5) NOT NULL DEFAULT '09:00',
+    reminder_time_zone VARCHAR(64) NOT NULL DEFAULT 'Asia/Kolkata',
     updated_at TIMESTAMP NOT NULL DEFAULT now(),
     updated_by_customer_id BIGINT REFERENCES customer(id)
 );
@@ -1010,3 +1014,25 @@ CREATE TABLE api_key (
     created_at TIMESTAMP NOT NULL DEFAULT now()
 );
 CREATE INDEX idx_api_key_owner ON api_key (owner_customer_id);
+
+-- REQ-SUB-004 (C64): renewal reminder settings per user and the sent-reminder log.
+CREATE TABLE renewal_reminder_preference (
+    id BIGSERIAL PRIMARY KEY,
+    customer_id BIGINT NOT NULL UNIQUE REFERENCES customer(id),
+    enabled BOOLEAN NOT NULL DEFAULT TRUE,
+    days_before INT CHECK (days_before BETWEEN 1 AND 30),
+    send_time VARCHAR(5),
+    updated_at TIMESTAMP NOT NULL DEFAULT now()
+);
+
+CREATE TABLE renewal_reminder_log (
+    id BIGSERIAL PRIMARY KEY,
+    subscription_id BIGINT NOT NULL REFERENCES product_subscription(id),
+    recipient_customer_id BIGINT NOT NULL REFERENCES customer(id),
+    local_date DATE NOT NULL,
+    renewal_date TIMESTAMP NOT NULL,
+    days_before INT NOT NULL,
+    sent_at TIMESTAMP NOT NULL DEFAULT now(),
+    CONSTRAINT uq_renewal_reminder_log UNIQUE (subscription_id, recipient_customer_id, local_date)
+);
+CREATE INDEX idx_renewal_reminder_log_subscription ON renewal_reminder_log (subscription_id);

@@ -68,7 +68,26 @@
     "region": "Region",
     "regionHint": "Controls date and number formatting (e.g. day/month order) — separate from your time zone below.",
     "browserDefault": "Use my browser's default",
-    "timeZone": "Time zone"
+    "timeZone": "Time zone",
+    "renewalReminders": {
+      "title": "Renewal reminders",
+      "description": "Emails before your subscriptions renew, sent once a day until they renew.",
+      "enabled": "Send renewal reminders",
+      "offNote": "Your subscriptions still renew; only the emails stop.",
+      "days": "Start reminding (days before renewal)",
+      "platformDays": "Leave empty for the platform default: {{days}} days.",
+      "daysRange": "Enter a number from {{min}} to {{max}}.",
+      "time": "Send at",
+      "platformTime": "Leave empty for the platform default: {{time}}.",
+      "timeFormat": "Enter a time as HH:mm.",
+      "timeZone": "Time zone: {{zone}} (change it under Language & formats).",
+      "summary": "You'll get a reminder every day from {{days}} days before each renewal, at {{time}} ({{zone}}).",
+      "save": "Save reminder settings",
+      "saved": "Reminder settings saved.",
+      "saveError": "Could not save the reminder settings.",
+      "loadError": "Could not load the reminder settings.",
+      "retry": "Retry"
+    }
   },
   "common": {
     "loading": "Loading…",
@@ -567,7 +586,11 @@
     },
     "renewal": {
       "autoRenewOn": "Auto-renew on",
-      "renewsOn": "Renews on {{date}}"
+      "renewsOn": "Renews on {{date}}",
+      "remindersOff": "Reminders are off.",
+      "changeReminders": "Change reminder settings",
+      "nextReminder": "Next reminder: {{date}}",
+      "noReminderLeft": "No reminder before this renewal."
     }
   },
   "orders": {
@@ -924,7 +947,8 @@
         "business": "Business & invoicing",
         "offline": "Offline payments",
         "methods": "Payment methods",
-        "gateway": "Razorpay gateway"
+        "gateway": "Razorpay gateway",
+        "reminders": "Renewal reminders"
       },
       "overview": {
         "notSet": "Not set yet",
@@ -1101,6 +1125,25 @@
           "body": "Use Test connection above. Online payment methods turn on for customers automatically."
         },
         "securityNote": "For security, Razorpay keys are never typed into, stored by, or shown on this screen. Only whether each key is set, and the key ID masked."
+      },
+      "reminders": {
+        "title": "Renewal reminder defaults",
+        "description": "Every user starts with these settings. Reminders are sent once a day from this many days before a renewal until it renews.",
+        "days": "Days before renewal",
+        "daysHelp": "1 to 30. Default 7.",
+        "daysRange": "Enter a number from 1 to 30.",
+        "time": "Send time",
+        "timeHelp": "In each recipient's own time zone.",
+        "timeFormat": "Enter a time as HH:mm.",
+        "zone": "Default time zone",
+        "zoneHelp": "Used when a user has not chosen a time zone.",
+        "userNote": "Users can choose their own days and time, or turn reminders off. Turning reminders off never stops a renewal.",
+        "previewTitle": "Reminder schedule",
+        "previewBody": "For each renewal, at {{time}} ({{zone}}):",
+        "daysLeft_one": "1 day before",
+        "daysLeft_other": "{{count}} days before",
+        "renewalDay": "Renewal",
+        "saveError": "Could not save the reminder defaults."
       }
     },
     "events": {

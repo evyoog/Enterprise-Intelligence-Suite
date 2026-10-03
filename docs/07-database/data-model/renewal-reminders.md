@@ -6,6 +6,7 @@
 | Table | Column | Description |
 |---|---|---|
 | product_subscription | auto_renew | BOOLEAN NOT NULL DEFAULT TRUE. Existing subscriptions get TRUE |
+| billing_settings | (check) | `reminder_lead_days` BETWEEN 1 AND 30 |
 | billing_settings | reminder_lead_days | INT NOT NULL DEFAULT 7, CHECK 1–30. Platform default days before renewal |
 | billing_settings | reminder_send_time | VARCHAR(5) NOT NULL DEFAULT '09:00'. Platform default send time (`HH:mm`) |
 | billing_settings | reminder_time_zone | VARCHAR(64) NOT NULL DEFAULT 'Asia/Kolkata'. Used when a recipient has no time zone preference |
@@ -19,11 +20,11 @@ One row per user who changed their settings; no row = defaults (enabled, platfor
 | Column | Type | Notes |
 |---|---|---|
 | id | BIGSERIAL PK | |
-| user_id | VARCHAR(255) NOT NULL UNIQUE | Keycloak subject |
+| customer_id | BIGINT NOT NULL UNIQUE | FK customer (the user) |
 | enabled | BOOLEAN NOT NULL DEFAULT TRUE | |
 | days_before | INT NULL | 1–30; NULL = platform default |
 | send_time | VARCHAR(5) NULL | `HH:mm`; NULL = platform default |
-| updated_at | TIMESTAMPTZ NOT NULL | |
+| updated_at | TIMESTAMP NOT NULL | |
 
 ### renewal_reminder_log
 One row per reminder sent ([BR-6](../../02-requirements/FRD/renewal-reminders/business-rules.md)).
@@ -32,10 +33,10 @@ One row per reminder sent ([BR-6](../../02-requirements/FRD/renewal-reminders/bu
 |---|---|---|
 | id | BIGSERIAL PK | |
 | subscription_id | BIGINT NOT NULL | FK product_subscription |
-| recipient_user_id | VARCHAR(255) NOT NULL | |
+| recipient_customer_id | BIGINT NOT NULL | FK customer |
 | local_date | DATE NOT NULL | The recipient's local date of sending |
-| renewal_date | TIMESTAMPTZ NOT NULL | The renewal date the reminder was about |
+| renewal_date | TIMESTAMP NOT NULL | The renewal date the reminder was about |
 | days_before | INT NOT NULL | |
-| sent_at | TIMESTAMPTZ NOT NULL | |
+| sent_at | TIMESTAMP NOT NULL | |
 
-Unique `(subscription_id, recipient_user_id, local_date)`; index on `subscription_id`.
+Unique `(subscription_id, recipient_customer_id, local_date)`; index on `subscription_id`.

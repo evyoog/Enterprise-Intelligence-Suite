@@ -195,12 +195,15 @@ class SubscriptionServiceTest {
         subscriptionService.subscribe(customerId, product.getId());
         ProductSubscription overdue = activeSubscription(customerId, product.getId());
         overdue.setExpiresAt(Instant.now().minus(1, ChronoUnit.DAYS));
+        // REQ-SUB-004: only subscriptions without auto-renew expire.
+        overdue.setAutoRenew(false);
         subscriptionRepository.save(overdue);
 
         Product futureProduct = newProduct();
         subscriptionService.subscribe(customerId, futureProduct.getId());
         ProductSubscription notYetDue = activeSubscription(customerId, futureProduct.getId());
         notYetDue.setExpiresAt(Instant.now().plus(1, ChronoUnit.DAYS));
+        notYetDue.setAutoRenew(false);
         subscriptionRepository.save(notYetDue);
 
         int expiredCount = subscriptionService.expireOverdueSubscriptions();

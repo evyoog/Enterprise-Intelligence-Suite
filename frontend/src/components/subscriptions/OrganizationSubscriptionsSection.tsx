@@ -26,20 +26,17 @@ export function OrganizationSubscriptionsSection() {
   const [hidden, setHidden] = useState(false)
   const [toast, setToast] = useState<string | null>(null)
 
-  const load = useCallback(async () => {
-    try {
-      const subscriptions = await organizationApi.listOrganizationSubscriptions()
-      const withSeats = await Promise.all(subscriptions.map(async (subscription) => ({
-        subscription,
-        seats: subscription.status === 'ACTIVE' || subscription.status === 'SUSPENDED'
-          ? await organizationApi.seats(subscription.id).catch(() => null) : null,
-      })))
-      setRows(withSeats)
-    } catch (e) {
+  const load = useCallback(() => organizationApi.listOrganizationSubscriptions()
+    .then((subscriptions) => Promise.all(subscriptions.map((subscription) => (
+      subscription.status === 'ACTIVE' || subscription.status === 'SUSPENDED'
+        ? organizationApi.seats(subscription.id).catch(() => null)
+        : Promise.resolve(null)
+    ).then((seats) => ({ subscription, seats })))))
+    .then(setRows)
+    .catch((e) => {
       if (e instanceof ApiError && (e.status === 403 || e.status === 404)) setHidden(true)
       else setRows([])
-    }
-  }, [])
+    }), [])
   useEffect(() => { void load() }, [load])
 
   if (hidden || rows === null || rows.length === 0) return null
