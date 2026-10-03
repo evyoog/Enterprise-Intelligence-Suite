@@ -53,9 +53,9 @@ Notes found during the inventory:
 ### Screens today
 | Screen / component | Where | What it does with roles, permissions or access |
 |---|---|---|
-| `OrganizationMembersCard` | Business dashboard (`/organization/business-dashboard`) | Member list with a role selector (REQ-IAM-002), status actions, Mark reviewed, Reset 2FA (`MANAGE_USERS`) |
-| `OrganizationGroupsCard` | Business dashboard | Groups and their members (REQ-TEN-003, `MANAGE_USERS`) |
-| `OrganizationPrivilegedAccessCard` | Business dashboard | Pending and active organization privileged-access requests (REQ-IAM-004, `MANAGE_PRIVILEGED_ACCESS`) |
+| `OrganizationMembersCard` | Organization settings (`/organization/settings`; on the business dashboard until C69) | Member list with a role selector (REQ-IAM-002), status actions, Mark reviewed, Reset 2FA (`MANAGE_USERS`) |
+| `OrganizationGroupsCard` | Organization settings | Groups and their members (REQ-TEN-003, `MANAGE_USERS`) |
+| `OrganizationPrivilegedAccessCard` | Organization settings | Pending and active organization privileged-access requests (REQ-IAM-004, `MANAGE_PRIVILEGED_ACCESS`) |
 | `PrivilegedAccessRequestsCard` | Account → Security | A member requests temporary elevated access |
 | `RolesAdminPage` | `/admin/roles` | Platform admin: create, edit, delete roles and their permissions (REQ-IAM-003) |
 | `PermissionsAdminPage` | `/admin/permissions` | Platform admin: permission catalogue — create, edit, delete (REQ-IAM-003) |

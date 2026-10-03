@@ -34,7 +34,6 @@ The accent replaces the MUI primary palette for the whole interface immediately.
 | Time zone | Searchable list of every IANA time zone the browser supports (type a city or region; each shows its current UTC offset, e.g. "Asia/Tokyo (GMT+9)") | Account and browser (unchanged) |
 | Date format | Region default, DD/MM/YYYY, MM/DD/YYYY, YYYY-MM-DD | Browser (`vyoog-date-format`) |
 | Time format | Region default, 12-hour, 24-hour | Browser (`vyoog-time-format`) |
-| First day of week | Region default, Sunday, Monday | Browser (`vyoog-week-start`); no calendar uses it yet |
 
 ## 3. Notifications — "Choose how you receive notifications from EIS."
 | Row | Control | Backend categories (email opt-out) |

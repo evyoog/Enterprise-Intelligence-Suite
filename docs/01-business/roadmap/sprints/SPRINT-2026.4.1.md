@@ -76,10 +76,20 @@
 |---|---|---|
 | Single-column Preferences page (Appearance, Language & Formats, Notifications, Renewal Reminders) | Done | [preferences.md](../../../05-ui/screen-requirements/preferences.md) |
 | Personal accent colour (10 presets) applied to the theme primary | Done | Stored in the browser; AA contrast checked |
-| Date format, time format, first day of week | Done | Region default unless chosen; first day of week has no consumer yet |
+| Date format, time format | Done | Region default unless chosen. *First day of week* was added and then removed (product owner, 2026-10-03) |
 | Notification email categories on the existing opt-out API | Done | In-app shown as always on (backend always records) |
 | Settings navigation layout (C68): left navigation, focused panel, section selector on phones | Done | Supersedes the single-column layout of C67 |
 | Tests | Done | [TESTPLAN-PRT-002](../../../../test-cases/functional/portal-preferences/TESTPLAN-PRT-002.md), TC-PRT-008–013 |
+
+### Business dashboard redesign (C69, 2026-10-03)
+
+| Item | Status | Note |
+|---|---|---|
+| Workspace layout: header, welcome and status, quick actions, KPIs, analytics, health, workspace, account, applications, activity, attention, billing | Done | [business-dashboard.md](../../../05-ui/screen-requirements/business-dashboard.md) |
+| Organization settings page (members, groups, MFA policy, privileged access moved off the dashboard) | Done | `/organization/settings` |
+| Motion with Reduce motion / OS preference respected | Done | |
+| Launches over time and period filters | Not built | No launch history in the data — C69 follow-up |
+| Tests | Done | [TESTPLAN-PRT-003](../../../../test-cases/functional/business-dashboard/TESTPLAN-PRT-003.md), TC-PRT-014–019 |
 
 The rest of 02 (Offering, Content, Localization) and 05.02 Tenant Lifecycle remain open for this sprint; continuing them needs the same FRD-first process as above.
 

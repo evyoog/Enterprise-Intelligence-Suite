@@ -14,7 +14,7 @@ import { SiteNavbar } from '../components/layout/SiteNavbar'
 import { useInAppShell } from '../components/layout/appShellContext'
 import { useThemeMode, type ThemeMode } from '../theming/ThemeModeProvider'
 import { useLocalePreference, SUPPORTED_REGIONS } from '../theming/LocalePreferenceProvider'
-import { DATE_FORMATS, TIME_FORMATS, WEEK_STARTS, type DateFormat, type TimeFormat, type WeekStart } from '../theming/formatOptions'
+import { DATE_FORMATS, TIME_FORMATS, type DateFormat, type TimeFormat } from '../theming/formatOptions'
 import { SUPPORTED_LANGUAGES } from '../i18n'
 
 /** The language's own name ("English", "español"); the navbar keeps the short code labels. */
@@ -182,7 +182,7 @@ function AppearancePanel() {
 function FormatsPanel() {
   const { t, i18n } = useTranslation()
   const {
-    timeZone, setTimeZone, region, setRegion, dateFormat, setDateFormat, timeFormat, setTimeFormat, weekStart, setWeekStart,
+    timeZone, setTimeZone, region, setRegion, dateFormat, setDateFormat, timeFormat, setTimeFormat,
   } = useLocalePreference()
   return (
     <PreferenceSection id="language-formats" title={t('preferences.languageAndFormats')} description={t('preferences.languageDescription')}>
@@ -211,12 +211,6 @@ function FormatsPanel() {
         control={(
           <CompactSelect id="time-format" value={timeFormat} onChange={(v) => setTimeFormat(v as TimeFormat)}>
             {TIME_FORMATS.map((f) => <MenuItem key={f} value={f}>{t(`preferences.timeFormatOption.${f}`)}</MenuItem>)}
-          </CompactSelect>
-        )} />
-      <PreferenceRow label={t('preferences.weekStart')} hint={t('preferences.weekStartHint')} labelId="week-start-label"
-        control={(
-          <CompactSelect id="week-start" value={weekStart} onChange={(v) => setWeekStart(v as WeekStart)}>
-            {WEEK_STARTS.map((f) => <MenuItem key={f} value={f}>{t(`preferences.weekStartOption.${f}`)}</MenuItem>)}
           </CompactSelect>
         )} />
     </PreferenceSection>

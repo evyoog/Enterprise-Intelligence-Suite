@@ -96,17 +96,11 @@
     "languageDescription": "Elija su idioma, región y preferencias de formato.",
     "dateFormat": "Formato de fecha",
     "timeFormat": "Formato de hora",
-    "weekStart": "Primer día de la semana",
     "regionDefault": "Según la región",
     "timeFormatOption": {
       "auto": "Según la región",
       "12h": "12 horas",
       "24h": "24 horas"
-    },
-    "weekStartOption": {
-      "auto": "Según la región",
-      "sunday": "Domingo",
-      "monday": "Lunes"
     },
     "accent": {
       "label": "Color de acento",
@@ -149,7 +143,6 @@
     "timeZoneHint": "Se usa para fechas, horas y recordatorios de renovación.",
     "dateFormatHint": "Cómo se escriben las fechas.",
     "timeFormatHint": "Reloj de 12 o de 24 horas.",
-    "weekStartHint": "Se usa donde EIS muestra semanas o calendarios.",
     "nav": {
       "heading": "Preferencias",
       "selector": "Sección",
@@ -258,7 +251,8 @@
     "reviewSaveError": "No se pudo registrar esta revisión.",
     "confirmRemove": "¿Eliminar a {{name}} de esta organización? Esto no se puede deshacer desde aquí.",
     "approvalsTitle": "Aprobaciones de acceso privilegiado",
-    "noPending": "No hay solicitudes pendientes."
+    "noPending": "No hay solicitudes pendientes.",
+    "pageSubtitle": "Miembros, grupos, política de MFA y acceso privilegiado de su organización."
   },
   "groups": {
     "title": "Grupos",
@@ -462,7 +456,8 @@
       "billingSettings": "Configuración de facturación",
       "integrations": "Integraciones",
       "platformEvents": "Eventos de la plataforma",
-      "apiKeys": "Claves de API"
+      "apiKeys": "Claves de API",
+      "orgSettings": "Configuración de la organización"
     },
     "catalogTitle": "Catálogo de productos",
     "catalogSubtitle": "Busque y filtre los productos disponibles en la plataforma.",
@@ -1879,6 +1874,245 @@
       "previewName": "Nombre de la aplicación",
       "previewDescription": "Aquí aparece la descripción de la aplicación.",
       "tagDuplicate": "Esta función ya está añadida."
+    }
+  },
+  "bizDash": {
+    "organization": "Organización",
+    "subtitle": "Panel empresarial",
+    "identityFederation": "Federación de identidad",
+    "loadError": "No se pudo cargar el panel empresarial.",
+    "sectionUnavailable": "{{section}} no está disponible en este momento.",
+    "welcome": {
+      "morning": "Buenos días, {{name}}",
+      "afternoon": "Buenas tardes, {{name}}",
+      "evening": "Buenas noches, {{name}}",
+      "body": "Esto es lo que ocurre hoy en su organización.",
+      "unusedSeats_one": "{{count}} puesto sin usar",
+      "unusedSeats_other": "{{count}} puestos sin usar",
+      "overLimit": "Límite de puestos superado"
+    },
+    "status": {
+      "allOperational": "Todos los sistemas operativos",
+      "platformDown": "Plataforma no disponible",
+      "overall": {
+        "DEGRADED": "Rendimiento degradado",
+        "PARTIAL_OUTAGE": "Interrupción parcial",
+        "MAJOR_OUTAGE": "Interrupción grave",
+        "MAINTENANCE": "Mantenimiento en curso"
+      }
+    },
+    "quick": {
+      "label": "Acciones rápidas",
+      "myApps": "Mis aplicaciones",
+      "catalog": "Catálogo de productos",
+      "members": "Miembros",
+      "billing": "Facturación",
+      "support": "Soporte"
+    },
+    "kpi": {
+      "label": "Resumen",
+      "seats": "Puestos con licencia",
+      "seatsUsed": "{{percent}}% en uso",
+      "manage": "Gestionar",
+      "members": "Miembros activos",
+      "membersOf": "de {{count}} puestos con licencia",
+      "view": "Ver",
+      "apps": "Aplicaciones",
+      "appsActive_one": "{{count}} con suscripción activa",
+      "appsActive_other": "{{count}} con suscripción activa",
+      "explore": "Explorar",
+      "launches": "Inicios de aplicaciones",
+      "launchesAllTime": "Total histórico de su organización",
+      "analytics": "Análisis"
+    },
+    "analytics": {
+      "title": "Análisis de uso",
+      "application": "Aplicación",
+      "allApps": "Todas las aplicaciones",
+      "subscription": "Suscripción",
+      "allStatuses": "Todos los estados",
+      "refresh": "Actualizar",
+      "usageByApp": "Uso por aplicación",
+      "viewAll": "Ver todas las aplicaciones",
+      "openDetails": "Ver detalles",
+      "barHint_one": "{{count}} inicio · {{members}} miembros asignados",
+      "barHint_other": "{{count}} inicios · {{members}} miembros asignados",
+      "allTimeNote": "Los inicios son totales históricos. EIS aún no registra el historial de inicios, por lo que no hay vista por periodo."
+    },
+    "adoption": {
+      "title": "Adopción",
+      "rate": "Aplicaciones en uso",
+      "rateHint": "{{launched}} de {{total}} aplicaciones iniciadas al menos una vez",
+      "mostUsed": "Más usada",
+      "launches_one": "{{count}} inicio",
+      "launches_other": "{{count}} inicios",
+      "notLaunched": "Aún sin iniciar",
+      "allLaunched": "Todas las aplicaciones se han iniciado."
+    },
+    "health": {
+      "label": "Estado de la organización",
+      "service": "Estado del servicio",
+      "viewStatus": "Ver estado del servicio",
+      "platform": "Plataforma EIS",
+      "down": "No disponible",
+      "federation": "Federación de identidad",
+      "connected": "Conectada",
+      "notConfigured": "Sin configurar"
+    },
+    "seats": {
+      "title": "Uso de puestos",
+      "manage": "Gestionar puestos",
+      "utilization": "Uso de puestos",
+      "licensed": "Con licencia",
+      "used": "En uso",
+      "available": "Disponibles"
+    },
+    "subs": {
+      "title": "Estado de suscripciones",
+      "active": "Suscripción activa",
+      "other": "Sin suscripción / inactiva",
+      "apps": "aplicaciones"
+    },
+    "subStatus": {
+      "ACTIVE": "Activa",
+      "PENDING_SUBSCRIPTION": "Pendiente",
+      "SUSPENDED": "Suspendida",
+      "CANCELLED": "Cancelada",
+      "EXPIRED": "Vencida",
+      "NONE": "Sin suscripción"
+    },
+    "workspace": {
+      "label": "Su espacio de trabajo",
+      "recent": "Usadas recientemente",
+      "favorites": "Favoritas",
+      "used": "Usada {{when}}",
+      "noRecent": "Aún no ha abierto ninguna aplicación.",
+      "noFavorites": "Aún no tiene aplicaciones favoritas.",
+      "explore": "Explorar aplicaciones",
+      "open": "Abrir",
+      "details": "Detalles",
+      "openLabel": "Abrir {{name}} (se abre en una pestaña nueva)",
+      "detailsLabel": "Ver detalles de {{name}}",
+      "favorite": "Añadir {{name}} a favoritas",
+      "unfavorite": "Quitar {{name}} de favoritas"
+    },
+    "account": {
+      "title": "Su cuenta",
+      "role": "Rol",
+      "mfa": "Verificación en dos pasos",
+      "mfaOn": "Activada",
+      "mfaOff": "No activada",
+      "mfaRequired": "Obligatoria en su organización",
+      "identity": "SSO de la organización",
+      "ssoConnected_one": "Conectado ({{count}} proveedor)",
+      "ssoConnected_other": "Conectado ({{count}} proveedores)",
+      "signedIn": "Sesión iniciada",
+      "permissions": "Sus permisos en la organización",
+      "noPermissions": "Sin permisos en la organización.",
+      "more": "+{{count}} más",
+      "preferences": "Preferencias",
+      "security": "Configuración de seguridad",
+      "roles": {
+        "ORG_ADMIN": "Administrador de la organización",
+        "MEMBER": "Miembro"
+      },
+      "status": {
+        "ACTIVE": "Activo",
+        "SUSPENDED": "Suspendido",
+        "INACTIVE": "Inactivo"
+      }
+    },
+    "table": {
+      "title": "Aplicaciones",
+      "application": "Aplicación",
+      "status": "Estado",
+      "members": "Miembros",
+      "launches": "Inicios",
+      "lastUsed": "Último uso",
+      "action": "Acción",
+      "noMatch": "Ninguna aplicación coincide con estos filtros.",
+      "clear": "Quitar filtros",
+      "filtered": "Filtrado por"
+    },
+    "empty": {
+      "noApps": "Aún no hay aplicaciones.",
+      "exploreCatalog": "Explorar el catálogo de productos"
+    },
+    "activity": {
+      "label": "Actividad",
+      "title": "Actividad reciente",
+      "empty": "No hay actividad reciente.",
+      "failed": "fallido",
+      "action": {
+        "LOGIN_SUCCESS": "Inicio de sesión de un miembro",
+        "LOGIN_FAILURE": "Inicio de sesión fallido",
+        "LOGOUT": "Cierre de sesión de un miembro",
+        "SUBSCRIPTION_CREATED": "Suscripción creada",
+        "SUBSCRIPTION_RENEWED": "Suscripción renovada",
+        "SUBSCRIPTION_AUTO_RENEWED": "Suscripción renovada automáticamente",
+        "SUBSCRIPTION_CANCELLED": "Suscripción cancelada",
+        "SUBSCRIPTION_SUSPENDED": "Suscripción suspendida",
+        "SUBSCRIPTION_REACTIVATED": "Suscripción reactivada",
+        "SUBSCRIPTION_PLAN_CHANGED": "Plan de suscripción cambiado",
+        "SUBSCRIPTION_SEATS_CHANGED": "Puestos de suscripción cambiados",
+        "SUBSCRIPTION_EXPIRED": "Suscripción vencida",
+        "MEMBER_ROLE_CHANGED": "Rol de miembro cambiado",
+        "MEMBER_STATUS_CHANGED": "Estado de miembro cambiado",
+        "MEMBER_ACCESS_REVIEWED": "Acceso de miembro revisado",
+        "PRODUCT_ACCESS_GRANTED": "Acceso a aplicación concedido",
+        "PRODUCT_ACCESS_REVOKED": "Acceso a aplicación retirado",
+        "ORDER_SUBMITTED": "Pedido enviado",
+        "ORDER_APPROVED": "Pedido aprobado",
+        "ORDER_REJECTED": "Pedido rechazado",
+        "TICKET_CREATED": "Ticket de soporte creado",
+        "TICKET_RESOLVED": "Ticket de soporte resuelto",
+        "INVOICE_GENERATED": "Factura generada",
+        "PAYMENT_CAPTURED": "Pago recibido",
+        "MFA_POLICY_CHANGED": "Política de MFA cambiada",
+        "GROUP_CREATED": "Grupo creado",
+        "PRIVILEGED_ACCESS_REQUESTED": "Acceso privilegiado solicitado",
+        "PRIVILEGED_ACCESS_APPROVED": "Acceso privilegiado aprobado",
+        "SEAT_COUNT_CHANGED": "Número de puestos cambiado"
+      }
+    },
+    "attention": {
+      "title": "Requiere atención",
+      "caughtUp": "Está todo al día",
+      "caughtUpBody": "No hay acciones pendientes.",
+      "generic": "Requiere atención",
+      "review": "Revisar",
+      "types": {
+        "SERVICE_STATUS": "Incidencia del servicio",
+        "SEAT_LIMIT_REACHED": "Límite de puestos alcanzado",
+        "UNDERUTILIZED_SEATS": "Puestos con licencia sin usar",
+        "UNUSED_PRODUCT_ACCESS": "Acceso a aplicaciones sin usar",
+        "ORGANIZATION_MFA_REQUIRED": "Acción de seguridad necesaria",
+        "SUBSCRIPTION_EXPIRING_SOON": "Renovación próxima",
+        "PRIVILEGED_ACCESS_PENDING": "Acceso privilegiado pendiente de aprobación",
+        "PRIVILEGED_ACCESS_ACTIVE": "Acceso privilegiado activo"
+      },
+      "actions": {
+        "SERVICE_STATUS": "Ver estado del servicio",
+        "SEAT_LIMIT_REACHED": "Gestionar miembros",
+        "UNDERUTILIZED_SEATS": "Gestionar miembros",
+        "UNUSED_PRODUCT_ACCESS": "Revisar acceso",
+        "ORGANIZATION_MFA_REQUIRED": "Revisar seguridad",
+        "SUBSCRIPTION_EXPIRING_SOON": "Ver facturación",
+        "PRIVILEGED_ACCESS_PENDING": "Revisar solicitudes",
+        "PRIVILEGED_ACCESS_ACTIVE": "Revisar accesos"
+      }
+    },
+    "billing": {
+      "title": "Facturación",
+      "view": "Ver facturación",
+      "activeSubs": "Suscripciones activas",
+      "nextRenewal": "Próxima renovación",
+      "noRenewal": "No hay renovaciones próximas",
+      "autoRenew": "Se renueva automáticamente",
+      "manualRenew": "Renovación manual",
+      "spent": "Gastado en este periodo",
+      "noSpend": "Aún no hay facturas pagadas",
+      "vsLast": "frente al periodo anterior"
     }
   }
 }

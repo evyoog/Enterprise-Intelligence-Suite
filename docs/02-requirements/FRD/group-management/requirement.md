@@ -24,7 +24,7 @@
 05.04.02 Projects is **not** in this FRD — carried to sprint 2026.4.2 ([C35](../../../01-business/roadmap/open-decisions.md#c35)).
 
 ## Summary
-An organization admin can create named groups (e.g. "Engineering") and add or remove their own organization's members from them, on the business dashboard. A group carries no permissions or product access of its own.
+An organization admin can create named groups (e.g. "Engineering") and add or remove their own organization's members from them, on the Organization settings page (`/organization/settings`, moved from the business dashboard by [C69](../../../01-business/roadmap/open-decisions.md#c69)). A group carries no permissions or product access of its own.
 
 ## Actors
 - Organization admin (holding `MANAGE_USERS`, same-organization only)

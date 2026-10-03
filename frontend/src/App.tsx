@@ -7,6 +7,7 @@ import { HomePage } from './pages/HomePage'
 import { ProductsPage } from './pages/ProductsPage'
 import { MyProductsPage } from './pages/MyProductsPage'
 import { MySubscriptionsPage } from './pages/MySubscriptionsPage'
+import { OrganizationSettingsPage } from './pages/OrganizationSettingsPage'
 import { BusinessDashboardPage } from './pages/BusinessDashboardPage'
 import { SecuritySettingsPage } from './pages/SecuritySettingsPage'
 import { PreferencesPage } from './pages/PreferencesPage'
@@ -128,6 +129,8 @@ function MainApp() {
           <Route path="/my/products" element={<RequireAuth><MyProductsPage /></RequireAuth>} />
           <Route path="/my/subscriptions" element={<RequireAuth><MySubscriptionsPage /></RequireAuth>} />
           <Route path="/organization/business-dashboard" element={<RequireAuth><BusinessDashboardPage /></RequireAuth>} />
+          {/* C69: organization administration moved off the dashboard. */}
+          <Route path="/organization/settings" element={<RequireAuth><OrganizationSettingsPage /></RequireAuth>} />
           <Route path="/account/security" element={<RequireAuth><SecuritySettingsPage /></RequireAuth>} />
           <Route path="/organization/identity-federation" element={<RequireAuth><OrganizationSamlProvidersPage /></RequireAuth>} />
           {/* REQ-PRT-001 (C26): signed-in customers. */}

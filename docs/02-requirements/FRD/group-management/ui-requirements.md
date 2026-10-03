@@ -3,7 +3,7 @@
 ## Screens
 | Screen | Route | Roles | Wireframe |
 |--------|-------|-------|-----------|
-| Groups (business dashboard) | `/organization/business-dashboard` | Org admin | Not specified |
+| Groups (Organization settings; moved from the business dashboard by [C69](../../../01-business/roadmap/open-decisions.md#c69)) | `/organization/settings#groups` | Org admin | Not specified |
 
 ## Fields and validation
 | Field | Type | Required | Validation | Error message (i18n key) |

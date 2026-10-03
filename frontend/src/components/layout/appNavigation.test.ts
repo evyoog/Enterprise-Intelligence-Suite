@@ -14,7 +14,7 @@ describe('buildAppNavigation', () => {
     // 09 Order & Provisioning Management (sprint 2027.1.1): any organization
     // member sees Orders, not just ORG_ADMIN. 08 Billing & Payments (C46):
     // orgBilling requires MANAGE_ORGANIZATION, present here.
-    expect(nav.organization).toEqual(['identityFederation', 'orders', 'orgBilling'])
+    expect(nav.organization).toEqual(['orgSettings', 'identityFederation', 'orders', 'orgBilling'])
     expect(nav.administration).toBeUndefined()
     expect(nav.account).toEqual(['security', 'preferences'])
   })
