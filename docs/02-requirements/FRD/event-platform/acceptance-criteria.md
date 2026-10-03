@@ -1,0 +1,15 @@
+# Acceptance criteria — Platform events (REQ-INT-002)
+
+| ID | Requirement | Criterion | Test case |
+|---|---|---|---|
+| AC-1 | .1 | **Given** a business change that publishes an event **when** the transaction commits **then** exactly one PENDING event with that type and aggregate exists. | [TC-INT-011](../../../../test-cases/functional/event-platform/TC-INT-011.md) |
+| AC-2 | .1 | **Given** a change that publishes an event **when** the transaction is rolled back **then** no event exists (rolled-back change creates no event). | [TC-INT-011](../../../../test-cases/functional/event-platform/TC-INT-011.md) |
+| AC-3 | .2 | **Given** any published event **then** it has a unique event ID, type, aggregate type and ID, occurred-at, a JSON payload without secrets or card data, status PENDING and attempts 0. | [TC-INT-011](../../../../test-cases/functional/event-platform/TC-INT-011.md) |
+| AC-4 | .3, .4 | **Given** a PENDING event and a handler for its type **when** the dispatcher runs twice **then** the handler processes it once (duplicate delivery processed once) and the event is DELIVERED. | [TC-INT-012](../../../../test-cases/functional/event-platform/TC-INT-012.md) |
+| AC-5 | .3 | **Given** a handler that fails **when** the dispatcher runs **then** attempts is 1, the error is recorded and the next attempt is about 30 seconds later; after the maximum attempts the event is FAILED. | [TC-INT-013](../../../../test-cases/functional/event-platform/TC-INT-013.md) |
+| AC-6 | .5 | **Given** two events for the same aggregate where the first cannot yet be delivered **when** the dispatcher runs **then** the second is not delivered before the first (per-aggregate order kept). | [TC-INT-014](../../../../test-cases/functional/event-platform/TC-INT-014.md) |
+| AC-7 | .6 | **Given** a FAILED event **when** an administrator retries it **then** it is PENDING with attempts 0, and the retry is audited; a non-FAILED event cannot be retried (409). | [TC-INT-015](../../../../test-cases/functional/event-platform/TC-INT-015.md) |
+| AC-8 | .6 | **Given** events of several types and statuses **when** an administrator filters by type, status and date **then** only matching events are listed, newest first; a user without `MANAGE_INTEGRATIONS` gets 403. | [TC-INT-015](../../../../test-cases/functional/event-platform/TC-INT-015.md) |
+| AC-9 | .7 | **Given** DELIVERED events older than the retention period and a FAILED one **when** retention runs **then** only the old DELIVERED events are removed. | [TC-INT-016](../../../../test-cases/functional/event-platform/TC-INT-016.md) |
+| AC-10 | .8 | **Given** an order approval, a subscription change, an invoice, a payment, a seat change **then** the matching catalogue event is published with the aggregate's ID. | [TC-INT-017](../../../../test-cases/functional/event-platform/TC-INT-017.md) |
+| AC-11 | Accessibility | **Given** the Platform events screen and its detail dialog **then** each passes the axe test. | [TC-INT-015](../../../../test-cases/functional/event-platform/TC-INT-015.md) |

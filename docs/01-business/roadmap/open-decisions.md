@@ -62,8 +62,12 @@ Raised from the sprint 2026.3.3 development plan.
 10. **D7 Service instance:** what is a "service instance" for Service & Resource Management (10)? → Decided 2026-10-01 (option A): see [C57](#c57).
 11. **D10 Vector store:** where are embeddings for semantic search and AI knowledge stored? → Decided 2026-10-01 (option A): see [C58](#c58).
 12. **D17 Cart:** does the platform have a cart, or does Buy go straight to checkout? → Decided 2026-10-01 (dedicated cart): see [C59](#c59).
+13. **D12 API management:** where are API keys, rate limits and versioning handled? → Decided 2026-10-03 (option B, inside the backend): see [C61](#c61).
+14. **D13 Platform events:** what carries platform events? → Decided 2026-10-03 (option A, outbox table): see [C62](#c62).
+15. **D14 Seats and quantity:** what does quantity mean on a subscription? → Decided 2026-10-03 (option A, seats): see [C63](#c63).
+16. **D15 Auto-renewal:** do subscriptions renew automatically, and how are customers reminded? → Decided 2026-10-03 (option A, with reminder rules): see [C64](#c64).
 
-The D-numbers (D3–D23) come from the product owner's decision list, which is not stored in this repository. Only the D-items answered so far are listed above. D8 (LLM provider), D13 (events), D14 (seats and quantity), D15 (auto-renew), D16 (organization billing permission), D19 (webhooks) and D23 (product media storage) are referenced by records below but are still **not decided**.
+The D-numbers (D3–D23) come from the product owner's decision list, which is not stored in this repository. Only the D-items answered so far are listed above. D8 (LLM provider), D16 (organization billing permission), D19 (webhooks), D23 (product media storage), D27 (platform templates) and D42 (cloud API gateway) are referenced by records below but are still **not decided**. D12–D15 were decided on 2026-10-03 (C61–C64).
 
 ---
 
@@ -493,6 +497,34 @@ FRD: [REQ-MKT-003 Cart and checkout](../../02-requirements/FRD/cart-checkout/req
 
 **Reason:** the invoice needs a legal issuer to be usable, admins need to control what customers can pay with without a code change, and one consistent, colour-coded design makes the many admin screens easier to scan.
 
+### C61
+**Decision (product owner, 2026-10-03) — answer to D12, option B:** API management is built **inside the existing backend now**: API keys, rate limits and API versioning. A cloud API gateway is added at deployment (D42 not decided); when it is, any overlapping logic is moved or removed.
+
+FRD: [REQ-INT-001 API management](../../02-requirements/FRD/api-management/requirement.md) (sprint [2026.4.2](sprints/SPRINT-2026.4.2.md)).
+
+**Reason:** integrations need keys and protection from overload before a deployment gateway exists; keeping it in the backend now avoids blocking on D42.
+
+### C62
+**Decision (product owner, 2026-10-03) — answer to D13, option A:** Platform events use an **outbox table in the existing Postgres database**: a business change and its event are saved in the same transaction, then a background dispatcher delivers events with retries. This is the platform's event mechanism; no external message broker is planned.
+
+FRD: [REQ-INT-002 Platform events](../../02-requirements/FRD/event-platform/requirement.md) (sprint [2026.4.2](sprints/SPRINT-2026.4.2.md)). Cross-feature flow: [platform-events.md](../../04-workflows/platform-events.md).
+
+**Reason:** the outbox guarantees an event exists exactly when its change was committed, with no extra infrastructure to run; provisioning ([C56](#c56)), webhooks (D19) and reminders can all build on it.
+
+### C63
+**Decision (product owner, 2026-10-03) — answer to D14, option A:** **Quantity means seats** on organization subscriptions, reusing the existing organization seat limits. Seat changes **take effect immediately**; scheduled (future-dated) changes come later. Individual subscriptions always have quantity 1.
+
+FRD: [REQ-SUB-003 Seats and quantity](../../02-requirements/FRD/subscription-seats/requirement.md) (sprint [2026.4.3](sprints/SPRINT-2026.4.3.md)).
+
+**Reason:** organizations buy for a number of people; the platform already counts and enforces seats per organization, so quantity reuses that instead of adding a second licence model.
+
+### C64
+**Decision (product owner, 2026-10-03) — answer to D15, option A with the product owner's reminder rules:** Subscriptions **auto-renew by default**; the renewal charge happens through Billing once Razorpay is configured. Renewal **reminder emails**: a platform default of **7 days** before renewal, sent **daily** at a configured time **until renewed**, with user control over on/off, how many days before, and the send time.
+
+FRD: [REQ-SUB-004 Auto-renewal and renewal reminders](../../02-requirements/FRD/renewal-reminders/requirement.md) (sprint [2026.4.3](sprints/SPRINT-2026.4.3.md)).
+
+**Reason:** subscriptions should not lapse by accident, and customers should know in good time, on their own schedule, when a renewal is coming.
+
 ### DN-2 Sprint scope, length and dates
 **Decision:**
 - **Sprint length:** sprints are **calendar months**. Sprint `.1`, `.2` and `.3` are the first, second and third months of the PI's calendar quarter. Example: 2026.3.3 = 1–30 Sep 2026; 2026.4.1 = 1–31 Oct 2026.
@@ -581,6 +613,10 @@ These documents are **not** changed by this file. Update them to match:
 | C58 | Note pgvector on `SPRINT-2027.1.1.md` (11.01.02) and `SPRINT-2027.1.3.md` (semantic search). Choose the embedding model once D8 (LLM provider) is decided. The pgvector extension must be available on every environment's PostgreSQL 16 (local Docker image, AWS RDS) before either feature is built |
 | C59 | Create FRD `cart-checkout` (REQ-MKT-003, Draft); add it to `SPRINT-2026.4.3.md` and mark 03.03 as moved out of `SPRINT-2027.1.2.md`. New screens `cart.md` and `payment-brand-assets.md`; `checkout-payment.md` redesigned; cart icon in `application-layout.md`; REQ-BIL-001.18 updated for the redesigned checkout (Draft). Answer the REQ-MKT-003 open questions before approval |
 | C60 | Confirm the Billing settings field list (REQ-BIL-001 Open question 11) and that GSTIN/PAN/CIN are the registrations to print (Open question 8). Decide whether Pay by invoice is allowed per customer or organization (Open question 9) on top of the global switch. Decide whether BR-SEC-001 should ever allow entering Razorpay keys on a screen. A PDF invoice layout using the issuer block is still carried (C47) |
+| C61 | Create FRD `api-management` (REQ-INT-001, Draft); add to `SPRINT-2026.4.2.md`. Answer REQ-INT-001 open questions (who gets keys, rate-limit values, versioning scheme, scopes). When D42 adds a cloud gateway, move or remove overlapping rate-limit/key logic |
+| C62 | Create FRD `event-platform` (REQ-INT-002, Draft); add to `SPRINT-2026.4.2.md`. Answer retry schedule, retention and failure-notification questions. Connect provisioning (REQ-ORD-002) and webhooks (D19) as handlers when they are built |
+| C63 | Create FRD `subscription-seats` (REQ-SUB-003, Draft); add to `SPRINT-2026.4.3.md`. Answer billing of mid-term seat changes, who may change seats, pool vs named seats, and whether seat changes need order approval |
+| C64 | Create FRD `renewal-reminders` (REQ-SUB-004, Draft); add to `SPRINT-2026.4.3.md`. Answer the eight REQ-SUB-004 open questions. Unattended charging of a saved method needs the Razorpay Customer/Token integration ([C47](#c47) follow-up) |
 | C54 | The wider navigation-consolidation / shared `<DataTable>`/`<FilterBar>` pass ([C44](#c44)) would make the business dashboard's new click-to-filter table and sort behavior reusable elsewhere instead of page-local — still carried, same as before. `database/seed/README.md` now points to [docs/07-database/demo-data.md](../../07-database/demo-data.md) for exactly what `DemoDataSeeder` adds |
 
 **Done (2026-09-26), no longer follow-up:** C31 (sprint pages 2026.4.1 through 2027.2.2, and the "Sprint" field on application pages 02, 03, 04, 05, 10, 11, 12, 13, 15, all updated to the corrected sequence — this superseded the older "C21: add the general policy engine to `SPRINT-2027.2.2.md`" and "C16, C17: add the deferred functions to `SPRINT-2027.1.3.md`" rows, and the "C21: add the agent controls to `SPRINT-2027.1.2.md`" row, which are now folded into C31's own sprint pages); C32–C35 (FRDs written and Approved, sprint 2026.4.1 built, carry-over recorded on `SPRINT-2026.4.2.md`).

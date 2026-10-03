@@ -31,6 +31,8 @@
 | Decided | [C51](../open-decisions.md#c51) Tax calculation: each region has a tax method (Admin rate or Tax service), admin rate as fallback. Which tax service is Not specified | [tax-rules](../../../02-requirements/FRD/tax-rules/requirement.md) | REQ-BIL-002 |
 | Decided | [C52](../open-decisions.md#c52) Entitlements are derived at runtime from ACTIVE subscriptions and their plans' included features/usage limits — no entitlement table | [entitlements](../../../02-requirements/FRD/entitlements/requirement.md) | REQ-SUB-002 |
 | Moved in | [C59](../open-decisions.md#c59) Marketplace Checkout (03.03, application 03 Marketplace) pulled forward from [2027.1.2](SPRINT-2027.1.2.md), built with Billing: a dedicated cart (Buy → `/cart`), purchase validation, Proceed to checkout (individual) or Submit order for approval (organization member). The checkout screen is redesigned (REQ-BIL-001.18, .22, .23). Configure options and Apply discount (03.03.01.03/.04) stay out ([C40](../open-decisions.md#c40), [C50](../open-decisions.md#c50)) | [cart-checkout](../../../02-requirements/FRD/cart-checkout/requirement.md) | REQ-MKT-003 |
+| Decided | [C63](../open-decisions.md#c63) (D14 → A) Seats: organization subscriptions carry a quantity; admins see seats in use and change the quantity (not below seats in use); seat billing not built (Not specified) | [subscription-seats](../../../02-requirements/FRD/subscription-seats/requirement.md) | REQ-SUB-003 |
+| Decided | [C64](../open-decisions.md#c64) (D15 → A) Auto-renewal on by default, renewal invoice until automatic charging is possible; daily renewal reminders from N days before (platform default 7) at a set time in the recipient's time zone, user overrides | [renewal-reminders](../../../02-requirements/FRD/renewal-reminders/requirement.md) | REQ-SUB-004 |
 | Decided | [C55](../open-decisions.md#c55) Checkout payment screen with online payment and offline Pay by invoice; admin records offline payments; offline bank details (built 2026-10-01 with engineering defaults) | [billing-payments](../../../02-requirements/FRD/billing-payments/requirement.md) | REQ-BIL-001.18–.21 |
 
 ### FRDs in this sprint
@@ -42,16 +44,18 @@
 | [tax-rules](../../../02-requirements/FRD/tax-rules/requirement.md) | REQ-BIL-002 | 08.05.01 (configure tax rules, calculate tax, validate tax) | Draft |
 | [entitlements](../../../02-requirements/FRD/entitlements/requirement.md) | REQ-SUB-002 | 07.02.01 (validate entitlement, check feature access — derived, read-only), 07.02.02 (check quota, limit value only) | Draft |
 | [cart-checkout](../../../02-requirements/FRD/cart-checkout/requirement.md) | REQ-MKT-003 | 03.03.01 (select product, select plan, accept terms, submit order), 03.03.02 (validate eligibility, validate dependencies) | Draft |
+| [subscription-seats](../../../02-requirements/FRD/subscription-seats/requirement.md) | REQ-SUB-003 | 07.01.02.01 (change quantity), 07.03.01 seat limit enforcement | Draft — built 2026-10-03 at the product owner's request |
+| [renewal-reminders](../../../02-requirements/FRD/renewal-reminders/requirement.md) | REQ-SUB-004 | 07.04.01.01–.03 (schedule, notify, auto-renew) | Draft — built 2026-10-03 at the product owner's request |
 
-### Progress (as of 2026-09-30)
+### Progress (as of 2026-10-03)
 
 | Feature | Status | Note |
 |---|---|---|
 | 07.01.01 Subscription Lifecycle (suspend, reactivate, cancel, renew) | Done (this FRD's scope) | Create/Activate already existed; upgrade/downgrade folded into Change plan below |
-| 07.01.02 Subscription Changes (change plan) | Partly done | Change plan built; Change quantity, Schedule change not built — no quantity/scheduling model exists yet |
+| 07.01.02 Subscription Changes (change plan, change quantity) | Partly done | Change plan built; Change quantity built for organization subscriptions ([REQ-SUB-003](../../../02-requirements/FRD/subscription-seats/requirement.md)); Schedule change not built |
 | 07.02 Entitlement Management | Not started | Needs a scoping decision against the existing product-access model first ([C38](../open-decisions.md#c38)) |
 | 07.03 License & Quota Management | Not started | Same as above |
-| 07.04.01 Renewal & Lifecycle (process renewal) | Partly done | Process renewal built (extends term); now also generates an invoice (REQ-BIL-001.2) when the plan is paid. Schedule/Notify/Auto-renew still not built |
+| 07.04.01 Renewal & Lifecycle | Done (this FRD's scope) | Process renewal (REQ-SUB-001); Schedule, Notify and Auto-renew built with [REQ-SUB-004](../../../02-requirements/FRD/renewal-reminders/requirement.md): renewal date, auto-renew job with renewal invoice, daily reminders with platform defaults and user overrides. Turning auto-renew off is an open question |
 | 07.04.02 Lifecycle (expire, reactivate subscription) | Done (this FRD's scope) | Hourly scheduled job; reactivate folded into renew |
 | 08 Billing & Payments (08.02.02, 08.03.01, 08.03.02, 08.04.01, 08.05.02, 01.02.01) | Built (REQ-BIL-001, C46/C47) | Razorpay integration (gateway-not-configured mode by default), billing details, invoices, pay-invoice via Checkout, saved payment methods, refunds, reconcile, admin gateway-status screen, real spend on the business dashboard. Pricing (price books/promotions), usage billing, tax and credit notes remain Not covered — see the FRD's own Out of scope section |
 
