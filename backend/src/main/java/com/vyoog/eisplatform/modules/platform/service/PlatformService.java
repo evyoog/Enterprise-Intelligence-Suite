@@ -36,6 +36,7 @@ public class PlatformService {
     @Transactional
     public PlatformDto createPlatform(PlatformCreateRequest request) {
         Platform platform = platformMapper.toEntity(request);
+        applyShowcase(platform, request);
         Platform saved = platformRepository.save(platform);
         return platformMapper.toDto(saved);
     }
@@ -48,9 +49,19 @@ public class PlatformService {
         platform.setName(request.name());
         platform.setDescription(request.description());
         platform.setImageUrl(request.imageUrl());
+        applyShowcase(platform, request);
 
         Platform saved = platformRepository.save(platform);
         return platformMapper.toDto(saved);
+    }
+
+    /** C66 showcase settings with their defaults (see PlatformCreateRequest). */
+    private static void applyShowcase(Platform platform, PlatformCreateRequest request) {
+        platform.setPrimaryColor(request.primaryColor() == null || request.primaryColor().isBlank()
+            ? null : request.primaryColor().toUpperCase(java.util.Locale.ROOT));
+        platform.setStatus(request.status() == null ? "ACTIVE" : request.status());
+        platform.setShowInCatalog(request.showInCatalog() == null || request.showInCatalog());
+        platform.setDisplayOrder(request.displayOrder() == null ? 0 : request.displayOrder());
     }
 
     /** Nothing else references a platform except the product_platforms join

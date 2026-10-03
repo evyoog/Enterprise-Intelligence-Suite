@@ -99,6 +99,9 @@ public class SecurityConfig {
                 // the uploaded-logo GET needs to stay open, for the same reason
                 // product images do: a plain <img> tag can't attach a bearer token.
                 // That specific rule must come first, same ordering reason as above.
+                // C66: the public Product Catalog's platform cards and details
+                // (ACTIVE, shown-in-catalog platforms only — see CatalogService).
+                .requestMatchers(HttpMethod.GET, "/catalog/platforms", "/catalog/platforms/*").permitAll()
                 .requestMatchers(HttpMethod.GET, "/platforms/images/**").permitAll()
                 .requestMatchers(HttpMethod.GET, "/platforms/**").access(permissions.platformPermission("MANAGE_CATALOG"))
                 .requestMatchers(HttpMethod.POST, "/platforms/images").access(permissions.platformPermission("MANAGE_CATALOG"))

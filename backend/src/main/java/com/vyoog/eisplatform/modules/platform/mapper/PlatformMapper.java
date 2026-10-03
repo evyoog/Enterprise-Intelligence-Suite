@@ -16,5 +16,9 @@ public interface PlatformMapper {
     // by return/parameter type once both mappers are in the same Spring context.
     PlatformSummaryDto toSummary(Platform platform);
 
+    // C66 settings are applied with their defaults in PlatformService.
+    @org.mapstruct.Mapping(target = "status", ignore = true)
+    @org.mapstruct.Mapping(target = "showInCatalog", ignore = true)
+    @org.mapstruct.Mapping(target = "displayOrder", ignore = true)
     Platform toEntity(PlatformCreateRequest request);
 }
