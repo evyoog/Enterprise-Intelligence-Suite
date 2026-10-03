@@ -10,6 +10,12 @@ CREATE TABLE products (
     sso_connected BOOLEAN NOT NULL DEFAULT false,
     -- 03.01.02 Show featured products (sprint 2027.1.2, V010).
     featured BOOLEAN NOT NULL DEFAULT false,
+    -- C66: showcase colour (null = inherit the platform's), feature tags
+    -- (comma-separated) and resource links.
+    accent_color VARCHAR(7) CHECK (accent_color ~ '^#[0-9A-Fa-f]{6}$'),
+    feature_tags VARCHAR(1000),
+    documentation_url VARCHAR(500),
+    support_url VARCHAR(500),
     -- 02.01 Product Lifecycle & Structure (sprint 2026.4.1, V006).
     version INT NOT NULL DEFAULT 1,
     parent_product_id BIGINT REFERENCES products(id),
@@ -50,6 +56,11 @@ CREATE TABLE platforms (
     name VARCHAR(255) NOT NULL,
     description VARCHAR(2000),
     image_url VARCHAR(500),
+    -- C66: showcase colour and catalog settings.
+    primary_color VARCHAR(7) CHECK (primary_color ~ '^#[0-9A-Fa-f]{6}$'),
+    status VARCHAR(10) NOT NULL DEFAULT 'ACTIVE' CHECK (status IN ('ACTIVE', 'INACTIVE')),
+    show_in_catalog BOOLEAN NOT NULL DEFAULT true,
+    display_order INT NOT NULL DEFAULT 0 CHECK (display_order BETWEEN 0 AND 9999),
     created_at TIMESTAMP NOT NULL DEFAULT now(),
     updated_at TIMESTAMP NOT NULL DEFAULT now()
 );

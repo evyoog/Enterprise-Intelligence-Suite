@@ -1,3 +1,4 @@
+import { PlatformDetailPage } from './pages/PlatformDetailPage'
 import { AdminApiKeysPage } from './pages/admin/AdminApiKeysPage'
 import { AdminPlatformEventsPage } from './pages/admin/AdminPlatformEventsPage'
 import { Box, CircularProgress } from '@mui/material'
@@ -115,6 +116,8 @@ function MainApp() {
           <Route path="/products" element={<ProductsPage />} />
           {/* 03.04 Reviews & Ratings (sprint 2027.1.3): public product detail. */}
           <Route path="/products/:id" element={<ProductDetailPage />} />
+          {/* C66: public platform (product family) details from the catalog. */}
+          <Route path="/catalog/platforms/:id" element={<PlatformDetailPage />} />
           {/* 01.03 Global Search (sprint 2027.1.3): public; ticket results need a sign-in. */}
           <Route path="/search" element={<GlobalSearchPage />} />
           {/* 14.01.01.01 Register provider (sprint 2027.2.1): public, no Vyoog account required. */}

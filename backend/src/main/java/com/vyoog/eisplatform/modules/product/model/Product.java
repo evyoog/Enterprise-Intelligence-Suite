@@ -65,6 +65,23 @@ public class Product {
     @Column(nullable = false)
     private boolean featured = false;
 
+    /** C66: the app's own showcase colour (#RRGGBB). Null = inherit its
+     * first platform's colour, else the default EIS colour. */
+    @Column(name = "accent_color", length = 7)
+    private String accentColor;
+
+    /** C66: feature tags shown on catalog cards, stored comma-separated
+     * (exposed as a list in ProductDto). */
+    @Column(name = "feature_tags", length = 1000)
+    private String featureTags;
+
+    /** C66: resources shown on the app details page. */
+    @Column(name = "documentation_url", length = 500)
+    private String documentationUrl;
+
+    @Column(name = "support_url", length = 500)
+    private String supportUrl;
+
     /** Which high-level platform(s) (e.g. Thittam) this app is shown under.
      * Many-to-many: the same app can be assigned to more than one platform. */
     @ManyToMany(fetch = FetchType.LAZY)

@@ -1,205 +1,111 @@
 import { Box, Button, Chip, IconButton, Tooltip, Typography } from '@mui/material'
 import { ExternalLink, Pencil, Trash2 } from 'lucide-react'
+import { useTranslation } from 'react-i18next'
 import { Link as RouterLink } from 'react-router-dom'
-import { resolveAssetUrl } from '../../api/client'
-import { type BillingPeriod, type Product } from '../../api/productsApi'
-import { accentFor, iconFor } from '../../utils/accentColor'
-import '../../styles/tiles.css'
-
-const BILLING_SUFFIX: Record<BillingPeriod, string> = {
-  MONTHLY: '/mo',
-  YEARLY: '/yr',
-  ONE_TIME: '',
-}
+import type { Product } from '../../api/productsApi'
+import { appColor, showcasePalette } from '../../utils/showcaseColor'
+import { formatPlanPrice } from '../../utils/productPricing'
+import { ShowcaseCard } from '../ui/ShowcaseCard'
 
 interface ProductTileProps {
   product: Product
-  /** Admin view: edit pencil + status/SSO/platform chips. */
+  /** Admin view: edit / delete actions and status, SSO and platform chips. */
   admin?: boolean
-  /** Repeats a chip per assigned platform — noise inside a page already
-   * scoped to one platform (a platform dashboard, or a single-category
-   * storefront section), so callers scoped that way pass false. */
+  /** One chip per assigned platform — noise inside a page already scoped to
+   * one platform, so callers scoped that way pass false. */
   showPlatformChips?: boolean
-  /** Staggers this tile's entrance animation relative to its siblings. */
+  /** Kept for existing callers; C66 cards no longer animate in. */
   animationDelay?: number
-  /** Admin view only — omitted entirely (no trash icon shown) if not passed. */
+  /** Admin view only — no delete action when not passed. */
   onDelete?: () => void
-  /** Public catalog only (C48) — a quick-action Subscribe button right on
-   * the card, so buying doesn't always require opening the detail page
-   * first. The caller decides where it goes (checkout vs. sign-in), same
-   * division of responsibility as {@link onDelete}. */
+  /** Public catalog (C48): a Subscribe action right on the card. */
   onSubscribe?: () => void
 }
 
 /**
- * One services-console tile: colored icon square, the app's name as a real
- * hyperlink straight to its `launchUrl` (not a separate button), then
- * description and pricing. Shared by the admin ProductGrid and the public
- * ProductsPage so both catalogs — and any future one — look identical.
+ * The app card (C66): the shared ShowcaseCard with the app's colour (its own,
+ * else its platform's, else the EIS default), category badge, feature tags,
+ * pricing (tiers when present, otherwise the flat price — the existing rule),
+ * Launch when a launch URL is set, and View details. Used by the catalog, the
+ * platform pages and the admin app grids.
  */
-export function ProductTile({ product, admin = false, showPlatformChips = true, animationDelay = 0, onDelete, onSubscribe }: ProductTileProps) {
-  const accent = accentFor(product.name)
-  const Icon = iconFor(product.name)
-  const launchable = Boolean(product.launchUrl)
+export function ProductTile({ product, admin = false, showPlatformChips = true, onDelete, onSubscribe }: ProductTileProps) {
+  const { t } = useTranslation()
+  const color = appColor(product)
+  const palette = showcasePalette(color)
+  const inactive = product.status !== 'ACTIVE'
 
-  return (
-    <Box
-      className="tile"
-      style={{ animationDelay: `${animationDelay}ms`, ['--tile-accent' as string]: accent.fg }}
-    >
-      {admin && (
-        <Box sx={{ position: 'absolute', top: 10, right: 10, display: 'flex', gap: 0.25 }}>
-          <Tooltip title="Edit app">
-            <IconButton
-              component={RouterLink}
-              to={`/admin/products/${product.id}/edit`}
-              size="small"
-              aria-label={`Edit ${product.name}`}
-              sx={{
-                color: 'text.secondary',
-                '&:hover': { color: accent.fg, bgcolor: accent.bg },
-              }}
-            >
-              <Pencil size={14} />
-            </IconButton>
-          </Tooltip>
-          {onDelete && (
-            <Tooltip title="Delete app">
-              <IconButton
-                size="small"
-                onClick={onDelete}
-                aria-label={`Delete ${product.name}`}
-                sx={{
-                  color: 'text.secondary',
-                  '&:hover': { color: 'error.main', bgcolor: 'action.hover' },
-                }}
-              >
-                <Trash2 size={14} />
-              </IconButton>
-            </Tooltip>
-          )}
-        </Box>
-      )}
-
-      <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 1.5, pr: admin ? 5.5 : 0 }}>
-        <Box className="tile-icon" sx={{ bgcolor: accent.bg, color: accent.fg }}>
-          {product.imageUrl ? (
-            <Box
-              component="img"
-              src={resolveAssetUrl(product.imageUrl)}
-              alt=""
-              sx={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: '12px' }}
-            />
-          ) : (
-            <Icon size={22} strokeWidth={2} />
-          )}
-        </Box>
-        <Box sx={{ minWidth: 0, flex: 1, pt: 0.25 }}>
-          {/* A real heading, not just styled text — lets a screen-reader user
-              jump card-to-card via heading navigation in a long grid, the
-              same way a sighted user scans by the bold name (see this
-              component's own doc on "accessible product cards"). */}
-          <Typography component="h3" sx={{ fontWeight: 700, fontSize: 16, lineHeight: 1.3, m: 0 }}>
-            {launchable ? (
-              <Box
-                component="a"
-                href={product.launchUrl}
-                target="_blank"
-                rel="noopener"
-                aria-label={`${product.name} (opens in a new tab)`}
-                sx={{
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  gap: 0.5,
-                  color: accent.fg,
-                  textDecoration: 'none',
-                  '&:hover': { textDecoration: 'underline' },
-                }}
-              >
-                {product.name}
-                <ExternalLink size={13} aria-hidden="true" style={{ opacity: 0.7, flexShrink: 0 }} />
-              </Box>
-            ) : (
-              product.name
-            )}
-          </Typography>
-          {product.category && (
-            <Typography variant="caption" sx={{ color: 'text.secondary', display: 'block' }}>
-              {product.category}
-            </Typography>
-          )}
-          {!admin && (
-            <Typography variant="caption" sx={{ display: 'block' }}>
-              <RouterLink to={`/products/${product.id}`} style={{ color: accent.fg }}>Reviews & ratings</RouterLink>
-            </Typography>
-          )}
-        </Box>
+  const extra = (
+    <Box sx={{ mt: 1.5, display: 'flex', flexDirection: 'column', gap: 1 }}>
+      <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.25 }}>
+        {product.plans.length > 0
+          ? product.plans.slice().sort((a, b) => (a.sortOrder ?? 0) - (b.sortOrder ?? 0)).map((plan) => (
+            <Box key={plan.id} sx={{ display: 'flex', justifyContent: 'space-between', gap: 1 }}>
+              <Typography variant="body2" sx={{ color: 'text.secondary' }}>{plan.name}</Typography>
+              <Typography variant="body2" sx={{ fontWeight: 700 }}>{formatPlanPrice(plan.price, plan.currency, plan.billingPeriod)}</Typography>
+            </Box>
+          ))
+          : <Typography variant="body2" sx={{ fontWeight: 700 }}>{formatPlanPrice(product.price, 'USD', 'ONE_TIME')}</Typography>}
       </Box>
-
-      {product.description && (
-        <Typography
-          variant="body2"
-          sx={{
-            color: 'text.secondary',
-            display: '-webkit-box',
-            WebkitLineClamp: 2,
-            WebkitBoxOrient: 'vertical',
-            overflow: 'hidden',
-          }}
-        >
-          {product.description}
-        </Typography>
-      )}
-
       {admin && (
         <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.75 }}>
-          {product.status === 'INACTIVE' && (
-            <Chip size="small" label="Inactive" sx={{ bgcolor: 'action.disabledBackground', fontSize: 11 }} />
-          )}
-          {product.ssoConnected ? (
-            <Chip size="small" label="SSO Connected" color="success" sx={{ fontSize: 11 }} />
-          ) : (
-            <Chip size="small" label="Standalone" variant="outlined" sx={{ fontSize: 11 }} />
-          )}
-          {showPlatformChips && product.platforms.map((platform) => (
-            <Chip
-              key={platform.id}
-              size="small"
-              label={platform.name}
-              variant="outlined"
-              sx={{ fontSize: 11, borderColor: accentFor(platform.name).fg, color: accentFor(platform.name).fg }}
-            />
-          ))}
+          {product.status === 'INACTIVE' && <Chip size="small" label={t('catalog.app.inactive')} />}
+          {product.status === 'RETIRED' && <Chip size="small" label={t('catalog.app.retired')} />}
+          {product.ssoConnected
+            ? <Chip size="small" color="success" variant="outlined" label={t('catalog.app.ssoConnected')} />
+            : <Chip size="small" variant="outlined" label={t('catalog.app.standalone')} />}
+          {product.featured && <Chip size="small" variant="outlined" color="primary" label={t('catalog.app.featured')} />}
+          {showPlatformChips && product.platforms.map((p) => <Chip key={p.id} size="small" variant="outlined" label={p.name} />)}
         </Box>
       )}
-
-      <Box sx={{ mt: 'auto', pt: 0.5 }}>
-        {product.plans.length > 0 ? (
-          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5 }}>
-            {product.plans.map((plan) => (
-              <Box key={plan.id} sx={{ display: 'flex', justifyContent: 'space-between' }}>
-                <Typography variant="body2" sx={{ color: 'text.secondary' }}>{plan.name}</Typography>
-                <Typography variant="body2" sx={{ fontWeight: 700 }}>
-                  ${plan.price.toFixed(2)}{BILLING_SUFFIX[plan.billingPeriod]}
-                </Typography>
-              </Box>
-            ))}
-          </Box>
-        ) : (
-          <Typography sx={{ fontWeight: 700 }}>${product.price.toFixed(2)}</Typography>
+      <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap', alignItems: 'center' }}>
+        {product.launchUrl && (
+          <Button size="small" variant="outlined" href={product.launchUrl} target="_blank" rel="noopener"
+            endIcon={<ExternalLink size={13} aria-hidden />} aria-label={t('catalog.app.launchLabel', { name: product.name })}
+            sx={{ color: palette.text }}>
+            {t('catalog.app.launch')}
+          </Button>
         )}
         {onSubscribe && (
-          <Button
-            variant="contained"
-            size="small"
-            fullWidth
-            onClick={onSubscribe}
-            sx={{ mt: 1.25, bgcolor: accent.fg, '&:hover': { bgcolor: accent.fg, filter: 'brightness(0.92)' } }}
-          >
-            Subscribe
-          </Button>
+          <Button size="small" variant="contained" onClick={onSubscribe}>{t('catalog.app.subscribe')}</Button>
+        )}
+        {admin && (
+          <Box sx={{ ml: 'auto', display: 'flex', gap: 0.25 }}>
+            <Tooltip title={t('catalog.app.edit')}>
+              <IconButton component={RouterLink} to={`/admin/products/${product.id}/edit`} size="small"
+                aria-label={t('catalog.app.editLabel', { name: product.name })}>
+                <Pencil size={15} />
+              </IconButton>
+            </Tooltip>
+            {onDelete && (
+              <Tooltip title={t('catalog.app.delete')}>
+                <IconButton size="small" onClick={onDelete} aria-label={t('catalog.app.deleteLabel', { name: product.name })}
+                  sx={{ '&:hover': { color: 'error.main' } }}>
+                  <Trash2 size={15} />
+                </IconButton>
+              </Tooltip>
+            )}
+          </Box>
         )}
       </Box>
     </Box>
+  )
+
+  return (
+    <ShowcaseCard
+      name={product.name}
+      typeLabel={product.category || t('catalog.app.type')}
+      logoUrl={product.imageUrl}
+      color={color}
+      meta={[product.variantLabel, product.platforms[0]?.name].filter(Boolean).join(' · ') || undefined}
+      description={product.description}
+      features={product.featureTags ?? []}
+      status={inactive
+        ? { label: t(product.status === 'RETIRED' ? 'catalog.app.retired' : 'catalog.app.inactive'), tone: 'neutral' }
+        : { label: t('catalog.status.available'), tone: 'success' }}
+      actionLabel={t('catalog.viewDetails')}
+      to={`/products/${product.id}`}
+      extra={extra}
+    />
   )
 }

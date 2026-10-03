@@ -197,6 +197,7 @@ public class ProductService {
         }
         product.setPlatforms(resolvePlatforms(request.platformIds()));
         product.setDependsOn(resolveDependencies(null, request.dependsOnProductIds()));
+        applyShowcase(product, request);
         applyPlanDefaults(product.getPlans());
         // mappedBy = "product" on Product.plans means ProductPlan owns the FK —
         // JPA needs it set on each child before save(), or it has nothing to
@@ -233,6 +234,7 @@ public class ProductService {
         product.setParentProductId(request.parentProductId());
         product.setVariantLabel(request.variantLabel());
         product.setDependsOn(resolveDependencies(id, request.dependsOnProductIds()));
+        applyShowcase(product, request);
         // 02.01.01.03 Version product: every update after creation counts as
         // a new revision — see Product#version's own javadoc.
         product.setVersion((product.getVersion() == null ? 1 : product.getVersion()) + 1);
@@ -247,6 +249,35 @@ public class ProductService {
 
         Product saved = productRepository.save(product);
         return toDtoWithDependencies(saved);
+    }
+
+    /** C66 showcase fields: blank values are stored as null; tags are
+     * trimmed, de-duplicated and stored comma-separated (a comma inside a
+     * tag is refused). */
+    private static void applyShowcase(Product product, ProductCreateRequest request) {
+        product.setAccentColor(blankToNull(request.accentColor()) == null ? null
+            : request.accentColor().toUpperCase(java.util.Locale.ROOT));
+        product.setDocumentationUrl(blankToNull(request.documentationUrl()));
+        product.setSupportUrl(blankToNull(request.supportUrl()));
+        if (request.featureTags() == null || request.featureTags().isEmpty()) {
+            product.setFeatureTags(null);
+            return;
+        }
+        java.util.LinkedHashSet<String> tags = new java.util.LinkedHashSet<>();
+        for (String tag : request.featureTags()) {
+            String t = tag == null ? "" : tag.trim();
+            if (t.contains(",")) {
+                throw new IllegalArgumentException("A feature tag cannot contain a comma: " + t);
+            }
+            if (!t.isEmpty()) {
+                tags.add(t);
+            }
+        }
+        product.setFeatureTags(tags.isEmpty() ? null : String.join(",", tags));
+    }
+
+    private static String blankToNull(String value) {
+        return value == null || value.isBlank() ? null : value.trim();
     }
 
     /** 02.01.01.04 Publish product (sprint 2026.4.1): a named action for

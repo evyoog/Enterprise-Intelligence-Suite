@@ -3,16 +3,18 @@ import { useBuy } from '../components/cart/useBuy'
 import { useEffect, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import {
-  Alert, Box, Button, Chip, CircularProgress, Fade, LinearProgress, Paper, Rating, Tab, Tabs, TextField, Typography,
+  Alert, Box, Breadcrumbs, Button, Chip, CircularProgress, Fade, LinearProgress, Link as MuiLink, Paper, Rating, Tab, Tabs, TextField, Typography,
 } from '@mui/material'
 import { Link as RouterLink, useParams } from 'react-router-dom'
 import { Boxes, CheckCircle2, ClipboardCheck, Rocket, Search, Star } from 'lucide-react'
-import { ApiError } from '../api/client'
+import { ApiError, resolveAssetUrl } from '../api/client'
+import { FeatureTag } from '../components/ui/FeatureTag'
+import { SupportCTA } from '../components/ui/SupportCTA'
+import { appColor, showcasePalette } from '../utils/showcaseColor'
 import { productsApi, type Product, type ProductPlan } from '../api/productsApi'
 import { reviewsApi, type ProductRatingSummary } from '../api/reviewsApi'
 import { useAuth } from '../auth/AuthProvider'
 import { PageHeader } from '../components/layout/PageHeader'
-import { accentFor } from '../utils/accentColor'
 
 const FLOW_STEPS = [
   { icon: Search, titleKey: 'discover', descKey: 'discoverDesc' },
@@ -105,13 +107,22 @@ export function ProductDetailPage() {
     return <Box sx={{ display: 'flex', justifyContent: 'center', py: 8 }}><CircularProgress size={28} /></Box>
   }
 
-  const accent = accentFor(product.name)
+  // C66: the app's showcase colour (own, else its platform's, else the default).
+  const palette = showcasePalette(appColor(product))
+  const accent = { bg: palette.soft, fg: palette.text }
   const plan = product.plans.find((p) => p.billingPeriod === 'MONTHLY') ?? product.plans[0]
   const price = plan ? plan.price : product.price
 
   return (
-    <Box sx={{ maxWidth: 880 }}>
-      <PageHeader icon={PHPackage} accent="blue" area="product" title={product.name} subtitle={product.category} />
+    <Box sx={{ maxWidth: 1120 }}>
+      <Breadcrumbs aria-label={t('catalog.detail.breadcrumbs')} sx={{ mb: 2 }}>
+        <MuiLink component={RouterLink} to="/products" underline="hover" color="inherit">{t('catalog.title')}</MuiLink>
+        {product.platforms[0] && (
+          <MuiLink component={RouterLink} to={`/catalog/platforms/${product.platforms[0].id}`} underline="hover" color="inherit">{product.platforms[0].name}</MuiLink>
+        )}
+        <Typography color="text.primary">{product.name}</Typography>
+      </Breadcrumbs>
+      <PageHeader icon={PHPackage} accent="blue" eyebrow={t('catalog.app.type')} title={product.name} subtitle={product.category} />
 
       <Paper variant="outlined" sx={{ p: 3, mb: 3 }}>
         <Box sx={{ display: 'flex', gap: 2.5, flexWrap: 'wrap' }}>
@@ -123,10 +134,28 @@ export function ProductDetailPage() {
               '&:hover': { transform: 'scale(1.08) rotate(-2deg)' },
             }}
           >
-            <Boxes size={28} />
+            {product.imageUrl
+              ? <Box component="img" src={resolveAssetUrl(product.imageUrl)} alt="" sx={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: 2.5 }} />
+              : <Boxes size={28} />}
           </Box>
           <Box sx={{ flex: 1, minWidth: 220 }}>
             {product.description && <Typography sx={{ mb: 1 }}>{product.description}</Typography>}
+            {/* C66: feature tags and resources configured on the app. */}
+            {(product.featureTags ?? []).length > 0 && (
+              <Box sx={{ display: 'flex', gap: 0.75, flexWrap: 'wrap', mb: 1.5 }} aria-label={t('catalog.detail.features')} role="list">
+                {(product.featureTags ?? []).map((f) => <Box key={f} role="listitem" component="span"><FeatureTag label={f} /></Box>)}
+              </Box>
+            )}
+            {(product.documentationUrl || product.supportUrl) && (
+              <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap', mb: 1.5 }}>
+                {product.documentationUrl && (
+                  <MuiLink href={product.documentationUrl} target="_blank" rel="noopener">{t('catalog.app.documentation')}</MuiLink>
+                )}
+                {product.supportUrl && (
+                  <MuiLink href={product.supportUrl} target="_blank" rel="noopener">{t('catalog.app.supportSite')}</MuiLink>
+                )}
+              </Box>
+            )}
             {ratings && ratings.reviewCount > 0 && (
               <Box
                 role="button"
@@ -369,6 +398,9 @@ export function ProductDetailPage() {
           </Box>
         </Fade>
       )}
+      <Box sx={{ mt: 4 }}>
+        <SupportCTA title={t('catalog.detail.helpTitle')} description={t('catalog.detail.helpBody')} />
+      </Box>
     </Box>
   )
 }

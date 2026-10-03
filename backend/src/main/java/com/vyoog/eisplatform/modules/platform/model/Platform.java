@@ -35,6 +35,23 @@ public class Platform {
 
     private String imageUrl;
 
+    /** C66: the platform's showcase colour (#RRGGBB). Null = the default EIS
+     * indigo. Drives the catalog card accent, never the whole card. */
+    @Column(name = "primary_color", length = 7)
+    private String primaryColor;
+
+    /** C66: ACTIVE platforms with {@link #showInCatalog} appear in the
+     * public Product Catalog; INACTIVE ones are kept but hidden. */
+    @Column(nullable = false, length = 10)
+    private String status = "ACTIVE";
+
+    @Column(name = "show_in_catalog", nullable = false)
+    private boolean showInCatalog = true;
+
+    /** C66: catalog order, ascending (ties by name). */
+    @Column(name = "display_order", nullable = false)
+    private int displayOrder = 0;
+
     @CreatedDate
     @Column(updatable = false)
     private Instant createdAt;

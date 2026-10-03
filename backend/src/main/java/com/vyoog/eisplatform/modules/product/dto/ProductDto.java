@@ -28,4 +28,9 @@ public class ProductDto {
     private Long parentProductId;
     private String variantLabel;
     private List<Long> dependsOnProductIds;
+    // C66 showcase fields.
+    private String accentColor;
+    private List<String> featureTags;
+    private String documentationUrl;
+    private String supportUrl;
 }

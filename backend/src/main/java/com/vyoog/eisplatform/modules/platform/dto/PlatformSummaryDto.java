@@ -11,4 +11,7 @@ public class PlatformSummaryDto {
 
     private Long id;
     private String name;
+    /** C66: so an app card can inherit its platform's showcase colour. */
+    private String primaryColor;
+    private String imageUrl;
 }

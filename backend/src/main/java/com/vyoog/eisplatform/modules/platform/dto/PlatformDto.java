@@ -11,4 +11,8 @@ public class PlatformDto {
     private String name;
     private String description;
     private String imageUrl;
+    private String primaryColor;
+    private String status;
+    private boolean showInCatalog;
+    private int displayOrder;
 }

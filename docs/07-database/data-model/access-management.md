@@ -1,6 +1,6 @@
 # Data model — Access management
 
-[REQ-TEN-005](../../02-requirements/FRD/access-management/requirement.md). Migration (when approved and built): `database/migrations/V019__access_management.sql`, mirrored in `backend/src/main/resources/db/schema.sql`.
+[REQ-TEN-005](../../02-requirements/FRD/access-management/requirement.md). Migration (when approved and built): `database/migrations/V020__access_management.sql`, mirrored in `backend/src/main/resources/db/schema.sql`.
 
 ## organization_role_default
 Role defaults per organization. No row for an item = the platform role definition applies (Open question 9).

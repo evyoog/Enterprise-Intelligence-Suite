@@ -1,7 +1,11 @@
 import { useEffect, useState } from 'react'
-import { Box, CircularProgress, Grid, Typography } from '@mui/material'
+import { useTranslation } from 'react-i18next'
+import { Alert, Grid, Skeleton } from '@mui/material'
 import { ApiError } from '../../api/client'
 import { productsApi, type Product } from '../../api/productsApi'
+import { ConfirmDialog } from '../ui/ConfirmDialog'
+import { EmptyState } from '../ui/EmptyState'
+import { ErrorState } from '../ui/ErrorState'
 import { ProductTile } from './ProductTile'
 
 interface ProductGridProps {
@@ -31,6 +35,10 @@ interface ProductGridProps {
 export function ProductGrid({ admin = false, onLoaded, platformId, reloadToken }: ProductGridProps) {
   const [products, setProducts] = useState<Product[] | null>(null)
   const [error, setError] = useState<string | null>(null)
+  const [pendingDelete, setPendingDelete] = useState<Product | null>(null)
+  const [deleting, setDeleting] = useState(false)
+  const [deleteError, setDeleteError] = useState<string | null>(null)
+  const { t } = useTranslation()
 
   useEffect(() => {
     const request = admin ? productsApi.listAdmin() : productsApi.list()
@@ -40,52 +48,54 @@ export function ProductGrid({ admin = false, onLoaded, platformId, reloadToken }
           ? result
           : result.filter((p) => p.platforms.some((pl) => pl.id === platformId))
         setProducts(scoped)
-        // eslint-disable-next-line react-hooks/exhaustive-deps
         onLoaded?.(scoped)
       })
-      .catch((e) => setError(e instanceof ApiError ? e.message : 'Could not load products.'))
-  }, [admin, platformId, reloadToken])
+      .catch((e) => setError(e instanceof ApiError ? e.message : t('admin.apps.loadError')))
+    // onLoaded is a callback prop; refetching when its identity changes would loop.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [admin, platformId, reloadToken, t])
 
   if (error) {
-    return <Typography color="error" role="alert">{error}</Typography>
+    return <ErrorState title={t('admin.apps.loadErrorTitle')} message={error} />
   }
 
   if (products === null) {
-    return (
-      <Box sx={{ display: 'flex', justifyContent: 'center', py: 8 }}>
-        <CircularProgress size={28} />
-      </Box>
-    )
+    return <Skeleton variant="rounded" height={240} />
   }
 
   if (products.length === 0) {
-    return (
-      <Typography sx={{ color: 'text.secondary' }}>
-        No products yet — check back soon.
-      </Typography>
-    )
+    return <EmptyState title={t('admin.apps.emptyTitle')} description={t('admin.apps.emptyBody')} />
   }
 
-  const handleDelete = (product: Product) => {
-    if (!window.confirm(`Delete "${product.name}"? This cannot be undone.`)) return
-    productsApi.delete(product.id)
-      .then(() => setProducts((current) => current?.filter((p) => p.id !== product.id) ?? current))
-      .catch((e) => window.alert(e instanceof ApiError ? e.message : 'Could not delete this product.'))
+  const handleDelete = () => {
+    if (!pendingDelete) return
+    setDeleting(true)
+    setDeleteError(null)
+    productsApi.delete(pendingDelete.id)
+      .then(() => setProducts((current) => current?.filter((p) => p.id !== pendingDelete.id) ?? current))
+      .catch((e) => setDeleteError(e instanceof ApiError ? e.message : t('admin.apps.deleteError')))
+      .finally(() => { setDeleting(false); setPendingDelete(null) })
   }
 
   return (
-    <Grid container spacing={2.5}>
-      {products.map((product, index) => (
-        <Grid key={product.id} size={{ xs: 12, sm: 6, md: 4, lg: 3 }}>
-          <ProductTile
-            product={product}
-            admin={admin}
-            showPlatformChips={platformId === undefined}
-            animationDelay={index * 45}
-            onDelete={admin ? () => handleDelete(product) : undefined}
-          />
-        </Grid>
-      ))}
-    </Grid>
+    <>
+      {deleteError && <Alert severity="error" sx={{ mb: 2 }} onClose={() => setDeleteError(null)}>{deleteError}</Alert>}
+      <Grid container spacing={2.5}>
+        {products.map((product, index) => (
+          <Grid key={product.id} size={{ xs: 12, sm: 6, md: 4, lg: 3 }}>
+            <ProductTile
+              product={product}
+              admin={admin}
+              showPlatformChips={platformId === undefined}
+              animationDelay={index * 45}
+              onDelete={admin ? () => setPendingDelete(product) : undefined}
+            />
+          </Grid>
+        ))}
+      </Grid>
+      <ConfirmDialog open={pendingDelete !== null} busy={deleting}
+        title={t('admin.apps.deleteTitle', { name: pendingDelete?.name ?? '' })} body={t('admin.apps.deleteBody')}
+        confirmLabel={t('catalog.app.delete')} onConfirm={handleDelete} onClose={() => setPendingDelete(null)} />
+    </>
   )
 }

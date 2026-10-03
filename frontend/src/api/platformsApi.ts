@@ -1,16 +1,27 @@
 import { apiRequest } from './client'
 
+export type PlatformStatus = 'ACTIVE' | 'INACTIVE'
+
 export interface Platform {
   id: number
   name: string
   description?: string
   imageUrl?: string
+  // C66 showcase colour and catalog settings.
+  primaryColor?: string | null
+  status?: PlatformStatus
+  showInCatalog?: boolean
+  displayOrder?: number
 }
 
 export interface PlatformCreateRequest {
   name: string
   description?: string
   imageUrl?: string
+  primaryColor?: string | null
+  status?: PlatformStatus
+  showInCatalog?: boolean
+  displayOrder?: number
 }
 
 export const platformsApi = {

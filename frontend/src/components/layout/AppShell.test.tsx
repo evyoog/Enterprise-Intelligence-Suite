@@ -119,7 +119,7 @@ describe('Public website vs signed-in tool', () => {
     getPermissions.mockResolvedValue({ platform: ['MANAGE_CATALOG'], organization: [] })
     const { container } = renderAt('/admin')
     const sidebar = screen.getByRole('navigation', { name: 'Application' })
-    await within(sidebar).findByRole('link', { name: 'Platforms' }, SIDEBAR_WAIT)
+    await within(sidebar).findByRole('link', { name: 'Products' }, SIDEBAR_WAIT)
     expect(await axe(container)).toHaveNoViolations()
   }, 20000)
 })
