@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { Alert, Box, Button, InputAdornment, Skeleton, Snackbar, Switch, TextField, Typography } from '@mui/material'
+import { Alert, Box, Button, Skeleton, Snackbar, Switch, TextField, Typography } from '@mui/material'
 import { ApiError } from '../../api/client'
 import { renewalsApi, type RenewalReminderPreferences } from '../../api/renewalsApi'
 import { PreferenceRow, PreferenceSection } from './PreferenceLayout'
@@ -9,7 +9,7 @@ const TIME = /^([01]\d|2[0-3]):[0-5]\d$/
 
 /**
  * REQ-SUB-004.8 (C64): the user's renewal reminder settings on Preferences,
- * laid out as C67 preference rows. Empty days or time = the platform default.
+ * laid out as preference rows (C67/C68). Empty days or time = the platform default.
  * Turning reminders off stops the emails only, never the renewal itself
  * (.10). Saved with its own button, as before.
  */
@@ -77,12 +77,12 @@ export function RenewalRemindersCard() {
           ? <Typography component="span" variant="body2" color="error">{daysError}</Typography>
           : t('preferences.renewalReminders.platformDays', { days: prefs.platformDaysBefore })}
         control={(
-          <TextField id="renewal-days" size="small" value={days} disabled={!enabled} placeholder={String(prefs.platformDaysBefore)}
-            onChange={(e) => setDays(e.target.value.replace(/[^0-9]/g, ''))} error={Boolean(daysError)} sx={{ width: '100%' }}
-            slotProps={{
-              htmlInput: { inputMode: 'numeric', min: prefs.minDays, max: prefs.maxDays, 'aria-label': t('preferences.renewalReminders.days') },
-              input: { endAdornment: <InputAdornment position="end">{t('preferences.renewalReminders.daysSuffix')}</InputAdornment> },
-            }} />
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.25 }}>
+            <TextField id="renewal-days" size="small" value={days} disabled={!enabled} placeholder={String(prefs.platformDaysBefore)}
+              onChange={(e) => setDays(e.target.value.replace(/[^0-9]/g, ''))} error={Boolean(daysError)} sx={{ width: 96 }}
+              slotProps={{ htmlInput: { inputMode: 'numeric', min: prefs.minDays, max: prefs.maxDays, 'aria-label': t('preferences.renewalReminders.days') } }} />
+            <Typography variant="body2" aria-hidden sx={{ color: 'text.secondary', whiteSpace: 'nowrap' }}>{t('preferences.renewalReminders.daysSuffix')}</Typography>
+          </Box>
         )} />
       <PreferenceRow label={t('preferences.renewalReminders.time')} labelFor="renewal-time"
         hint={timeError
@@ -90,22 +90,27 @@ export function RenewalRemindersCard() {
           : t('preferences.renewalReminders.platformTime', { time: prefs.platformSendTime })}
         control={(
           <TextField id="renewal-time" size="small" type="time" value={time} disabled={!enabled} error={Boolean(timeError)}
-            onChange={(e) => setTime(e.target.value)} sx={{ width: '100%' }} />
+            onChange={(e) => setTime(e.target.value)} sx={{ width: 160 }} />
         )} />
       <PreferenceRow label={t('preferences.timeZone')} hint={t('preferences.renewalReminders.timeZoneHint')}
         control={<Typography variant="body2" sx={{ fontWeight: 600 }}>{prefs.effectiveTimeZone}</Typography>} />
 
-      <Box sx={{ mt: 1.5, pt: 2, borderTop: '1px solid', borderColor: 'divider', display: 'flex', alignItems: 'center', gap: 2, flexWrap: 'wrap' }}>
-        <Typography variant="body2" role="status" sx={{ flex: 1, minWidth: 220, color: enabled ? 'text.primary' : 'text.secondary' }}>
+      <Box sx={(theme) => ({
+        mt: 1, px: 2, py: 1.5, borderRadius: 2, border: '1px solid', borderColor: 'divider',
+        bgcolor: theme.palette.mode === 'dark' ? 'rgba(255,255,255,0.03)' : '#F8FAFC',
+      })}>
+        <Typography variant="body2" role="status" sx={{ color: enabled ? 'text.primary' : 'text.secondary' }}>
           {enabled
             ? t('preferences.renewalReminders.summary', { days: shownDays, time: shownTime, zone: prefs.effectiveTimeZone })
             : t('preferences.renewalReminders.summaryOff')}
         </Typography>
+      </Box>
+      {saveError && <Alert severity="error" sx={{ mt: 2 }}>{saveError}</Alert>}
+      <Box sx={{ display: 'flex', justifyContent: 'flex-end', mt: 3 }}>
         <Button variant="contained" disabled={busy || Boolean(daysError) || Boolean(timeError)} onClick={save}>
           {t('preferences.renewalReminders.save')}
         </Button>
       </Box>
-      {saveError && <Alert severity="error" sx={{ mt: 2 }}>{saveError}</Alert>}
       <Snackbar open={Boolean(toast)} autoHideDuration={4000} onClose={() => setToast(null)} message={toast ?? ''} />
     </>,
   )

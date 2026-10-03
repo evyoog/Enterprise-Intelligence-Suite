@@ -1,4 +1,4 @@
-# TESTPLAN-PRT-002: Preferences page (C67)
+# TESTPLAN-PRT-002: Preferences page (C67, C68)
 
 | Field | Value |
 |---|---|
@@ -16,3 +16,4 @@
 | [TC-PRT-010](TC-PRT-010.md) | Date format, time format and first day of week | Passed |
 | [TC-PRT-011](TC-PRT-011.md) | Notification categories on the existing opt-out | Passed |
 | [TC-PRT-012](TC-PRT-012.md) | Renewal reminders unchanged, live summary | Passed |
+| [TC-PRT-013](TC-PRT-013.md) | Settings navigation layout | Passed |

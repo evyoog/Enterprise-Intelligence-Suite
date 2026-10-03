@@ -560,6 +560,18 @@ Screen: [preferences.md](../../05-ui/screen-requirements/preferences.md). Tests:
 
 **Reason:** a simple, scannable settings page; a personal accent lets each user make the platform their own without making it less professional.
 
+### C68
+**Decision (product owner, 2026-10-03) — Preferences as an enterprise settings navigation:** supersedes only the *layout* of [C67](#c67); its settings, storage and notification mapping are unchanged. The page uses the full content width with a **Preferences navigation** on the left (Appearance, Language & Formats, Notifications, Renewal Reminders — small icon, name, short hint) and **one focused settings panel** on the right showing only the selected section. Not a top tab bar, accordion, stacked long form or dashboard.
+- Selected item: light accent background, accent icon and text. The selection is kept in `?section=` (refresh and deep links); arrow keys move through the navigation (vertical tab list).
+- Rows: label and hint on the left, controls in one fixed 220 px column on the right so every control starts on the same edge; selects 220 px, days input 96 px, time 160 px, compact switches. Rows stack when the panel itself is narrower than 560 px (container query).
+- Phones (below 900 px): the navigation becomes a **Section** selector above the panel. Tablets: narrower navigation without hints.
+- Renewal Reminders: summary in a light box, **Save reminder settings** at the bottom-right of the panel.
+- Small fixes found while checking the page: languages show their own names (English, Español) on this page; a browser time zone outside the short list is shown instead of a blank field; "Browser default" wording.
+
+Screen: [preferences.md](../../05-ui/screen-requirements/preferences.md).
+
+**Reason:** a focused, scannable settings experience consistent with enterprise SaaS products, without changing any behaviour.
+
 ### DN-2 Sprint scope, length and dates
 **Decision:**
 - **Sprint length:** sprints are **calendar months**. Sprint `.1`, `.2` and `.3` are the first, second and third months of the PI's calendar quarter. Example: 2026.3.3 = 1–30 Sep 2026; 2026.4.1 = 1–31 Oct 2026.
@@ -655,6 +667,7 @@ These documents are **not** changed by this file. Update them to match:
 | C65 | Create FRD `access-management` (REQ-TEN-005, Draft) with UI, API, data model and UAT documents; add to `SPRINT-2026.4.2.md` and, for 09.02.01, `SPRINT-2027.1.1.md`; point REQ-BIL-001 Open question 5 here. Answer the REQ-TEN-005 open questions, then build (organization subscription actions behind *Manage subscriptions*, Access management and Roles & permissions screens). Build waits for approval |
 | C66 | FRD, screens, API, data model and test cases done; built 2026-10-03. Remaining: apply the design to the screens listed as *Not redesigned*, one area at a time, each with its own screen spec; decide whether release versions should be tracked (needs data and an FRD) before any Versions section is shown |
 | C67 | Built 2026-10-03 (frontend only). Remaining: decide whether accent and formats should follow the user across devices (needs `customer_preferences` columns and an API change); route the screens that still format dates directly with `toLocale…` through the shared formatters; decide whether support replies need their own notification category; use first day of week once a calendar or week view exists |
+| C68 | Built 2026-10-03 (frontend layout only). Same remaining items as C67 |
 | C54 | The wider navigation-consolidation / shared `<DataTable>`/`<FilterBar>` pass ([C44](#c44)) would make the business dashboard's new click-to-filter table and sort behavior reusable elsewhere instead of page-local — still carried, same as before. `database/seed/README.md` now points to [docs/07-database/demo-data.md](../../07-database/demo-data.md) for exactly what `DemoDataSeeder` adds |
 
 **Done (2026-09-26), no longer follow-up:** C31 (sprint pages 2026.4.1 through 2027.2.2, and the "Sprint" field on application pages 02, 03, 04, 05, 10, 11, 12, 13, 15, all updated to the corrected sequence — this superseded the older "C21: add the general policy engine to `SPRINT-2027.2.2.md`" and "C16, C17: add the deferred functions to `SPRINT-2027.1.3.md`" rows, and the "C21: add the agent controls to `SPRINT-2027.1.2.md`" row, which are now folded into C31's own sprint pages); C32–C35 (FRDs written and Approved, sprint 2026.4.1 built, carry-over recorded on `SPRINT-2026.4.2.md`).

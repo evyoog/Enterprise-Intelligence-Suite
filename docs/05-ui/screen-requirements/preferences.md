@@ -1,16 +1,21 @@
-# Preferences — Account → Preferences (C67)
+# Preferences — Account → Preferences (C67, C68)
 
 | Field | Value |
 |---|---|
-| Route | `/preferences` (unchanged; public page when signed out, inside the app shell when signed in) |
-| Decision | [C67](../../01-business/roadmap/open-decisions.md#c67) |
+| Route | `/account/preferences` (unchanged; optional `?section=`; public page when signed out, inside the app shell when signed in) |
+| Decisions | [C67](../../01-business/roadmap/open-decisions.md#c67) (settings), [C68](../../01-business/roadmap/open-decisions.md#c68) (layout) |
 | Code | `frontend/src/pages/PreferencesPage.tsx`, `components/preferences/*`, `theming/accentPalette.ts`, `theming/ThemeModeProvider.tsx`, `theming/LocalePreferenceProvider.tsx` |
 | Design | [design-system.md](design-system.md) |
 
 **Title:** Preferences. **Description:** Control how the EIS Platform looks, formats information, and communicates with you.
 
-## Layout
-One centred column (max 760 px) in a single bordered container. Each section has a heading (h2), a one-line description and rows separated by thin dividers. A row is the label and an optional hint on the left and the control on the right (260 px); on phones the control drops below the label. No icons, cards inside the container, tabs, gradients or animations.
+## Layout (C68)
+- **Full content width** (no narrow centred container). Page title and description, then two areas.
+- **Left — Preferences navigation** (220 px at tablet, 264 px at desktop; outlined, sticky): overline "PREFERENCES", then one item per section with a small icon, its name and a short hint (hints hidden at tablet width). Selected item: light accent background, accent icon and text, 8 px radius. Implemented as a vertical tab list (`role="tablist"`, arrow keys, Home/End); the selection is kept in `?section=appearance|formats|notifications|renewals`.
+- **Right — settings panel** (remaining width, white, outlined, 12 px radius): section title, description, divider, rows. Only the selected section is rendered.
+- **Rows:** label and hint on the left; control in a fixed 220 px column on the right, every control starting on its left edge (switches offset by their built-in padding). Selects 220 px, days 96 px, time 160 px. Rows stack when the panel is narrower than 560 px (CSS container query on the panel).
+- **Phones (< 900 px):** the navigation is replaced by a **Section** selector above the panel. No horizontal overflow (checked at 390 px).
+- Signed out, only Appearance and Language & Formats are offered.
 
 ## 1. Appearance — "Customize how EIS looks for you."
 | Row | Control | Values | Saved to |
@@ -24,9 +29,9 @@ The accent replaces the MUI primary palette for the whole interface immediately.
 ## 2. Language & Formats — "Choose your language, region, and formatting preferences."
 | Row | Values | Saved to |
 |---|---|---|
-| Language | Existing languages | Account and browser (unchanged) |
+| Language | Existing languages, shown by their own names (English, Español) | Account and browser (unchanged) |
 | Region | Browser default + existing regions — date/number formatting | Account and browser (unchanged) |
-| Time zone | Existing time zones | Account and browser (unchanged) |
+| Time zone | Existing time zones; a browser zone outside the list is shown as its IANA name | Account and browser (unchanged) |
 | Date format | Region default, DD/MM/YYYY, MM/DD/YYYY, YYYY-MM-DD | Browser (`vyoog-date-format`) |
 | Time format | Region default, 12-hour, 24-hour | Browser (`vyoog-time-format`) |
 | First day of week | Region default, Sunday, Monday | Browser (`vyoog-week-start`); no calendar uses it yet |
@@ -44,7 +49,7 @@ The accent replaces the MUI primary palette for the whole interface immediately.
 Saves immediately to `PUT /me/notifications/preferences` (the same data the bell menu edits); on failure the switch reverts and an error is shown. Signed-in users only.
 
 ## 4. Renewal Reminders — "Configure reminders for upcoming subscription renewals."
-Unchanged behaviour (REQ-SUB-004.8): Send renewal reminders (switch), Start reminding (N days before; empty = platform default 7), Reminder time (empty = 09:00), Time zone (read-only, the account time zone), summary "Daily reminder from N days before renewal at HH:mm Zone." updating live, and **Save reminder settings**. Signed-in users only.
+Unchanged behaviour (REQ-SUB-004.8): Send renewal reminders (switch), Start reminding (N days before; empty = platform default 7), Reminder time (empty = 09:00), Time zone (read-only, the account time zone), summary "Daily reminder from N days before renewal at HH:mm Zone." in a light box, updating live, and **Save reminder settings** at the bottom-right. Signed-in users only.
 
 ## States
 Loading: skeleton rows for Notifications and Renewal Reminders. Error: inline alert with Retry. Validation: renewal days range and time format shown under the label.

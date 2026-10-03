@@ -70,7 +70,7 @@
 | Tests | Done | [TESTPLAN-CAT-003](../../../../test-cases/functional/catalog-showcase/TESTPLAN-CAT-003.md), TC-CAT-011–018 |
 | Other screens (dashboard, registrations, privileged access, roles, permissions, audit, status, KB, support, reviews, partners, billing, settings) | Theme only | Carried: restyle one area at a time ([C66](../open-decisions.md#c66) follow-up) |
 
-### Preferences redesign (C67, 2026-10-03)
+### Preferences redesign (C67, C68, 2026-10-03)
 
 | Item | Status | Note |
 |---|---|---|
@@ -78,7 +78,8 @@
 | Personal accent colour (10 presets) applied to the theme primary | Done | Stored in the browser; AA contrast checked |
 | Date format, time format, first day of week | Done | Region default unless chosen; first day of week has no consumer yet |
 | Notification email categories on the existing opt-out API | Done | In-app shown as always on (backend always records) |
-| Tests | Done | [TESTPLAN-PRT-002](../../../../test-cases/functional/portal-preferences/TESTPLAN-PRT-002.md), TC-PRT-008–012 |
+| Settings navigation layout (C68): left navigation, focused panel, section selector on phones | Done | Supersedes the single-column layout of C67 |
+| Tests | Done | [TESTPLAN-PRT-002](../../../../test-cases/functional/portal-preferences/TESTPLAN-PRT-002.md), TC-PRT-008–013 |
 
 The rest of 02 (Offering, Content, Localization) and 05.02 Tenant Lifecycle remain open for this sprint; continuing them needs the same FRD-first process as above.
 
