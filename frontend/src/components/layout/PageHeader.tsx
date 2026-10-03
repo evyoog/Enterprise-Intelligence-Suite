@@ -1,8 +1,7 @@
-import { Box, Paper, Typography, useTheme } from '@mui/material'
-import { alpha } from '@mui/material/styles'
+import { Box, Typography, useTheme } from '@mui/material'
 import type { ComponentType, ReactNode } from 'react'
 import { useTranslation } from 'react-i18next'
-import { accentColor, BRAND_STRIPE, type AccentKey } from '../../theming/accents'
+import { accentColor, type AccentKey } from '../../theming/accents'
 
 interface PageHeaderProps {
   title: string
@@ -22,11 +21,10 @@ export type PageArea = 'catalog' | 'settings' | 'workspace' | 'organization' | '
   | 'support' | 'operations' | 'partners' | 'billing' | 'compliance' | 'product' | 'account' | 'help' | 'integrations'
 
 /**
- * The shared page header used across the signed-in tool (Phase 23). C60
- * corporate standard: a card with the brand's multi-colour stripe on top,
- * an optional accent icon tile, an eyebrow label, the page title and
- * subtitle, and actions on the right. Light and dark mode come from the
- * theme; nothing here hard-codes a mode.
+ * The shared page header (Phase 23), C66 design: a small uppercase area
+ * label, the page title, a one-line description and the primary action on
+ * the right — no banner, no gradient. `icon` and `accent` are accepted for
+ * existing callers and shown as a small icon before the label.
  */
 export function PageHeader({ title, subtitle, action, icon: Icon, accent = 'blue', eyebrow, area }: PageHeaderProps) {
   const theme = useTheme()
@@ -34,46 +32,21 @@ export function PageHeader({ title, subtitle, action, icon: Icon, accent = 'blue
   const label = eyebrow ?? (area ? t(`appShell.area.${area}`) : undefined)
   const color = accentColor(accent, theme.palette.mode)
   return (
-    <Paper
-      variant="outlined"
-      component="header"
-      sx={{
-        mb: 3,
-        position: 'relative',
-        overflow: 'hidden',
-        borderRadius: 3,
-        px: { xs: 2, sm: 3 },
-        pt: 3,
-        pb: 2.5,
-        background: theme.palette.mode === 'dark'
-          ? `linear-gradient(135deg, ${alpha(theme.palette.primary.main, 0.14)}, ${alpha(theme.palette.secondary.main, 0.04)} 60%, transparent)`
-          : `linear-gradient(135deg, ${alpha(theme.palette.primary.main, 0.07)}, ${alpha(theme.palette.secondary.main, 0.03)} 60%, ${theme.palette.background.paper})`,
-        '&::before': {
-          content: '""', position: 'absolute', top: 0, left: 0, right: 0, height: 4, backgroundImage: BRAND_STRIPE,
-        },
-      }}
-    >
-      <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 2, flexWrap: 'wrap' }}>
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, minWidth: 0 }}>
-          {Icon && (
-            <Box aria-hidden sx={{
-              width: 52, height: 52, borderRadius: 3, flexShrink: 0, display: 'grid', placeItems: 'center',
-              color, bgcolor: alpha(color, theme.palette.mode === 'dark' ? 0.18 : 0.1),
-              border: `1px solid ${alpha(color, 0.3)}`,
-            }}>
-              <Icon size={26} />
-            </Box>
-          )}
-          <Box sx={{ minWidth: 0 }}>
-            {label && (
-              <Typography variant="overline" sx={{ color, display: 'block', lineHeight: 1.6 }}>{label}</Typography>
-            )}
-            <Typography variant="h4" sx={{ fontSize: { xs: 26, sm: 32 }, mb: subtitle ? 0.5 : 0 }}>{title}</Typography>
-            {subtitle && <Typography sx={{ color: 'text.secondary' }}>{subtitle}</Typography>}
-          </Box>
-        </Box>
-        {action}
+    <Box component="header" sx={{
+      mb: 3, display: 'flex', alignItems: { xs: 'flex-start', sm: 'flex-end' }, justifyContent: 'space-between',
+      gap: 2, flexWrap: 'wrap',
+    }}>
+      <Box sx={{ minWidth: 0 }}>
+        {label && (
+          <Typography variant="overline" sx={{ color: 'primary.main', display: 'flex', alignItems: 'center', gap: 0.75, lineHeight: 1.8 }}>
+            {Icon && <Box component="span" aria-hidden sx={{ display: 'inline-flex', color }}><Icon size={14} /></Box>}
+            {label}
+          </Typography>
+        )}
+        <Typography variant="h4" sx={{ fontSize: { xs: 24, sm: 28 }, mb: subtitle ? 0.5 : 0 }}>{title}</Typography>
+        {subtitle && <Typography sx={{ color: 'text.secondary', maxWidth: 720 }}>{subtitle}</Typography>}
       </Box>
-    </Paper>
+      {action && <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>{action}</Box>}
+    </Box>
   )
 }

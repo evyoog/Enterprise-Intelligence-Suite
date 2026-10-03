@@ -1,147 +1,96 @@
-import { Layers as PHLayers } from 'lucide-react'
-import { PageHeader } from '../../components/layout/PageHeader'
+import { Layers as PHLayers, Pencil, Plus } from 'lucide-react'
 import { useEffect, useState } from 'react'
-import { Box, Button, CircularProgress, Grid, Typography } from '@mui/material'
-import { ArrowRight, Plus } from 'lucide-react'
+import { useTranslation } from 'react-i18next'
+import { Box, Button, Grid, Skeleton } from '@mui/material'
 import { Link as RouterLink } from 'react-router-dom'
-import { ApiError, resolveAssetUrl } from '../../api/client'
+import { ApiError } from '../../api/client'
 import { platformsApi, type Platform } from '../../api/platformsApi'
 import { productsApi, type Product } from '../../api/productsApi'
-import { accentFor, iconFor } from '../../utils/accentColor'
-import '../../styles/tiles.css'
+import { PageHeader } from '../../components/layout/PageHeader'
+import { EmptyState } from '../../components/ui/EmptyState'
+import { ErrorState } from '../../components/ui/ErrorState'
+import { ShowcaseCard } from '../../components/ui/ShowcaseCard'
 
 /**
- * "/admin" — the admin landing page. Every high-level platform (e.g. Thittam),
- * each a doorway into its own scoped dashboard (PlatformDashboardPage), styled
- * as a services-console category grid rather than a plain list — this is
- * deliberately the FIRST thing an admin sees, not the flat all-apps list
- * (that lives at "/admin/apps" now), so the platform grouping stays the
- * primary mental model. App counts are computed client-side from the full
- * admin product list, same as AdminProductsPage's own stats.
+ * "/admin/platforms" — every platform (product family), each a doorway into
+ * its own scoped dashboard (PlatformDashboardPage). C66: the same
+ * ShowcaseCard as the catalog, with the platform's colour, its real app count
+ * (computed from the admin product list) and its catalog visibility.
  */
 export function PlatformsListPage() {
+  const { t } = useTranslation()
   const [platforms, setPlatforms] = useState<Platform[] | null>(null)
   const [products, setProducts] = useState<Product[] | null>(null)
   const [error, setError] = useState<string | null>(null)
+  const [reload, setReload] = useState(0)
 
   useEffect(() => {
     Promise.all([platformsApi.list(), productsApi.listAdmin()])
       .then(([platformResult, productResult]) => {
-        setPlatforms(platformResult)
+        setPlatforms([...platformResult].sort((a, b) =>
+          (a.displayOrder ?? 0) - (b.displayOrder ?? 0) || a.name.localeCompare(b.name)))
         setProducts(productResult)
+        setError(null)
       })
-      .catch((e) => setError(e instanceof ApiError ? e.message : 'Could not load platforms.'))
-  }, [])
+      .catch((e) => setError(e instanceof ApiError ? e.message : t('admin.platforms.loadError')))
+  }, [reload, t])
 
   const appCountFor = (platformId: number) =>
     products?.filter((p) => p.platforms.some((pl) => pl.id === platformId)).length ?? 0
 
+  const statusFor = (platform: Platform) => {
+    if (platform.status === 'INACTIVE') return { label: t('forms.inactive'), tone: 'warning' as const }
+    if (platform.showInCatalog === false) return { label: t('forms.preview.hidden'), tone: 'neutral' as const }
+    return { label: t('admin.platforms.inCatalog'), tone: 'success' as const }
+  }
+
+  const addButton = (
+    <Button component={RouterLink} to="/admin/settings/platform" variant="contained" startIcon={<Plus size={16} />}>
+      {t('catalog.addProduct')}
+    </Button>
+  )
+
   return (
     <>
-      <PageHeader icon={PHLayers} accent="indigo" area="catalog" title="Product"
-        subtitle="Every product your apps are grouped under. Open one to see what's inside."
-        action={(
-          <Button component={RouterLink} to="/admin/settings/platform" variant="contained" startIcon={<Plus size={16} />}>
-            Add Product
-          </Button>
-        )} />
+      <PageHeader icon={PHLayers} area="catalog" title={t('appShell.nav.platforms')} subtitle={t('admin.platforms.subtitle')} action={addButton} />
 
-      {error && <Typography color="error" role="alert">{error}</Typography>}
+      {error && <ErrorState title={t('admin.platforms.loadErrorTitle')} message={error} onRetry={() => setReload((n) => n + 1)} />}
 
       {!error && platforms === null && (
-        <Box sx={{ display: 'flex', justifyContent: 'center', py: 8 }}>
-          <CircularProgress size={28} />
-        </Box>
+        <Grid container spacing={2.5}>
+          {[0, 1, 2].map((i) => <Grid key={i} size={{ xs: 12, sm: 6, lg: 4, xl: 3 }}><Skeleton variant="rounded" height={220} /></Grid>)}
+        </Grid>
       )}
 
       {platforms !== null && platforms.length === 0 && (
-        <Typography sx={{ color: 'text.secondary' }}>
-          No platforms yet — add one to start grouping your apps.
-        </Typography>
+        <EmptyState title={t('admin.platforms.emptyTitle')} description={t('admin.platforms.emptyBody')} action={addButton} />
       )}
 
       {platforms !== null && platforms.length > 0 && (
         <Grid container spacing={2.5}>
-          {platforms.map((platform, index) => {
-            const accent = accentFor(platform.name)
-            const Icon = iconFor(platform.name)
-            const count = appCountFor(platform.id)
-            return (
-              <Grid key={platform.id} size={{ xs: 12, sm: 6, md: 4, lg: 3 }}>
-                <Box
-                  component={RouterLink}
-                  to={`/admin/platforms/${platform.id}`}
-                  className="tile"
-                  style={{ animationDelay: `${index * 45}ms`, ['--tile-accent' as string]: accent.fg }}
-                >
-                  <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 1.5 }}>
-                    <Box
-                      className="tile-icon"
-                      sx={{ bgcolor: accent.bg, color: accent.fg }}
-                    >
-                      {platform.imageUrl ? (
-                        <Box
-                          component="img"
-                          src={resolveAssetUrl(platform.imageUrl)}
-                          alt=""
-                          sx={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: '12px' }}
-                        />
-                      ) : (
-                        <Icon size={22} strokeWidth={2} />
-                      )}
-                    </Box>
-                    <Box sx={{ minWidth: 0, flex: 1, pt: 0.25 }}>
-                      <Typography
-                        sx={{
-                          fontWeight: 700,
-                          fontSize: 16,
-                          color: accent.fg,
-                          lineHeight: 1.3,
-                        }}
-                      >
-                        {platform.name}
-                      </Typography>
-                      <Typography variant="caption" sx={{ color: 'text.secondary' }}>
-                        {count} app{count === 1 ? '' : 's'}
-                      </Typography>
-                    </Box>
+          {platforms.map((platform) => (
+            <Grid key={platform.id} size={{ xs: 12, sm: 6, lg: 4, xl: 3 }}>
+              <ShowcaseCard
+                name={platform.name}
+                typeLabel={t('catalog.platformType')}
+                logoUrl={platform.imageUrl}
+                color={platform.primaryColor}
+                meta={products ? t('catalog.appCount', { count: appCountFor(platform.id) }) : undefined}
+                description={platform.description}
+                status={statusFor(platform)}
+                actionLabel={t('admin.platforms.explore')}
+                to={`/admin/platforms/${platform.id}`}
+                extra={(
+                  <Box sx={{ mt: 1.5 }}>
+                    <Button size="small" component={RouterLink} to={`/admin/platforms/${platform.id}/edit`}
+                      startIcon={<Pencil size={14} />} aria-label={t('admin.platforms.editLabel', { name: platform.name })}>
+                      {t('forms.edit')}
+                    </Button>
                   </Box>
-
-                  {platform.description && (
-                    <Typography
-                      variant="body2"
-                      sx={{
-                        color: 'text.secondary',
-                        display: '-webkit-box',
-                        WebkitLineClamp: 2,
-                        WebkitBoxOrient: 'vertical',
-                        overflow: 'hidden',
-                        flexGrow: 1,
-                      }}
-                    >
-                      {platform.description}
-                    </Typography>
-                  )}
-
-                  <Box
-                    sx={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: 0.5,
-                      mt: 'auto',
-                      pt: 0.5,
-                      fontSize: 13,
-                      fontWeight: 600,
-                      color: accent.fg,
-                    }}
-                  >
-                    Explore apps
-                    <ArrowRight size={14} className="tile-arrow" />
-                  </Box>
-                </Box>
-              </Grid>
-            )
-          })}
+                )}
+              />
+            </Grid>
+          ))}
         </Grid>
       )}
     </>

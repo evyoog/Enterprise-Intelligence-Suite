@@ -1,21 +1,25 @@
 import { Layers as PHLayers } from 'lucide-react'
+import { useTranslation } from 'react-i18next'
+import { useNavigate } from 'react-router-dom'
 import { PageHeader } from '../../../components/layout/PageHeader'
-import { Box } from '@mui/material'
 import { platformsApi } from '../../../api/platformsApi'
 import { PlatformForm } from '../../../components/admin/PlatformForm'
 
-/** "/admin/settings/platform" — the "add a high-level platform" form. */
+/** "/admin/settings/platform" — Create Platform (C66 form with live preview). */
 export function PlatformSettingsPage() {
+  const { t } = useTranslation()
+  const navigate = useNavigate()
   return (
-    <Box sx={{ maxWidth: 560 }}>
-      <PageHeader icon={PHLayers} accent="indigo" area="settings" title="Platform" subtitle="Add a new high-level platform (e.g. Thittam) to group apps under." />
-
+    <>
+      <PageHeader icon={PHLayers} accent="indigo" eyebrow={t('forms.platform.label')} title={t('forms.platform.createTitle')}
+        subtitle={t('forms.platform.createSubtitle')} />
       <PlatformForm
-        onSubmit={platformsApi.create}
-        submitLabel="Add Platform"
-        submittingLabel="Adding…"
-        successMessage="Platform added."
+        onSubmit={(payload) => platformsApi.create(payload).then((created) => { navigate(`/admin/platforms/${created.id}`); return created })}
+        submitLabel={t('forms.platform.create')}
+        submittingLabel={t('forms.saving')}
+        successMessage={t('forms.saved')}
+        cancelTo="/admin/platforms"
       />
-    </Box>
+    </>
   )
 }

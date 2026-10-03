@@ -28,6 +28,7 @@
 | Decided | [C32](../open-decisions.md#c32) Product Lifecycle & Structure: version counter, Publish/Retire actions and the new RETIRED status, hierarchy/variant/dependency fields | [product-lifecycle](../../../02-requirements/FRD/product-lifecycle/requirement.md) | REQ-CAT-001 |
 | Decided | [C33](../open-decisions.md#c33) Plan Management: currency, usage limit, included features, usage price, overage charge, tier-pricing text — data fields only, no billing engine | [plan-management](../../../02-requirements/FRD/plan-management/requirement.md) | REQ-CAT-002 |
 | Decided | [C34](../open-decisions.md#c34) Member Lifecycle: Suspend/Reactivate/Remove and Review access; Invite/Create user carried to 2026.4.2 | [member-lifecycle](../../../02-requirements/FRD/member-lifecycle/requirement.md) | REQ-TEN-002 |
+| Decided | [C66](../open-decisions.md#c66) UI/UX redesign with the Product Catalog as reference; catalog showcase fields (platform colour, catalog visibility and order; app accent colour, feature tags, documentation/support links); public catalog API | [catalog-showcase](../../../02-requirements/FRD/catalog-showcase/requirement.md) | REQ-CAT-003 |
 | Decided | [C35](../open-decisions.md#c35) Groups: create/add/remove member; Projects (05.04.02) carried to 2026.4.2 | [group-management](../../../02-requirements/FRD/group-management/requirement.md) | REQ-TEN-003 |
 
 ### FRDs in this sprint
@@ -38,6 +39,7 @@
 | [plan-management](../../../02-requirements/FRD/plan-management/requirement.md) | REQ-CAT-002 | 02.03.01.03–.04, 02.03.02.02–.04 | Approved |
 | [member-lifecycle](../../../02-requirements/FRD/member-lifecycle/requirement.md) | REQ-TEN-002 | 05.03.01.03–.05, 05.03.02.03 | Approved |
 | [group-management](../../../02-requirements/FRD/group-management/requirement.md) | REQ-TEN-003 | 05.04.01 | Approved |
+| [catalog-showcase](../../../02-requirements/FRD/catalog-showcase/requirement.md) | REQ-CAT-003 | No function ID (restyles 02.01/02.03 screens; links touch 02.04.01.02) | Approved |
 
 ### Progress (as of 2026-09-26, first week of the sprint)
 
@@ -54,6 +56,18 @@
 | 05.03.02 Role Assignment | Done | Assign role and Assign group were already built/built this sprint; Review access built this sprint |
 | 05.04.01 Groups | Done | Create/add/remove member built |
 | 05.04.02 Projects | Not started | Carried to 2026.4.2 (C35) |
+
+### Catalog showcase and UI redesign (C66, 2026-10-03)
+
+| Item | Status | Note |
+|---|---|---|
+| Design system: theme, shell, page header, shared components | Done | [design-system.md](../../../05-ui/screen-requirements/design-system.md) |
+| Product Catalog, platform details, app details, app card | Done | Real counts only; no versions or ratings (no data) |
+| Create/Edit Platform with live preview; Platforms list | Done | Colour, status, show in catalog, display order |
+| Create/Edit App with live preview; All Apps table and filters | Done | Every existing field kept; feature tags, links, colour added; delete/retire confirm |
+| Public catalog API, schema, migration V019 | Done | [API](../../../06-api/api-requirements/catalog-showcase.md), [data model](../../../07-database/data-model/catalog-showcase.md) |
+| Tests | Done | [TESTPLAN-CAT-003](../../../../test-cases/functional/catalog-showcase/TESTPLAN-CAT-003.md), TC-CAT-011–018 |
+| Other screens (dashboard, registrations, privileged access, roles, permissions, audit, status, KB, support, reviews, partners, billing, settings) | Theme only | Carried: restyle one area at a time ([C66](../open-decisions.md#c66) follow-up) |
 
 The rest of 02 (Offering, Content, Localization) and 05.02 Tenant Lifecycle remain open for this sprint; continuing them needs the same FRD-first process as above.
 
@@ -128,7 +142,7 @@ Full breakdown: [applications/05-customer-tenant-management.md](../applications/
 - [C3](../open-decisions.md#c3) The [PO] sprint order is authoritative; the MVP is complete at the end of sprint 2027.1.3.
 - [C4](../open-decisions.md#c4), [C5](../open-decisions.md#c5), [C6](../open-decisions.md#c6) MVP, priority and phase as shown above.
 - [C31](../open-decisions.md#c31) Corrected sprint sequence: 05 Tenant pulled into this sprint.
-- [C32](../open-decisions.md#c32), [C33](../open-decisions.md#c33), [C34](../open-decisions.md#c34), [C35](../open-decisions.md#c35): see the FRDs above.
+- [C32](../open-decisions.md#c32), [C33](../open-decisions.md#c33), [C34](../open-decisions.md#c34), [C35](../open-decisions.md#c35), [C66](../open-decisions.md#c66): see the FRDs above.
 - Sprint goal, team, capacity and status are Not specified.
 
 Details: [open-decisions.md](../open-decisions.md).

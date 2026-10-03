@@ -158,7 +158,7 @@ describe('ProductDetailPage', () => {
     getProduct.mockResolvedValue(product)
     getRatings.mockResolvedValue({ averageRating: null, reviewCount: 0, reviews: [] })
     const { container } = renderDetail()
-    await screen.findByText('Valam.ai')
+    await screen.findByRole('heading', { name: 'Valam.ai' })
     expect(await axe(container)).toHaveNoViolations()
   })
 })

@@ -36,6 +36,9 @@ export interface ProductPlanInput {
 export interface PlatformSummary {
   id: number
   name: string
+  /** C66: the platform's showcase colour (null = default), inherited by its apps. */
+  primaryColor?: string | null
+  imageUrl?: string | null
 }
 
 export interface Product {
@@ -61,6 +64,12 @@ export interface Product {
   parentProductId?: number
   variantLabel?: string
   dependsOnProductIds: number[]
+  // C66 showcase fields.
+  /** Own showcase colour; null = inherit the platform colour. */
+  accentColor?: string | null
+  featureTags?: string[]
+  documentationUrl?: string | null
+  supportUrl?: string | null
 }
 
 export interface ProductCreateRequest {
@@ -78,6 +87,10 @@ export interface ProductCreateRequest {
   parentProductId?: number
   variantLabel?: string
   dependsOnProductIds?: number[]
+  accentColor?: string | null
+  featureTags?: string[]
+  documentationUrl?: string | null
+  supportUrl?: string | null
 }
 
 export interface CategoryFacet {

@@ -1,21 +1,27 @@
 import { Package as PHPackage } from 'lucide-react'
+import { useTranslation } from 'react-i18next'
+import { useNavigate } from 'react-router-dom'
 import { PageHeader } from '../../../components/layout/PageHeader'
-import { Box } from '@mui/material'
 import { productsApi } from '../../../api/productsApi'
 import { ProductForm } from '../../../components/admin/ProductForm'
 
-/** "/admin/settings/product" — the "add a product" form. */
+/** "/admin/settings/product" — Create App (C66 sectioned form with live preview). */
 export function ProductSettingsPage() {
+  const { t } = useTranslation()
+  const navigate = useNavigate()
   return (
-    <Box sx={{ maxWidth: 560 }}>
-      <PageHeader icon={PHPackage} accent="blue" area="settings" title="App" subtitle="Add a new app to the Thittam platform." />
-
+    <>
+      <PageHeader icon={PHPackage} eyebrow={t('forms.app.label')} title={t('forms.app.createTitle')} subtitle={t('forms.app.createSubtitle')} />
       <ProductForm
-        onSubmit={productsApi.create}
-        submitLabel="Add App"
-        submittingLabel="Adding…"
-        successMessage="App added."
+        onSubmit={(payload) => productsApi.create(payload).then((created) => {
+          navigate(`/admin/products/${created.id}/edit`, { state: { created: true } })
+          return created
+        })}
+        submitLabel={t('forms.app.create')}
+        submittingLabel={t('forms.app.creating')}
+        successMessage={t('forms.app.created')}
+        cancelTo="/admin/apps"
       />
-    </Box>
+    </>
   )
 }

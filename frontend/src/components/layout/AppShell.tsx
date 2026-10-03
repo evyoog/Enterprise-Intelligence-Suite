@@ -12,12 +12,11 @@ import { myPermissionsApi, type MyPermissions } from '../../api/myPermissionsApi
 import { useThemeMode } from '../../theming/ThemeModeProvider'
 import { NotificationBell } from './NotificationBell'
 import { CartButton } from '../cart/CartButton'
-import { accentColor, accentFor, BRAND_STRIPE } from '../../theming/accents'
 import { TopBarSearch } from './TopBarSearch'
 import { AppShellContext } from './appShellContext'
 import { appHomePath, buildAppNavigation, isNavItemActive, type AppNavItem } from './appNavigation'
 
-const DRAWER_WIDTH = 260
+const DRAWER_WIDTH = 240
 const LOGO = 'https://www.vyoog.com/wp-content/uploads/2022/03/evyoog-logonew1.png'
 
 /**
@@ -74,29 +73,24 @@ export function AppShell() {
   const home = appHomePath(auth.isAdmin)
   const closeMobile = () => setMobileOpen(false)
 
-  // C60: every menu item has its own accent colour, so sections are easy to scan.
+  // C66: plain icons; the current page gets a light indigo background, an
+  // indigo icon and text, and a small indicator on the left.
   const navIcon = (item: AppNavItem, nested: boolean, active: boolean) => {
     const Icon = item.icon
-    const color = accentColor(accentFor(item.key), theme.palette.mode)
     return (
-      <ListItemIcon sx={{ minWidth: 38 }}>
-        <Box aria-hidden sx={{
-          width: nested ? 24 : 28, height: nested ? 24 : 28, borderRadius: 2, display: 'grid', placeItems: 'center',
-          color: active ? (theme.palette.mode === 'dark' ? '#0b1220' : '#fff') : color, bgcolor: active ? color : alpha(color, theme.palette.mode === 'dark' ? 0.18 : 0.1),
-          transition: 'background-color .15s, color .15s',
-        }}>
-          <Icon size={nested ? 14 : 16} />
-        </Box>
+      <ListItemIcon sx={{ minWidth: 32, color: active ? 'primary.main' : 'text.secondary' }}>
+        <Icon size={nested ? 16 : 18} />
       </ListItemIcon>
     )
   }
-  const activeSx = (item: AppNavItem) => {
-    const color = accentColor(accentFor(item.key), theme.palette.mode)
-    return {
-      '&.Mui-selected, &.Mui-selected:hover': { bgcolor: alpha(color, theme.palette.mode === 'dark' ? 0.16 : 0.09) },
-      '&.Mui-selected .MuiListItemText-primary': { fontWeight: 700, color: 'text.primary' },
-    }
-  }
+  const activeSx = () => ({
+    position: 'relative',
+    '&.Mui-selected, &.Mui-selected:hover': { bgcolor: alpha(theme.palette.primary.main, theme.palette.mode === 'dark' ? 0.16 : 0.08) },
+    '&.Mui-selected .MuiListItemText-primary': { fontWeight: 600, color: 'primary.main' },
+    '&.Mui-selected::before': {
+      content: '""', position: 'absolute', left: -8, top: 8, bottom: 8, width: 3, borderRadius: 2, bgcolor: 'primary.main',
+    },
+  })
 
   const renderItem = (item: AppNavItem, nested = false) => {
     const active = isNavItemActive(item, location.pathname)
@@ -107,7 +101,7 @@ export function AppShell() {
           <ListItemButton
             onClick={() => setOpenGroups((g) => ({ ...g, [item.key]: !open }))}
             aria-expanded={open}
-            sx={{ borderRadius: 1.5, mx: 1 }}
+            sx={{ borderRadius: 2, mx: 1, color: 'text.secondary' }}
           >
             {navIcon(item, false, false)}
             <ListItemText primary={t(`appShell.nav.${item.labelKey}`)} />
@@ -129,7 +123,7 @@ export function AppShell() {
         selected={active}
         aria-current={active ? 'page' : undefined}
         onClick={closeMobile}
-        sx={{ borderRadius: 1.5, mx: 1, pl: nested ? 4 : 2, ...activeSx(item) }}
+        sx={{ borderRadius: 2, mx: 1, pl: nested ? 4.5 : 2, my: 0.25, '& .MuiListItemText-primary': { fontSize: 14 }, ...activeSx() }}
       >
         {navIcon(item, nested, active)}
         <ListItemText primary={t(`appShell.nav.${item.labelKey}`)} />
@@ -152,7 +146,6 @@ export function AppShell() {
           </Typography>
         </Box>
       </Toolbar>
-      <Box aria-hidden sx={{ height: 3, backgroundImage: BRAND_STRIPE }} />
       <Box component="nav" aria-label={t('appShell.sidebarLabel')} sx={{ flexGrow: 1, overflowY: 'auto', py: 1 }}>
         {sections.map((section) => (
           <List
@@ -163,7 +156,7 @@ export function AppShell() {
               <ListSubheader
                 component="div"
                 disableSticky
-                sx={{ bgcolor: 'transparent', lineHeight: '32px', fontSize: 11, fontWeight: 700, letterSpacing: '.06em', textTransform: 'uppercase' }}
+                sx={{ bgcolor: 'transparent', lineHeight: '32px', fontSize: 11, fontWeight: 600, letterSpacing: '.08em', textTransform: 'uppercase', color: 'text.secondary', mt: 1 }}
               >
                 {t(`appShell.sections.${section.labelKey}`)}
               </ListSubheader>
@@ -206,7 +199,7 @@ export function AppShell() {
           sx={{
             width: DRAWER_WIDTH,
             flexShrink: 0,
-            '& .MuiDrawer-paper': { width: DRAWER_WIDTH, boxSizing: 'border-box' },
+            '& .MuiDrawer-paper': { width: DRAWER_WIDTH, boxSizing: 'border-box', borderRight: '1px solid', borderColor: 'divider', bgcolor: 'background.paper' },
           }}
         >
           {sidebar}
@@ -217,7 +210,7 @@ export function AppShell() {
             position="sticky"
             color="inherit"
             elevation={0}
-            sx={{ borderBottom: '1px solid', borderColor: 'divider', bgcolor: 'background.paper' }}
+            sx={{ borderBottom: '1px solid', borderColor: 'divider', bgcolor: 'background.paper', backdropFilter: 'none' }}
           >
             <Toolbar sx={{ gap: 1 }}>
               {isMobile && (
@@ -251,6 +244,11 @@ export function AppShell() {
                   <Avatar sx={{ width: 30, height: 30, fontSize: 14, bgcolor: 'primary.main' }}>
                     {username.slice(0, 1).toUpperCase()}
                   </Avatar>
+                  {!isMobile && (
+                    <Typography component="span" sx={{ ml: 1, fontSize: 14, fontWeight: 600, color: 'text.primary', maxWidth: 180, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                      {username}
+                    </Typography>
+                  )}
                 </IconButton>
               </Tooltip>
               <Menu anchorEl={userAnchor} open={Boolean(userAnchor)} onClose={() => setUserAnchor(null)}>
