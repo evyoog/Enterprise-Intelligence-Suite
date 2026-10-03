@@ -35,6 +35,7 @@
 | Not built | [C39](../open-decisions.md#c39) 13b Connectors & Webhooks and 16 Analytics & Data Platform: both P1/stretch under C4/C5, and neither has a real consumer yet — carried further |
 | Added | [C56](../open-decisions.md#c56) Provisioning contract (answer to D6, option B): EIS notifies each hosted product of subscription start, suspension, resumption and cancellation; the product creates or changes the tenant and reports back. FRD is a documents-only stub; the delivery mechanism (D13 events or D19 webhooks) is not decided | [provisioning-contract](../../../02-requirements/FRD/provisioning-contract/requirement.md) | REQ-ORD-002 |
 | Decided | [C58](../open-decisions.md#c58) Vector store for 11.01.02 AI Knowledge: **pgvector** in the existing PostgreSQL database. Embedding model Not specified (depends on D8, LLM provider). 11.01.02 stays carried until D8 is decided; no FRD change yet | - | - |
+| Decided | [C65](../open-decisions.md#c65) (D16) Who manages an organization's subscriptions: organization admins by default, delegable through the new *Manage subscriptions* feature permission. Covers 09.02.01.02/.04/.05 (configure, suspend, deprovision an organization subscription) — the gap C38/C39 carry. Draft; build waits for approval | [access-management](../../../02-requirements/FRD/access-management/requirement.md) | REQ-TEN-005.4 |
 
 ### FRDs in this sprint
 
@@ -43,13 +44,14 @@
 | [order-lifecycle](../../../02-requirements/FRD/order-lifecycle/requirement.md) | REQ-ORD-001 | 09.01.01, 09.02.01 (folded into approval), 09.04.01 (single-hop) | Approved |
 | [knowledge-base](../../../02-requirements/FRD/knowledge-base/requirement.md) | REQ-KNW-001 | 11.01.01 (11.01.02 AI Knowledge carried) | Approved |
 | [provisioning-contract](../../../02-requirements/FRD/provisioning-contract/requirement.md) | REQ-ORD-002 | 09.02.01 (provision, activate, suspend, deprovision — contract only) | Draft (stub) |
+| [access-management](../../../02-requirements/FRD/access-management/requirement.md) | REQ-TEN-005 (.4 only here) | 09.02.01.02/.04/.05 — who may configure, suspend, cancel an organization subscription | Draft — waits for approval |
 
 ### Progress (as of 2026-09-28)
 
 | Feature | Status | Note |
 |---|---|---|
 | 09.01.01 Order Lifecycle | Done (this FRD's scope) | Organization purchasing only; Create/Validate/Price/Submit folded into one action |
-| 09.02.01 Service Provisioning | Partly done | Provision/Activate folded into order approval; Configure/Suspend/Deprovision an existing org subscription not built (same gap C38 carries) |
+| 09.02.01 Service Provisioning | Partly done | Provision/Activate folded into order approval; Configure/Suspend/Deprovision an existing org subscription not built — permission decided by [C65](../open-decisions.md#c65) (D16), specified in REQ-TEN-005 (Draft, 2026-10-03) |
 | 09.03 Workflow Orchestration | Not started, not planned as a generic engine | See [C39](../open-decisions.md#c39) — no second orchestrated process exists to justify one |
 | 09.04.01 Approvals | Partly done | Create/Approve/Reject built, single-hop; Route approval/Escalate not built — no multi-level chain defined |
 | 11.01.01 Knowledge Articles | Done (this FRD's scope) | Create/Edit/Publish/Search/Version, plain text search |

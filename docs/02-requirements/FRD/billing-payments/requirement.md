@@ -39,7 +39,7 @@ EIS never collects, transmits or stores full card numbers or CVV ([BR-BIL-001](.
 
 ## Actors
 - Individual customer — own billing details, invoices, payment methods and payments
-- Organization admin — the organization's billing (permission: see Open question 5)
+- Organization admin — the organization's billing (permission: see Open question 5; delegable under [C65](../../../01-business/roadmap/open-decisions.md#c65))
 - Platform administrator (new permission `MANAGE_BILLING`) — all invoices and payments, refunds, gateway status
 - Razorpay — checkout window, tokenized payment methods, webhooks
 
@@ -106,7 +106,7 @@ EIS never collects, transmits or stores full card numbers or CVV ([BR-BIL-001](.
 | 2 | ~~Billing scope (D3)~~ — **Answered — [C50](../../../01-business/roadmap/open-decisions.md#c50).** The MVP includes recurring subscription billing, invoices, card/UPI payments, tax and currency; price books, promotions and usage billing are later, not MVP. | No |
 | 3 | **Activation vs payment:** should a subscription or approved order become active only after its first invoice is paid, or immediately (with the invoice due later)? Today activation happens on subscribe / approval. | Yes |
 | 4 | **Invoice number format and due date:** format (for example a prefix plus sequence per financial year) and payment terms (days until due) are Not specified. | Yes |
-| 5 | **Who handles organization billing (D16):** organization admins only (`MANAGE_ORGANIZATION`), or a separate assignable billing permission? | Yes |
+| 5 | **Who handles organization billing (D16):** D16 is decided by [C65](../../../01-business/roadmap/open-decisions.md#c65): organization admins by default, delegable through feature permissions ([REQ-TEN-005](../access-management/requirement.md)). Proposal — **confirm:** organization billing becomes its own assignable feature permission, **Manage billing** (REQ-TEN-005 Open question 2). Until then the built default is `MANAGE_ORGANIZATION` ([C47](../../../01-business/roadmap/open-decisions.md#c47)). | Yes |
 | 6 | **Refund policy:** who may request refunds (admins only?), and are partial refunds allowed? This FRD assumes admins only, full or partial. | No — confirm in review |
 | 7 | **Payment methods offered:** cards and UPI are assumed. Netbanking, wallets? | No — confirm in review |
 | 8 | **Invoice document legal fields:** which company details, registration and tax numbers must appear on invoices and receipts. | Yes |
