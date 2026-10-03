@@ -80,6 +80,8 @@ public class CartService {
     private final SubscriptionService subscriptionService;
     private final InvoiceService invoiceService;
     private final OrderService orderService;
+    /** REQ-INT-002 (C62): CheckoutCompleted. */
+    private final com.vyoog.eisplatform.modules.integration.service.OutboxService outboxService;
 
     @Transactional(readOnly = true)
     public CartDto getCart(Long customerId) {
@@ -215,6 +217,14 @@ public class CartService {
             cart.setLastCheckoutKind("INVOICE");
             cart.setLastCheckoutRef(invoice.getId().toString());
         }
+        java.util.Map<String, Object> payload = new java.util.LinkedHashMap<>();
+        payload.put("cartId", cart.getId());
+        payload.put("customerId", customerId);
+        payload.put("result", result.kind());
+        payload.put("invoiceId", result.invoiceId());
+        payload.put("orderIds", result.orderIds());
+        outboxService.publish(com.vyoog.eisplatform.modules.integration.service.PlatformEventTypes.CHECKOUT_COMPLETED,
+            com.vyoog.eisplatform.modules.integration.service.PlatformEventTypes.AGGREGATE_CART, cart.getId(), payload);
         cart.setLastCheckoutAt(Instant.now());
         cart.getItems().clear();
         cart.setUpdatedAt(Instant.now());

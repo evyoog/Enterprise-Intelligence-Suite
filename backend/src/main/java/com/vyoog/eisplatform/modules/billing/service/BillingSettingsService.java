@@ -38,6 +38,35 @@ public class BillingSettingsService {
         return settingsRepository.findFirstByOrderByIdAsc().orElseGet(BillingSettings::new);
     }
 
+    /** REQ-SUB-004.4/.5 (C64). */
+    public com.vyoog.eisplatform.modules.billing.dto.RenewalReminderDefaultsDto renewalReminderDefaults() {
+        BillingSettings s = current();
+        return new com.vyoog.eisplatform.modules.billing.dto.RenewalReminderDefaultsDto(
+            s.getReminderLeadDays(), s.getReminderSendTime(), s.getReminderTimeZone(), s.getUpdatedAt());
+    }
+
+    @Transactional
+    public com.vyoog.eisplatform.modules.billing.dto.RenewalReminderDefaultsDto saveRenewalReminderDefaults(
+            Long adminCustomerId, com.vyoog.eisplatform.modules.billing.dto.SaveRenewalReminderDefaultsRequest r) {
+        String zone = r.timeZone().trim();
+        try {
+            java.time.ZoneId.of(zone);
+        } catch (java.time.DateTimeException e) {
+            throw new IllegalArgumentException("Unknown time zone: " + zone);
+        }
+        BillingSettings s = current();
+        String before = s.getReminderLeadDays() + " days, " + s.getReminderSendTime() + ", " + s.getReminderTimeZone();
+        s.setReminderLeadDays(r.daysBefore());
+        s.setReminderSendTime(r.sendTime());
+        s.setReminderTimeZone(zone);
+        s.setUpdatedByCustomerId(adminCustomerId);
+        s = settingsRepository.save(s);
+        auditService.recordSuccess("RENEWAL_REMINDER_DEFAULTS_CHANGED", null, adminCustomerId, null, "BillingSettings",
+            s.getId().toString(), null, "Renewal reminder defaults changed from " + before + " to "
+                + r.daysBefore() + " days, " + r.sendTime() + ", " + zone);
+        return renewalReminderDefaults();
+    }
+
     public BusinessProfileDto businessProfile() {
         return toBusinessDto(current());
     }

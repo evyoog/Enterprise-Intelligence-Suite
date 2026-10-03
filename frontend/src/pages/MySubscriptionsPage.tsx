@@ -1,15 +1,18 @@
-import { Repeat as PHRepeat } from 'lucide-react'
+import { BellRing, RefreshCw, Repeat as PHRepeat } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import {
   Alert, Box, Button, Chip, CircularProgress, Dialog, DialogActions, DialogContent,
-  DialogTitle, FormControl, InputLabel, MenuItem, Paper, Select, type SelectChangeEvent, Typography,
+  DialogTitle, FormControl, InputLabel, Link, MenuItem, Paper, Select, type SelectChangeEvent, Typography,
 } from '@mui/material'
 import { Link as RouterLink } from 'react-router-dom'
 import { ApiError } from '../api/client'
 import { productsApi, type ProductPlan } from '../api/productsApi'
 import { myProductsApi, type Subscription, type SubscriptionStatus } from '../api/registrationApi'
 import { PageHeader } from '../components/layout/PageHeader'
+import { renewalsApi, type Renewal } from '../api/renewalsApi'
+import { useLocalePreference } from '../theming/LocalePreferenceProvider'
+import { OrganizationSubscriptionsSection } from '../components/subscriptions/OrganizationSubscriptionsSection'
 
 type Action = 'suspend' | 'reactivate' | 'cancel' | 'renew'
 
@@ -27,6 +30,8 @@ export function MySubscriptionsPage() {
   const [busyId, setBusyId] = useState<number | null>(null)
   const [actionError, setActionError] = useState<string | null>(null)
   const [planDialogFor, setPlanDialogFor] = useState<Subscription | null>(null)
+  // REQ-SUB-004 (C64): renewal date, auto-renew and the next reminder.
+  const [renewals, setRenewals] = useState<Record<number, Renewal>>({})
 
   const load = () => {
     myProductsApi.listSubscriptions()
@@ -35,6 +40,11 @@ export function MySubscriptionsPage() {
   }
 
   useEffect(load, [])
+  useEffect(() => {
+    renewalsApi.myRenewals()
+      .then((list) => setRenewals(Object.fromEntries(list.map((r) => [r.subscriptionId, r]))))
+      .catch(() => setRenewals({}))
+  }, [])
 
   const runAction = async (subscription: Subscription, action: Action) => {
     setBusyId(subscription.id)
@@ -78,12 +88,16 @@ export function MySubscriptionsPage() {
           <SubscriptionRow
             key={subscription.id}
             subscription={subscription}
+            renewal={renewals[subscription.id]}
             busy={busyId === subscription.id}
             onAction={(action) => runAction(subscription, action)}
             onChangePlan={() => setPlanDialogFor(subscription)}
           />
         ))}
       </Box>
+
+      {/* REQ-SUB-003 (C63): organization subscriptions and their seats (MANAGE_ORGANIZATION only). */}
+      <OrganizationSubscriptionsSection />
 
       {planDialogFor && (
         <ChangePlanDialog
@@ -105,13 +119,15 @@ function statusColor(status: SubscriptionStatus): 'success' | 'warning' | 'defau
   return 'default'
 }
 
-function SubscriptionRow({ subscription, busy, onAction, onChangePlan }: {
+function SubscriptionRow({ subscription, renewal, busy, onAction, onChangePlan }: {
   subscription: Subscription
+  renewal?: Renewal
   busy: boolean
   onAction: (action: Action) => void
   onChangePlan: () => void
 }) {
   const { t } = useTranslation()
+  const { formatDate, formatDateTime } = useLocalePreference()
 
   return (
     <Paper variant="outlined" sx={{ p: 2.5, display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 2, flexWrap: 'wrap' }}>
@@ -125,7 +141,23 @@ function SubscriptionRow({ subscription, busy, onAction, onChangePlan }: {
             ? t('subscriptions.expires', { date: new Date(subscription.expiresAt).toLocaleDateString() })
             : t('subscriptions.neverExpires')}
         </Typography>
-        <Chip size="small" sx={{ mt: 1 }} color={statusColor(subscription.status)} label={t(`subscriptions.status.${subscription.status}`)} />
+        <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap', mt: 1 }}>
+          <Chip size="small" color={statusColor(subscription.status)} label={t(`subscriptions.status.${subscription.status}`)} />
+          {renewal?.autoRenew && (
+            <Chip size="small" variant="outlined" color="info" icon={<RefreshCw size={14} />} label={t('subscriptions.renewal.autoRenewOn')} />
+          )}
+          {renewal && <Chip size="small" variant="outlined" label={t('subscriptions.renewal.renewsOn', { date: formatDate(renewal.renewalDate) })} />}
+        </Box>
+        {renewal && (
+          <Typography variant="body2" sx={{ color: 'text.secondary', mt: 1, display: 'flex', alignItems: 'center', gap: 0.75 }}>
+            <BellRing size={14} aria-hidden />
+            {!renewal.remindersEnabled
+              ? <>{t('subscriptions.renewal.remindersOff')} <Link component={RouterLink} to="/account/preferences">{t('subscriptions.renewal.changeReminders')}</Link></>
+              : renewal.nextReminderAt
+                ? t('subscriptions.renewal.nextReminder', { date: formatDateTime(renewal.nextReminderAt) })
+                : t('subscriptions.renewal.noReminderLeft')}
+          </Typography>
+        )}
       </Box>
 
       <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>

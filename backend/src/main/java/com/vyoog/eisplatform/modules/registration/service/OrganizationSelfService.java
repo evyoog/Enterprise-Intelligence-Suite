@@ -310,7 +310,9 @@ public class OrganizationSelfService {
                 subscription.getExpiresAt(),
                 subscription.getPlanId(),
                 subscription.getPlanId() == null ? null
-                    : productPlanRepository.findById(subscription.getPlanId()).map(ProductPlan::getName).orElse(null)
+                    : productPlanRepository.findById(subscription.getPlanId()).map(ProductPlan::getName).orElse(null),
+                subscription.getQuantity(),
+                subscription.isAutoRenew()
             ))
             .toList();
     }

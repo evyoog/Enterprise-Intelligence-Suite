@@ -55,7 +55,19 @@ public class ProductSubscription {
 
     private Instant startedAt;
 
+    /** The end of the current term; for a paid Monthly/Yearly plan this is
+     * also the renewal date (REQ-SUB-004.1). */
     private Instant expiresAt;
+
+    /** REQ-SUB-003.1 (C63): seats of an organization subscription (1–100 000);
+     * always 1 for an individual subscription. */
+    @Column(nullable = false)
+    private int quantity = 1;
+
+    /** REQ-SUB-004.1 (C64): renewed automatically on its renewal date. On by
+     * default; turning it off is the FRD's open question 1. */
+    @Column(name = "auto_renew", nullable = false)
+    private boolean autoRenew = true;
 
     @CreatedDate
     @Column(updatable = false)

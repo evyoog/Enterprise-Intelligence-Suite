@@ -155,6 +155,18 @@ public class BillingSettings {
     @Column(name = "checkout_theme_color", length = 7)
     private String checkoutThemeColor;
 
+    /** REQ-SUB-004.4 (C64): platform default days before renewal (1–30). */
+    @Column(name = "reminder_lead_days", nullable = false)
+    private int reminderLeadDays = 7;
+
+    /** REQ-SUB-004.5: platform default send time, HH:mm (proposed default 09:00 — confirm). */
+    @Column(name = "reminder_send_time", nullable = false, length = 5)
+    private String reminderSendTime = "09:00";
+
+    /** REQ-SUB-004.7: used when a recipient has no time zone preference (proposed default — confirm). */
+    @Column(name = "reminder_time_zone", nullable = false, length = 64)
+    private String reminderTimeZone = "Asia/Kolkata";
+
     @LastModifiedDate
     @Column(name = "updated_at")
     private Instant updatedAt;

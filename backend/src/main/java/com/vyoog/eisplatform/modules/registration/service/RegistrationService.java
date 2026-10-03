@@ -191,6 +191,8 @@ public class RegistrationService {
             subscription.setOwnerType(RegistrationOwnerType.ORGANIZATION);
             subscription.setOwnerOrganizationId(organization.getId());
             subscription.setStatus(SubscriptionStatus.PENDING_SUBSCRIPTION);
+            // REQ-SUB-003 (C63) default: seats start at the organization's licensed seats.
+            subscription.setQuantity(Math.max(1, Math.min(SubscriptionSeatService.MAX_SEATS, organization.getLicensedSeats())));
             subscriptionRepository.save(subscription);
         }
 

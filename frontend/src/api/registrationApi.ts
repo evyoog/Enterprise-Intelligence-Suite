@@ -89,6 +89,21 @@ export interface Subscription {
   /** 07.01.02 Change plan (sprint 2026.4.3) — null means the product's flat price. */
   planId?: number
   planName?: string
+  /** REQ-SUB-003: seats (1 for individual subscriptions). */
+  quantity?: number
+  /** REQ-SUB-004: renewed automatically on `expiresAt`. */
+  autoRenew?: boolean
+}
+
+/** REQ-SUB-003 (C63): an organization subscription's seats. */
+export interface SeatSummary {
+  subscriptionId: number
+  productName: string | null
+  quantity: number
+  inUse: number
+  minimum: number
+  organizationSeatLimit: number
+  maximum: number
 }
 
 export interface OrgMember {
@@ -181,4 +196,9 @@ export const organizationApi = {
     apiRequest<OrgMember>(`/organization/me/members/${memberId}/access-review`, { method: 'POST' }),
   listMyOrgProducts: () => apiRequest<OrgProductAccess[]>('/organization/me/products'),
   listMyOrgSubscription: () => apiRequest<Subscription[]>('/organization/me/subscription'),
+  // REQ-SUB-003 (C63) — MANAGE_ORGANIZATION.
+  listOrganizationSubscriptions: () => apiRequest<Subscription[]>('/organization/me/subscriptions'),
+  seats: (subscriptionId: number) => apiRequest<SeatSummary>(`/organization/me/subscriptions/${subscriptionId}/seats`),
+  changeSeats: (subscriptionId: number, quantity: number) =>
+    apiRequest<SeatSummary>(`/organization/me/subscriptions/${subscriptionId}/seats`, { method: 'PATCH', body: JSON.stringify({ quantity }) }),
 }

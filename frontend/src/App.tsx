@@ -1,3 +1,5 @@
+import { AdminApiKeysPage } from './pages/admin/AdminApiKeysPage'
+import { AdminPlatformEventsPage } from './pages/admin/AdminPlatformEventsPage'
 import { Box, CircularProgress } from '@mui/material'
 import { BrowserRouter, Navigate, Outlet, Route, Routes } from 'react-router-dom'
 import { HomePage } from './pages/HomePage'
@@ -176,6 +178,8 @@ function MainApp() {
             <Route path="billing" element={<AdminBillingPage />} />
             <Route path="billing/payment-gateway" element={<AdminPaymentGatewayPage />} />
             <Route path="billing/settings" element={<AdminBillingSettingsPage />} />
+            <Route path="integrations/events" element={<AdminPlatformEventsPage />} />
+            <Route path="integrations/api-keys" element={<AdminApiKeysPage />} />
           </Route>
         </Route>
       </Routes>

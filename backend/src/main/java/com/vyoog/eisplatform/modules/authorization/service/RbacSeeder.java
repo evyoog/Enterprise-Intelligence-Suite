@@ -86,7 +86,10 @@ public class RbacSeeder implements ApplicationRunner {
             // subscriptions, billing, support, reviews) — its own permission
             // since being able to SEE a cross-domain summary is distinct
             // from being able to manage any one of those domains.
-            "VIEW_PLATFORM_DASHBOARD")
+            "VIEW_PLATFORM_DASHBOARD",
+            // REQ-INT-001/REQ-INT-002 (C61, C62): platform events and API-key
+            // administration.
+            "MANAGE_INTEGRATIONS")
     );
 
     private static final Map<String, List<String>> ORGANIZATION_ROLES = Map.of(

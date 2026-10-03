@@ -24,6 +24,15 @@ public interface ProductSubscriptionRepository extends JpaRepository<ProductSubs
      * {@code SubscriptionExpiryJob} needs to flip to EXPIRED. */
     List<ProductSubscription> findByStatusAndExpiresAtBefore(SubscriptionStatus status, Instant instant);
 
+    /** REQ-SUB-004: the hourly expiry only expires subscriptions that do not auto-renew. */
+    List<ProductSubscription> findByStatusAndAutoRenewFalseAndExpiresAtBefore(SubscriptionStatus status, Instant instant);
+
+    /** REQ-SUB-004.2: auto-renewing subscriptions whose renewal date has come. */
+    List<ProductSubscription> findByStatusAndAutoRenewTrueAndExpiresAtLessThanEqual(SubscriptionStatus status, Instant instant);
+
+    /** REQ-SUB-004.6: subscriptions renewing within a window (reminder candidates). */
+    List<ProductSubscription> findByStatusAndExpiresAtBetween(SubscriptionStatus status, Instant from, Instant to);
+
     /** Platform admin dashboard (C53): subscriptions by status, platform-wide. */
     long countByStatus(SubscriptionStatus status);
 }

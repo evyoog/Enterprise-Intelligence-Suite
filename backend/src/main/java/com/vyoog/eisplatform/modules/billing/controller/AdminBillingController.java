@@ -73,6 +73,19 @@ public class AdminBillingController {
     }
 
     /** C60: business profile (invoice issuer) and invoicing rules. */
+    /** REQ-SUB-004.4/.5 (C64): platform renewal reminder defaults. */
+    @GetMapping("/settings/renewal-reminders")
+    public com.vyoog.eisplatform.modules.billing.dto.RenewalReminderDefaultsDto renewalReminderDefaults() {
+        return billingSettingsService.renewalReminderDefaults();
+    }
+
+    @PutMapping("/settings/renewal-reminders")
+    public com.vyoog.eisplatform.modules.billing.dto.RenewalReminderDefaultsDto saveRenewalReminderDefaults(
+            @AuthenticationPrincipal Jwt jwt,
+            @Valid @RequestBody com.vyoog.eisplatform.modules.billing.dto.SaveRenewalReminderDefaultsRequest request) {
+        return billingSettingsService.saveRenewalReminderDefaults(currentCustomerResolver.resolveOptional(jwt).map(c -> c.getId()).orElse(null), request);
+    }
+
     @GetMapping("/settings/business")
     public BusinessProfileDto businessProfile() {
         return billingSettingsService.businessProfile();

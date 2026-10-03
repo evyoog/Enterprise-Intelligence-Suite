@@ -16,6 +16,16 @@ vi.mock('../auth/AuthModalContext', () => ({
   useAuthModal: () => ({ openLogin: vi.fn(), openRegister: vi.fn() }),
 }))
 
+vi.mock('../api/renewalsApi', () => ({
+  renewalsApi: {
+    preferences: vi.fn().mockResolvedValue({
+      enabled: true, daysBefore: null, sendTime: null, effectiveDaysBefore: 7, effectiveSendTime: '09:00',
+      effectiveTimeZone: 'Asia/Kolkata', platformDaysBefore: 7, platformSendTime: '09:00', minDays: 1, maxDays: 30,
+    }),
+  },
+  adminRenewalsApi: {},
+}))
+
 vi.mock('../api/productsApi', () => ({
   productsApi: { list: vi.fn().mockResolvedValue([]) },
 }))

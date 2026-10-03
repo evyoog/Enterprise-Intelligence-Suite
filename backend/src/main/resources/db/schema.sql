@@ -358,6 +358,10 @@ CREATE TABLE product_subscription (
     plan_id BIGINT REFERENCES product_plans(id),
     started_at TIMESTAMP,
     expires_at TIMESTAMP,
+    -- REQ-SUB-003 (C63): seats of an organization subscription; 1 for individuals.
+    quantity INT NOT NULL DEFAULT 1 CHECK (quantity BETWEEN 1 AND 100000),
+    -- REQ-SUB-004 (C64): renewed automatically on expires_at.
+    auto_renew BOOLEAN NOT NULL DEFAULT TRUE,
     created_at TIMESTAMP NOT NULL DEFAULT now(),
     updated_at TIMESTAMP NOT NULL DEFAULT now(),
     CONSTRAINT chk_subscription_owner CHECK (
@@ -925,6 +929,10 @@ CREATE TABLE billing_settings (
     checkout_display_name VARCHAR(100),
     checkout_description VARCHAR(255),
     checkout_theme_color VARCHAR(7),
+    -- REQ-SUB-004 (C64): renewal reminder defaults (proposed defaults — confirm).
+    reminder_lead_days INT NOT NULL DEFAULT 7 CHECK (reminder_lead_days BETWEEN 1 AND 30),
+    reminder_send_time VARCHAR(5) NOT NULL DEFAULT '09:00',
+    reminder_time_zone VARCHAR(64) NOT NULL DEFAULT 'Asia/Kolkata',
     updated_at TIMESTAMP NOT NULL DEFAULT now(),
     updated_by_customer_id BIGINT REFERENCES customer(id)
 );
@@ -961,3 +969,70 @@ CREATE TABLE cart_item (
     CONSTRAINT uq_cart_item_product UNIQUE (cart_id, product_id)
 );
 CREATE INDEX idx_cart_item_cart ON cart_item (cart_id);
+
+-- REQ-INT-002 (C62): platform events — transactional outbox and handler receipts.
+CREATE TABLE outbox_event (
+    id BIGSERIAL PRIMARY KEY,
+    event_id VARCHAR(36) NOT NULL UNIQUE,
+    event_type VARCHAR(100) NOT NULL,
+    aggregate_type VARCHAR(100) NOT NULL,
+    aggregate_id VARCHAR(100) NOT NULL,
+    occurred_at TIMESTAMP NOT NULL,
+    payload TEXT NOT NULL,
+    status VARCHAR(20) NOT NULL DEFAULT 'PENDING' CHECK (status IN ('PENDING', 'DELIVERED', 'FAILED')),
+    attempts INT NOT NULL DEFAULT 0,
+    next_attempt_at TIMESTAMP,
+    last_error VARCHAR(1000),
+    delivered_at TIMESTAMP,
+    created_at TIMESTAMP NOT NULL DEFAULT now()
+);
+CREATE INDEX idx_outbox_event_status_next ON outbox_event (status, next_attempt_at);
+CREATE INDEX idx_outbox_event_aggregate ON outbox_event (aggregate_type, aggregate_id, occurred_at);
+CREATE INDEX idx_outbox_event_type ON outbox_event (event_type);
+
+CREATE TABLE event_handler_receipt (
+    id BIGSERIAL PRIMARY KEY,
+    handler_name VARCHAR(100) NOT NULL,
+    event_id VARCHAR(36) NOT NULL,
+    processed_at TIMESTAMP NOT NULL DEFAULT now(),
+    CONSTRAINT uq_event_handler_receipt UNIQUE (handler_name, event_id)
+);
+
+-- REQ-INT-001 (C61): API keys. Only the prefix and SHA-256 hash are stored.
+CREATE TABLE api_key (
+    id BIGSERIAL PRIMARY KEY,
+    owner_customer_id BIGINT NOT NULL REFERENCES customer(id),
+    owner_keycloak_sub VARCHAR(255) NOT NULL,
+    owner_authorities VARCHAR(1000),
+    name VARCHAR(100) NOT NULL,
+    key_prefix VARCHAR(20) NOT NULL UNIQUE,
+    key_hash VARCHAR(64) NOT NULL UNIQUE,
+    expires_at TIMESTAMP,
+    revoked_at TIMESTAMP,
+    last_used_at TIMESTAMP,
+    request_count BIGINT NOT NULL DEFAULT 0,
+    created_at TIMESTAMP NOT NULL DEFAULT now()
+);
+CREATE INDEX idx_api_key_owner ON api_key (owner_customer_id);
+
+-- REQ-SUB-004 (C64): renewal reminder settings per user and the sent-reminder log.
+CREATE TABLE renewal_reminder_preference (
+    id BIGSERIAL PRIMARY KEY,
+    customer_id BIGINT NOT NULL UNIQUE REFERENCES customer(id),
+    enabled BOOLEAN NOT NULL DEFAULT TRUE,
+    days_before INT CHECK (days_before BETWEEN 1 AND 30),
+    send_time VARCHAR(5),
+    updated_at TIMESTAMP NOT NULL DEFAULT now()
+);
+
+CREATE TABLE renewal_reminder_log (
+    id BIGSERIAL PRIMARY KEY,
+    subscription_id BIGINT NOT NULL REFERENCES product_subscription(id),
+    recipient_customer_id BIGINT NOT NULL REFERENCES customer(id),
+    local_date DATE NOT NULL,
+    renewal_date TIMESTAMP NOT NULL,
+    days_before INT NOT NULL,
+    sent_at TIMESTAMP NOT NULL DEFAULT now(),
+    CONSTRAINT uq_renewal_reminder_log UNIQUE (subscription_id, recipient_customer_id, local_date)
+);
+CREATE INDEX idx_renewal_reminder_log_subscription ON renewal_reminder_log (subscription_id);

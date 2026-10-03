@@ -43,6 +43,7 @@ public class OfflinePaymentService {
     private final CustomerRepository customerRepository;
     private final NotificationService notificationService;
     private final AuditService auditService;
+    private final PaymentEvents paymentEvents;
 
     @Transactional
     public InvoiceDto recordOfflinePayment(Long adminCustomerId, Long invoiceId, RecordOfflinePaymentRequest request) {
@@ -84,6 +85,7 @@ public class OfflinePaymentService {
         payment = paymentRepository.save(payment);
 
         invoiceService.markPaid(invoice);
+        paymentEvents.captured(payment);
         auditService.recordSuccess("OFFLINE_PAYMENT_RECORDED", null, adminCustomerId, null,
             "Payment", payment.getId().toString(), invoice.getOwnerOrganizationId(),
             "Offline payment " + request.method() + " ref " + payment.getOfflineReference()

@@ -10,6 +10,7 @@ import { mfaApi, type MfaStatus } from '../api/mfaApi'
 import { sessionsApi, type SessionInfo } from '../api/sessionsApi'
 import { PageHeader } from '../components/layout/PageHeader'
 import { PrivilegedAccessRequestsCard } from '../components/security/PrivilegedAccessRequestsCard'
+import { ApiKeysSection } from '../components/security/ApiKeysSection'
 
 type EnrollStep = 'password' | 'scan' | 'recoveryCodes'
 type ManageAction = 'disable' | 'regenerate'
@@ -342,6 +343,9 @@ export function SecuritySettingsPage() {
 
         {/* Sprint 2026.3.3, REQ-IAM-004: request elevated access and see your own requests. */}
         <PrivilegedAccessRequestsCard />
+
+        {/* REQ-INT-001 (C61): the user's own API keys. */}
+        <ApiKeysSection />
       </Box>
     </Box>
   )

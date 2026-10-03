@@ -39,6 +39,11 @@ function renderAt(path: string) {
   )
 }
 
+// Role queries over the full MUI sidebar take ~0.5–1 s locally and longer on
+// CI runners, past Testing Library's 1 s default wait, so the sidebar
+// queries below wait up to 5 s.
+const SIDEBAR_WAIT = { timeout: 5000 }
+
 const signedIn = (isAdmin: boolean, logout = vi.fn()) =>
   mockUseAuth.mockReturnValue({ isAuthenticated: true, isAdmin, user: { username: 'ada@example.com' }, logout })
 
@@ -69,7 +74,7 @@ describe('Public website vs signed-in tool', () => {
 
     expect(screen.getByText('Dashboard (in app)')).toBeInTheDocument()
     const sidebar = screen.getByRole('navigation', { name: 'Application' })
-    expect(await within(sidebar).findByRole('link', { name: 'Identity federation' })).toBeInTheDocument()
+    expect(await within(sidebar).findByRole('link', { name: 'Identity federation' }, SIDEBAR_WAIT)).toBeInTheDocument()
     expect(within(sidebar).getByRole('link', { name: 'Business dashboard' })).toHaveAttribute('aria-current', 'page')
     expect(within(sidebar).queryByRole('link', { name: 'Registrations' })).not.toBeInTheDocument()
   })
@@ -81,7 +86,7 @@ describe('Public website vs signed-in tool', () => {
 
     expect(screen.getByText('Admin home (in app)')).toBeInTheDocument()
     const sidebar = screen.getByRole('navigation', { name: 'Application' })
-    expect(await within(sidebar).findByRole('link', { name: 'Registrations' })).toBeInTheDocument()
+    expect(await within(sidebar).findByRole('link', { name: 'Registrations' }, SIDEBAR_WAIT)).toBeInTheDocument()
     expect(within(sidebar).queryByRole('link', { name: 'Roles' })).not.toBeInTheDocument()
     expect(within(sidebar).queryByRole('link', { name: 'My products' })).not.toBeInTheDocument()
   })
@@ -113,7 +118,8 @@ describe('Public website vs signed-in tool', () => {
     signedIn(true)
     getPermissions.mockResolvedValue({ platform: ['MANAGE_CATALOG'], organization: [] })
     const { container } = renderAt('/admin')
-    await screen.findByRole('link', { name: 'Platforms' })
+    const sidebar = screen.getByRole('navigation', { name: 'Application' })
+    await within(sidebar).findByRole('link', { name: 'Platforms' }, SIDEBAR_WAIT)
     expect(await axe(container)).toHaveNoViolations()
-  })
+  }, 20000)
 })

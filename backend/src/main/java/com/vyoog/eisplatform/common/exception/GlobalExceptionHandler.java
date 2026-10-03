@@ -117,6 +117,13 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.CONFLICT).body(body);
     }
 
+    @ExceptionHandler(InvalidStateException.class)
+    public ResponseEntity<Map<String, Object>> handleInvalidState(InvalidStateException ex) {
+        Map<String, Object> body = body(HttpStatus.CONFLICT, ex.getMessage());
+        body.put("code", "INVALID_STATE");
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(body);
+    }
+
     @ExceptionHandler(CartConflictException.class)
     public ResponseEntity<Map<String, Object>> handleCartConflict(CartConflictException ex) {
         Map<String, Object> body = body(HttpStatus.CONFLICT, ex.getMessage());

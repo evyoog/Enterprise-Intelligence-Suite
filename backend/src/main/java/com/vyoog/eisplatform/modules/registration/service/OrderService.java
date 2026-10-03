@@ -4,6 +4,8 @@ import com.vyoog.eisplatform.common.exception.ForbiddenException;
 import com.vyoog.eisplatform.common.exception.ResourceNotFoundException;
 import com.vyoog.eisplatform.modules.audit.service.AuditService;
 import com.vyoog.eisplatform.modules.authorization.service.AuthorizationService;
+import com.vyoog.eisplatform.modules.integration.service.OutboxService;
+import com.vyoog.eisplatform.modules.integration.service.PlatformEventTypes;
 import com.vyoog.eisplatform.modules.notification.model.NotificationCategory;
 import com.vyoog.eisplatform.modules.notification.model.NotificationSeverity;
 import com.vyoog.eisplatform.modules.notification.service.NotificationService;
@@ -25,7 +27,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Instant;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * 09 Order & Provisioning Management (sprint 2027.1.1), organization
@@ -58,6 +62,8 @@ public class OrderService {
     private final SubscriptionService subscriptionService;
     private final NotificationService notificationService;
     private final AuditService auditService;
+    /** REQ-INT-002 (C62): OrderApproved. */
+    private final OutboxService outboxService;
 
     /** Same shape as {@code OrganizationSelfService#resolveMembership} —
      * duplicated rather than shared, matching this module's existing
@@ -146,6 +152,13 @@ public class OrderService {
 
         auditService.recordSuccess("ORDER_APPROVED", null, customerId, null,
             "Order", orderId.toString(), admin.getOrganizationId(), "Order approved and provisioned");
+        Map<String, Object> payload = new LinkedHashMap<>();
+        payload.put("orderId", order.getId());
+        payload.put("organizationId", order.getOrganizationId());
+        payload.put("productId", order.getProductId());
+        payload.put("planId", order.getPlanId());
+        payload.put("decidedByCustomerId", customerId);
+        outboxService.publish(PlatformEventTypes.ORDER_APPROVED, PlatformEventTypes.AGGREGATE_ORDER, order.getId(), payload);
         notifyRequester(order, "Order approved", "Your order has been approved and provisioned.");
 
         return toDto(order);

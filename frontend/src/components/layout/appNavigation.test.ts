@@ -46,7 +46,8 @@ describe('buildAppNavigation', () => {
     const nav = keys(buildAppNavigation({ isAdmin: true, permissions: null }))
     expect(nav.administration).toEqual([
       'platformDashboard', 'platforms', 'apps', 'registrations', 'privilegedAccess', 'roles', 'permissions', 'auditLog',
-      'adminServiceStatus', 'adminKnowledgeBase', 'adminSupportTickets', 'adminReviews', 'adminPartners', 'adminBilling', 'settings',
+      'adminServiceStatus', 'adminKnowledgeBase', 'adminSupportTickets', 'adminReviews', 'adminPartners', 'adminBilling', 'adminIntegrations',
+      'settings',
     ])
   })
 

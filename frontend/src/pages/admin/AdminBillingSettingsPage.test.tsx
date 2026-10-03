@@ -14,6 +14,14 @@ const paymentMethodSettings = vi.fn()
 const savePaymentMethodSettings = vi.fn()
 const gatewayStatus = vi.fn()
 
+vi.mock('../../api/renewalsApi', () => ({
+  renewalsApi: {},
+  adminRenewalsApi: {
+    defaults: () => Promise.resolve({ daysBefore: 7, sendTime: '09:00', timeZone: 'Asia/Kolkata' }),
+    saveDefaults: vi.fn(),
+  },
+}))
+
 vi.mock('../../api/billingApi', async () => {
   const actual = await vi.importActual<typeof import('../../api/billingApi')>('../../api/billingApi')
   return {

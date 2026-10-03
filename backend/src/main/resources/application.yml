@@ -171,6 +171,24 @@ app:
   # Local disk for now — fine for a single instance; would need a shared store
   # (e.g. S3) behind a load balancer with more than one app instance.
   file-upload-dir: ${UPLOAD_DIR:./uploads/products}
+  # REQ-INT-002 (C62): the outbox dispatcher. Engineering defaults until the
+  # FRD's open questions are answered (10 attempts, doubling from 30 s,
+  # capped at 6 h; delivered events kept 30 days).
+  events:
+    dispatcher:
+      enabled: ${EVENTS_DISPATCHER_ENABLED:true}
+      interval-ms: 5000
+      batch-size: 100
+      max-attempts: 10
+      initial-delay-seconds: 30
+      max-delay-seconds: 21600
+    retention-days: 30
+  # REQ-INT-001 (C61): requests per minute, fixed windows, per backend
+  # instance. Engineering defaults until the FRD's open question 2 is answered.
+  rate-limit:
+    per-key: 120
+    per-user: 300
+    per-ip: 60
 
 # OpenAPI / Swagger 
 springdoc:

@@ -49,6 +49,11 @@ public class PermissionAuthorizationManagerFactory {
             }
             List<GrantedAuthority> authorities = List.copyOf(auth.getAuthorities());
             List<String> authorityNames = authorities.stream().map(GrantedAuthority::getAuthority).toList();
+            // C61 (REQ-INT-001 BR-3): platform administration is never granted
+            // to an API key, not even through an active privileged-access grant.
+            if (auth.getPrincipal() instanceof Jwt keyJwt && keyJwt.hasClaim("api_key_id")) {
+                return new AuthorizationDecision(false);
+            }
             String keycloakSub = auth.getPrincipal() instanceof Jwt jwt ? jwt.getSubject() : null;
             boolean granted = authorizationService.hasPlatformPermission(authorityNames, permissionName)
                 || privilegedAccessService.hasActivePlatformGrant(keycloakSub, permissionName);

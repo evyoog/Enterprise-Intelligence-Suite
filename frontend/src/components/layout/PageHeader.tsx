@@ -19,7 +19,7 @@ interface PageHeaderProps {
 }
 
 export type PageArea = 'catalog' | 'settings' | 'workspace' | 'organization' | 'accessControl' | 'administration' | 'content'
-  | 'support' | 'operations' | 'partners' | 'billing' | 'compliance' | 'product' | 'account' | 'help'
+  | 'support' | 'operations' | 'partners' | 'billing' | 'compliance' | 'product' | 'account' | 'help' | 'integrations'
 
 /**
  * The shared page header used across the signed-in tool (Phase 23). C60

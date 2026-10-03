@@ -24,6 +24,9 @@ public interface OrganizationMemberRepository extends JpaRepository<Organization
      * submits an order for their organization. */
     List<OrganizationMember> findByOrganizationIdAndOrgRoleAndStatus(Long organizationId, OrgRole orgRole, MembershipStatus status);
 
+    /** REQ-SUB-004: the organizations a customer administers (renewal recipients). */
+    List<OrganizationMember> findByCustomerIdAndOrgRoleAndStatus(Long customerId, OrgRole orgRole, MembershipStatus status);
+
     /** A person can belong to at most one organization today (no multi-org
      * membership in this phase) — used to resolve "which org is the caller
      * an ORG_ADMIN of" from their own customer id. */
