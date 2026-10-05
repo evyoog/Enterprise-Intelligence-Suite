@@ -1,0 +1,83 @@
+{
+  "family": "enterprise-intelligence-suite",
+  "executionRoleArn": "arn:aws:iam::152109410658:role/ecsTaskExecutionRole",
+  "networkMode": "bridge",
+  "requiresCompatibilities": ["EC2"],
+  "runtimePlatform": {
+    "cpuArchitecture": "ARM64",
+    "operatingSystemFamily": "LINUX"
+  },
+  "cpu": "1024",
+  "memory": "1200",
+  "volumes": [
+    {
+      "name": "eVyoog",
+      "host": { "sourcePath": "/home/ec2-user/eVyoog/" }
+    }
+  ],
+  "containerDefinitions": [
+    {
+      "name": "backend",
+      "image": "152109410658.dkr.ecr.ap-south-1.amazonaws.com/enterprise-intelligence-suite:backend",
+      "essential": true,
+      "cpu": 768,
+      "memory": 900,
+      "portMappings": [
+        { "containerPort": 8081, "protocol": "tcp" }
+      ],
+      "environment": [
+        { "name": "SERVER_PORT", "value": "8081" },
+        { "name": "JAVA_TOOL_OPTIONS", "value": "-Xmx600m -XX:MaxRAMPercentage=70" },
+        { "name": "SPRING_PROFILES_ACTIVE", "value": "prod" },
+        { "name": "CORS_ORIGINS", "value": "https://eis.evyoog.com" },
+        { "name": "FRONTEND_URL", "value": "https://eis.evyoog.com" },
+        { "name": "BACKEND_URL", "value": "https://eis.evyoog.com/api" },
+        { "name": "SSO_COOKIE_DOMAIN", "value": ".evyoog.com" },
+        { "name": "AUTH_COOKIE_SECURE", "value": "true" }
+      ],
+      "logConfiguration": {
+        "logDriver": "awslogs",
+        "options": {
+          "awslogs-group": "/ecs/enterprise-intelligence-suite",
+          "awslogs-create-group": "true",
+          "awslogs-region": "ap-south-1",
+          "awslogs-stream-prefix": "backend"
+        }
+      }
+    },
+    {
+      "name": "frontend",
+      "image": "152109410658.dkr.ecr.ap-south-1.amazonaws.com/enterprise-intelligence-suite:latest",
+      "essential": true,
+      "cpu": 256,
+      "memory": 200,
+      "links": ["backend"],
+      "dependsOn": [
+        { "containerName": "backend", "condition": "START" }
+      ],
+      "portMappings": [
+        {
+          "containerPort": 8080,
+          "hostPort": 8100,
+          "protocol": "tcp"
+        }
+      ],
+      "environment": [
+        { "name": "BACKEND_HOST", "value": "backend" },
+        { "name": "BACKEND_PORT", "value": "8081" }
+      ],
+      "mountPoints": [
+        { "sourceVolume": "eVyoog", "containerPath": "/opt/eVyoog", "readOnly": false }
+      ],
+      "logConfiguration": {
+        "logDriver": "awslogs",
+        "options": {
+          "awslogs-group": "/ecs/enterprise-intelligence-suite",
+          "awslogs-create-group": "true",
+          "awslogs-region": "ap-south-1",
+          "awslogs-stream-prefix": "frontend"
+        }
+      }
+    }
+  ]
+}
