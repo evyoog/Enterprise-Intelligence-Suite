@@ -9,6 +9,7 @@ This folder holds the delivery roadmap for the EIS (PaaS) platform. It is built 
 | [`roadmap.csv`](roadmap.csv) | The 16 EIS roadmap rows, in the column layout of the **Roadmap** sheet in [`../planning-roadmap-template.xlsx`](../planning-roadmap-template.xlsx) |
 | [`open-decisions.md`](open-decisions.md) | Conflicts and gaps in the sources that affect the EIS sprints, and the decisions needed before sprint scope is final |
 | [`EIS-document-analysis.md`](EIS-document-analysis.md) | The full analysis of the three source documents and all 18 workbook sheets |
+| [`project-status-report.md`](project-status-report.md) | Verified project status (2026-10-05): completed / partial / not started, gaps, FRD status, decisions, questions, Gantt chart, roadmap and completion % |
 
 ## Conventions
 - **PI:** `YYYY.Quarter`, for example `2026.3`.
