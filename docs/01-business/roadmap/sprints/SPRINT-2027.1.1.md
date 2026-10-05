@@ -36,15 +36,22 @@
 | Added | [C56](../open-decisions.md#c56) Provisioning contract (answer to D6, option B): EIS notifies each hosted product of subscription start, suspension, resumption and cancellation; the product creates or changes the tenant and reports back. FRD is a documents-only stub; the delivery mechanism (D13 events or D19 webhooks) is not decided | [provisioning-contract](../../../02-requirements/FRD/provisioning-contract/requirement.md) | REQ-ORD-002 |
 | Decided | [C58](../open-decisions.md#c58) Vector store for 11.01.02 AI Knowledge: **pgvector** in the existing PostgreSQL database. Embedding model Not specified (depends on D8, LLM provider). 11.01.02 stays carried until D8 is decided; no FRD change yet | - | - |
 | Decided | [C65](../open-decisions.md#c65) (D16) Who manages an organization's subscriptions: organization admins by default, delegable through the new *Manage subscriptions* feature permission. Covers 09.02.01.02/.04/.05 (configure, suspend, deprovision an organization subscription) — the gap C38/C39 carry. Draft; build waits for approval | [access-management](../../../02-requirements/FRD/access-management/requirement.md) | REQ-TEN-005.4 |
+| Specified (Draft) | [C71](../open-decisions.md#c71)–[C77](../open-decisions.md#c77) (2026-10-05) Knowledge Center and Knowledge Management CMS: knowledge-base update (REQ-KNW-001.7–.11), content types and publishing workflow, private S3 media (D23 → [C72](../open-decisions.md#c72)), videos (YouTube, S3, external URL), Knowledge Center reader pages, analytics, AI assistant prepared (not built until D8), knowledge permissions. Documents only; nothing built until the product owner replies "Approved" per FRD. This sprint's dates are unchanged | [knowledge-base](../../../02-requirements/FRD/knowledge-base/requirement.md), [knowledge-content](../../../02-requirements/FRD/knowledge-content/requirement.md), [knowledge-media](../../../02-requirements/FRD/knowledge-media/requirement.md), [knowledge-videos](../../../02-requirements/FRD/knowledge-videos/requirement.md), [knowledge-center](../../../02-requirements/FRD/knowledge-center/requirement.md), [knowledge-analytics](../../../02-requirements/FRD/knowledge-analytics/requirement.md), [knowledge-permissions](../../../02-requirements/FRD/knowledge-permissions/requirement.md) | REQ-KNW-001 (update), REQ-KNW-002–006, REQ-KNW-008 |
 
 ### FRDs in this sprint
 
 | FRD | Requirement | Functions | Status |
 |---|---|---|---|
 | [order-lifecycle](../../../02-requirements/FRD/order-lifecycle/requirement.md) | REQ-ORD-001 | 09.01.01, 09.02.01 (folded into approval), 09.04.01 (single-hop) | Approved |
-| [knowledge-base](../../../02-requirements/FRD/knowledge-base/requirement.md) | REQ-KNW-001 | 11.01.01 (11.01.02 AI Knowledge carried) | Approved |
+| [knowledge-base](../../../02-requirements/FRD/knowledge-base/requirement.md) | REQ-KNW-001 | 11.01.01 (11.01.02 AI Knowledge carried) | Approved (update REQ-KNW-001.7–.11: Specified (Draft) 2026-10-05) |
 | [provisioning-contract](../../../02-requirements/FRD/provisioning-contract/requirement.md) | REQ-ORD-002 | 09.02.01 (provision, activate, suspend, deprovision — contract only) | Draft (stub) |
 | [access-management](../../../02-requirements/FRD/access-management/requirement.md) | REQ-TEN-005 (.4 only here) | 09.02.01.02/.04/.05 — who may configure, suspend, cancel an organization subscription | Draft — waits for approval |
+| [knowledge-content](../../../02-requirements/FRD/knowledge-content/requirement.md) | REQ-KNW-002 | 11.01.01 (content types, workflow, versions) | Specified (Draft) 2026-10-05 — waits for approval |
+| [knowledge-media](../../../02-requirements/FRD/knowledge-media/requirement.md) | REQ-KNW-003 | 11.01.01 (documents, images, templates in private S3) | Specified (Draft) 2026-10-05 — waits for approval |
+| [knowledge-videos](../../../02-requirements/FRD/knowledge-videos/requirement.md) | REQ-KNW-004 | 11.01.01 / 11.03.02 (video library; watch progress with 11b) | Specified (Draft) 2026-10-05 — waits for approval |
+| [knowledge-center](../../../02-requirements/FRD/knowledge-center/requirement.md) | REQ-KNW-005 | 11.01.01 (reader pages) | Specified (Draft) 2026-10-05 — waits for approval |
+| [knowledge-analytics](../../../02-requirements/FRD/knowledge-analytics/requirement.md) | REQ-KNW-006 | 11.01.01 (views, feedback, search gaps) | Specified (Draft) 2026-10-05 — waits for approval |
+| [knowledge-permissions](../../../02-requirements/FRD/knowledge-permissions/requirement.md) | REQ-KNW-008 | 11.01.01 (contributor / publisher) | Specified (Draft) 2026-10-05 — waits for approval |
 
 ### Progress (as of 2026-09-28)
 

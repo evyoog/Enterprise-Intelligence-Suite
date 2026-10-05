@@ -105,6 +105,8 @@ AI required: decided in the feature FRD ([C12](../open-decisions.md#c12)). [WB:F
 
 ## 02.04 Product Content
 
+[C72](../open-decisions.md#c72) (2026-10-05): D23 answered — private AWS S3 with presigned URLs for knowledge media. Whether 02.04 Product Content also uses it is Not specified.
+
 ### Feature 02.04.01 Product Documentation
 
 AI required: decided in the feature FRD ([C12](../open-decisions.md#c12)). [WB:Features] flag, informational only: No.

@@ -47,6 +47,7 @@
 | Not built | [C41](../open-decisions.md#c41) 15b Policy Management & Compliance — 15.02's priority is Not specified in any source; needs its own general policy-engine scoping decision |
 | Decided | [C58](../open-decisions.md#c58) Vector store for semantic search (01.03.01.02): **pgvector** in the existing PostgreSQL database. Embedding model Not specified (depends on D8, LLM provider). Semantic search stays carried until D8 is decided; no FRD change yet | - | - |
 | Decided | [C70](../open-decisions.md#c70) (2026-10-05) Keyword search improved (exact phrase, English/Spanish word forms, partial words, typos, exact IDs, ranking, highlighting, "Did you mean", suggestions, Ctrl/Cmd+K, re-indexing, rebuild, insights, synonyms) and semantic search (01.03.01.02, hybrid with pgvector, open-source multilingual model in ai-service, public content only). Built early on 2026-10-05; this sprint's dates are unchanged | [global-search](../../../02-requirements/FRD/global-search/requirement.md), [semantic-search](../../../02-requirements/FRD/semantic-search/requirement.md) | REQ-PRT-002, REQ-PRT-003 |
+| Specified (Draft) | [C75](../open-decisions.md#c75)–[C77](../open-decisions.md#c77) (2026-10-05) Knowledge Center parts that belong here: video learning (11.03.02 watch progress, REQ-KNW-004), Academy (11b, built only if the product owner confirms — otherwise data model and navigation prepared), knowledge search extension (new types, transcripts, chapters, audience filter before ranking — [C76](../open-decisions.md#c76), reuses REQ-PRT-002/003), AI Knowledge Assistant contract (REQ-KNW-007, not built until D8, with 04b/12.02). Documents only; this sprint's dates are unchanged | [knowledge-videos](../../../02-requirements/FRD/knowledge-videos/requirement.md), [knowledge-center](../../../02-requirements/FRD/knowledge-center/requirement.md), [knowledge-assistant](../../../02-requirements/FRD/knowledge-assistant/requirement.md) | REQ-KNW-004, REQ-KNW-005, REQ-KNW-007 |
 
 ### FRDs in this sprint
 
@@ -54,6 +55,7 @@
 |---|---|---|---|
 | [global-search](../../../02-requirements/FRD/global-search/requirement.md) | REQ-PRT-002 | 01.03.01.01, .03–.05 (C70 improvements REQ-PRT-002.5–.17) | Approved (C70 additions approved 2026-10-05) |
 | [semantic-search](../../../02-requirements/FRD/semantic-search/requirement.md) | REQ-PRT-003 | 01.03.01.02 | Approved (2026-10-05, C70) |
+| [knowledge-assistant](../../../02-requirements/FRD/knowledge-assistant/requirement.md) | REQ-KNW-007 | 11.01.02 / 12.02.01 (prepared; answers need D8) | Specified (Draft) 2026-10-05 — waits for approval |
 | [product-reviews](../../../02-requirements/FRD/product-reviews/requirement.md) | REQ-MKT-002 | 03.04.01 | Approved |
 
 ### Progress (as of 2026-09-28)
