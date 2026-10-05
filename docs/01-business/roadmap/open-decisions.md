@@ -585,6 +585,22 @@ Screen: [business-dashboard.md](../../05-ui/screen-requirements/business-dashboa
 
 **Reason:** the dashboard should answer "what is happening and what needs me" at a glance; detailed administration belongs in its own module.
 
+### C70
+**Decision (product owner, 2026-10-05) — Build keyword and semantic search now; FRDs approved:** improved keyword search ([REQ-PRT-002](../../02-requirements/FRD/global-search/requirement.md)) and semantic search ([REQ-PRT-003](../../02-requirements/FRD/semantic-search/requirement.md)) are built now, ahead of their planned sprint [2027.1.3](sprints/SPRINT-2027.1.3.md), whose dates do not change. Both FRDs are **Approved** with these defaults:
+- **Keyword engine:** PostgreSQL full-text search + `pg_trgm`.
+- **Semantic:** hybrid search with pgvector (as [C58](#c58)).
+- **Embedding model:** option B — an open-source multilingual model (English + Spanish) running in the existing `ai-service`. Which model is **Not specified**; the index uses 384-dimensional vectors. Any key or setting for the model goes only in `config/secrets.env` (template `config/secrets.env.example`, empty).
+- **Scope of semantic search:** public content only (catalog and documentation). User records (support tickets) use keyword search only.
+- **Typo threshold, chunk size, similarity threshold:** tuned with the test set and documented — [quality report](../../02-requirements/FRD/semantic-search/quality-report.md).
+- **No AI-written answers** above results (later).
+- **Rules:** sprint dates unchanged; documents of a changed feature updated in the same commit; existing search, filters, sort and history keep working; results filtered to what the user may see before ranking, with a test proving one organization never sees another's records; anything not in the prompt is written as Not specified.
+
+**Built (2026-10-05):** see the progress note on [SPRINT-2027.1.3](sprints/SPRINT-2027.1.3.md). Engineering defaults (Not specified in the prompt): the detailed specification `PROMPT-keyword-and-semantic-search.md` was not in the repository, and the product owner chose to build from the prompt alone; exact IDs are "#<number>"; "Did you mean" only when nothing matches, using words of public content only; a typo match needs every query word; up to 8 suggestions and 5 recent searches; searches count in history and insights only when the user runs them (Enter, a suggestion, "Did you mean", or arriving from the top bar); search-insight rows keep no user identity and have no retention limit; a new platform permission `MANAGE_SEARCH` (seeded for ADMIN) for rebuild, synonyms and insights; filters beyond type and paging beyond 50 results are Not specified.
+
+**Limitation:** no real embedding model could be downloaded (huggingface.co is blocked in the build environment). Every semantic test and the quality report use the `stub` test model (word hashing), so the pipeline, fallback and speed are verified but the quality of a real model is not; the similarity threshold and chunk size must be re-tuned when a model is chosen. D8 (LLM provider for agents) is unaffected.
+
+**Reason:** search is a daily tool for every user; ranking, word forms, typos and both languages make it useful now, and the semantic layer degrades to keyword search whenever the model is not there.
+
 ### DN-2 Sprint scope, length and dates
 **Decision:**
 - **Sprint length:** sprints are **calendar months**. Sprint `.1`, `.2` and `.3` are the first, second and third months of the PI's calendar quarter. Example: 2026.3.3 = 1–30 Sep 2026; 2026.4.1 = 1–31 Oct 2026.
@@ -682,6 +698,7 @@ These documents are **not** changed by this file. Update them to match:
 | C67 | Built 2026-10-03 (frontend only). Remaining: decide whether accent and formats should follow the user across devices (needs `customer_preferences` columns and an API change); route the screens that still format dates directly with `toLocale…` through the shared formatters; decide whether support replies need their own notification category |
 | C68 | Built 2026-10-03 (frontend layout only). Same remaining items as C67 |
 | C69 | Built 2026-10-03 (frontend only). Remaining: decide whether to record launch events (a small additive table and endpoint) so a launches-over-time chart and period filters can be shown with real data; an organization audit-log page for "View audit activity" |
+| C70 | Built 2026-10-05; FRDs REQ-PRT-002 (C70 additions) and REQ-PRT-003 Approved; screens, API, data model, test cases, application page 01 and sprint 2027.1.3 updated. Remaining: choose the embedding model, allow its download (huggingface.co) or provide it as a file, set `EMBEDDING_*` in config/secrets.env, rebuild with re-embed, re-run the quality report and re-tune the similarity threshold and chunk size; apply V020 to each database (pgvector may need to be enabled on RDS); decide a retention period for search insights |
 | C54 | The wider navigation-consolidation / shared `<DataTable>`/`<FilterBar>` pass ([C44](#c44)) would make the business dashboard's new click-to-filter table and sort behavior reusable elsewhere instead of page-local — still carried, same as before. `database/seed/README.md` now points to [docs/07-database/demo-data.md](../../07-database/demo-data.md) for exactly what `DemoDataSeeder` adds |
 
 **Done (2026-09-26), no longer follow-up:** C31 (sprint pages 2026.4.1 through 2027.2.2, and the "Sprint" field on application pages 02, 03, 04, 05, 10, 11, 12, 13, 15, all updated to the corrected sequence — this superseded the older "C21: add the general policy engine to `SPRINT-2027.2.2.md`" and "C16, C17: add the deferred functions to `SPRINT-2027.1.3.md`" rows, and the "C21: add the agent controls to `SPRINT-2027.1.2.md`" row, which are now folded into C31's own sprint pages); C32–C35 (FRDs written and Approved, sprint 2026.4.1 built, carry-over recorded on `SPRINT-2026.4.2.md`).

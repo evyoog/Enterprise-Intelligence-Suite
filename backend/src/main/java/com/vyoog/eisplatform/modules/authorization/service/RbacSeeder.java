@@ -89,7 +89,9 @@ public class RbacSeeder implements ApplicationRunner {
             "VIEW_PLATFORM_DASHBOARD",
             // REQ-INT-001/REQ-INT-002 (C61, C62): platform events and API-key
             // administration.
-            "MANAGE_INTEGRATIONS")
+            "MANAGE_INTEGRATIONS",
+            // C70: search index rebuild, synonyms and search insights.
+            "MANAGE_SEARCH")
     );
 
     private static final Map<String, List<String>> ORGANIZATION_ROLES = Map.of(

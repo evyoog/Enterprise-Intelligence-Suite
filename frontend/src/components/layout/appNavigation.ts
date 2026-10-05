@@ -2,7 +2,7 @@ import type { ComponentType } from 'react'
 import {
   Building2, KeyRound, LayoutDashboard, LayoutGrid, Layers, Package, ScrollText, Settings, ShieldCheck,
   SlidersHorizontal, Store, UserCheck, UserCog, UsersRound, Palette, Boxes, Activity, ClipboardList, BookOpen,
-  LifeBuoy, Star, Handshake, CreditCard, PlugZap, Landmark, Radio, Cable, Settings2,
+  LifeBuoy, Star, Handshake, CreditCard, PlugZap, Landmark, Radio, Cable, Settings2, SearchCheck,
 } from 'lucide-react'
 import type { MyPermissions } from '../../api/myPermissionsApi'
 
@@ -159,6 +159,10 @@ export function buildAppNavigation({ isAdmin, permissions }: NavAccess): AppNavS
         { key: 'adminApiKeys', labelKey: 'apiKeys', to: '/admin/integrations/api-keys', icon: KeyRound },
       ],
     })
+  }
+  // C70: search index status and rebuild, synonyms and search insights.
+  if (platform('MANAGE_SEARCH')) {
+    admin.push({ key: 'adminSearch', labelKey: 'searchAdmin', to: '/admin/search', icon: SearchCheck })
   }
   if (platform('MANAGE_CATALOG')) {
     admin.push({

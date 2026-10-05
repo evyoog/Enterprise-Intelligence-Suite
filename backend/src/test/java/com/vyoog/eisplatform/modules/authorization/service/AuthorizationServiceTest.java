@@ -48,11 +48,12 @@ class AuthorizationServiceTest {
         // 08 Billing & Payments (sprint 2026.4.3, C46): MANAGE_BILLING.
         // Platform admin dashboard (C53): VIEW_PLATFORM_DASHBOARD.
         // REQ-INT-001/REQ-INT-002 (C61, C62): MANAGE_INTEGRATIONS.
+        // C70: MANAGE_SEARCH (search index, synonyms, insights).
         assertThat(authorizationService.listPlatformPermissions(Set.of("ROLE_ADMIN")))
             .containsExactlyInAnyOrder("MANAGE_CATALOG", "MANAGE_REGISTRATIONS", "MANAGE_PRIVILEGED_ACCESS", "VIEW_AUDIT_LOG",
                 "MANAGE_ROLES", "MANAGE_PERMISSIONS", "MANAGE_SERVICE_STATUS", "MANAGE_PLATFORM_SETTINGS", "MANAGE_KNOWLEDGE_BASE",
                 "MANAGE_SUPPORT_TICKETS", "MANAGE_REVIEWS", "MANAGE_PARTNERS", "MANAGE_BILLING", "VIEW_PLATFORM_DASHBOARD",
-                "MANAGE_INTEGRATIONS");
+                "MANAGE_INTEGRATIONS", "MANAGE_SEARCH");
     }
 
     @Test

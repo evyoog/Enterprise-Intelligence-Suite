@@ -47,7 +47,7 @@ describe('buildAppNavigation', () => {
     expect(nav.administration).toEqual([
       'platformDashboard', 'platforms', 'apps', 'registrations', 'privilegedAccess', 'roles', 'permissions', 'auditLog',
       'adminServiceStatus', 'adminKnowledgeBase', 'adminSupportTickets', 'adminReviews', 'adminPartners', 'adminBilling', 'adminIntegrations',
-      'settings',
+      'adminSearch', 'settings',
     ])
   })
 

@@ -6,7 +6,8 @@
 # backend/src/main/resources/db/schema.sql. To re-initialise: docker compose down -v
 services:
   postgres:
-    image: postgres:16-alpine
+    # C70: PostgreSQL 16 with pgvector (semantic search); pg_trgm is included.
+    image: pgvector/pgvector:pg16
     environment:
       POSTGRES_DB: ${DB_NAME:-vyoog}
       POSTGRES_USER: ${DB_USER:-postgres}
@@ -27,6 +28,10 @@ services:
     build: ./ai-service
     ports:
       - "8000:8000"
+    # REQ-PRT-003: EMBEDDING_PROVIDER / EMBEDDING_MODEL come from config/secrets.env.
+    env_file:
+      - path: ./config/secrets.env
+        required: false
 
 volumes:
   eis-db:

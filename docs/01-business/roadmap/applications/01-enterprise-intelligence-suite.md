@@ -82,7 +82,7 @@ AI required: decided in the feature FRD ([C12](../open-decisions.md#c12)). [WB:F
 
 ### Feature 01.03.01 Unified Search
 
-AI required: decided in the feature FRD ([C12](../open-decisions.md#c12)). [WB:Features] flag, informational only: No.
+AI required: decided in the feature FRD ([C12](../open-decisions.md#c12)). [WB:Features] flag, informational only: No. [C70](../open-decisions.md#c70) (2026-10-05): keyword search improved ([REQ-PRT-002](../../../02-requirements/FRD/global-search/requirement.md)) and 01.03.01.02 Semantic search specified and built ([REQ-PRT-003](../../../02-requirements/FRD/semantic-search/requirement.md)), uses an open-source embedding model, no generated text. Both built early on 2026-10-05; planned sprint 2027.1.3 unchanged.
 
 | Function ID | Function (requirement candidate) | MVP | Priority | Phase | AI ([WB], info) | Actor | Suggested API | Primary API | Microservice | Entity | Event | Journey |
 |---|---|---|---|---|---|---|---|---|---|---|---|---|
@@ -137,12 +137,12 @@ Not specified in any source. Under [DN-2](../open-decisions.md#dn-2-sprint-scope
 | Feature FRD | `docs/02-requirements/FRD/<feature>/` (copy `_template/`) | See the sprint page for FRDs in progress |
 | Requirement | `REQ-PRT-<NNN>` inside the FRD | Approved FRD required before build ([DN-4](../open-decisions.md#dn-4-business-rules-and-acceptance-criteria)) |
 | Business rules | `docs/03-business-rules/` and `FRD/<feature>/business-rules.md` | Per FRD |
-| Test cases | `test-cases/functional/global-search/TC-PRT-001..004.md` | Created ([REQ-PRT-002](../../../02-requirements/FRD/global-search/requirement.md), sprint 2027.1.3, 01.03.01 minus semantic search) |
+| Test cases | `test-cases/functional/global-search/TC-PRT-001..004.md`, `TC-PRT-020..027.md`; `test-cases/functional/semantic-search/TC-PRT-028..031.md` | Created ([REQ-PRT-002](../../../02-requirements/FRD/global-search/requirement.md), [REQ-PRT-003](../../../02-requirements/FRD/semantic-search/requirement.md)); all automated tests passed 2026-10-05 |
 | NFRs | [WB:Non-Functional Requirements] NFR-001 to NFR-014 (platform-wide) | See [EIS-document-analysis.md](../EIS-document-analysis.md) section 2.17 |
 
 ## Related code already in this repository
 
 Observed on branch `dev`. This is a module-level mapping, not a verified function-by-function implementation status.
 
-- Backend: `backend/src/main/java/com/vyoog/eisplatform/modules/dashboard`, `backend/src/main/java/com/vyoog/eisplatform/modules/notification`, `backend/src/main/java/com/vyoog/eisplatform/modules/preference`, `backend/src/main/java/com/vyoog/eisplatform/modules/servicestatus`, `backend/src/main/java/com/vyoog/eisplatform/modules/search` (GlobalSearchService — 01.03.01 only, no semantic search)
-- Frontend: `frontend/src/pages/HomePage.tsx`, `frontend/src/pages/BusinessDashboardPage.tsx`, `frontend/src/pages/PreferencesPage.tsx`, `frontend/src/components/layout/NotificationBell.tsx`, `frontend/src/components/layout/SiteNavbar.tsx`, `frontend/src/components/layout/AppShell.tsx`, `frontend/src/components/layout/appNavigation.ts`, `frontend/src/pages/ServiceStatusPage.tsx`, `frontend/src/pages/admin/ServiceStatusAdminPage.tsx`, `frontend/src/api/serviceStatusApi.ts`, `frontend/src/pages/GlobalSearchPage.tsx`
+- Backend: `backend/src/main/java/com/vyoog/eisplatform/modules/dashboard`, `backend/src/main/java/com/vyoog/eisplatform/modules/notification`, `backend/src/main/java/com/vyoog/eisplatform/modules/preference`, `backend/src/main/java/com/vyoog/eisplatform/modules/servicestatus`, `backend/src/main/java/com/vyoog/eisplatform/modules/search` (01.03.01 including semantic search, C70: search index, keyword and hybrid engines, admin), `ai-service/app/embeddings.py` (embedding endpoint)
+- Frontend: `frontend/src/pages/HomePage.tsx`, `frontend/src/pages/BusinessDashboardPage.tsx`, `frontend/src/pages/PreferencesPage.tsx`, `frontend/src/components/layout/NotificationBell.tsx`, `frontend/src/components/layout/SiteNavbar.tsx`, `frontend/src/components/layout/AppShell.tsx`, `frontend/src/components/layout/appNavigation.ts`, `frontend/src/pages/ServiceStatusPage.tsx`, `frontend/src/pages/admin/ServiceStatusAdminPage.tsx`, `frontend/src/api/serviceStatusApi.ts`, `frontend/src/pages/GlobalSearchPage.tsx`, `frontend/src/components/layout/TopBarSearch.tsx`, `frontend/src/components/search/`, `frontend/src/pages/admin/AdminSearchPage.tsx`

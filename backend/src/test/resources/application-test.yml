@@ -69,6 +69,11 @@ app:
     per-key: 1000000
     per-user: 1000000
     per-ip: 1000000
+  # C70: no background index backfill or maintenance during tests; tests
+  # index explicitly.
+  search:
+    backfill-on-startup: false
+    maintenance-interval-ms: 86400000
 
 vyoog:
   keycloak:

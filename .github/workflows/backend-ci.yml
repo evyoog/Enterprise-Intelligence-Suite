@@ -15,6 +15,23 @@ defaults:
 jobs:
   build:
     runs-on: ubuntu-latest
+    # C70: PostgreSQL with pg_trgm and pgvector for the search integration
+    # tests (PostgresSearchIntegrationTest), which run when EIS_PG_TEST_URL is set.
+    services:
+      postgres:
+        image: pgvector/pgvector:pg16
+        env:
+          POSTGRES_DB: eis_search_test
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres -d eis_search_test"
+          --health-interval 5s
+          --health-retries 20
+    env:
+      EIS_PG_TEST_URL: jdbc:postgresql://localhost:5432/eis_search_test
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-java@v4

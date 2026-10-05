@@ -145,7 +145,7 @@ public class SecurityConfig {
                 // service itself to whichever customer the caller's own JWT
                 // resolves to (empty for a signed-out caller) — see
                 // GlobalSearchController's own doc.
-                .requestMatchers(HttpMethod.GET, "/search").permitAll()
+                .requestMatchers(HttpMethod.GET, "/search", "/search/suggest").permitAll()
                 .requestMatchers("/admin/knowledge-base/**").access(permissions.platformPermission("MANAGE_KNOWLEDGE_BASE"))
                 // 12.01 Ticket Management (sprint 2027.1.2): admin ticket actions.
                 // Creating/tracking a customer's own tickets is covered by the
@@ -201,6 +201,8 @@ public class SecurityConfig {
                 // REQ-INT-001/REQ-INT-002 (C61, C62): platform events and
                 // API-key administration — its own permission.
                 .requestMatchers("/admin/events/**", "/admin/api-keys/**").access(permissions.platformPermission("MANAGE_INTEGRATIONS"))
+                // C70: search index status and rebuild, synonyms and insights.
+                .requestMatchers("/admin/search/**").access(permissions.platformPermission("MANAGE_SEARCH"))
                 .requestMatchers("/admin/platform-dashboard/**").access(permissions.platformPermission("VIEW_PLATFORM_DASHBOARD"))
                 // Razorpay calls this directly — no Vyoog user token exists
                 // on that request. Trusted only via its own signature

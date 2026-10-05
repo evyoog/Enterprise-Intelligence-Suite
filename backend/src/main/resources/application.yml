@@ -189,6 +189,25 @@ app:
     per-key: 120
     per-user: 300
     per-ip: 60
+  # REQ-PRT-002 / REQ-PRT-003 (C70): keyword and semantic search. Threshold and
+  # chunk values are the ones chosen with the quality test set
+  # (docs/02-requirements/FRD/semantic-search/quality-report.md).
+  search:
+    backfill-on-startup: ${SEARCH_BACKFILL_ON_STARTUP:true}
+    result-limit: 50
+    typo-threshold: 0.4
+    correction-threshold: 0.45
+    maintenance-interval-ms: 60000
+    semantic:
+      # The embedding model's address is a model setting: it is set only in
+      # config/secrets.env (EMBEDDING_SERVICE_URL). Empty = keyword search only.
+      service-url: ${EMBEDDING_SERVICE_URL:}
+      timeout-ms: 400
+      similarity-threshold: 0.45
+      chunk-size: 600
+      chunk-overlap: 100
+      rrf-k: 60
+      candidates: 40
 
 # OpenAPI / Swagger 
 springdoc:

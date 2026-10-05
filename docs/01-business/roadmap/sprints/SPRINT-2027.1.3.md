@@ -46,12 +46,14 @@
 | Not built | [C41](../open-decisions.md#c41) 11b Learning & Certification — all P1/stretch, explicitly deferrable per this sprint's own note, no dependents |
 | Not built | [C41](../open-decisions.md#c41) 15b Policy Management & Compliance — 15.02's priority is Not specified in any source; needs its own general policy-engine scoping decision |
 | Decided | [C58](../open-decisions.md#c58) Vector store for semantic search (01.03.01.02): **pgvector** in the existing PostgreSQL database. Embedding model Not specified (depends on D8, LLM provider). Semantic search stays carried until D8 is decided; no FRD change yet | - | - |
+| Decided | [C70](../open-decisions.md#c70) (2026-10-05) Keyword search improved (exact phrase, English/Spanish word forms, partial words, typos, exact IDs, ranking, highlighting, "Did you mean", suggestions, Ctrl/Cmd+K, re-indexing, rebuild, insights, synonyms) and semantic search (01.03.01.02, hybrid with pgvector, open-source multilingual model in ai-service, public content only). Built early on 2026-10-05; this sprint's dates are unchanged | [global-search](../../../02-requirements/FRD/global-search/requirement.md), [semantic-search](../../../02-requirements/FRD/semantic-search/requirement.md) | REQ-PRT-002, REQ-PRT-003 |
 
 ### FRDs in this sprint
 
 | FRD | Requirement | Functions | Status |
 |---|---|---|---|
-| [global-search](../../../02-requirements/FRD/global-search/requirement.md) | REQ-PRT-002 | 01.03.01 (minus 01.03.01.02 semantic search) | Approved |
+| [global-search](../../../02-requirements/FRD/global-search/requirement.md) | REQ-PRT-002 | 01.03.01.01, .03–.05 (C70 improvements REQ-PRT-002.5–.17) | Approved (C70 additions approved 2026-10-05) |
+| [semantic-search](../../../02-requirements/FRD/semantic-search/requirement.md) | REQ-PRT-003 | 01.03.01.02 | Approved (2026-10-05, C70) |
 | [product-reviews](../../../02-requirements/FRD/product-reviews/requirement.md) | REQ-MKT-002 | 03.04.01 | Approved |
 
 ### Progress (as of 2026-09-28)
@@ -59,7 +61,7 @@
 | Feature | Status | Note |
 |---|---|---|
 | 01.02 Customer Dashboard | Done (pre-existing) | Already satisfied by `BusinessDashboardService`, built in earlier phases; "View spending" stays unavailable pending 08 Billing |
-| 01.03.01 Global Search | Partly done | Keyword/filter/sort/history built; semantic search carried — no embeddings/vector-store decision exists |
+| 01.03.01 Global Search | Done (built early, 2026-10-05) | Keyword search improved and semantic search built ([C70](../open-decisions.md#c70)); see the progress note below. The semantic part runs on the stub test model until a real model is configured |
 | 03.02 Product Evaluation | Not started | Carried — needs 10 Service & Resource Management to provision anything to trial against |
 | 03.04.01 Reviews & Ratings | Done (this FRD's scope) | Submit/rate/moderate/view all built; new product detail page |
 | 04b Customer-facing AI agents (whole application) | Not started | Carried — same agent/LLM framework gap as 04a |
@@ -67,7 +69,20 @@
 | 11b Learning & Certification (whole application) | Not started | Carried — all P1/stretch, explicitly deferrable, no dependents |
 | 15b Policy Management & Compliance (whole application) | Not started | Carried — needs its own general policy-engine scoping decision |
 
-01.03.01.02, 03.02, 04b, 12.02, 11b and 15b remain open for this sprint, each carried to a later one once the decision it needs is made.
+03.02, 04b, 12.02, 11b and 15b remain open for this sprint, each carried to a later one once the decision it needs is made. (01.03.01.02 was built early on 2026-10-05, C70.)
+
+### Keyword and semantic search (C70) — built early on 2026-10-05
+
+Built early on 2026-10-05, before this sprint starts (1–31 Mar 2027); the sprint's dates and scope are unchanged.
+
+| Item | Result |
+|---|---|
+| Commits | `COMMIT_PLACEHOLDER` |
+| What | Search index (`search_document`, V020) with automatic re-indexing and admin rebuild; keyword search: exact phrase, English/Spanish word forms, accents, partial words, typos, exact IDs, ranking, highlighting, "Did you mean", type filters, history with Clear, zero-result help; top-bar suggestions and Ctrl/Cmd+K; results page with match labels; semantic search: ai-service `/embed`, passages, pgvector HNSW, hybrid merge, keyword fallback; insights and synonyms (`/admin/search`, `MANAGE_SEARCH`) |
+| Quality (40 queries, EN + ES) | hit@5: before 20%, keyword 95%, hybrid 95% (stub model) — [quality report](../../../02-requirements/FRD/semantic-search/quality-report.md) |
+| Speed (13,036 records) | keyword p95 273.7 ms (target < 500), hybrid p95 291.9 ms (target < 800; stub model, a real model's own time not measured) |
+| Final values | typo threshold 0.4, "Did you mean" threshold 0.45, similarity threshold 0.45, chunk 600 characters with 100 overlap, k = 60 |
+| Not done | A real embedding model (not chosen, and huggingface.co is blocked in the build environment): semantic quality with a real model, re-tuning of similarity and chunk size, and the model's own latency |
 
 ## EIS 01b Enterprise Intelligence Suite: dashboard and search on live data
 
