@@ -1,6 +1,6 @@
 # API — Knowledge Center and Knowledge Management (Draft)
 
-**Status:** Draft (2026-10-05) for [REQ-KNW-002](../../02-requirements/FRD/knowledge-content/requirement.md)–[REQ-KNW-008](../../02-requirements/FRD/knowledge-permissions/requirement.md). Not built. Conventions as existing EIS APIs: context path `/api` (shown without it), `/v1/...` alias, errors `{ timestamp, status, error, message, code? }`, pages `{ items, totalElements, page, size }`.
+**Status:** Built 2026-10-05 ([C78](../../01-business/roadmap/open-decisions.md#c78)) for [REQ-KNW-002](../../02-requirements/FRD/knowledge-content/requirement.md)–[REQ-KNW-008](../../02-requirements/FRD/knowledge-permissions/requirement.md). Controllers: `KnowledgeCenterController` (`/knowledge`), `KnowledgePersonalController` (`/me/knowledge`), `AdminKnowledgeController`, `AdminKnowledgeMediaController`, `AdminKnowledgeVideoController` (`/admin/knowledge/**`). Conventions as existing EIS APIs: context path `/api` (shown without it), `/v1/...` alias, errors `{ timestamp, status, error, message, code? }`, pages `{ items, totalElements, page, size }`.
 
 Permissions: **R** reader (BR-KVS-001; Public allowed signed out if confirmed), **C** contributor (`KNOWLEDGE_CONTRIBUTE`), **P** publisher (`MANAGE_KNOWLEDGE_BASE`), **A** ADMIN (all). Admin endpoints live under `/admin/knowledge/**` (the prompt's `/api/knowledge/...` names adapted to the EIS reader/admin split).
 
@@ -84,5 +84,23 @@ Old endpoints kept (REQ-KNW-001.8): `GET /knowledge-base/articles`, `GET /knowle
 |---|---|---|---|
 | POST | `/knowledge/assistant/ask` | R | 501 `ASSISTANT_NOT_CONFIGURED` until D8 |
 
+## Built differently or in addition (2026-10-05)
+| Method | Path | Notes |
+|---|---|---|
+| GET | `/knowledge/search?q=&type=` | Knowledge search (instead of a `scope` on `/search`): platform index for public items + visible restricted items; logged with scope KNOWLEDGE |
+| GET | `/knowledge/faqs?product=&module=` | FAQs with answers |
+| GET | `/me/knowledge` | Personal panel (continue, recently viewed, bookmarks) |
+| PUT / DELETE | `/me/knowledge/bookmarks/{contentId}`; PUT `/me/knowledge/progress/{contentId}` | |
+| GET | `/admin/knowledge/me` | `{ contributor, publisher, contentTypes }` for the UI (BR-KPRM-004) |
+| POST | `/admin/knowledge/content/{id}/unschedule` | Scheduled → Approved |
+| GET | `/admin/knowledge/media/storage` | `{ configured, provider, max sizes, allowed types }` — no credentials |
+| GET | `/admin/knowledge/media/{id}/preview-url` | Staff preview (short-lived GET) |
+| POST | `/admin/knowledge/videos/uploads/{mediaId}/complete-upload` | Completion of a video upload (the video content does not exist yet) |
+| GET | `/admin/knowledge/videos/{id}/preview-play-url` | Staff playback of any video |
+| GET | `/admin/knowledge/taxonomy` | Products with modules, and categories |
+| — | `/knowledge/media/{id}/download-url` | 404 unless a content item using the file is visible to the caller |
+
+Signed-out feedback answers 401 `SIGN_IN_REQUIRED`. Without storage configuration upload calls answer 503 `STORAGE_NOT_CONFIGURED`.
+
 ## Errors (friendly `message`, `code`)
-`INVALID_FILE_TYPE`, `FILE_TOO_LARGE`, `UPLOAD_URL_EXPIRED`, `UPLOAD_NOT_FOUND` (HEAD failed), `UPLOAD_MISMATCH`, `STORAGE_UNAVAILABLE`, `DUPLICATE_UPLOAD`, `UPLOAD_CANCELLED`, `PERMISSION_DENIED` (403), `NOT_FOUND` (404, also for not-visible content), `INVALID_STATE` (409), `IN_USE` (409 with `usedBy`), `YOUTUBE_NOT_FOUND`, `YOUTUBE_UNAVAILABLE`. Stack traces and AWS errors are logged server-side only.
+`INVALID_CONTENT` (400), `SIGN_IN_REQUIRED` (401), `STORAGE_NOT_CONFIGURED` (503), `ASSISTANT_NOT_CONFIGURED` (501), `INVALID_FILE_TYPE`, `FILE_TOO_LARGE`, `UPLOAD_URL_EXPIRED`, `UPLOAD_NOT_FOUND` (HEAD failed), `UPLOAD_MISMATCH`, `STORAGE_UNAVAILABLE`, `DUPLICATE_UPLOAD`, `UPLOAD_CANCELLED`, `PERMISSION_DENIED` (403), `NOT_FOUND` (404, also for not-visible content), `INVALID_STATE` (409), `IN_USE` (409 with `usedBy`), `YOUTUBE_NOT_FOUND`, `YOUTUBE_UNAVAILABLE`. Stack traces and AWS errors are logged server-side only.

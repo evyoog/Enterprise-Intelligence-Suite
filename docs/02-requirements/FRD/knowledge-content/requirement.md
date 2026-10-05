@@ -1,6 +1,6 @@
 # REQ-KNW-002 — Knowledge content model
 
-**Status:** Draft — waits for "Approved"
+**Status:** Approved (2026-10-05, [C78](../../../01-business/roadmap/open-decisions.md#c78)) — built early on 2026-10-05
 **Owner:** Product owner
 **Decisions:** [C71](../../../01-business/roadmap/open-decisions.md#c71), [C74](../../../01-business/roadmap/open-decisions.md#c74), [C77](../../../01-business/roadmap/open-decisions.md#c77)
 
@@ -65,3 +65,14 @@ One content model for every kind of knowledge: typed items with metadata, taxono
 | 3 | Is a separate Approval step needed, or does a publisher's approval equal publishing? (Prompt lists Review and Approval as separate states.) | No — confirm in review |
 | 4 | Who may set the review and expiry dates, and what happens at expiry beyond hiding (notify the author?) — Not specified. | No — confirm in review |
 | 5 | Feature taxonomy (below module): a free-text field or a managed list? Not specified. | No — confirm in review |
+
+
+## Answers applied on 2026-10-05 (C78)
+The product owner said "start develop the code" on 2026-10-05 without answering the open questions. The recommended answers were applied as defaults; each can still be changed.
+
+- 1. The 15 content types listed are used; COURSE is reserved for the Academy and not offered in the editor.
+- 2. The publisher chooses minor or major on publish (first publish is 1.0).
+- 3. Approval is a separate step (In review → Approved → Published/Scheduled).
+- 4. Contributors and publishers set review and expiry dates; expiry hides content (no notification yet — Not specified).
+- 5. Feature is free text; tags are free text (comma separated).
+- Readers always see the live published version; editing published content creates a draft while the published version stays live.

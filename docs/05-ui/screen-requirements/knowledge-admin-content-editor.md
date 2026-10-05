@@ -1,6 +1,6 @@
 # Knowledge Management — content editor
 
-**Status:** Draft (2026-10-05) — not built. Requirement: REQ-KNW-002.1–.8.
+**Status:** Built 2026-10-05 ([C78](../../01-business/roadmap/open-decisions.md#c78)) — `/knowledge-management/content/:id`. Requirement: REQ-KNW-002.1–.8.
 
 | Field | Value |
 |---|---|

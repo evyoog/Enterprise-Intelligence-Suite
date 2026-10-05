@@ -1,6 +1,6 @@
 # REQ-KNW-008 — Knowledge permissions
 
-**Status:** Draft — waits for "Approved"
+**Status:** Approved (2026-10-05, [C78](../../../01-business/roadmap/open-decisions.md#c78)) — built early on 2026-10-05
 **Owner:** Product owner
 **Decision:** [C71](../../../01-business/roadmap/open-decisions.md#c71)
 
@@ -46,3 +46,12 @@ Reuse: `MANAGE_KNOWLEDGE_BASE` already guards `/admin/knowledge-base/**` and is 
 | 3 | How does a platform admin give a knowledge role to a person? Today platform roles come only from Keycloak client roles; no EIS screen assigns a platform role to one person. Options: assign in Keycloak; add a per-person assignment to the Roles screen (new feature); use Privileged access requests. | Yes |
 | 4 | May organization admins publish content visible only to their own organization? Default: no. | No — default applies |
 | 5 | Can a contributor edit Published content (creating a new draft version), or only their own drafts? Not specified. | No — confirm in review |
+
+
+## Answers applied on 2026-10-05 (C78)
+The product owner said "start develop the code" on 2026-10-05 without answering the open questions. The recommended answers were applied as defaults; each can still be changed.
+
+- 1. Two permissions: contributor `KNOWLEDGE_CONTRIBUTE` (new) and publisher `MANAGE_KNOWLEDGE_BASE` (reused, no duplicate). ADMIN holds both.
+- 3. A person gets a knowledge role through a Keycloak client role mapped to a platform role holding the permission (no new per-person screen).
+- 4. Organization admins do not publish (default kept).
+- 5. A contributor may start a new draft of Published or Deprecated content; content in Review, Approved or Scheduled is read-only for contributors.

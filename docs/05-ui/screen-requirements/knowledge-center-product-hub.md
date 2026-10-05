@@ -1,6 +1,6 @@
 # Knowledge Center — product hub
 
-**Status:** Draft (2026-10-05) — not built. Requirement: REQ-KNW-005.11.
+**Status:** Built 2026-10-05 ([C78](../../01-business/roadmap/open-decisions.md#c78)) — `/knowledge/products/:slug`. Requirement: REQ-KNW-005.11.
 
 | Field | Value |
 |---|---|

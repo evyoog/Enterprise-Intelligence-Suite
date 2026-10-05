@@ -1,6 +1,6 @@
 # Knowledge Center — AI assistant panel (prepared)
 
-**Status:** Draft (2026-10-05) — not built. Requirement: REQ-KNW-007.
+**Status:** Built 2026-10-05 (C78) as "Coming soon" — answers wait for D8. Requirement: REQ-KNW-007.
 
 | Field | Value |
 |---|---|

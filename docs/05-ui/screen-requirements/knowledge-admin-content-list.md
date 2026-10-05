@@ -1,6 +1,6 @@
 # Knowledge Management — content list (per type)
 
-**Status:** Draft (2026-10-05) — not built. Requirement: REQ-KNW-002.
+**Status:** Built 2026-10-05 ([C78](../../01-business/roadmap/open-decisions.md#c78)) — `/knowledge-management/content`. Requirement: REQ-KNW-002.
 
 | Field | Value |
 |---|---|

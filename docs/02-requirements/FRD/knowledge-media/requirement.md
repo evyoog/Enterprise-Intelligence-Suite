@@ -1,6 +1,6 @@
 # REQ-KNW-003 — Knowledge media library and storage
 
-**Status:** Draft — waits for "Approved"
+**Status:** Approved (2026-10-05, [C78](../../../01-business/roadmap/open-decisions.md#c78)) — built early on 2026-10-05
 **Owner:** Product owner
 **Decisions:** [C72](../../../01-business/roadmap/open-decisions.md#c72) (D23 → A, AWS S3)
 
@@ -44,3 +44,15 @@ A media library for knowledge files (images, documents, PDFs, audio, templates; 
 | 4 | Multipart threshold (proposed 100 MB). | No — confirm in review |
 | 5 | Allowed file types (proposed list above). | No — confirm in review |
 | 6 | Virus/malware scanning of uploads: needed? which service? | No — confirm in review |
+
+
+## Answers applied on 2026-10-05 (C78)
+The product owner said "start develop the code" on 2026-10-05 without answering the open questions. The recommended answers were applied as defaults; each can still be changed.
+
+- 1. Maximum sizes (configurable, `eis.knowledge.*`): video 5 GB, document 100 MB, image 10 MB, audio 100 MB, subtitles 5 MB. URL expiry: upload 15 min, download 5 min, playback 1 hour.
+- 2. Replaced and deleted objects are deleted from the bucket; bucket versioning keeps the noncurrent version for the lifecycle period (90 days proposed in aws-s3.md).
+- 3. Bucket and region come from configuration (`EIS_KNOWLEDGE_BUCKET`, `EIS_KNOWLEDGE_REGION`); names per environment still to be given.
+- 4. Multipart above 100 MB, 100 MB parts.
+- 5. Allowed types as listed, **without SVG** (uploads never pass through the backend, so SVG cannot be sanitised).
+- 6. No virus scanning yet (separate decision).
+- Without storage configuration (`EIS_KNOWLEDGE_STORAGE_PROVIDER=none`, the default) uploads answer STORAGE_NOT_CONFIGURED; YouTube and external videos still work.

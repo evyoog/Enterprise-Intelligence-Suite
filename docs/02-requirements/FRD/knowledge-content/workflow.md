@@ -21,7 +21,7 @@ stateDiagram-v2
 
 | From | To | Actor | Rule | Side effects |
 |---|---|---|---|---|
-| Draft | In review | Contributor/publisher | Required fields valid | Audit; publishers notified (in-app, proposed) |
+| Draft | In review | Contributor/publisher | Required fields valid | Audit; publishers notified in-app — not built (Not specified, C78) |
 | In review | Approved / Draft | Publisher | BR-KPRM-002 | Audit |
 | Approved | Published / Scheduled | Publisher | BR-KCON-004 snapshot | Audit; search re-index |
 | Published | Deprecated / Archived | Publisher | — | Audit; deprecated shows a banner; archived leaves the index |

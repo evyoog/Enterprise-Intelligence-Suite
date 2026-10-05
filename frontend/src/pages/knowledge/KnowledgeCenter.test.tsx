@@ -10,6 +10,7 @@ import { KnowledgeHomePage } from './KnowledgeHomePage'
 import { KnowledgeItemPage } from './KnowledgeItemPage'
 import { KnowledgeSearchPage } from './KnowledgeSearchPage'
 import { KnowledgeFaqsPage, KnowledgeGlossaryPage } from './KnowledgeSectionPage'
+import { LegacyKnowledgeBaseRedirect } from './LegacyKnowledgeBaseRedirect'
 
 const api = {
   home: vi.fn(), releaseNotes: vi.fn(), personal: vi.fn(), get: vi.fn(), glossary: vi.fn(), search: vi.fn(), faqs: vi.fn(),
@@ -101,5 +102,15 @@ describe('Knowledge Center', () => {
     unmount()
     renderWithProviders(<KnowledgeGlossaryPage />)
     expect(await screen.findByText('Bill of materials')).toBeInTheDocument()
+  })
+
+  it('sends old Knowledge Base links to the Knowledge Center', async () => {
+    renderWithProviders(
+      <Routes>
+        <Route path="/knowledge-base" element={<LegacyKnowledgeBaseRedirect />} />
+        <Route path="/knowledge" element={<p>Center home</p>} />
+        <Route path="/knowledge/content/:id" element={<p>Article page</p>} />
+      </Routes>, { route: '/knowledge-base?article=12' })
+    expect(await screen.findByText('Article page')).toBeInTheDocument()
   })
 })

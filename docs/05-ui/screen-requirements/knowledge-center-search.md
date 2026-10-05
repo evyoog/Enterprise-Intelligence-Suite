@@ -1,6 +1,6 @@
 # Knowledge Center — search results
 
-**Status:** Draft (2026-10-05) — not built. Requirement: REQ-KNW-005.10, REQ-PRT-002/003.
+**Status:** Built 2026-10-05 ([C78](../../01-business/roadmap/open-decisions.md#c78)) — `/knowledge/search`. Requirement: REQ-KNW-005.10, REQ-PRT-002/003.
 
 | Field | Value |
 |---|---|

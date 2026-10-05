@@ -195,6 +195,52 @@ class KnowledgeContentServiceTest {
         assertThatThrownBy(() -> contentService.create(CONTRIBUTOR, route)).isInstanceOf(KnowledgeException.class);
     }
 
+    @Autowired
+    private KnowledgeTaxonomyService taxonomyService;
+    @Autowired
+    private KnowledgeSeeder seeder;
+    @Autowired
+    private com.vyoog.eisplatform.modules.knowledgebase.repository.KnowledgeArticleRepository articleRepository;
+    @Autowired
+    private com.vyoog.eisplatform.modules.knowledgebase.repository.KnowledgeProductRepository productRepository;
+    @Autowired
+    private com.vyoog.eisplatform.modules.knowledgebase.repository.KnowledgeModuleRepository moduleRepository;
+
+    @Test
+    void moduleInUseCannotBeDeletedOnlyDeactivated() {
+        Long product = productRepository.findBySlug("tharav").orElseThrow().getId();
+        var module = moduleRepository.findByProductIdOrderByDisplayOrderAscNameAsc(product).get(0);
+        KnowledgeContentRequest r = request(KnowledgeContentType.ARTICLE, "Uses a module", "x", KnowledgeAudience.PUBLIC,
+            null, product, module.getId(), null);
+        contentService.create(CONTRIBUTOR, r);
+        assertThatThrownBy(() -> taxonomyService.deleteModule(PUBLISHER, module.getId()))
+            .isInstanceOf(KnowledgeException.class).extracting("code").isEqualTo("IN_USE");
+        var saved = taxonomyService.saveModule(PUBLISHER, module.getId(),
+            new com.vyoog.eisplatform.modules.knowledgebase.dto.KnowledgeTaxonomyDto.ModuleRequest(product, module.getName(),
+                module.getSlug(), module.getDisplayOrder(), false));
+        assertThat(saved.active()).isFalse();
+    }
+
+    @Test
+    void existingArticlesKeepIdTitleBodyStatusAndVersion() {
+        var old = new com.vyoog.eisplatform.modules.knowledgebase.model.KnowledgeArticle();
+        old.setTitle("Legacy article");
+        old.setBody("Legacy body text");
+        old.setStatus(com.vyoog.eisplatform.modules.knowledgebase.model.ArticleStatus.PUBLISHED);
+        old.setVersion(4);
+        old.setBlocks(null);
+        old = articleRepository.save(old);
+        seeder.upgradeExistingArticles();
+        var upgraded = articleRepository.findById(old.getId()).orElseThrow();
+        assertThat(upgraded.getTitle()).isEqualTo("Legacy article");
+        assertThat(upgraded.getBody()).isEqualTo("Legacy body text");
+        assertThat(upgraded.getVersion()).isEqualTo(4);
+        assertThat(upgraded.getContentType()).isEqualTo(KnowledgeContentType.ARTICLE);
+        assertThat(upgraded.getCurrentVersionLabel()).isEqualTo("4.0");
+        assertThat(readerService.get(ANONYMOUS, String.valueOf(old.getId()), "m").blocks().get(0).get("text").asText())
+            .isEqualTo("Legacy body text");
+    }
+
     @Test
     void courseTypeWaitsForTheAcademy() {
         assertThatThrownBy(() -> contentService.create(CONTRIBUTOR,

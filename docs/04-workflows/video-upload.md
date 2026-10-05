@@ -1,6 +1,6 @@
 # Workflow — Video (and media) upload to S3
 
-**Status:** Draft (2026-10-05). [REQ-KNW-003](../02-requirements/FRD/knowledge-media/requirement.md), [REQ-KNW-004](../02-requirements/FRD/knowledge-videos/requirement.md), [aws-s3.md](../09-integrations/aws-s3.md).
+**Status:** Built 2026-10-05 ([C78](../01-business/roadmap/open-decisions.md#c78)); defined 2026-10-05). [REQ-KNW-003](../02-requirements/FRD/knowledge-media/requirement.md), [REQ-KNW-004](../02-requirements/FRD/knowledge-videos/requirement.md), [aws-s3.md](../09-integrations/aws-s3.md).
 
 ```mermaid
 sequenceDiagram

@@ -1,6 +1,6 @@
 # Integration — YouTube
 
-**Status:** Draft (2026-10-05, [C73](../01-business/roadmap/open-decisions.md#c73)). Used by [REQ-KNW-004](../02-requirements/FRD/knowledge-videos/requirement.md).
+**Status:** Built 2026-10-05 ([C78](../01-business/roadmap/open-decisions.md#c78)); defined 2026-10-05, [C73](../01-business/roadmap/open-decisions.md#c73)). Used by [REQ-KNW-004](../02-requirements/FRD/knowledge-videos/requirement.md).
 
 ## Fetch video details
 1. Parse the video id from `youtube.com/watch?v=`, `youtu.be/`, `youtube.com/embed/`, `youtube.com/shorts/` URLs (11 characters `[A-Za-z0-9_-]`); anything else → "This is not a YouTube video link."

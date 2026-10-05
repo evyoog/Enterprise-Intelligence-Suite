@@ -3,7 +3,7 @@
 **Status:** Approved
 **BRD:** Not specified
 **Owner:** Product owner
-**Approved by / on:** Product owner / 2026-09-28 ([C39](../../../01-business/roadmap/open-decisions.md#c39)) — the 2026-10-05 addition below (REQ-KNW-001.7–.11) is **Draft**, waiting for "Approved"
+**Approved by / on:** Product owner / 2026-09-28 ([C39](../../../01-business/roadmap/open-decisions.md#c39)) — the 2026-10-05 addition below (REQ-KNW-001.7–.11) approved 2026-10-05 ([C78](../../../01-business/roadmap/open-decisions.md#c78)) and built the same day
 
 | Field | Value |
 |---|---|
@@ -47,7 +47,7 @@ A platform-admin-managed set of knowledge articles (title + body), each with a p
 - New table `knowledge_article` ([V009](../../../../database/migrations/V009__order_lifecycle_knowledge_base.sql)).
 - New permission `MANAGE_KNOWLEDGE_BASE` (platform ADMIN).
 
-## Update 2026-10-05 — articles in the Knowledge Center content model (Draft, [C71](../../../01-business/roadmap/open-decisions.md#c71)–[C77](../../../01-business/roadmap/open-decisions.md#c77))
+## Update 2026-10-05 — articles in the Knowledge Center content model (Approved and built 2026-10-05, [C78](../../../01-business/roadmap/open-decisions.md#c78); [C71](../../../01-business/roadmap/open-decisions.md#c71)–[C77](../../../01-business/roadmap/open-decisions.md#c77))
 
 The Knowledge Center ([REQ-KNW-005](../knowledge-center/requirement.md)) and the content model ([REQ-KNW-002](../knowledge-content/requirement.md)) replace this feature's screens. Existing articles become one content type in the new model **with no loss of data or links**.
 

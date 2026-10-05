@@ -1,6 +1,6 @@
 # REQ-KNW-006 — Knowledge analytics
 
-**Status:** Draft — waits for "Approved"
+**Status:** Approved (2026-10-05, [C78](../../../01-business/roadmap/open-decisions.md#c78)) — built early on 2026-10-05
 **Owner:** Product owner
 
 | Field | Value |
@@ -29,3 +29,11 @@ Collect knowledge usage events and show them to publishers: views, video views a
 | 1 | Store the reader's user id on events (needed for "recently viewed" and progress), and for how long (retention)? | Yes |
 | 2 | Gap threshold and whether "no clicks" counts as a gap. | No — confirm in review |
 | 3 | Minimum votes for "lowest rated". | No — confirm in review |
+
+
+## Answers applied on 2026-10-05 (C78)
+The product owner said "start develop the code" on 2026-10-05 without answering the open questions. The recommended answers were applied as defaults; each can still be changed.
+
+- 1. Events store the organization id and a one-way hash of the reader for the 30-minute view rule; personal history (recently viewed, progress) is kept per customer. Retention Not specified (90 days proposed).
+- 2. Gap = a Knowledge Center search with zero results asked at least 5 times in the period.
+- 3. Lowest rated needs at least 5 votes.

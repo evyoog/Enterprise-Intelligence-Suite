@@ -1,6 +1,6 @@
 # REQ-KNW-004 — Knowledge video management
 
-**Status:** Draft — waits for "Approved"
+**Status:** Approved (2026-10-05, [C78](../../../01-business/roadmap/open-decisions.md#c78)) — built early on 2026-10-05
 **Owner:** Product owner
 **Decisions:** [C72](../../../01-business/roadmap/open-decisions.md#c72), [C73](../../../01-business/roadmap/open-decisions.md#c73)
 
@@ -47,3 +47,12 @@ Videos are first-class knowledge content (type VIDEO) from three sources — You
 | 3 | Automatic transcripts and thumbnails later: which service? | No |
 | 4 | Thumbnail for S3 videos when none is uploaded: generic placeholder (proposed)? | No — confirm in review |
 | 5 | Which external players are supported for EXTERNAL_URL (Vimeo, Wistia, plain MP4 link)? Not specified. | No — confirm in review |
+
+
+## Answers applied on 2026-10-05 (C78)
+The product owner said "start develop the code" on 2026-10-05 without answering the open questions. The recommended answers were applied as defaults; each can still be changed.
+
+- 1. oEmbed without a key; the Data API when `EIS_YOUTUBE_API_KEY` is set.
+- 3. Automatic transcripts and thumbnails are integration points only (buttons shown disabled).
+- 4. Hosted videos without an uploaded thumbnail show a dark placeholder with a play icon.
+- 5. External URLs must be https; MP4/WebM links play in the HTML5 player, others open in a new tab.

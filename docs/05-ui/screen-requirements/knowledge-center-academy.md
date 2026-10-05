@@ -1,6 +1,6 @@
 # Knowledge Center — Academy (only if confirmed)
 
-**Status:** Draft (2026-10-05) — not built. Requirement: REQ-KNW-005.22 (11b, sprint 2027.1.3, P1 stretch).
+**Status:** Prepared only (2026-10-05, C78) — the Academy is built only if confirmed (C77). Requirement: REQ-KNW-005.22 (11b, sprint 2027.1.3, P1 stretch).
 
 | Field | Value |
 |---|---|

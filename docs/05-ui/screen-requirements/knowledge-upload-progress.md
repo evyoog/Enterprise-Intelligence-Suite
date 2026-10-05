@@ -1,6 +1,6 @@
 # Knowledge Management — upload progress (component)
 
-**Status:** Draft (2026-10-05) — not built. Requirement: REQ-KNW-003.2–.3, REQ-KNW-004.5.
+**Status:** Built 2026-10-05 ([C78](../../01-business/roadmap/open-decisions.md#c78)) — `component UploadProgressCard`. Requirement: REQ-KNW-003.2–.3, REQ-KNW-004.5.
 
 | Field | Value |
 |---|---|

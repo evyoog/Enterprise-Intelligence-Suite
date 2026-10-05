@@ -1,6 +1,6 @@
 # REQ-KNW-005 — Knowledge Center (user side)
 
-**Status:** Draft — waits for "Approved"
+**Status:** Approved (2026-10-05, [C78](../../../01-business/roadmap/open-decisions.md#c78)) — built early on 2026-10-05
 **Owner:** Product owner
 **Decisions:** [C71](../../../01-business/roadmap/open-decisions.md#c71)–[C77](../../../01-business/roadmap/open-decisions.md#c77)
 
@@ -58,3 +58,17 @@ The existing `/knowledge-base` page becomes the **Knowledge Center**: a home wit
 | 5 | Error-code format across products (for example `EIS-PO-001`) and who owns the list. | No — confirm in review |
 | 6 | Signed-out feedback. | No — confirm in review |
 | 7 | "Difficulty" values for videos (proposed Beginner, Intermediate, Advanced). | No — confirm in review |
+
+
+## Answers applied on 2026-10-05 (C78)
+The product owner said "start develop the code" on 2026-10-05 without answering the open questions. The recommended answers were applied as defaults; each can still be changed.
+
+- 1. Signed-out visitors read Public content.
+- 2. Academy: data model prepared (tables `knowledge_course`, `knowledge_lesson`), navigation hidden; built in 2027.1.3 only if confirmed.
+- 3. Route `/knowledge`; `/knowledge-base` redirects.
+- 4. Recommendation ranking: product access first, then most recent, then most viewed.
+- 5. Error codes are free text in the ERROR_CODE type (format owner Not specified).
+- 6. Feedback needs a signed-in reader.
+- 7. Difficulty values Beginner, Intermediate, Advanced.
+- Audiences built: Public, Customer (signed in), Organization (listed organizations), Admin (knowledge staff), plus "restricted to product access". Developer and Partner audiences remain Not specified.
+- Restricted content is not put in the shared search index; it is searched only among items the reader may already see (C76).

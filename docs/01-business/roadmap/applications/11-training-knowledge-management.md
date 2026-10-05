@@ -35,7 +35,7 @@ MVP, priority and phase follow [C4](../open-decisions.md#c4), [C5](../open-decis
 
 ### Feature 11.01.01 Knowledge Articles
 
-[C71](../open-decisions.md#c71)–[C77](../open-decisions.md#c77) (2026-10-05): extended into the Knowledge Center and Knowledge Management CMS — REQ-KNW-001 update and REQ-KNW-002–006, 008 (Draft). Planned sprint 2027.1.1 unchanged.
+[C71](../open-decisions.md#c71)–[C77](../open-decisions.md#c77) (2026-10-05): extended into the Knowledge Center and Knowledge Management CMS — REQ-KNW-001 update and REQ-KNW-002–006, 008 — approved and built early on 2026-10-05 ([C78](../open-decisions.md#c78)). Planned sprint 2027.1.1 unchanged.
 
 AI required: decided in the feature FRD ([C12](../open-decisions.md#c12)). [WB:Features] flag, informational only: No.
 
@@ -49,7 +49,7 @@ AI required: decided in the feature FRD ([C12](../open-decisions.md#c12)). [WB:F
 
 ### Feature 11.01.02 AI Knowledge
 
-[C75](../open-decisions.md#c75)/[C76](../open-decisions.md#c76) (2026-10-05): retrieval reuses platform search (REQ-PRT-002/003); the AI assistant is specified in [knowledge-assistant](../../../02-requirements/FRD/knowledge-assistant/requirement.md) (Draft) and not built until D8.
+[C75](../open-decisions.md#c75)/[C76](../open-decisions.md#c76) (2026-10-05): retrieval reuses platform search (REQ-PRT-002/003); the AI assistant is specified in [knowledge-assistant](../../../02-requirements/FRD/knowledge-assistant/requirement.md) and built as "not configured" until D8 (2026-10-05).
 
 AI required: decided in the feature FRD ([C12](../open-decisions.md#c12)). [WB:Features] flag, informational only: Yes.
 
@@ -98,7 +98,7 @@ AI required: decided in the feature FRD ([C12](../open-decisions.md#c12)). [WB:F
 
 ### Feature 11.03.02 Video Learning
 
-[C73](../open-decisions.md#c73)/[C77](../open-decisions.md#c77) (2026-10-05): video library and watch progress specified in [knowledge-videos](../../../02-requirements/FRD/knowledge-videos/requirement.md) (Draft). Planned sprint 2027.1.3 unchanged.
+[C73](../open-decisions.md#c73)/[C77](../open-decisions.md#c77) (2026-10-05): video library and watch progress built early on 2026-10-05 ([knowledge-videos](../../../02-requirements/FRD/knowledge-videos/requirement.md), C78). Planned sprint 2027.1.3 unchanged.
 
 AI required: decided in the feature FRD ([C12](../open-decisions.md#c12)). [WB:Features] flag, informational only: No.
 
@@ -144,13 +144,13 @@ Not specified in any source. Under [DN-2](../open-decisions.md#dn-2-sprint-scope
 | Feature FRD | `docs/02-requirements/FRD/<feature>/` (copy `_template/`) | See the sprint page for FRDs in progress |
 | Requirement | `REQ-KNW-<NNN>` inside the FRD | Approved FRD required before build ([DN-4](../open-decisions.md#dn-4-business-rules-and-acceptance-criteria)) |
 | Business rules | `docs/03-business-rules/` and `FRD/<feature>/business-rules.md` | Per FRD |
-| Knowledge Center FRDs (2026-10-05, Draft) | [knowledge-content](../../../02-requirements/FRD/knowledge-content/requirement.md), [knowledge-media](../../../02-requirements/FRD/knowledge-media/requirement.md), [knowledge-videos](../../../02-requirements/FRD/knowledge-videos/requirement.md), [knowledge-center](../../../02-requirements/FRD/knowledge-center/requirement.md), [knowledge-analytics](../../../02-requirements/FRD/knowledge-analytics/requirement.md), [knowledge-assistant](../../../02-requirements/FRD/knowledge-assistant/requirement.md), [knowledge-permissions](../../../02-requirements/FRD/knowledge-permissions/requirement.md) (REQ-KNW-002–008) and REQ-KNW-001 update; inventory [knowledge-center-inventory.md](../../../08-architecture/knowledge-center-inventory.md) | Draft — documents only, each waits for "Approved" ([C71](../open-decisions.md#c71)–[C77](../open-decisions.md#c77)) |
-| Test cases | `test-cases/functional/knowledge-base/TC-KNW-001..006.md` | Created ([REQ-KNW-001](../../../02-requirements/FRD/knowledge-base/requirement.md), sprint 2027.1.1, 11.01.01 only) |
+| Knowledge Center FRDs (2026-10-05, Draft) | [knowledge-content](../../../02-requirements/FRD/knowledge-content/requirement.md), [knowledge-media](../../../02-requirements/FRD/knowledge-media/requirement.md), [knowledge-videos](../../../02-requirements/FRD/knowledge-videos/requirement.md), [knowledge-center](../../../02-requirements/FRD/knowledge-center/requirement.md), [knowledge-analytics](../../../02-requirements/FRD/knowledge-analytics/requirement.md), [knowledge-assistant](../../../02-requirements/FRD/knowledge-assistant/requirement.md), [knowledge-permissions](../../../02-requirements/FRD/knowledge-permissions/requirement.md) (REQ-KNW-002–008) and REQ-KNW-001 update; inventory [knowledge-center-inventory.md](../../../08-architecture/knowledge-center-inventory.md) | Approved and built early on 2026-10-05 ([C78](../open-decisions.md#c78)) |
+| Test cases | `test-cases/functional/knowledge-base/TC-KNW-001..006.md`; TC-KNW-007–054 in `test-cases/functional/knowledge-*/`; UAT `test-cases/UAT/knowledge/` | Created (REQ-KNW-001 to 008) |
 | NFRs | [WB:Non-Functional Requirements] NFR-001 to NFR-014 (platform-wide) | See [EIS-document-analysis.md](../EIS-document-analysis.md) section 2.17 |
 
 ## Related code already in this repository
 
 Observed on branch `dev`. This is a module-level mapping, not a verified function-by-function implementation status.
 
-- Backend: `backend/src/main/java/com/vyoog/eisplatform/modules/knowledgebase (KnowledgeArticle, KnowledgeArticleService, KnowledgeArticleController, AdminKnowledgeArticleController — 11.01.01 only, no AI indexing)`
-- Frontend: `frontend/src/pages/KnowledgeBasePage.tsx`, `frontend/src/pages/admin/AdminKnowledgeBasePage.tsx`
+- Backend: `backend/src/main/java/com/vyoog/eisplatform/modules/knowledgebase (KnowledgeArticle, KnowledgeArticleService, KnowledgeArticleController, AdminKnowledgeArticleController — 11.01.01 extended 2026-10-05: content model, workflow, versions, taxonomy, media (S3), videos, analytics, search source, assistant stub)`
+- Frontend: `frontend/src/pages/knowledge/` (Knowledge Center, `/knowledge`), `frontend/src/pages/knowledge-admin/` (Knowledge Management, `/knowledge-management`), `frontend/src/components/knowledge/`, `frontend/src/api/knowledgeApi.ts` (the old pages were replaced; their routes redirect)

@@ -1,11 +1,11 @@
 # Knowledge Center — home
 
-**Status:** Draft (2026-10-05) — not built. Requirement: REQ-KNW-005.1–.9.
+**Status:** Built 2026-10-05 ([C78](../../01-business/roadmap/open-decisions.md#c78)) — `/knowledge`. Requirement: REQ-KNW-005.1–.9.
 
 | Field | Value |
 |---|---|
-| Route | `/knowledge` (proposed; `/knowledge-base` redirects) |
-| Roles | Readers (Public signed out if confirmed) |
+| Route | `/knowledge` (`/knowledge-base` redirects) |
+| Roles | Readers (Public content also signed out) |
 
 ## Content
 | Area | Content |

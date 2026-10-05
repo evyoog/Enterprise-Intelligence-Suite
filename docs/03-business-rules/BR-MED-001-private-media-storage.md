@@ -1,6 +1,6 @@
 # BR-MED-001 — Private media storage
 
-**Status:** Draft (2026-10-05, [C72](../01-business/roadmap/open-decisions.md#c72)). Used by REQ-KNW-003 and REQ-KNW-004.
+**Status:** Built 2026-10-05 ([C78](../01-business/roadmap/open-decisions.md#c78)); defined 2026-10-05, [C72](../01-business/roadmap/open-decisions.md#c72)). Used by REQ-KNW-003 and REQ-KNW-004.
 
 1. Knowledge files live in a **private** S3 bucket: Block Public Access on, bucket owner enforced; objects are never made public.
 2. Uploads go **browser → S3** with a short-lived presigned PUT URL; downloads and playback go **S3 → browser** with a short-lived presigned GET URL issued only after authentication and authorization (BR-KVS-001). Large files never pass through the backend.

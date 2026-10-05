@@ -2,7 +2,7 @@
 
 | ID | Rule | Enforced in | Source |
 |----|------|-------------|--------|
-| BR-KCON-001 | A new item starts in Draft, version 0.1 (unpublished) — proposed. | backend | REQ-KNW-002.5 |
+| BR-KCON-001 | A new item starts in Draft, version 0.1 (unpublished); the first publish is 1.0 (applied 2026-10-05, C78). | backend | REQ-KNW-002.5 |
 | BR-KCON-002 | Allowed transitions only (see workflow); any other answers 409. | backend | REQ-KNW-002.5 |
 | BR-KCON-003 | Only Published items whose effective date has passed and whose expiry date has not, and whose audience includes the reader (BR-KVS-001), are shown to readers or indexed for search. | backend | REQ-KNW-002.9, .11 |
 | BR-KCON-004 | Publishing stores an immutable version snapshot (blocks and metadata); restoring copies a snapshot into a new draft and never changes history. | backend | REQ-KNW-002.6 |

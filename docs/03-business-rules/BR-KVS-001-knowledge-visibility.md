@@ -1,6 +1,6 @@
 # BR-KVS-001 — Knowledge audience and visibility
 
-**Status:** Draft (2026-10-05, [C71](../01-business/roadmap/open-decisions.md#c71), [C76](../01-business/roadmap/open-decisions.md#c76)). Used by REQ-KNW-002 to REQ-KNW-007 and by search (REQ-PRT-002/003).
+**Status:** Built 2026-10-05 ([C78](../01-business/roadmap/open-decisions.md#c78)); defined 2026-10-05, [C71](../01-business/roadmap/open-decisions.md#c71), [C76](../01-business/roadmap/open-decisions.md#c76)). Used by REQ-KNW-002 to REQ-KNW-007 and by search (REQ-PRT-002/003).
 
 A reader sees a knowledge item (and its media, video, download, search result, recommendation, analytics row or assistant source) only when **all** of these hold:
 1. The item is Published, its effective date has passed and its expiry date has not (BR-KCON-003).

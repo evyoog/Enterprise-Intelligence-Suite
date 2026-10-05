@@ -32,6 +32,14 @@ class YouTubeOembedTest {
             exchange.getResponseBody().write(body);
             exchange.close();
         });
+        server.createContext("/data", exchange -> {
+            byte[] body = ("{\"items\":[{\"snippet\":{\"title\":\"Inventory basics\",\"description\":\"Long text\","
+                + "\"channelTitle\":\"eVyoog\",\"thumbnails\":{\"high\":{\"url\":\"https://i.ytimg.com/vi/x/hq.jpg\"}}},"
+                + "\"contentDetails\":{\"duration\":\"PT4M5S\"}}]}").getBytes(StandardCharsets.UTF_8);
+            exchange.sendResponseHeaders(200, body.length);
+            exchange.getResponseBody().write(body);
+            exchange.close();
+        });
         server.start();
         base = "http://127.0.0.1:" + server.getAddress().getPort();
     }
@@ -55,6 +63,17 @@ class YouTubeOembedTest {
         assertThat(details.title()).isEqualTo("Inventory basics");
         assertThat(details.channel()).isEqualTo("eVyoog");
         assertThat(details.durationSeconds()).isNull();
+    }
+
+    @Test
+    void withAnApiKeyTheDataApiFillsDurationAndDescription() {
+        KnowledgeSettings settings = new KnowledgeSettings();
+        ReflectionTestUtils.setField(settings, "youtubeApiKey", "test-key");
+        ReflectionTestUtils.setField(settings, "youtubeTimeoutMs", 2000);
+        var details = new YouTubeVideoService(settings, base + "/oembed", base + "/data").fetchDetails("dQw4w9WgXcQ");
+        assertThat(details.source()).isEqualTo("DATA_API");
+        assertThat(details.durationSeconds()).isEqualTo(245);
+        assertThat(details.description()).isEqualTo("Long text");
     }
 
     @Test

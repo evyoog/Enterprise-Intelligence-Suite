@@ -231,6 +231,18 @@ class KnowledgeMediaAndVideoServiceTest {
     }
 
     @Test
+    void uploadsNeverCompletedAreRemovedByTheCleanupJob() {
+        KnowledgeMediaDtos.UploadTicket ticket = mediaService.requestUpload(CONTRIBUTOR,
+            new KnowledgeMediaDtos.UploadRequest("orphan.png", "image/png", 10L, KnowledgeMediaKind.IMAGE, productId, moduleId, null));
+        storage.put(ticket.objectKey(), 10L, "image/png");
+        assertThat(mediaService.cleanupOrphans(java.time.Instant.now())).isZero();
+        assertThat(mediaService.cleanupOrphans(java.time.Instant.now().plus(settings.getOrphanAfter()).plusSeconds(60)))
+            .isGreaterThanOrEqualTo(1);
+        assertThat(storage.objects).doesNotContainKey(ticket.objectKey());
+        assertThat(mediaService.get(ticket.mediaId(), true).status()).isEqualTo(KnowledgeMediaStatus.FAILED);
+    }
+
+    @Test
     void chaptersAndYouTubeLinksAreParsedStrictly() {
         assertThat(YouTubeVideoService.parseVideoId("https://www.youtube.com/watch?v=dQw4w9WgXcQ&list=x")).isEqualTo("dQw4w9WgXcQ");
         assertThat(YouTubeVideoService.parseVideoId("https://www.youtube.com/shorts/dQw4w9WgXcQ")).isEqualTo("dQw4w9WgXcQ");

@@ -1,6 +1,6 @@
 # Workflow — Knowledge content publishing
 
-**Status:** Draft (2026-10-05). [REQ-KNW-002](../02-requirements/FRD/knowledge-content/requirement.md), [REQ-KNW-008](../02-requirements/FRD/knowledge-permissions/requirement.md).
+**Status:** Built 2026-10-05 ([C78](../01-business/roadmap/open-decisions.md#c78)); defined 2026-10-05). [REQ-KNW-002](../02-requirements/FRD/knowledge-content/requirement.md), [REQ-KNW-008](../02-requirements/FRD/knowledge-permissions/requirement.md).
 
 ```mermaid
 stateDiagram-v2
@@ -21,7 +21,7 @@ stateDiagram-v2
 |---|---|---|
 | Save draft | Contributor, publisher | Version stays unpublished; audit KNOWLEDGE_CONTENT_EDITED |
 | Preview | Contributor, publisher | Renders with Knowledge Center components for a chosen audience |
-| Submit | Contributor, publisher | In review; publishers notified in-app (proposed) |
+| Submit | Contributor, publisher | In review; publishers notified in-app — not built (Not specified, C78) |
 | Approve / Return | Publisher | Audit; comment to the author on return |
 | Publish / Schedule | Publisher | Version snapshot (1.0, 1.1, 2.0); search re-index; audit KNOWLEDGE_CONTENT_PUBLISHED |
 | Deprecate / Archive | Publisher | Deprecated shows a banner; Archived leaves readers and search |

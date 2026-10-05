@@ -625,6 +625,18 @@ Screen: [business-dashboard.md](../../05-ui/screen-requirements/business-dashboa
 ### C77
 **Decision (product owner, 2026-10-05) — Knowledge Center placement and sprint dates:** the work belongs to application 11 (Knowledge Base, sprint [2027.1.1](sprints/SPRINT-2027.1.1.md); Learning, Training Delivery, Certification and video learning, sprint [2027.1.3](sprints/SPRINT-2027.1.3.md)) and to application 01 for search ([2027.1.3](sprints/SPRINT-2027.1.3.md)). **No sprint's planned dates change.** FRDs REQ-KNW-001 (update) to REQ-KNW-008 are written as **Draft** on 2026-10-05 (Phase 1, documents only); each is built only after the product owner replies "Approved" for it, and the affected sprint pages then get "Built early on <date>" notes with the commits. The Academy (11b, P1 stretch, C4/C5) is built only if the product owner confirms; otherwise its data model and navigation are prepared.
 
+### C78
+**Decision (product owner, 2026-10-05) — Knowledge Center FRDs approved: "start develop the code".** REQ-KNW-001 (update) and REQ-KNW-002 to REQ-KNW-008 are **Approved** and were built early on 2026-10-05 (commits `0ccbd12` and the docs commit that follows). The open questions were not answered, so the recommended answers were applied as defaults, each recorded in its FRD under "Answers applied on 2026-10-05"; the product owner can change any of them:
+- permissions: new `KNOWLEDGE_CONTRIBUTE` (contributor) and the existing `MANAGE_KNOWLEDGE_BASE` as publisher; a person gets them through a Keycloak client role mapped to a platform role; organization admins do not publish;
+- signed-out readers see Public content; route `/knowledge`; feedback needs sign-in;
+- upload limits video 5 GB, document 100 MB, image 10 MB, audio 100 MB; URL expiry upload 15 min, download 5 min, playback 1 h; multipart above 100 MB; SVG not accepted (cannot be sanitised); no virus scanning yet;
+- replaced/deleted objects deleted, bucket versioning keeps old versions (90 days proposed);
+- YouTube: oEmbed unless `EIS_YOUTUBE_API_KEY` is set; automatic transcripts and thumbnails are integration points only;
+- analytics: organization id plus a one-way reader hash on events, gap = ≥ 5 zero-result knowledge searches, lowest rated needs ≥ 5 votes;
+- Academy (11b): data model prepared only, navigation hidden, built only if confirmed (C77);
+- AI assistant: not built until D8; `ask` answers 501 ASSISTANT_NOT_CONFIGURED (C75).
+**Still Not specified:** bucket names and region per environment; retention periods for events and replaced files; Developer and Partner audiences; error-code format owner; expiry notifications; organization-authored content. **Limitation:** no real S3 bucket was available in the build environment, so uploads, downloads and playback were tested against an in-memory store and the real AWS SDK signer (offline); the UAT script [UAT-KNW-003](../../../test-cases/UAT/knowledge/UAT-KNW-003-videos-and-s3.md) needs a test bucket.
+
 ### DN-2 Sprint scope, length and dates
 **Decision:**
 - **Sprint length:** sprints are **calendar months**. Sprint `.1`, `.2` and `.3` are the first, second and third months of the PI's calendar quarter. Example: 2026.3.3 = 1–30 Sep 2026; 2026.4.1 = 1–31 Oct 2026.
@@ -723,13 +735,14 @@ These documents are **not** changed by this file. Update them to match:
 | C68 | Built 2026-10-03 (frontend layout only). Same remaining items as C67 |
 | C69 | Built 2026-10-03 (frontend only). Remaining: decide whether to record launch events (a small additive table and endpoint) so a launches-over-time chart and period filters can be shown with real data; an organization audit-log page for "View audit activity" |
 | C70 | Built 2026-10-05; FRDs REQ-PRT-002 (C70 additions) and REQ-PRT-003 Approved; screens, API, data model, test cases, application page 01 and sprint 2027.1.3 updated. Remaining: choose the embedding model, allow its download (huggingface.co) or provide it as a file, set `EMBEDDING_*` in config/secrets.env, rebuild with re-embed, re-run the quality report and re-tune the similarity threshold and chunk size; apply V020 to each database (pgvector may need to be enabled on RDS); decide a retention period for search insights |
-| C71 | FRD REQ-KNW-008 (Draft). Remaining: confirm the two permissions, the org-admin question and how a person is given a knowledge role; then build phase 1 |
-| C72 | FRD REQ-KNW-003, `docs/09-integrations/aws-s3.md` (Draft). Remaining: bucket names and region per environment, size limits, URL expiries, retention of replaced files; whether product images (02.04) move to S3 |
-| C73 | FRD REQ-KNW-004, `docs/09-integrations/youtube.md` (Draft). Remaining: YouTube Data API key or oEmbed only |
-| C74 | FRD REQ-KNW-002 (Draft): taxonomy tables and seed data |
-| C75 | FRD REQ-KNW-007 (Draft). Remaining: D8 |
-| C76 | FRDs REQ-KNW-005 search section, REQ-PRT-002/003 extension points (Draft) |
+| C71 | Built 2026-10-05 (C78 defaults). FRD REQ-KNW-008. Remaining: confirm the two permissions, the org-admin question and how a person is given a knowledge role; then build phase 1 |
+| C72 | Built 2026-10-05 (C78 defaults). FRD REQ-KNW-003, `docs/09-integrations/aws-s3.md`. Remaining: bucket names and region per environment, size limits, URL expiries, retention of replaced files; whether product images (02.04) move to S3 |
+| C73 | Built 2026-10-05 (oEmbed + optional key). FRD REQ-KNW-004, `docs/09-integrations/youtube.md`. Remaining: YouTube Data API key or oEmbed only |
+| C74 | Built 2026-10-05: taxonomy tables and seed data |
+| C75 | Built 2026-10-05 as "not configured". Remaining: D8 |
+| C76 | Built 2026-10-05: public knowledge of every type, transcripts and chapters in the platform index; restricted content searched among visible items only |
 | C77 | Sprint pages 2027.1.1 and 2027.1.3 (and 2026.4.1 for D23, 2027.1.2 for ticket prefill) note the Draft FRDs; dates unchanged. Remaining: "Approved" per FRD, then build phases with "Built early" notes |
+| C78 | Built 2026-10-05 (all knowledge FRDs Approved with default answers). Remaining: confirm or change the defaults; bucket names and region; retention periods; run UAT-KNW-001–004 with a test bucket |
 | C54 | The wider navigation-consolidation / shared `<DataTable>`/`<FilterBar>` pass ([C44](#c44)) would make the business dashboard's new click-to-filter table and sort behavior reusable elsewhere instead of page-local — still carried, same as before. `database/seed/README.md` now points to [docs/07-database/demo-data.md](../../07-database/demo-data.md) for exactly what `DemoDataSeeder` adds |
 
 **Done (2026-09-26), no longer follow-up:** C31 (sprint pages 2026.4.1 through 2027.2.2, and the "Sprint" field on application pages 02, 03, 04, 05, 10, 11, 12, 13, 15, all updated to the corrected sequence — this superseded the older "C21: add the general policy engine to `SPRINT-2027.2.2.md`" and "C16, C17: add the deferred functions to `SPRINT-2027.1.3.md`" rows, and the "C21: add the agent controls to `SPRINT-2027.1.2.md`" row, which are now folded into C31's own sprint pages); C32–C35 (FRDs written and Approved, sprint 2026.4.1 built, carry-over recorded on `SPRINT-2026.4.2.md`).

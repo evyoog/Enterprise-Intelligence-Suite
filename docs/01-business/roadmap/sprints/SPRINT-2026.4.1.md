@@ -31,7 +31,7 @@
 | Decided | [C66](../open-decisions.md#c66) UI/UX redesign with the Product Catalog as reference; catalog showcase fields (platform colour, catalog visibility and order; app accent colour, feature tags, documentation/support links); public catalog API | [catalog-showcase](../../../02-requirements/FRD/catalog-showcase/requirement.md) | REQ-CAT-003 |
 | Decided | [C67](../open-decisions.md#c67) Preferences page redesign: four sections, personal accent colour, date/time/week formats, notification email categories on the existing API; renewal reminders unchanged | - (screen spec [preferences](../../../05-ui/screen-requirements/preferences.md)) | - |
 | Decided | [C35](../open-decisions.md#c35) Groups: create/add/remove member; Projects (05.04.02) carried to 2026.4.2 | [group-management](../../../02-requirements/FRD/group-management/requirement.md) | REQ-TEN-003 |
-| Decided | [C72](../open-decisions.md#c72) (2026-10-05) D23 answered: file storage is a private AWS S3 bucket with presigned URLs, for knowledge media. 02.04 Product Content (still not started) is **not** moved by this decision — whether product images and datasheets also use S3 is Not specified. This sprint's dates are unchanged | - ([aws-s3](../../../09-integrations/aws-s3.md)) | - |
+| Decided | [C72](../open-decisions.md#c72) (2026-10-05) D23 answered: file storage is a private AWS S3 bucket with presigned URLs, for knowledge media (built 2026-10-05, C78). 02.04 Product Content (still not started) is **not** moved by this decision — whether product images and datasheets also use S3 is Not specified. This sprint's dates are unchanged | - ([aws-s3](../../../09-integrations/aws-s3.md)) | - |
 
 ### FRDs in this sprint
 

@@ -1,6 +1,6 @@
 # Knowledge Center — Developer Center
 
-**Status:** Draft (2026-10-05) — not built. Requirement: REQ-KNW-005.20.
+**Status:** Built 2026-10-05 ([C78](../../01-business/roadmap/open-decisions.md#c78)) — `/knowledge/developer`. Requirement: REQ-KNW-005.20.
 
 | Field | Value |
 |---|---|

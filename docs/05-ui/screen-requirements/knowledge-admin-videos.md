@@ -1,6 +1,6 @@
 # Knowledge Management — videos
 
-**Status:** Draft (2026-10-05) — not built. Requirement: REQ-KNW-004.2.
+**Status:** Built 2026-10-05 ([C78](../../01-business/roadmap/open-decisions.md#c78)) — `/knowledge-management/videos`. Requirement: REQ-KNW-004.2.
 
 | Field | Value |
 |---|---|

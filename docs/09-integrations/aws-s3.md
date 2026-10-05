@@ -1,6 +1,6 @@
 # Integration — AWS S3 (knowledge media)
 
-**Status:** Draft (2026-10-05, [C72](../01-business/roadmap/open-decisions.md#c72), D23 → A). Used by [REQ-KNW-003](../02-requirements/FRD/knowledge-media/requirement.md) and [REQ-KNW-004](../02-requirements/FRD/knowledge-videos/requirement.md). Rules: [BR-MED-001](../03-business-rules/BR-MED-001-private-media-storage.md), [BR-SEC-001](../03-business-rules/BR-SEC-001-central-secrets-file.md).
+**Status:** Built 2026-10-05 ([C78](../01-business/roadmap/open-decisions.md#c78)); defined 2026-10-05, [C72](../01-business/roadmap/open-decisions.md#c72), D23 → A). Used by [REQ-KNW-003](../02-requirements/FRD/knowledge-media/requirement.md) and [REQ-KNW-004](../02-requirements/FRD/knowledge-videos/requirement.md). Rules: [BR-MED-001](../03-business-rules/BR-MED-001-private-media-storage.md), [BR-SEC-001](../03-business-rules/BR-SEC-001-central-secrets-file.md).
 
 ## Bucket
 | Setting | Value |
@@ -48,12 +48,22 @@ Upload URLs are signed with the exact `Content-Type` and `Content-Length`, so S3
 | `eis.knowledge.storage.provider` | `EIS_KNOWLEDGE_STORAGE_PROVIDER` | `s3` (or `local` for development) |
 | `eis.knowledge.storage.bucket` | `EIS_KNOWLEDGE_BUCKET` | Bucket name |
 | `eis.knowledge.storage.region` | `EIS_KNOWLEDGE_REGION` | AWS region |
-| `eis.knowledge.video.max-size` | `EIS_KNOWLEDGE_VIDEO_MAX_SIZE` | Maximum video size (**Not specified**) |
-| `eis.knowledge.document.max-size` | `EIS_KNOWLEDGE_DOCUMENT_MAX_SIZE` | Maximum document size (**Not specified**) |
-| `eis.knowledge.image.max-size` | `EIS_KNOWLEDGE_IMAGE_MAX_SIZE` | Maximum image size |
+| `eis.knowledge.video.max-size` | `EIS_KNOWLEDGE_VIDEO_MAX_SIZE` | Maximum video size (default 5 GB, C78) |
+| `eis.knowledge.document.max-size` | `EIS_KNOWLEDGE_DOCUMENT_MAX_SIZE` | Maximum document size (default 100 MB, C78) |
+| `eis.knowledge.image.max-size` | `EIS_KNOWLEDGE_IMAGE_MAX_SIZE` | Maximum image size (default 10 MB) |
+| `eis.knowledge.audio.max-size` | `EIS_KNOWLEDGE_AUDIO_MAX_SIZE` | Maximum audio size (default 100 MB) |
+| `eis.knowledge.storage.endpoint` | `EIS_KNOWLEDGE_STORAGE_ENDPOINT` | Optional S3-compatible endpoint (for example MinIO in development) |
+| `eis.knowledge.orphan-after` | `EIS_KNOWLEDGE_ORPHAN_AFTER` | Unfinished uploads removed after (default PT24H) |
+| `eis.knowledge.jobs.enabled`, `eis.knowledge.seed.enabled` | `EIS_KNOWLEDGE_JOBS_ENABLED`, `EIS_KNOWLEDGE_SEED_ENABLED` | Scheduled publish/cleanup jobs; seed data on first start |
 | `eis.knowledge.multipart-threshold` | `EIS_KNOWLEDGE_MULTIPART_THRESHOLD` | Proposed 100 MB |
 | `eis.knowledge.upload-url-expiry`, `download-url-expiry`, `playback-url-expiry` | `EIS_KNOWLEDGE_*_URL_EXPIRY` | See above |
 Secrets (only `config/secrets.env`, template empty): `EIS_KNOWLEDGE_AWS_ACCESS_KEY_ID`, `EIS_KNOWLEDGE_AWS_SECRET_ACCESS_KEY` (omit with an IAM role). The `spring.datasource` block is not touched.
 
 ## Failure handling
 S3 errors are logged on the server with the request id; users see friendly messages (REQ-KNW-003.11). If S3 is unavailable, uploads and S3 playback fail gracefully; YouTube and external videos and all text content keep working.
+
+## As built (2026-10-05)
+- `S3MediaStorageService` (AWS SDK v2, server side only): presigned PUT / multipart parts / GET, HEAD verification, delete. Static keys are used only when both `EIS_KNOWLEDGE_AWS_ACCESS_KEY_ID` and `EIS_KNOWLEDGE_AWS_SECRET_ACCESS_KEY` are set; otherwise the default AWS chain (IAM role).
+- `eis.knowledge.storage.provider` defaults to `none`: uploads then answer STORAGE_NOT_CONFIGURED and hosted playback is unavailable; YouTube and external videos still work.
+- Browser uploads send `Content-Type` as signed; CORS must allow `PUT`, `GET` and expose `ETag` (multipart completion needs it).
+- Verified: presigned URLs carry `X-Amz-Expires` and never the secret (unit test with the real signer); no credentials in API responses or the built frontend bundle. An expired URL refusing at S3 needs a real bucket (UAT-KNW-003).
