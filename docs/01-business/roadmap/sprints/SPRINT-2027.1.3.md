@@ -77,7 +77,7 @@ Built early on 2026-10-05, before this sprint starts (1–31 Mar 2027); the spri
 
 | Item | Result |
 |---|---|
-| Commits | `COMMIT_PLACEHOLDER` |
+| Commits | `ce41979` (build, tests and documents) and the commit that records this hash |
 | What | Search index (`search_document`, V020) with automatic re-indexing and admin rebuild; keyword search: exact phrase, English/Spanish word forms, accents, partial words, typos, exact IDs, ranking, highlighting, "Did you mean", type filters, history with Clear, zero-result help; top-bar suggestions and Ctrl/Cmd+K; results page with match labels; semantic search: ai-service `/embed`, passages, pgvector HNSW, hybrid merge, keyword fallback; insights and synonyms (`/admin/search`, `MANAGE_SEARCH`) |
 | Quality (40 queries, EN + ES) | hit@5: before 20%, keyword 95%, hybrid 95% (stub model) — [quality report](../../../02-requirements/FRD/semantic-search/quality-report.md) |
 | Speed (13,036 records) | keyword p95 273.7 ms (target < 500), hybrid p95 291.9 ms (target < 800; stub model, a real model's own time not measured) |
