@@ -2,7 +2,9 @@ import { LifeBuoy as PHLifeBuoy } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Alert, Box, Button, Chip, Paper, TextField, Typography } from '@mui/material'
+import { useSearchParams } from 'react-router-dom'
 import { ApiError } from '../api/client'
+import { knowledgeApi } from '../api/knowledgeApi'
 import { supportApi, type SupportTicket, type TicketStatus } from '../api/supportApi'
 import { PageHeader } from '../components/layout/PageHeader'
 
@@ -13,8 +15,13 @@ export function MyTicketsPage() {
   const { t } = useTranslation()
   const [tickets, setTickets] = useState<SupportTicket[] | null>(null)
   const [loadError, setLoadError] = useState<string | null>(null)
-  const [subject, setSubject] = useState('')
-  const [description, setDescription] = useState('')
+  // REQ-KNW-005.9 / BR-KCEN-002: a ticket started from a Knowledge Center
+  // page arrives prefilled (subject, description with the page's context);
+  // the customer can edit or remove anything before sending.
+  const [params] = useSearchParams()
+  const fromKnowledge = params.get('fromKnowledge')
+  const [subject, setSubject] = useState(params.get('subject') ?? '')
+  const [description, setDescription] = useState(params.get('description') ?? '')
   const [submitting, setSubmitting] = useState(false)
   const [formError, setFormError] = useState<string | null>(null)
 
@@ -31,6 +38,9 @@ export function MyTicketsPage() {
     setFormError(null)
     try {
       await supportApi.create(subject, description)
+      if (fromKnowledge && /^\d+$/.test(fromKnowledge)) {
+        knowledgeApi.event({ type: 'TICKET_CREATED_FROM_KNOWLEDGE', contentId: Number(fromKnowledge) }).catch(() => undefined)
+      }
       setSubject('')
       setDescription('')
       load()

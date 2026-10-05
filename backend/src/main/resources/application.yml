@@ -209,6 +209,46 @@ app:
       rrf-k: 60
       candidates: 40
 
+# REQ-KNW-001 to REQ-KNW-008 (C71–C77): Knowledge Center and Knowledge
+# Management. Non-secret settings only, each overridable by an environment
+# variable (docs/09-integrations/aws-s3.md). Storage access keys and the
+# YouTube API key are secrets: they are set only in config/secrets.env
+# (EIS_KNOWLEDGE_AWS_ACCESS_KEY_ID / EIS_KNOWLEDGE_AWS_SECRET_ACCESS_KEY,
+# EIS_YOUTUBE_API_KEY); without keys an IAM role is used. Sizes and URL
+# expiries are the defaults applied on 2026-10-05 until the product owner
+# sets others (REQ-KNW-003 open question 1).
+eis:
+  knowledge:
+    storage:
+      # s3, or none (uploads and hosted playback switched off; YouTube and
+      # external videos still work)
+      provider: ${EIS_KNOWLEDGE_STORAGE_PROVIDER:none}
+      bucket: ${EIS_KNOWLEDGE_BUCKET:}
+      region: ${EIS_KNOWLEDGE_REGION:}
+      # optional S3-compatible endpoint, for example MinIO in development
+      endpoint: ${EIS_KNOWLEDGE_STORAGE_ENDPOINT:}
+    video:
+      max-size: ${EIS_KNOWLEDGE_VIDEO_MAX_SIZE:5368709120}
+    document:
+      max-size: ${EIS_KNOWLEDGE_DOCUMENT_MAX_SIZE:104857600}
+    image:
+      max-size: ${EIS_KNOWLEDGE_IMAGE_MAX_SIZE:10485760}
+    audio:
+      max-size: ${EIS_KNOWLEDGE_AUDIO_MAX_SIZE:104857600}
+    multipart-threshold: ${EIS_KNOWLEDGE_MULTIPART_THRESHOLD:104857600}
+    multipart-part-size: ${EIS_KNOWLEDGE_MULTIPART_PART_SIZE:104857600}
+    upload-url-expiry: ${EIS_KNOWLEDGE_UPLOAD_URL_EXPIRY:PT15M}
+    download-url-expiry: ${EIS_KNOWLEDGE_DOWNLOAD_URL_EXPIRY:PT5M}
+    playback-url-expiry: ${EIS_KNOWLEDGE_PLAYBACK_URL_EXPIRY:PT1H}
+    orphan-after: ${EIS_KNOWLEDGE_ORPHAN_AFTER:PT24H}
+    seed:
+      enabled: ${EIS_KNOWLEDGE_SEED_ENABLED:true}
+    jobs:
+      enabled: ${EIS_KNOWLEDGE_JOBS_ENABLED:true}
+    youtube:
+      api-key: ${EIS_YOUTUBE_API_KEY:}
+      timeout-ms: 3000
+
 # OpenAPI / Swagger 
 springdoc:
   api-docs:

@@ -9,4 +9,6 @@ import java.util.List;
 public interface SearchQueryLogRepository extends JpaRepository<SearchQueryLog, Long> {
 
     List<SearchQueryLog> findBySearchedAtAfter(Instant since);
+
+    List<SearchQueryLog> findByScopeAndSearchedAtAfter(String scope, Instant since);
 }

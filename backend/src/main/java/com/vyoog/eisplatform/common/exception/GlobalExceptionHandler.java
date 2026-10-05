@@ -134,6 +134,16 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.CONFLICT).body(body);
     }
 
+    @ExceptionHandler(KnowledgeException.class)
+    public ResponseEntity<Map<String, Object>> handleKnowledge(KnowledgeException ex) {
+        Map<String, Object> body = body(ex.getStatus(), ex.getMessage());
+        body.put("code", ex.getCode());
+        if (ex.getUsedBy() != null) {
+            body.put("usedBy", ex.getUsedBy());
+        }
+        return ResponseEntity.status(ex.getStatus()).body(body);
+    }
+
     @ExceptionHandler(IllegalArgumentException.class)
     public ResponseEntity<Map<String, Object>> handleBadInput(IllegalArgumentException ex) {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(body(HttpStatus.BAD_REQUEST, ex.getMessage()));

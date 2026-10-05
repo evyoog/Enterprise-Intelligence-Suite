@@ -2,7 +2,7 @@ import type { ComponentType } from 'react'
 import {
   Building2, KeyRound, LayoutDashboard, LayoutGrid, Layers, Package, ScrollText, Settings, ShieldCheck,
   SlidersHorizontal, Store, UserCheck, UserCog, UsersRound, Palette, Boxes, Activity, ClipboardList, BookOpen,
-  LifeBuoy, Star, Handshake, CreditCard, PlugZap, Landmark, Radio, Cable, Settings2, SearchCheck,
+  LifeBuoy, Star, Handshake, CreditCard, PlugZap, Landmark, Radio, Cable, Settings2, SearchCheck, Library,
 } from 'lucide-react'
 import type { MyPermissions } from '../../api/myPermissionsApi'
 
@@ -62,8 +62,8 @@ export function buildAppNavigation({ isAdmin, permissions }: NavAccess): AppNavS
   workspace.push({ key: 'catalog', labelKey: 'catalog', to: '/products', icon: Store })
   // REQ-PRT-001 (C26): every signed-in user sees the status page.
   workspace.push({ key: 'serviceStatus', labelKey: 'serviceStatus', to: '/status', icon: Activity })
-  // 11.01 Knowledge Base (sprint 2027.1.1): public reads, same as the catalog above.
-  workspace.push({ key: 'knowledgeBase', labelKey: 'knowledgeBase', to: '/knowledge-base', icon: BookOpen })
+  // REQ-KNW-005 Knowledge Center (C71–C77, was 11.01 Knowledge Base): public reads.
+  workspace.push({ key: 'knowledgeCenter', labelKey: 'knowledgeCenter', to: '/knowledge', icon: BookOpen })
   // 12.01 Ticket Management (sprint 2027.1.2): any authenticated customer.
   if (hasCustomerWorkspace) {
     workspace.push({ key: 'support', labelKey: 'support', to: '/support/tickets', icon: LifeBuoy })
@@ -123,8 +123,14 @@ export function buildAppNavigation({ isAdmin, permissions }: NavAccess): AppNavS
   if (platform('MANAGE_SERVICE_STATUS')) {
     admin.push({ key: 'adminServiceStatus', labelKey: 'serviceStatus', to: '/admin/service-status', icon: Activity })
   }
-  if (platform('MANAGE_KNOWLEDGE_BASE')) {
-    admin.push({ key: 'adminKnowledgeBase', labelKey: 'knowledgeBase', to: '/admin/knowledge-base', icon: BookOpen })
+  // REQ-KNW-008: Knowledge Management for platform administrators and the
+  // persons given a knowledge permission (contributor or publisher) — not
+  // only ADMIN, so it is checked on the permission list itself.
+  const knowledgeStaff = permissions === null
+    ? isAdmin
+    : permissions.platform.includes('KNOWLEDGE_CONTRIBUTE') || permissions.platform.includes('MANAGE_KNOWLEDGE_BASE')
+  if (knowledgeStaff) {
+    admin.push({ key: 'knowledgeManagement', labelKey: 'knowledgeManagement', to: '/knowledge-management', icon: Library })
   }
   if (platform('MANAGE_SUPPORT_TICKETS')) {
     admin.push({ key: 'adminSupportTickets', labelKey: 'support', to: '/admin/support/tickets', icon: LifeBuoy })

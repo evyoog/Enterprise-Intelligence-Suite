@@ -39,7 +39,7 @@ public class BasicKeywordSearch {
             : productService.searchProducts(query, null, null, null, null, false).items().stream()
                 .map(p -> toItem(p, terms)).toList();
         List<SearchResultItemDto> articles = !matchesType(type, "KNOWLEDGE") ? List.of()
-            : knowledgeArticleService.searchPublished(query).stream().map(a -> toItem(a, terms)).toList();
+            : knowledgeArticleService.searchPublicContent(query).stream().map(a -> toItem(a, terms)).toList();
         List<SearchResultItemDto> tickets = (!matchesType(type, "TICKET") || customerId == null) ? List.of()
             : ticketService.listMyTickets(customerId).stream()
                 .filter(t -> matchesQuery(query, t.subject(), t.description()))

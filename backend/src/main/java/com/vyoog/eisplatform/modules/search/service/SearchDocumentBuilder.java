@@ -1,7 +1,6 @@
 package com.vyoog.eisplatform.modules.search.service;
 
-import com.vyoog.eisplatform.modules.knowledgebase.model.ArticleStatus;
-import com.vyoog.eisplatform.modules.knowledgebase.model.KnowledgeArticle;
+import com.vyoog.eisplatform.modules.knowledgebase.dto.IndexableKnowledge;
 import com.vyoog.eisplatform.modules.platform.model.Platform;
 import com.vyoog.eisplatform.modules.product.model.Product;
 import com.vyoog.eisplatform.modules.product.model.ProductStatus;
@@ -18,8 +17,9 @@ import java.util.stream.Stream;
 /**
  * Turns a source record into its search document (C70), or empty when the
  * record must not be searchable. The visibility rules are the same as the
- * search before C70: ACTIVE products (the public catalog), PUBLISHED
- * knowledge articles, and support tickets for their requester only.
+ * search before C70: ACTIVE products (the public catalog), public live
+ * knowledge content (every type, C76), and support tickets for their
+ * requester only.
  */
 final class SearchDocumentBuilder {
 
@@ -38,12 +38,14 @@ final class SearchDocumentBuilder {
             product.getName(), product.getDescription(), keywords, product.getUpdatedAt()));
     }
 
-    static Optional<SearchDocument> fromArticle(KnowledgeArticle article) {
-        if (article.getStatus() != ArticleStatus.PUBLISHED) {
-            return Optional.empty();
-        }
-        return Optional.of(build(SearchSourceType.KNOWLEDGE, article.getId(), SearchVisibility.PUBLIC, null,
-            article.getTitle(), article.getBody(), null, article.getUpdatedAt()));
+    /** Public knowledge content of any type (C76): the live version's text,
+     * with transcripts, chapters and type fields appended to the body. */
+    static Optional<SearchDocument> fromKnowledge(Optional<IndexableKnowledge> item) {
+        return item.map(k -> {
+            String body = k.searchText() == null || k.searchText().isBlank() ? k.body() : k.body() + "\n\n" + k.searchText();
+            return build(SearchSourceType.KNOWLEDGE, k.id(), SearchVisibility.PUBLIC, null, k.title(), body,
+                k.keywords(), k.updatedAt());
+        });
     }
 
     static Optional<SearchDocument> fromTicket(SupportTicket ticket) {

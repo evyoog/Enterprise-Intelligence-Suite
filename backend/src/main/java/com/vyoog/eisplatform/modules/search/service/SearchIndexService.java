@@ -2,6 +2,7 @@ package com.vyoog.eisplatform.modules.search.service;
 
 import com.vyoog.eisplatform.common.exception.InvalidStateException;
 import com.vyoog.eisplatform.modules.knowledgebase.repository.KnowledgeArticleRepository;
+import com.vyoog.eisplatform.modules.knowledgebase.service.KnowledgeIndexSource;
 import com.vyoog.eisplatform.modules.product.model.Product;
 import com.vyoog.eisplatform.modules.product.repository.ProductRepository;
 import com.vyoog.eisplatform.modules.search.model.SearchDocument;
@@ -49,6 +50,7 @@ public class SearchIndexService {
     private final SearchSqlRepository sqlRepository;
     private final ProductRepository productRepository;
     private final KnowledgeArticleRepository articleRepository;
+    private final KnowledgeIndexSource knowledgeIndexSource;
     private final SupportTicketRepository ticketRepository;
     private final SemanticIndexService semanticIndexService;
     private final SearchCapabilityService capabilityService;
@@ -58,7 +60,8 @@ public class SearchIndexService {
 
     public SearchIndexService(SearchDocumentRepository documentRepository, SearchIndexRunRepository runRepository,
                               SearchSqlRepository sqlRepository, ProductRepository productRepository,
-                              KnowledgeArticleRepository articleRepository, SupportTicketRepository ticketRepository,
+                              KnowledgeArticleRepository articleRepository, KnowledgeIndexSource knowledgeIndexSource,
+                              SupportTicketRepository ticketRepository,
                               SemanticIndexService semanticIndexService, SearchCapabilityService capabilityService,
                               PlatformTransactionManager transactionManager) {
         this.documentRepository = documentRepository;
@@ -66,6 +69,7 @@ public class SearchIndexService {
         this.sqlRepository = sqlRepository;
         this.productRepository = productRepository;
         this.articleRepository = articleRepository;
+        this.knowledgeIndexSource = knowledgeIndexSource;
         this.ticketRepository = ticketRepository;
         this.semanticIndexService = semanticIndexService;
         this.capabilityService = capabilityService;
@@ -107,7 +111,8 @@ public class SearchIndexService {
             rebuildType(SearchSourceType.PRODUCT, p -> productRepository.findAll(p).getContent(),
                 p -> SearchDocumentBuilder.fromProduct((Product) p), counts);
             rebuildType(SearchSourceType.KNOWLEDGE, p -> articleRepository.findAll(p).getContent(),
-                a -> SearchDocumentBuilder.fromArticle((com.vyoog.eisplatform.modules.knowledgebase.model.KnowledgeArticle) a), counts);
+                a -> SearchDocumentBuilder.fromKnowledge(knowledgeIndexSource.indexable(
+                    ((com.vyoog.eisplatform.modules.knowledgebase.model.KnowledgeArticle) a).getId())), counts);
             rebuildType(SearchSourceType.TICKET, p -> ticketRepository.findAll(p).getContent(),
                 t -> SearchDocumentBuilder.fromTicket((com.vyoog.eisplatform.modules.support.model.SupportTicket) t), counts);
             if (capabilityService.get().semantic()) {
@@ -171,7 +176,7 @@ public class SearchIndexService {
     private Long indexOne(SourceKey key) {
         Optional<SearchDocument> built = switch (key.type()) {
             case PRODUCT -> productRepository.findById(key.id()).flatMap(SearchDocumentBuilder::fromProduct);
-            case KNOWLEDGE -> articleRepository.findById(key.id()).flatMap(SearchDocumentBuilder::fromArticle);
+            case KNOWLEDGE -> SearchDocumentBuilder.fromKnowledge(knowledgeIndexSource.indexable(key.id()));
             case TICKET -> ticketRepository.findById(key.id()).flatMap(SearchDocumentBuilder::fromTicket);
         };
         if (built.isEmpty()) {

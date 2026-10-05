@@ -77,6 +77,6 @@ export const globalSearchApi = {
 
 export const SEARCH_LINK_FOR: Record<SearchResultType, (id: number) => string> = {
   PRODUCT: (id) => `/products/${id}`,
-  KNOWLEDGE: () => '/knowledge-base',
+  KNOWLEDGE: (id) => `/knowledge/content/${id}`,
   TICKET: () => '/support/tickets',
 }

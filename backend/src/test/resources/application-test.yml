@@ -87,3 +87,12 @@ vyoog:
       key-id: rzp_test_1234567890
       key-secret: test-key-secret
       webhook-secret: test-webhook-secret
+
+# Knowledge Center: no scheduled jobs and no real storage in tests (tests that
+# need storage use an in-memory MediaStorageService).
+eis:
+  knowledge:
+    jobs:
+      enabled: false
+    storage:
+      provider: none

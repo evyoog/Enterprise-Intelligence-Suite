@@ -63,6 +63,10 @@ public class RbacSeeder implements ApplicationRunner {
             // 11.01 Knowledge Base (sprint 2027.1.1): its own permission — publishing
             // customer-facing knowledge content is distinct from catalog management.
             "MANAGE_KNOWLEDGE_BASE",
+            // REQ-KNW-008 (C71): knowledge contributor — create and edit
+            // drafts, upload media, submit for review. MANAGE_KNOWLEDGE_BASE
+            // above is reused as the knowledge publisher permission.
+            "KNOWLEDGE_CONTRIBUTE",
             // 12.01 Ticket Management (sprint 2027.1.2): its own permission —
             // handling support tickets is a distinct responsibility from
             // every other admin capability above.

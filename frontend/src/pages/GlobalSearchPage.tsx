@@ -212,7 +212,7 @@ function NoResults({ query, signedIn }: { query: string; signedIn: boolean }) {
       </Box>
       <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap', mt: 2 }}>
         <Button component={RouterLink} to="/products" variant="outlined" size="small">{t('search.browseCatalog')}</Button>
-        <Button component={RouterLink} to="/knowledge-base" variant="outlined" size="small">{t('search.browseKnowledge')}</Button>
+        <Button component={RouterLink} to="/knowledge" variant="outlined" size="small">{t('search.browseKnowledge')}</Button>
         {signedIn && <Button component={RouterLink} to="/support/tickets" variant="outlined" size="small">{t('search.contactSupport')}</Button>}
       </Box>
     </Paper>

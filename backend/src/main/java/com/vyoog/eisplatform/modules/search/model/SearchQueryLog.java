@@ -36,4 +36,9 @@ public class SearchQueryLog {
 
     @Column(name = "searched_at", nullable = false)
     private Instant searchedAt;
+
+    /** Where the search ran: null = global search, KNOWLEDGE = the Knowledge
+     * Center (REQ-KNW-006.2, used for knowledge gap detection). */
+    @Column(length = 20)
+    private String scope;
 }

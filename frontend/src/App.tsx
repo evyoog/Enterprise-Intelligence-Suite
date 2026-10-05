@@ -35,8 +35,25 @@ import { PermissionsAdminPage } from './pages/admin/PermissionsAdminPage'
 import { ServiceStatusAdminPage } from './pages/admin/ServiceStatusAdminPage'
 import { ServiceStatusPage } from './pages/ServiceStatusPage'
 import { OrganizationOrdersPage } from './pages/OrganizationOrdersPage'
-import { KnowledgeBasePage } from './pages/KnowledgeBasePage'
-import { AdminKnowledgeBasePage } from './pages/admin/AdminKnowledgeBasePage'
+import { KnowledgeCenterLayout } from './pages/knowledge/KnowledgeCenterLayout'
+import { KnowledgeHomePage } from './pages/knowledge/KnowledgeHomePage'
+import { KnowledgeSearchPage } from './pages/knowledge/KnowledgeSearchPage'
+import { KnowledgeProductHubPage } from './pages/knowledge/KnowledgeProductHubPage'
+import { KnowledgeItemPage } from './pages/knowledge/KnowledgeItemPage'
+import {
+  KnowledgeFaqsPage, KnowledgeGlossaryPage, KnowledgeReleaseNotesPage, KnowledgeSectionPage, KnowledgeWorkflowsPage,
+} from './pages/knowledge/KnowledgeSectionPage'
+import { LegacyKnowledgeBaseRedirect } from './pages/knowledge/LegacyKnowledgeBaseRedirect'
+import { KnowledgeAdminLayout } from './pages/knowledge-admin/KnowledgeAdminLayout'
+import { KnowledgeAdminDashboardPage } from './pages/knowledge-admin/KnowledgeAdminDashboardPage'
+import { KnowledgeContentListPage } from './pages/knowledge-admin/KnowledgeContentListPage'
+import { KnowledgeContentEditorPage } from './pages/knowledge-admin/KnowledgeContentEditorPage'
+import { KnowledgeVideosPage } from './pages/knowledge-admin/KnowledgeVideosPage'
+import { KnowledgeVideoEditorPage } from './pages/knowledge-admin/KnowledgeVideoEditorPage'
+import { KnowledgeMediaLibraryPage } from './pages/knowledge-admin/KnowledgeMediaLibraryPage'
+import { KnowledgeTaxonomyPage } from './pages/knowledge-admin/KnowledgeTaxonomyPage'
+import { KnowledgeSearchIndexPage } from './pages/knowledge-admin/KnowledgeSearchIndexPage'
+import { KnowledgeAnalyticsPage } from './pages/knowledge-admin/KnowledgeAnalyticsPage'
 import { MyTicketsPage } from './pages/MyTicketsPage'
 import { AdminSupportTicketsPage } from './pages/admin/AdminSupportTicketsPage'
 import { GlobalSearchPage } from './pages/GlobalSearchPage'
@@ -136,8 +153,41 @@ function MainApp() {
           <Route path="/organization/identity-federation" element={<RequireAuth><OrganizationSamlProvidersPage /></RequireAuth>} />
           {/* REQ-PRT-001 (C26): signed-in customers. */}
           <Route path="/status" element={<RequireAuth><ServiceStatusPage /></RequireAuth>} />
-          {/* 11.01 Knowledge Base (sprint 2027.1.1): public, same as /products above. */}
-          <Route path="/knowledge-base" element={<KnowledgeBasePage />} />
+          {/* REQ-KNW-005 Knowledge Center (C71–C77): public, same as /products
+              above; what each reader sees is decided by the backend
+              (BR-KVS-001). The old /knowledge-base route redirects here
+              (REQ-KNW-001.9). */}
+          <Route path="/knowledge-base" element={<LegacyKnowledgeBaseRedirect />} />
+          <Route path="/knowledge" element={<KnowledgeCenterLayout />}>
+            <Route index element={<KnowledgeHomePage />} />
+            <Route path="search" element={<KnowledgeSearchPage />} />
+            <Route path="products/:slug" element={<KnowledgeProductHubPage />} />
+            <Route path="content/:idOrSlug" element={<KnowledgeItemPage />} />
+            <Route path="getting-started" element={<KnowledgeSectionPage key="gettingStarted" section="gettingStarted" />} />
+            <Route path="guides" element={<KnowledgeSectionPage key="guides" section="guides" />} />
+            <Route path="videos" element={<KnowledgeSectionPage key="videos" section="videos" />} />
+            <Route path="troubleshooting" element={<KnowledgeSectionPage key="troubleshooting" section="troubleshooting" />} />
+            <Route path="downloads" element={<KnowledgeSectionPage key="downloads" section="downloads" />} />
+            <Route path="developer" element={<KnowledgeSectionPage key="developer" section="developer" />} />
+            <Route path="faqs" element={<KnowledgeFaqsPage />} />
+            <Route path="glossary" element={<KnowledgeGlossaryPage />} />
+            <Route path="workflows" element={<KnowledgeWorkflowsPage />} />
+            <Route path="release-notes" element={<KnowledgeReleaseNotesPage />} />
+          </Route>
+          {/* REQ-KNW-008 Knowledge Management: platform administrators and the
+              persons given a knowledge permission (not only ADMIN, so it is
+              outside /admin); the backend enforces every action. */}
+          <Route path="/knowledge-management" element={<RequireAuth><KnowledgeAdminLayout /></RequireAuth>}>
+            <Route index element={<KnowledgeAdminDashboardPage />} />
+            <Route path="content" element={<KnowledgeContentListPage />} />
+            <Route path="content/:id" element={<KnowledgeContentEditorPage />} />
+            <Route path="videos" element={<KnowledgeVideosPage />} />
+            <Route path="videos/:id" element={<KnowledgeVideoEditorPage />} />
+            <Route path="media" element={<KnowledgeMediaLibraryPage />} />
+            <Route path="taxonomy" element={<KnowledgeTaxonomyPage />} />
+            <Route path="search-index" element={<KnowledgeSearchIndexPage />} />
+            <Route path="analytics" element={<KnowledgeAnalyticsPage />} />
+          </Route>
           {/* 09 Order & Provisioning Management (sprint 2027.1.1): organization purchasing only. */}
           <Route path="/organization/orders" element={<RequireAuth><OrganizationOrdersPage /></RequireAuth>} />
           {/* 12.01 Ticket Management (sprint 2027.1.2): any authenticated customer. */}
@@ -177,7 +227,7 @@ function MainApp() {
             <Route path="roles" element={<RolesAdminPage />} />
             <Route path="permissions" element={<PermissionsAdminPage />} />
             <Route path="service-status" element={<ServiceStatusAdminPage />} />
-            <Route path="knowledge-base" element={<AdminKnowledgeBasePage />} />
+            <Route path="knowledge-base" element={<Navigate to="/knowledge-management/content?type=ARTICLE" replace />} />
             <Route path="support/tickets" element={<AdminSupportTicketsPage />} />
             <Route path="reviews" element={<AdminReviewsPage />} />
             <Route path="partners" element={<AdminPartnersPage />} />

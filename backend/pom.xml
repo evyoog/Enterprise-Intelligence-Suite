@@ -102,6 +102,23 @@
             <version>2.9.0</version>
         </dependency>
 
+        <!-- REQ-KNW-003 (C72): knowledge media in a private S3 bucket. Used
+             on the server only, to create presigned URLs and to verify,
+             replace and delete objects; files never pass through the
+             backend and the browser never uses the AWS SDK. The Netty async
+             client is excluded (only the synchronous client is used). -->
+        <dependency>
+            <groupId>software.amazon.awssdk</groupId>
+            <artifactId>s3</artifactId>
+            <version>2.25.60</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>software.amazon.awssdk</groupId>
+                    <artifactId>netty-nio-client</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+
         <!-- Lombok -->
         <dependency>
             <groupId>org.projectlombok</groupId>

@@ -34,6 +34,12 @@ public class SearchInsightsService {
 
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     public void record(String query, int resultCount, String mode, boolean semanticUsed, long tookMs) {
+        record(query, resultCount, mode, semanticUsed, tookMs, null);
+    }
+
+    /** @param scope null for global search, KNOWLEDGE for the Knowledge Center (REQ-KNW-006.2) */
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    public void record(String query, int resultCount, String mode, boolean semanticUsed, long tookMs, String scope) {
         try {
             SearchQueryLog entry = new SearchQueryLog();
             entry.setQuery(query.length() > 200 ? query.substring(0, 200) : query);
@@ -42,6 +48,7 @@ public class SearchInsightsService {
             entry.setSemanticUsed(semanticUsed);
             entry.setTookMs((int) Math.min(Integer.MAX_VALUE, tookMs));
             entry.setSearchedAt(Instant.now());
+            entry.setScope(scope);
             logRepository.save(entry);
         } catch (RuntimeException e) {
             log.warn("Could not record search for insights: {}", e.getMessage());
@@ -62,14 +69,41 @@ public class SearchInsightsService {
             top(entries, e -> true), top(entries, e -> e.getResultCount() == 0));
     }
 
+    /**
+     * Most frequent queries of one scope in the last {@code days} days
+     * (REQ-KNW-006.3/.4): all queries, or only those that found nothing,
+     * asked at least {@code minCount} times.
+     */
+    @Transactional(readOnly = true)
+    public List<QueryCountDto> topQueries(String scope, int days, boolean zeroResultsOnly, int minCount, int limit) {
+        int window = Math.max(1, Math.min(days, 365));
+        List<SearchQueryLog> entries = logRepository.findByScopeAndSearchedAtAfter(scope,
+            Instant.now().minus(Duration.ofDays(window)));
+        return top(entries, e -> !zeroResultsOnly || e.getResultCount() == 0, Integer.MAX_VALUE).stream()
+            .filter(q -> q.count() >= minCount).limit(limit).toList();
+    }
+
+    /** [total, zero-result] searches of one scope in the last {@code days} days. */
+    @Transactional(readOnly = true)
+    public long[] counts(String scope, int days) {
+        List<SearchQueryLog> entries = logRepository.findByScopeAndSearchedAtAfter(scope,
+            Instant.now().minus(Duration.ofDays(Math.max(1, Math.min(days, 365)))));
+        return new long[] {entries.size(), entries.stream().filter(e -> e.getResultCount() == 0).count()};
+    }
+
     private List<QueryCountDto> top(List<SearchQueryLog> entries, java.util.function.Predicate<SearchQueryLog> filter) {
+        return top(entries, filter, TOP);
+    }
+
+    private List<QueryCountDto> top(List<SearchQueryLog> entries, java.util.function.Predicate<SearchQueryLog> filter,
+                                    int limit) {
         Map<String, List<SearchQueryLog>> byQuery = entries.stream().filter(filter)
             .collect(Collectors.groupingBy(e -> String.join(" ", TextFolding.tokens(TextFolding.fold(e.getQuery())))));
         return byQuery.entrySet().stream()
             .filter(e -> !e.getKey().isBlank())
             .map(e -> new QueryCountDto(mostRecentSpelling(e.getValue()), e.getValue().size()))
             .sorted(Comparator.comparingLong(QueryCountDto::count).reversed().thenComparing(QueryCountDto::query))
-            .limit(TOP)
+            .limit(limit)
             .toList();
     }
 
