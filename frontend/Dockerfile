@@ -32,7 +32,7 @@ COPY --from=build /app/dist /usr/share/nginx/html
 # nginx image's entrypoint) renders it to conf.d/default.conf on container
 # start, so BACKEND_HOST/BACKEND_PORT can vary per environment without a
 # separate image per environment.
-COPY nginx.conf /etc/nginx/templates/default.conf
+COPY nginx.conf /etc/nginx/templates/default.conf.template
 
 # Where the frontend reaches the backend from inside the container network.
 # Set per environment (see deployment/environments/<env>/). BACKEND_PORT has
