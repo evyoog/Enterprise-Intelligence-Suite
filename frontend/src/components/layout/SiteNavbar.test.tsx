@@ -2,7 +2,7 @@ import '../../i18n'
 import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { axe } from 'jest-axe'
-import { MemoryRouter } from 'react-router-dom'
+import { MemoryRouter, Route, Routes, useLocation } from 'react-router-dom'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { LocalePreferenceProvider } from '../../theming/LocalePreferenceProvider'
 import { ThemeModeProvider } from '../../theming/ThemeModeProvider'
@@ -101,5 +101,30 @@ describe('SiteNavbar — Phase 7: a consistent, persistent link back to the work
 
     expect(screen.getByRole('link', { name: /admin panel/i })).toHaveAttribute('href', '/admin')
     expect(screen.queryByRole('link', { name: /workspace/i })).not.toBeInTheDocument()
+  })
+
+  it('has a Home link to the website home page (C79)', () => {
+    renderNavbar()
+    expect(screen.getByRole('link', { name: 'Home' })).toHaveAttribute('href', '/')
+  })
+
+  it('signing out opens the website home page (C79)', async () => {
+    const logout = vi.fn()
+    mockUseAuth.mockReturnValue({ isAuthenticated: true, isAdmin: false, user: { username: 'ada@example.com' }, logout })
+    function Where() { return <p>at {useLocation().pathname}</p> }
+    render(
+      <MemoryRouter initialEntries={['/register/verify']}>
+        <ThemeModeProvider>
+          <LocalePreferenceProvider>
+            <SiteNavbar />
+            <Routes><Route path="*" element={<Where />} /></Routes>
+          </LocalePreferenceProvider>
+        </ThemeModeProvider>
+      </MemoryRouter>
+    )
+    const user = userEvent.setup()
+    await user.click(screen.getByRole('button', { name: 'Sign out' }))
+    expect(logout).toHaveBeenCalled()
+    expect(screen.getByText('at /')).toBeInTheDocument()
   })
 })

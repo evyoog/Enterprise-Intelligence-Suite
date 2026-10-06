@@ -1,20 +1,21 @@
 import { useEffect, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import {
-  AppBar, Avatar, Box, Collapse, Divider, Drawer, IconButton, List, ListItemButton, ListItemIcon,
+  AppBar, Avatar, Box, Button, Collapse, Divider, Drawer, IconButton, List, ListItemButton, ListItemIcon,
   ListItemText, ListSubheader, Menu, MenuItem, Toolbar, Tooltip, Typography, useMediaQuery, useTheme,
 } from '@mui/material'
 import { alpha } from '@mui/material/styles'
-import { ChevronDown, ChevronRight, LogOut, Menu as MenuIcon, Moon, Palette, Search as SearchIcon, Sun, UserCog } from 'lucide-react'
+import { ChevronDown, ChevronRight, Home as HomeIcon, LogOut, Menu as MenuIcon, Moon, Palette, Search as SearchIcon, Sun, UserCog } from 'lucide-react'
 import { Link as RouterLink, Navigate, Outlet, useLocation, useNavigate } from 'react-router-dom'
 import { useAuth } from '../../auth/AuthProvider'
+import { useSignOut } from '../../auth/useSignOut'
 import { myPermissionsApi, type MyPermissions } from '../../api/myPermissionsApi'
 import { useThemeMode } from '../../theming/ThemeModeProvider'
 import { NotificationBell } from './NotificationBell'
 import { CartButton } from '../cart/CartButton'
 import { TopBarSearch } from './TopBarSearch'
 import { AppShellContext } from './appShellContext'
-import { appHomePath, buildAppNavigation, isNavItemActive, type AppNavItem } from './appNavigation'
+import { appHomePath, buildAppNavigation, isNavItemActive, wantsWebsite, WEBSITE_HOME_STATE, type AppNavItem } from './appNavigation'
 
 const DRAWER_WIDTH = 240
 const LOGO = 'https://www.vyoog.com/wp-content/uploads/2022/03/evyoog-logonew1.png'
@@ -30,10 +31,12 @@ export function AuthAwareLayout() {
   return auth.isAuthenticated ? <AppShell /> : <Outlet />
 }
 
-/** "/" — the public website for visitors; signed-in users go to the tool. */
+/** "/" — the public website. Visitors always see it; signed-in users see it
+ * when they chose Home (C79), and otherwise go to the tool. */
 export function PublicOnly({ children }: { children: React.ReactNode }) {
   const auth = useAuth()
-  if (auth.isAuthenticated) return <Navigate to={appHomePath(auth.isAdmin)} replace />
+  const location = useLocation()
+  if (auth.isAuthenticated && !wantsWebsite(location.state)) return <Navigate to={appHomePath(auth.isAdmin)} replace />
   return <>{children}</>
 }
 
@@ -48,6 +51,7 @@ export function AppShell() {
   const auth = useAuth()
   const location = useLocation()
   const navigate = useNavigate()
+  const signOut = useSignOut()
   const theme = useTheme()
   const isMobile = useMediaQuery(theme.breakpoints.down('md'))
   const { resolvedMode, setMode } = useThemeMode()
@@ -168,7 +172,7 @@ export function AppShell() {
       </Box>
       <Divider />
       <List component="div" dense>
-        <ListItemButton onClick={auth.logout} sx={{ borderRadius: 1.5, mx: 1 }}>
+        <ListItemButton onClick={signOut} sx={{ borderRadius: 1.5, mx: 1 }}>
           <ListItemIcon sx={{ minWidth: 34 }}><LogOut size={18} /></ListItemIcon>
           <ListItemText primary={t('nav.signOut')} />
         </ListItemButton>
@@ -220,6 +224,24 @@ export function AppShell() {
               )}
               {!isMobile && <TopBarSearch />}
               <Box sx={{ flexGrow: 1 }} />
+              {isMobile ? (
+                <Tooltip title={t('nav.home')}>
+                  <IconButton component={RouterLink} to="/" state={WEBSITE_HOME_STATE} aria-label={t('nav.home')} sx={{ color: 'inherit' }}>
+                    <HomeIcon size={19} />
+                  </IconButton>
+                </Tooltip>
+              ) : (
+                <Button
+                  component={RouterLink}
+                  to="/"
+                  state={WEBSITE_HOME_STATE}
+                  color="inherit"
+                  startIcon={<HomeIcon size={17} />}
+                  sx={{ fontWeight: 600, textTransform: 'none' }}
+                >
+                  {t('nav.home')}
+                </Button>
+              )}
               {isMobile && (
                 <IconButton aria-label={t('search.title')} onClick={() => navigate('/search')} sx={{ color: 'inherit' }}>
                   <SearchIcon size={19} />
@@ -268,7 +290,7 @@ export function AppShell() {
                   {t('appShell.nav.preferences')}
                 </MenuItem>
                 <Divider />
-                <MenuItem onClick={() => { setUserAnchor(null); auth.logout() }}>
+                <MenuItem onClick={() => { setUserAnchor(null); signOut() }}>
                   <ListItemIcon><LogOut size={16} /></ListItemIcon>
                   {t('nav.signOut')}
                 </MenuItem>

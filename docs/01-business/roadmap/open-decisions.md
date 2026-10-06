@@ -637,6 +637,13 @@ Screen: [business-dashboard.md](../../05-ui/screen-requirements/business-dashboa
 - AI assistant: not built until D8; `ask` answers 501 ASSISTANT_NOT_CONFIGURED (C75).
 **Still Not specified:** bucket names and region per environment; retention periods for events and replaced files; Developer and Partner audiences; error-code format owner; expiry notifications; organization-authored content. **Limitation:** no real S3 bucket was available in the build environment, so uploads, downloads and playback were tested against an in-memory store and the real AWS SDK signer (offline); the UAT script [UAT-KNW-003](../../../test-cases/UAT/knowledge/UAT-KNW-003-videos-and-s3.md) needs a test bucket.
 
+### C79
+**Decision (product owner, 2026-10-06) — Home button and sign-out destination:** "add home button on the navbar for website's landing page, after logout also it should go to the home page." Built on 2026-10-06 (frontend only; no sprint dates change):
+- The signed-in top bar ([application layout](../../05-ui/screen-requirements/application-layout.md)) and the public website header (`SiteNavbar`, desktop and mobile menu) show a **Home** link to the website landing page `/`.
+- A signed-in user who chooses Home (or the website logo) sees the website at `/`, with "My Workspace" / "Admin Panel" and Sign out in its header. Opening `/` any other way (typing the address, signing in, returning from SSO) still opens the tool, as before.
+- **Sign out** from any page (sidebar, account menu, website header, mobile menu) ends the session and opens the website home page `/`.
+**Not specified:** whether a session that ends in another tab or expires should also move the open page to `/` (today protected pages already go to `/`; public pages stay where they are).
+
 ### DN-2 Sprint scope, length and dates
 **Decision:**
 - **Sprint length:** sprints are **calendar months**. Sprint `.1`, `.2` and `.3` are the first, second and third months of the PI's calendar quarter. Example: 2026.3.3 = 1–30 Sep 2026; 2026.4.1 = 1–31 Oct 2026.
@@ -743,6 +750,7 @@ These documents are **not** changed by this file. Update them to match:
 | C76 | Built 2026-10-05: public knowledge of every type, transcripts and chapters in the platform index; restricted content searched among visible items only |
 | C77 | Sprint pages 2027.1.1 and 2027.1.3 (and 2026.4.1 for D23, 2027.1.2 for ticket prefill) note the Draft FRDs; dates unchanged. Remaining: "Approved" per FRD, then build phases with "Built early" notes |
 | C78 | Built 2026-10-05 (all knowledge FRDs Approved with default answers). Remaining: confirm or change the defaults; bucket names and region; retention periods; run UAT-KNW-001–004 with a test bucket |
+| C79 | Built 2026-10-06; [application layout](../../05-ui/screen-requirements/application-layout.md) updated; TC-PRT-032, TC-PRT-033. Remaining: whether a session ending in another tab should also open `/` |
 | C54 | The wider navigation-consolidation / shared `<DataTable>`/`<FilterBar>` pass ([C44](#c44)) would make the business dashboard's new click-to-filter table and sort behavior reusable elsewhere instead of page-local — still carried, same as before. `database/seed/README.md` now points to [docs/07-database/demo-data.md](../../07-database/demo-data.md) for exactly what `DemoDataSeeder` adds |
 
 **Done (2026-09-26), no longer follow-up:** C31 (sprint pages 2026.4.1 through 2027.2.2, and the "Sprint" field on application pages 02, 03, 04, 05, 10, 11, 12, 13, 15, all updated to the corrected sequence — this superseded the older "C21: add the general policy engine to `SPRINT-2027.2.2.md`" and "C16, C17: add the deferred functions to `SPRINT-2027.1.3.md`" rows, and the "C21: add the agent controls to `SPRINT-2027.1.2.md`" row, which are now folded into C31's own sprint pages); C32–C35 (FRDs written and Approved, sprint 2026.4.1 built, carry-over recorded on `SPRINT-2026.4.2.md`).
