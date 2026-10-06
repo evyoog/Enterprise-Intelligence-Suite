@@ -9,4 +9,7 @@
 | BR-KNW-005 | Public article-by-id read refuses (404) an article that is not currently PUBLISHED, identically to a nonexistent id — never confirming a DRAFT article's existence. | backend | REQ-KNW-001.6 |
 | BR-KNW-006 | Every admin mutation (create/edit/publish/unpublish/delete) is recorded in the audit log (`KNOWLEDGE_ARTICLE_CREATED`/`_EDITED`/`_PUBLISHED`/`_UNPUBLISHED`/`_DELETED`). | backend | REQ-KNW-001.1–.4 |
 
+| BR-KNW-007 | (2026-10-05, built) Migration to the content model never changes an article's id, title, body text, status or version; old endpoints read and write the same records. | backend, migration | REQ-KNW-001.7–.8 |
+| BR-KNW-008 | (2026-10-05, built) The old public endpoints return only content of type ARTICLE whose audience is Public and state Published, so restricted content never appears through them. | backend | REQ-KNW-001.8 |
+
 Rules shared with other features belong in `docs/03-business-rules/` and are referenced here by ID.

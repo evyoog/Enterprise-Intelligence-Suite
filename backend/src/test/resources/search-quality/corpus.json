@@ -1,0 +1,43 @@
+{
+  "note": "C70 search quality test set: fixture content written for the test, not real product copy. key = how queries refer to a record.",
+  "products": [
+    {"key": "valam", "name": "Valam.ai", "category": "Analytics", "tags": "dashboards,reports,forecasting", "description": "Business analytics with live dashboards, scheduled reports and sales forecasting for growing teams."},
+    {"key": "varthan", "name": "Varthan.ai", "category": "Commerce", "tags": "orders,inventory,storefront", "description": "Run your online store: orders, inventory tracking and a hosted storefront."},
+    {"key": "thittam", "name": "Thittam.ai", "category": "Project management", "tags": "tasks,timelines,planning", "description": "Plan projects with tasks, timelines, milestones and team workload views."},
+    {"key": "thiran", "name": "Thiran.ai", "category": "Human resources", "tags": "payroll,attendance,leave", "description": "Payroll, attendance and leave management for employees in one place."},
+    {"key": "yukth", "name": "Yukth.ai", "category": "Customer support", "tags": "helpdesk,tickets,chat", "description": "Helpdesk with shared inboxes, ticket routing and live chat for support teams."},
+    {"key": "tharav", "name": "Tharav.ai", "category": "Data", "tags": "data warehouse,pipelines,etl", "description": "Data pipelines and a managed data warehouse that load data from your applications."},
+    {"key": "facturas", "name": "Facturas Pro", "category": "Facturación", "tags": "facturas,impuestos,cobros", "description": "Facturación electrónica: crea facturas, calcula impuestos y controla los cobros pendientes."},
+    {"key": "nomina", "name": "Nómina Simple", "category": "Recursos humanos", "tags": "nómina,empleados,vacaciones", "description": "Calcula la nómina de tus empleados y gestiona sus vacaciones y ausencias."},
+    {"key": "inventario", "name": "Inventario Ágil", "category": "Logística", "tags": "almacén,existencias,pedidos", "description": "Controla las existencias del almacén y recibe avisos cuando un producto se agota."},
+    {"key": "secure-sso", "name": "SecureGate SSO", "category": "Security", "tags": "single sign-on,saml,mfa", "description": "Single sign-on for your organization with SAML, OIDC and multi-factor authentication."},
+    {"key": "mailflow", "name": "MailFlow Campaigns", "category": "Marketing", "tags": "email,newsletters,automation", "description": "Email marketing with newsletters, audience segments and automated campaigns."},
+    {"key": "fieldops", "name": "FieldOps Scheduler", "category": "Operations", "tags": "scheduling,technicians,routes", "description": "Schedule field technicians, plan routes and record completed visits on mobile."}
+  ],
+  "articles": [
+    {"key": "kb-pay-invoice", "title": "How to pay an invoice", "body": "Open Billing, choose the invoice and select Pay now. You can pay by card or UPI. If your organization pays by bank transfer, the invoice shows the bank details and the due date. A receipt is emailed once the payment is confirmed."},
+    {"key": "kb-download-receipt", "title": "Download receipts and invoices", "body": "Every paid invoice has a receipt. Go to Billing, open the invoice and select Download PDF. Receipts include the invoice number, the amount paid and the payment method."},
+    {"key": "kb-sso-setup", "title": "Set up single sign-on with SAML", "body": "Organization admins can connect their identity provider. Add a SAML provider in Sign-in and security, upload the metadata and test the connection. After single sign-on is enabled, members sign in with their company account."},
+    {"key": "kb-mfa-reset", "title": "Reset two-factor authentication", "body": "If you lost your phone, use a recovery code to sign in. An organization admin can also reset MFA for a member, who then enrols again at the next sign-in."},
+    {"key": "kb-invite", "title": "Add members to your organization", "body": "Organization admins add people from the Members page. Each active member uses one seat. Suspended members free their seat until they are reactivated."},
+    {"key": "kb-seats", "title": "Change the number of seats", "body": "Open Subscriptions, choose the organization subscription and change the quantity. You cannot go below the number of seats already in use."},
+    {"key": "kb-renewal", "title": "Automatic renewal and reminders", "body": "Subscriptions renew automatically at the end of each term. Reminder emails are sent before the renewal date at the time and time zone you choose in Preferences."},
+    {"key": "kb-cancel", "title": "Cancel a subscription", "body": "You can cancel a subscription from My subscriptions. Cancellation is final: the product stops working at once and the subscription cannot be renewed later."},
+    {"key": "kb-api-keys", "title": "Create an API key", "body": "Go to Account, Security, API keys and select Create key. Copy the key at once; it is shown only one time. Send it in the X-API-Key header. Each key is limited to 120 requests per minute."},
+    {"key": "kb-export-reports", "title": "Export reports to CSV", "body": "Any report in Valam.ai can be exported. Open the report, choose Export and pick CSV or Excel. Large exports are emailed when they are ready."},
+    {"key": "kb-status-page", "title": "Check service status", "body": "The status page shows whether each product is operational, degraded or down, with current incidents and maintenance windows."},
+    {"key": "kb-password", "title": "Forgot your password", "body": "Select Forgot password on the sign-in page and enter your email address. Follow the link in the email to choose a new password. The link expires after one hour."},
+    {"key": "kb-time-zone", "title": "Change your time zone and date format", "body": "Open Preferences, then Language and formats. Choose your time zone, date format and time format. Dates across the platform use your choice."},
+    {"key": "kb-refund", "title": "Request a refund", "body": "Refunds are issued by platform administrators. Contact support with the invoice number. A full or partial refund goes back to the original payment method."},
+    {"key": "es-pagar-factura", "title": "Cómo pagar una factura", "body": "Abre Facturación, elige la factura y selecciona Pagar ahora. Puedes pagar con tarjeta o UPI. Cuando el pago se confirma, recibes el recibo por correo electrónico."},
+    {"key": "es-contrasena", "title": "Olvidé mi contraseña", "body": "En la página de inicio de sesión selecciona Olvidé mi contraseña y escribe tu correo electrónico. Sigue el enlace del correo para elegir una contraseña nueva."},
+    {"key": "es-renovacion", "title": "Renovación automática de la suscripción", "body": "Las suscripciones se renuevan automáticamente al final de cada periodo. Te enviamos recordatorios antes de la fecha de renovación."},
+    {"key": "es-miembros", "title": "Añadir miembros a la organización", "body": "Los administradores de la organización añaden personas desde la página Miembros. Cada miembro activo usa una licencia."},
+    {"key": "es-sso", "title": "Configurar el inicio de sesión único", "body": "Conecta tu proveedor de identidad con SAML u OIDC para que los empleados inicien sesión con la cuenta de la empresa."},
+    {"key": "es-exportar", "title": "Exportar informes", "body": "Cualquier informe se puede exportar a CSV o Excel. Las exportaciones grandes se envían por correo cuando están listas."},
+    {"key": "es-zona-horaria", "title": "Cambiar la zona horaria", "body": "Abre Preferencias y luego Idioma y formatos. Elige tu zona horaria y el formato de fecha y hora."},
+    {"key": "es-reembolso", "title": "Solicitar un reembolso", "body": "Los reembolsos los emiten los administradores de la plataforma. Escribe a soporte con el número de factura."},
+    {"key": "es-estado", "title": "Estado del servicio", "body": "La página de estado muestra si cada producto funciona con normalidad, con degradación o está caído, y las incidencias actuales."},
+    {"key": "es-claves-api", "title": "Crear una clave de API", "body": "Ve a Cuenta, Seguridad, Claves de API y selecciona Crear clave. Copia la clave al momento: solo se muestra una vez."}
+  ]
+}

@@ -1,0 +1,3 @@
+# Real embedding model for semantic search (REQ-PRT-003). Optional: without
+# it, set EMBEDDING_PROVIDER=stub for tests or leave embeddings disabled.
+sentence-transformers==3.3.1

@@ -105,6 +105,29 @@ describe('Public website vs signed-in tool', () => {
     expect(logout).toHaveBeenCalled()
   })
 
+  it('opens the website home page after signing out, from any page (C79)', async () => {
+    const logout = vi.fn(() => mockUseAuth.mockReturnValue({ isAuthenticated: false, isAdmin: false, user: null }))
+    signedIn(false, logout)
+    getPermissions.mockResolvedValue({ platform: [], organization: [] })
+    renderAt('/products')
+
+    const user = userEvent.setup()
+    await user.click(screen.getByRole('button', { name: 'Sign out' }))
+    expect(logout).toHaveBeenCalled()
+    expect(await screen.findByText('Website home (public)')).toBeInTheDocument()
+  })
+
+  it('shows the website home page to a signed-in user who clicks Home (C79)', async () => {
+    signedIn(false)
+    getPermissions.mockResolvedValue({ platform: [], organization: [] })
+    renderAt('/products')
+
+    const user = userEvent.setup()
+    await user.click(screen.getByRole('link', { name: 'Home' }))
+    expect(await screen.findByText('Website home (public)')).toBeInTheDocument()
+    expect(screen.queryByRole('navigation', { name: 'Application' })).not.toBeInTheDocument()
+  })
+
   it('still works when the permission lookup fails', async () => {
     signedIn(false)
     getPermissions.mockRejectedValue(new Error('offline'))

@@ -36,15 +36,22 @@
 | Added | [C56](../open-decisions.md#c56) Provisioning contract (answer to D6, option B): EIS notifies each hosted product of subscription start, suspension, resumption and cancellation; the product creates or changes the tenant and reports back. FRD is a documents-only stub; the delivery mechanism (D13 events or D19 webhooks) is not decided | [provisioning-contract](../../../02-requirements/FRD/provisioning-contract/requirement.md) | REQ-ORD-002 |
 | Decided | [C58](../open-decisions.md#c58) Vector store for 11.01.02 AI Knowledge: **pgvector** in the existing PostgreSQL database. Embedding model Not specified (depends on D8, LLM provider). 11.01.02 stays carried until D8 is decided; no FRD change yet | - | - |
 | Decided | [C65](../open-decisions.md#c65) (D16) Who manages an organization's subscriptions: organization admins by default, delegable through the new *Manage subscriptions* feature permission. Covers 09.02.01.02/.04/.05 (configure, suspend, deprovision an organization subscription) — the gap C38/C39 carry. Draft; build waits for approval | [access-management](../../../02-requirements/FRD/access-management/requirement.md) | REQ-TEN-005.4 |
+| Built early 2026-10-05 | [C71](../open-decisions.md#c71)–[C78](../open-decisions.md#c78) (2026-10-05) Knowledge Center and Knowledge Management CMS: knowledge-base update (REQ-KNW-001.7–.11), content types and publishing workflow, private S3 media (D23 → [C72](../open-decisions.md#c72)), videos (YouTube, S3, external URL), Knowledge Center reader pages, analytics, AI assistant prepared (not built until D8), knowledge permissions. Approved on 2026-10-05 ("start develop the code", C78, default answers applied) and **built early on 2026-10-05** (commit `0ccbd12` and the docs commit that follows). This sprint's dates are unchanged | [knowledge-base](../../../02-requirements/FRD/knowledge-base/requirement.md), [knowledge-content](../../../02-requirements/FRD/knowledge-content/requirement.md), [knowledge-media](../../../02-requirements/FRD/knowledge-media/requirement.md), [knowledge-videos](../../../02-requirements/FRD/knowledge-videos/requirement.md), [knowledge-center](../../../02-requirements/FRD/knowledge-center/requirement.md), [knowledge-analytics](../../../02-requirements/FRD/knowledge-analytics/requirement.md), [knowledge-permissions](../../../02-requirements/FRD/knowledge-permissions/requirement.md) | REQ-KNW-001 (update), REQ-KNW-002–006, REQ-KNW-008 |
 
 ### FRDs in this sprint
 
 | FRD | Requirement | Functions | Status |
 |---|---|---|---|
 | [order-lifecycle](../../../02-requirements/FRD/order-lifecycle/requirement.md) | REQ-ORD-001 | 09.01.01, 09.02.01 (folded into approval), 09.04.01 (single-hop) | Approved |
-| [knowledge-base](../../../02-requirements/FRD/knowledge-base/requirement.md) | REQ-KNW-001 | 11.01.01 (11.01.02 AI Knowledge carried) | Approved |
+| [knowledge-base](../../../02-requirements/FRD/knowledge-base/requirement.md) | REQ-KNW-001 | 11.01.01 (11.01.02 AI Knowledge carried) | Approved (update REQ-KNW-001.7–.11 approved and built 2026-10-05, C78) |
 | [provisioning-contract](../../../02-requirements/FRD/provisioning-contract/requirement.md) | REQ-ORD-002 | 09.02.01 (provision, activate, suspend, deprovision — contract only) | Draft (stub) |
 | [access-management](../../../02-requirements/FRD/access-management/requirement.md) | REQ-TEN-005 (.4 only here) | 09.02.01.02/.04/.05 — who may configure, suspend, cancel an organization subscription | Draft — waits for approval |
+| [knowledge-content](../../../02-requirements/FRD/knowledge-content/requirement.md) | REQ-KNW-002 | 11.01.01 (content types, workflow, versions) | Approved 2026-10-05 (C78) — built early on 2026-10-05 |
+| [knowledge-media](../../../02-requirements/FRD/knowledge-media/requirement.md) | REQ-KNW-003 | 11.01.01 (documents, images, templates in private S3) | Approved 2026-10-05 (C78) — built early on 2026-10-05 |
+| [knowledge-videos](../../../02-requirements/FRD/knowledge-videos/requirement.md) | REQ-KNW-004 | 11.01.01 / 11.03.02 (video library; watch progress with 11b) | Approved 2026-10-05 (C78) — built early on 2026-10-05 |
+| [knowledge-center](../../../02-requirements/FRD/knowledge-center/requirement.md) | REQ-KNW-005 | 11.01.01 (reader pages) | Approved 2026-10-05 (C78) — built early on 2026-10-05 |
+| [knowledge-analytics](../../../02-requirements/FRD/knowledge-analytics/requirement.md) | REQ-KNW-006 | 11.01.01 (views, feedback, search gaps) | Approved 2026-10-05 (C78) — built early on 2026-10-05 |
+| [knowledge-permissions](../../../02-requirements/FRD/knowledge-permissions/requirement.md) | REQ-KNW-008 | 11.01.01 (contributor / publisher) | Approved 2026-10-05 (C78) — built early on 2026-10-05 |
 
 ### Progress (as of 2026-09-28)
 
@@ -54,12 +61,20 @@
 | 09.02.01 Service Provisioning | Partly done | Provision/Activate folded into order approval; Configure/Suspend/Deprovision an existing org subscription not built — permission decided by [C65](../open-decisions.md#c65) (D16), specified in REQ-TEN-005 (Draft, 2026-10-03) |
 | 09.03 Workflow Orchestration | Not started, not planned as a generic engine | See [C39](../open-decisions.md#c39) — no second orchestrated process exists to justify one |
 | 09.04.01 Approvals | Partly done | Create/Approve/Reject built, single-hop; Route approval/Escalate not built — no multi-level chain defined |
-| 11.01.01 Knowledge Articles | Done (this FRD's scope) | Create/Edit/Publish/Search/Version, plain text search |
-| 11.01.02 AI Knowledge | Not started | Carried — needs a vector-store/embeddings-model decision first |
+| 11.01.01 Knowledge Articles | Done; extended 2026-10-05 | Built early on 2026-10-05 ([C78](../open-decisions.md#c78)): Knowledge Center (`/knowledge`) and Knowledge Management (`/knowledge-management`) — 14 content types, workflow with versions, private S3 media, YouTube/S3/external videos, analytics, knowledge permissions. See the note below |
+| 11.01.02 AI Knowledge | Partly done | Index content and retrieve relevant content done through platform search (C70/C76, pgvector, public content only); Validate source / assistant answers wait for D8 (REQ-KNW-007 answers "not configured") |
 | 13b Connectors & Webhooks | Not started | Carried — P1/stretch, no real consumer yet |
 | 16 Analytics & Data Platform | Not started | Carried — P1/stretch (16.03 has no priority given at all) |
 
 09.02.01's remaining items, 09.03, 09.04.01's remaining items, 11.01.02, 13b, and 16 remain open for this sprint, carried to a later one once the decisions [C39](../open-decisions.md#c39) names are made.
+
+### Knowledge Center and Knowledge Management (C71–C78) — built early on 2026-10-05
+
+Planned dates unchanged. Commit `0ccbd12` (code) plus the docs commit that follows.
+- **Built:** REQ-KNW-001 update (existing articles moved with no data change; old endpoints and routes kept/redirected), REQ-KNW-002 content model and workflow, REQ-KNW-003 media library on a private S3 bucket (presigned URLs only), REQ-KNW-004 videos, REQ-KNW-005 Knowledge Center, REQ-KNW-006 analytics and gaps, REQ-KNW-007 assistant stub, REQ-KNW-008 permissions.
+- **Defaults applied** (open questions not answered): see [C78](../open-decisions.md#c78) and each FRD.
+- **Tests:** test plan [TESTPLAN-KNW-002](../../../../test-cases/functional/knowledge-base/TESTPLAN-KNW-002.md) (TC-KNW-007–054), UAT scripts [UAT-KNW-001–004](../../../../test-cases/UAT/knowledge/README.md).
+- **Not done:** real-bucket checks (needs bucket names/region), Developer/Partner audiences, expiry notifications, virus scanning, automatic transcripts/thumbnails — Not specified.
 
 ## EIS 09 Order & Provisioning Management
 

@@ -1,23 +1,25 @@
 # UI requirements — Global Search
 
 ## Screens
-| Screen | Route | Roles | Wireframe |
-|--------|-------|-------|-----------|
-| Global search | `/search` | Public (signed in or not) | Not specified |
-
-A single search box with three result sections (Products, Knowledge base, Your tickets), each hidden when empty. The current query is reflected in the URL (`?q=`) so a search is shareable/bookmarkable, same convention as the product catalog page's own debounced-search pattern.
+| Screen | Route | Roles | Spec |
+|--------|-------|-------|------|
+| Top-bar search (suggestions) | every signed-in screen | Signed in | [search.md](../../../05-ui/screen-requirements/search.md#top-bar-search) |
+| Global search | `/search` | Public (signed in or not) | [search.md](../../../05-ui/screen-requirements/search.md#results-page) |
+| Search administration | `/admin/search` | `MANAGE_SEARCH` | [search.md](../../../05-ui/screen-requirements/search.md#search-administration) |
 
 ## Fields and validation
 | Field | Type | Required | Validation | Error message (i18n key) |
 |-------|------|----------|------------|--------------------------|
-| Query | Text | No (blank = everything) | - | - |
+| Query | Text | No (blank = everything) | First 200 characters used | - |
+| Synonym terms (admin) | Comma-separated text | Yes | 2–10 different terms | `searchAdmin.synonymMinimum` |
 
 ## States
-- Empty: "Nothing matches your search yet." (`search.noResults`) — shown once a search has actually run and every section came back empty
-- Loading: handled silently (results simply appear once loaded)
-- Error: treated as "nothing found" rather than shown as an error — this is not critical-path data
+- Results page: loading (skeletons), results with count, "Did you mean", meaning search unavailable (info), no results (help with tips and links), load error (`search.loadError`).
+- Top bar: searching, suggestions, recent searches (empty box), "See all results".
+- Admin: basic engine warning (V020 not applied), pgvector missing, stub model warning, rebuild running.
 
 ## Accessibility and localization
-- Each result section heading uses `component="h5"` to keep heading order valid under the page's `h4` title.
-- Result rows are real links (`RouterLink`), not click handlers on a non-interactive element.
-- All strings are in `frontend/src/i18n/locales/{en,es}.json` under `search.*`.
+- Top-bar box is an ARIA combobox with a listbox of options (`aria-activedescendant`, arrow keys, Enter, Escape).
+- Ctrl+K / ⌘K is announced on the shortcut hint.
+- Highlights use `<mark>`; result rows are links; the result count is `aria-live`.
+- All strings in `frontend/src/i18n/locales/{en,es}.json` under `search.*` and `searchAdmin.*`.

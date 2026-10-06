@@ -63,6 +63,10 @@ public class RbacSeeder implements ApplicationRunner {
             // 11.01 Knowledge Base (sprint 2027.1.1): its own permission — publishing
             // customer-facing knowledge content is distinct from catalog management.
             "MANAGE_KNOWLEDGE_BASE",
+            // REQ-KNW-008 (C71): knowledge contributor — create and edit
+            // drafts, upload media, submit for review. MANAGE_KNOWLEDGE_BASE
+            // above is reused as the knowledge publisher permission.
+            "KNOWLEDGE_CONTRIBUTE",
             // 12.01 Ticket Management (sprint 2027.1.2): its own permission —
             // handling support tickets is a distinct responsibility from
             // every other admin capability above.
@@ -89,7 +93,9 @@ public class RbacSeeder implements ApplicationRunner {
             "VIEW_PLATFORM_DASHBOARD",
             // REQ-INT-001/REQ-INT-002 (C61, C62): platform events and API-key
             // administration.
-            "MANAGE_INTEGRATIONS")
+            "MANAGE_INTEGRATIONS",
+            // C70: search index rebuild, synonyms and search insights.
+            "MANAGE_SEARCH")
     );
 
     private static final Map<String, List<String>> ORGANIZATION_ROLES = Map.of(

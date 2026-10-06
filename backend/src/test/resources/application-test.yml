@@ -69,6 +69,11 @@ app:
     per-key: 1000000
     per-user: 1000000
     per-ip: 1000000
+  # C70: no background index backfill or maintenance during tests; tests
+  # index explicitly.
+  search:
+    backfill-on-startup: false
+    maintenance-interval-ms: 86400000
 
 vyoog:
   keycloak:
@@ -82,3 +87,12 @@ vyoog:
       key-id: rzp_test_1234567890
       key-secret: test-key-secret
       webhook-secret: test-webhook-secret
+
+# Knowledge Center: no scheduled jobs and no real storage in tests (tests that
+# need storage use an in-memory MediaStorageService).
+eis:
+  knowledge:
+    jobs:
+      enabled: false
+    storage:
+      provider: none

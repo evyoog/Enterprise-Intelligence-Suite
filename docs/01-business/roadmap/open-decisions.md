@@ -67,8 +67,9 @@ Raised from the sprint 2026.3.3 development plan.
 15. **D14 Seats and quantity:** what does quantity mean on a subscription? → Decided 2026-10-03 (option A, seats): see [C63](#c63).
 16. **D15 Auto-renewal:** do subscriptions renew automatically, and how are customers reminded? → Decided 2026-10-03 (option A, with reminder rules): see [C64](#c64).
 17. **D16 Organization subscription and billing permissions:** who manages an organization's shared subscriptions and billing? → Decided 2026-10-03 (A and B combined: organization admins by default, delegable through feature permissions): see [C65](#c65).
+18. **D23 Product media storage:** where are uploaded files stored? → Decided 2026-10-05 (option A, AWS S3, private bucket, presigned URLs) for knowledge media: see [C72](#c72).
 
-The D-numbers (D3–D23) come from the product owner's decision list, which is not stored in this repository. Only the D-items answered so far are listed above. D8 (LLM provider), D19 (webhooks), D23 (product media storage), D27 (platform templates) and D42 (cloud API gateway) are referenced by records below but are still **not decided**. D12–D15 were decided on 2026-10-03 (C61–C64), and D16 on 2026-10-03 (C65).
+The D-numbers (D3–D23) come from the product owner's decision list, which is not stored in this repository. Only the D-items answered so far are listed above. D8 (LLM provider), D19 (webhooks), D27 (platform templates) and D42 (cloud API gateway) are referenced by records below but are still **not decided**; D23 was decided on 2026-10-05 (C72). D12–D15 were decided on 2026-10-03 (C61–C64), and D16 on 2026-10-03 (C65).
 
 ---
 
@@ -585,6 +586,69 @@ Screen: [business-dashboard.md](../../05-ui/screen-requirements/business-dashboa
 
 **Reason:** the dashboard should answer "what is happening and what needs me" at a glance; detailed administration belongs in its own module.
 
+### C70
+**Decision (product owner, 2026-10-05) — Build keyword and semantic search now; FRDs approved:** improved keyword search ([REQ-PRT-002](../../02-requirements/FRD/global-search/requirement.md)) and semantic search ([REQ-PRT-003](../../02-requirements/FRD/semantic-search/requirement.md)) are built now, ahead of their planned sprint [2027.1.3](sprints/SPRINT-2027.1.3.md), whose dates do not change. Both FRDs are **Approved** with these defaults:
+- **Keyword engine:** PostgreSQL full-text search + `pg_trgm`.
+- **Semantic:** hybrid search with pgvector (as [C58](#c58)).
+- **Embedding model:** option B — an open-source multilingual model (English + Spanish) running in the existing `ai-service`. Which model is **Not specified**; the index uses 384-dimensional vectors. Any key or setting for the model goes only in `config/secrets.env` (template `config/secrets.env.example`, empty).
+- **Scope of semantic search:** public content only (catalog and documentation). User records (support tickets) use keyword search only.
+- **Typo threshold, chunk size, similarity threshold:** tuned with the test set and documented — [quality report](../../02-requirements/FRD/semantic-search/quality-report.md).
+- **No AI-written answers** above results (later).
+- **Rules:** sprint dates unchanged; documents of a changed feature updated in the same commit; existing search, filters, sort and history keep working; results filtered to what the user may see before ranking, with a test proving one organization never sees another's records; anything not in the prompt is written as Not specified.
+
+**Built (2026-10-05):** see the progress note on [SPRINT-2027.1.3](sprints/SPRINT-2027.1.3.md). Engineering defaults (Not specified in the prompt): the detailed specification `PROMPT-keyword-and-semantic-search.md` was not in the repository, and the product owner chose to build from the prompt alone; exact IDs are "#<number>"; "Did you mean" only when nothing matches, using words of public content only; a typo match needs every query word; up to 8 suggestions and 5 recent searches; searches count in history and insights only when the user runs them (Enter, a suggestion, "Did you mean", or arriving from the top bar); search-insight rows keep no user identity and have no retention limit; a new platform permission `MANAGE_SEARCH` (seeded for ADMIN) for rebuild, synonyms and insights; filters beyond type and paging beyond 50 results are Not specified.
+
+**Limitation:** no real embedding model could be downloaded (huggingface.co is blocked in the build environment). Every semantic test and the quality report use the `stub` test model (word hashing), so the pipeline, fallback and speed are verified but the quality of a real model is not; the similarity threshold and chunk size must be re-tuned when a model is chosen. D8 (LLM provider for agents) is unaffected.
+
+**Reason:** search is a daily tool for every user; ranking, word forms, typos and both languages make it useful now, and the semantic layer degrades to keyword search whenever the model is not there.
+
+### C71
+**Decision (product owner, 2026-10-05) — Who creates knowledge content:** only **platform administrators** and the **persons a platform administrator assigns** may create or upload knowledge content (articles, videos, documents, images, templates, study materials, release notes, FAQs, troubleshooting entries, glossary terms, courses). Everyone else only views content, according to its audience and visibility. Enforcement is on the backend for every create, upload-URL, update, publish, delete and replace call; every grant or removal of a knowledge permission and every content action is audited.
+- **Proposed — confirm** ([REQ-KNW-008](../../02-requirements/FRD/knowledge-permissions/requirement.md) open questions): two platform permissions, *Knowledge contributor* (create and edit drafts, upload, metadata, transcripts, chapters, submit for review) and *Knowledge publisher* (review, approve, schedule, publish, unpublish, deprecate, archive, restore, delete, replace media, manage the knowledge search index). Following the reuse rule, the existing `MANAGE_KNOWLEDGE_BASE` becomes the publisher permission (no `KNOWLEDGE_PUBLISH` duplicate) and one new permission `KNOWLEDGE_CONTRIBUTE` is added. ADMIN keeps every knowledge permission.
+- **Open:** may organization admins publish content visible only to their own organization? Default: **no**. How a platform administrator assigns a knowledge role to a person (no per-person platform-role screen exists; platform roles come from Keycloak client roles).
+
+### C72
+**Decision (product owner, 2026-10-05) — answer to D23, option A: file storage is AWS S3.** A **private bucket** (Block Public Access on, bucket owner enforced, versioning where appropriate). Uploads and downloads use **presigned URLs**; large files never pass through the EIS backend; AWS credentials never reach the browser or any API response; no permanent S3 URL is ever returned. Applies to knowledge videos, documents, images, audio and templates ([REQ-KNW-003](../../02-requirements/FRD/knowledge-media/requirement.md), [aws-s3.md](../../09-integrations/aws-s3.md)). New non-secret settings live under `eis.knowledge.*` with environment overrides; keys only in `config/secrets.env`. Product and platform images (`ProductImageService`, local disk) are **not** moved by this decision: whether 02.04 Product Content also uses S3 is Not specified.
+
+### C73
+**Decision (product owner, 2026-10-05) — Video sources:** `YOUTUBE`, `AWS_S3` and `EXTERNAL_URL`, behind an extensible provider design (`VideoSourceProvider`). YouTube details come from the YouTube Data API when a key is configured, otherwise from YouTube oEmbed ([REQ-KNW-004](../../02-requirements/FRD/knowledge-videos/requirement.md), [youtube.md](../../09-integrations/youtube.md)).
+
+### C74
+**Decision (product owner, 2026-10-05) — Knowledge taxonomy is data:** products, modules and categories used by knowledge content are backend data managed by publishers. The module lists in the Knowledge Center prompt (Valam.ai … Tharav.ai) are **initial seed data only**; nothing is hard-coded. Knowledge products reference the existing catalog products.
+
+### C75
+**Decision (product owner, 2026-10-05) — AI Knowledge Assistant prepared, not built:** the "Ask eVyoog Knowledge" panel design and API contract are specified now ([REQ-KNW-007](../../02-requirements/FRD/knowledge-assistant/requirement.md)); answer generation is **not built** until D8 (LLM provider) is decided. Until then the panel says "Coming soon" and the endpoint answers "not configured".
+
+### C76
+**Decision (product owner, 2026-10-05) — Knowledge search reuses platform search:** the Knowledge Center uses keyword and hybrid search (REQ-PRT-002, REQ-PRT-003, pgvector, D10/[C58](#c58), [C70](#c70)); no second search system and no second vector store. The search index is extended with the new knowledge types, transcripts and chapters, and with the audience rules, applied before ranking.
+
+### C77
+**Decision (product owner, 2026-10-05) — Knowledge Center placement and sprint dates:** the work belongs to application 11 (Knowledge Base, sprint [2027.1.1](sprints/SPRINT-2027.1.1.md); Learning, Training Delivery, Certification and video learning, sprint [2027.1.3](sprints/SPRINT-2027.1.3.md)) and to application 01 for search ([2027.1.3](sprints/SPRINT-2027.1.3.md)). **No sprint's planned dates change.** FRDs REQ-KNW-001 (update) to REQ-KNW-008 are written as **Draft** on 2026-10-05 (Phase 1, documents only); each is built only after the product owner replies "Approved" for it, and the affected sprint pages then get "Built early on <date>" notes with the commits. The Academy (11b, P1 stretch, C4/C5) is built only if the product owner confirms; otherwise its data model and navigation are prepared.
+
+### C78
+**Decision (product owner, 2026-10-05) — Knowledge Center FRDs approved: "start develop the code".** REQ-KNW-001 (update) and REQ-KNW-002 to REQ-KNW-008 are **Approved** and were built early on 2026-10-05 (commits `0ccbd12` and the docs commit that follows). The open questions were not answered, so the recommended answers were applied as defaults, each recorded in its FRD under "Answers applied on 2026-10-05"; the product owner can change any of them:
+- permissions: new `KNOWLEDGE_CONTRIBUTE` (contributor) and the existing `MANAGE_KNOWLEDGE_BASE` as publisher; a person gets them through a Keycloak client role mapped to a platform role; organization admins do not publish;
+- signed-out readers see Public content; route `/knowledge`; feedback needs sign-in;
+- upload limits video 5 GB, document 100 MB, image 10 MB, audio 100 MB; URL expiry upload 15 min, download 5 min, playback 1 h; multipart above 100 MB; SVG not accepted (cannot be sanitised); no virus scanning yet;
+- replaced/deleted objects deleted, bucket versioning keeps old versions (90 days proposed);
+- YouTube: oEmbed unless `EIS_YOUTUBE_API_KEY` is set; automatic transcripts and thumbnails are integration points only;
+- analytics: organization id plus a one-way reader hash on events, gap = ≥ 5 zero-result knowledge searches, lowest rated needs ≥ 5 votes;
+- Academy (11b): data model prepared only, navigation hidden, built only if confirmed (C77);
+- AI assistant: not built until D8; `ask` answers 501 ASSISTANT_NOT_CONFIGURED (C75).
+**Still Not specified:** bucket names and region per environment; retention periods for events and replaced files; Developer and Partner audiences; error-code format owner; expiry notifications; organization-authored content. **Limitation:** no real S3 bucket was available in the build environment, so uploads, downloads and playback were tested against an in-memory store and the real AWS SDK signer (offline); the UAT script [UAT-KNW-003](../../../test-cases/UAT/knowledge/UAT-KNW-003-videos-and-s3.md) needs a test bucket.
+
+### C79
+**Decision (product owner, 2026-10-06) — Home button and sign-out destination:** "add home button on the navbar for website's landing page, after logout also it should go to the home page." Built on 2026-10-06 (frontend only; no sprint dates change):
+- The signed-in top bar ([application layout](../../05-ui/screen-requirements/application-layout.md)) and the public website header (`SiteNavbar`, desktop and mobile menu) show a **Home** link to the website landing page `/`.
+- A signed-in user who chooses Home (or the website logo) sees the website at `/`, with "My Workspace" / "Admin Panel" and Sign out in its header. Opening `/` any other way (typing the address, signing in, returning from SSO) still opens the tool, as before.
+- **Sign out** from any page (sidebar, account menu, website header, mobile menu) ends the session and opens the website home page `/`.
+- **Follow-up (product owner, 2026-10-06): "after logout there is no data related to that customer is visible in the screen."** Built the same day:
+  - A session that ends any other way (sign-out in another tab or in PMS, expiry) also opens `/` (`SignedOutRedirect`), so no page keeps showing the person's data.
+  - A session check that was already running when the person signed out can no longer put the old session back, and checks wait until the server-side logout has finished (`AuthProvider`). Before this fix, a check that happened to be in flight could sign the person straight back in.
+  - The browser's recent knowledge searches are forgotten when a session ends; a cart count that arrives after sign-out is dropped.
+  - Every API answer carries `Cache-Control: no-store` (Spring Security default, now covered by `NoCacheHeadersTest`), so Back or a shared computer cannot show cached customer data.
+  - Device settings that are not customer data (theme, language, region, time zone) stay in the browser.
+
 ### DN-2 Sprint scope, length and dates
 **Decision:**
 - **Sprint length:** sprints are **calendar months**. Sprint `.1`, `.2` and `.3` are the first, second and third months of the PI's calendar quarter. Example: 2026.3.3 = 1–30 Sep 2026; 2026.4.1 = 1–31 Oct 2026.
@@ -682,6 +746,16 @@ These documents are **not** changed by this file. Update them to match:
 | C67 | Built 2026-10-03 (frontend only). Remaining: decide whether accent and formats should follow the user across devices (needs `customer_preferences` columns and an API change); route the screens that still format dates directly with `toLocale…` through the shared formatters; decide whether support replies need their own notification category |
 | C68 | Built 2026-10-03 (frontend layout only). Same remaining items as C67 |
 | C69 | Built 2026-10-03 (frontend only). Remaining: decide whether to record launch events (a small additive table and endpoint) so a launches-over-time chart and period filters can be shown with real data; an organization audit-log page for "View audit activity" |
+| C70 | Built 2026-10-05; FRDs REQ-PRT-002 (C70 additions) and REQ-PRT-003 Approved; screens, API, data model, test cases, application page 01 and sprint 2027.1.3 updated. Remaining: choose the embedding model, allow its download (huggingface.co) or provide it as a file, set `EMBEDDING_*` in config/secrets.env, rebuild with re-embed, re-run the quality report and re-tune the similarity threshold and chunk size; apply V020 to each database (pgvector may need to be enabled on RDS); decide a retention period for search insights |
+| C71 | Built 2026-10-05 (C78 defaults). FRD REQ-KNW-008. Remaining: confirm the two permissions, the org-admin question and how a person is given a knowledge role; then build phase 1 |
+| C72 | Built 2026-10-05 (C78 defaults). FRD REQ-KNW-003, `docs/09-integrations/aws-s3.md`. Remaining: bucket names and region per environment, size limits, URL expiries, retention of replaced files; whether product images (02.04) move to S3 |
+| C73 | Built 2026-10-05 (oEmbed + optional key). FRD REQ-KNW-004, `docs/09-integrations/youtube.md`. Remaining: YouTube Data API key or oEmbed only |
+| C74 | Built 2026-10-05: taxonomy tables and seed data |
+| C75 | Built 2026-10-05 as "not configured". Remaining: D8 |
+| C76 | Built 2026-10-05: public knowledge of every type, transcripts and chapters in the platform index; restricted content searched among visible items only |
+| C77 | Sprint pages 2027.1.1 and 2027.1.3 (and 2026.4.1 for D23, 2027.1.2 for ticket prefill) note the Draft FRDs; dates unchanged. Remaining: "Approved" per FRD, then build phases with "Built early" notes |
+| C78 | Built 2026-10-05 (all knowledge FRDs Approved with default answers). Remaining: confirm or change the defaults; bucket names and region; retention periods; run UAT-KNW-001–004 with a test bucket |
+| C79 | Built 2026-10-06 (with the follow-up: no customer data after sign-out); [application layout](../../05-ui/screen-requirements/application-layout.md) updated; TC-PRT-032 to TC-PRT-034 |
 | C54 | The wider navigation-consolidation / shared `<DataTable>`/`<FilterBar>` pass ([C44](#c44)) would make the business dashboard's new click-to-filter table and sort behavior reusable elsewhere instead of page-local — still carried, same as before. `database/seed/README.md` now points to [docs/07-database/demo-data.md](../../07-database/demo-data.md) for exactly what `DemoDataSeeder` adds |
 
 **Done (2026-09-26), no longer follow-up:** C31 (sprint pages 2026.4.1 through 2027.2.2, and the "Sprint" field on application pages 02, 03, 04, 05, 10, 11, 12, 13, 15, all updated to the corrected sequence — this superseded the older "C21: add the general policy engine to `SPRINT-2027.2.2.md`" and "C16, C17: add the deferred functions to `SPRINT-2027.1.3.md`" rows, and the "C21: add the agent controls to `SPRINT-2027.1.2.md`" row, which are now folded into C31's own sprint pages); C32–C35 (FRDs written and Approved, sprint 2026.4.1 built, carry-over recorded on `SPRINT-2026.4.2.md`).

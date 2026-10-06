@@ -2,13 +2,15 @@ import { useEffect, useMemo, useRef, useState, type ComponentType, type MouseEve
 import { useTranslation } from 'react-i18next'
 import { Box, Drawer, IconButton, List, ListItemButton, ListItemText, Menu, MenuItem, Tooltip } from '@mui/material'
 import {
-  ChevronDown, ChevronRight, FileText, LayoutGrid, LifeBuoy, Menu as MenuIcon,
+  ChevronDown, ChevronRight, FileText, Home as HomeIcon, LayoutGrid, LifeBuoy, Menu as MenuIcon,
   MessageSquare, Moon, Plug, ShieldCheck, Sun, X,
 } from 'lucide-react'
 import { Link as RouterLink, useLocation } from 'react-router-dom'
 import { productsApi, type Product } from '../../api/productsApi'
 import { accentFor, iconFor } from '../../utils/accentColor'
 import { useAuth } from '../../auth/AuthProvider'
+import { useSignOut } from '../../auth/useSignOut'
+import { WEBSITE_HOME_STATE } from './appNavigation'
 import { useAuthModal } from '../../auth/AuthModalContext'
 import { useThemeMode } from '../../theming/ThemeModeProvider'
 import { useLocalePreference, SUPPORTED_TIMEZONES } from '../../theming/LocalePreferenceProvider'
@@ -80,6 +82,7 @@ interface PlatformGroup {
  */
 export function SiteNavbar() {
   const auth = useAuth()
+  const signOut = useSignOut()
   const authModal = useAuthModal()
   const { t, i18n } = useTranslation()
   const { resolvedMode, setMode } = useThemeMode()
@@ -152,6 +155,14 @@ export function SiteNavbar() {
     document.getElementById(targetId)?.scrollIntoView({ behavior: 'smooth' })
   }
 
+  // Already on the landing page: Home scrolls back to the top instead.
+  const goHome = (e: ReactMouseEvent) => {
+    setOpenMenu(null)
+    if (!onHome) return
+    e.preventDefault()
+    window.scrollTo({ top: 0, behavior: 'smooth' })
+  }
+
   const toggleMenu = (name: string) => (e: ReactMouseEvent) => {
     e.preventDefault()
     setOpenMenu((prev) => (prev === name ? null : name))
@@ -166,7 +177,7 @@ export function SiteNavbar() {
 
       <header className="navbar" ref={navRef}>
         <div className="container nav-inner">
-          <RouterLink className="brand" to="/">
+          <RouterLink className="brand" to="/" state={WEBSITE_HOME_STATE}>
             <img src="https://www.vyoog.com/wp-content/uploads/2022/03/evyoog-logonew1.png" alt="" className="brand-logo" />
             EIS Platform
           </RouterLink>
@@ -180,6 +191,16 @@ export function SiteNavbar() {
           </IconButton>
 
           <nav className="nav-links" aria-label="Primary">
+            <RouterLink
+              to="/"
+              state={WEBSITE_HOME_STATE}
+              className="nav-home"
+              aria-current={onHome ? 'page' : undefined}
+              onClick={goHome}
+            >
+              <HomeIcon size={13} /> {t('nav.home')}
+            </RouterLink>
+
             <div className="nav-item">
               <button
                 type="button"
@@ -316,11 +337,10 @@ export function SiteNavbar() {
             </Menu>
 
             {auth.isAuthenticated ? (
-              // Signed-in users normally never see the public website: "/"
-              // sends them to the tool (PublicOnly), and every tool page
-              // renders in AppShell. This header only shows for them on the
-              // public account flows (register, verify, password reset), so
-              // it offers just the way into the tool and sign out.
+              // Signed-in users see this header on the website home page when
+              // they chose Home (C79) and on the public account flows
+              // (register, verify, password reset), so it offers the way back
+              // into the tool and sign out.
               <>
                 {auth.isAdmin ? (
                   <RouterLink className="admin-link" to="/admin">
@@ -334,7 +354,7 @@ export function SiteNavbar() {
                     {t('nav.myWorkspace')}
                   </RouterLink>
                 )}
-                <button className="get-started" onClick={auth.logout}>{t('nav.signOut')}</button>
+                <button className="get-started" onClick={signOut}>{t('nav.signOut')}</button>
               </>
             ) : (
               <>
@@ -357,6 +377,9 @@ export function SiteNavbar() {
             </IconButton>
           </Box>
           <List sx={{ flexGrow: 1 }}>
+            <ListItemButton component={RouterLink} to="/" state={WEBSITE_HOME_STATE} onClick={() => setMobileOpen(false)}>
+              <ListItemText primary={t('nav.home')} />
+            </ListItemButton>
             <ListItemButton component={RouterLink} to="/products" onClick={() => setMobileOpen(false)}>
               <ListItemText primary="Products" />
             </ListItemButton>
@@ -381,7 +404,7 @@ export function SiteNavbar() {
                 >
                   <ListItemText primary={auth.isAdmin ? t('nav.adminPanel') : t('nav.myWorkspace')} />
                 </ListItemButton>
-                <ListItemButton onClick={() => { setMobileOpen(false); auth.logout() }}>
+                <ListItemButton onClick={() => { setMobileOpen(false); signOut() }}>
                   <ListItemText primary={t('nav.signOut')} />
                 </ListItemButton>
               </>

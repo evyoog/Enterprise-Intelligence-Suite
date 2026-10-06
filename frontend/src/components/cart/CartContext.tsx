@@ -1,4 +1,4 @@
-import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from 'react'
+import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
 import { useAuth } from '../../auth/AuthProvider'
 import { cartApi } from '../../api/cartApi'
 
@@ -18,10 +18,14 @@ const NO_CART: CartState = { count: 0, setCount: () => {}, refresh: () => {} }
 export function CartProvider({ children }: { children: ReactNode }) {
   const { isAuthenticated } = useAuth()
   const [count, setCount] = useState(0)
+  // C79: a cart answer that arrives after sign-out is dropped, so the last
+  // person's item count never comes back.
+  const signedInRef = useRef(isAuthenticated)
+  useEffect(() => { signedInRef.current = isAuthenticated }, [isAuthenticated])
 
   const refresh = useCallback(() => {
     if (!isAuthenticated) return
-    cartApi.get().then((cart) => setCount(cart.itemCount)).catch(() => {})
+    cartApi.get().then((cart) => { if (signedInRef.current) setCount(cart.itemCount) }).catch(() => {})
   }, [isAuthenticated])
 
   // eslint-disable-next-line react-hooks/set-state-in-effect -- the count follows sign-in and sign-out
