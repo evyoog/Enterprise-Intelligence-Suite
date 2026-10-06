@@ -24,8 +24,10 @@ Added by [C79](../../01-business/roadmap/open-decisions.md#c79) on 2026-10-06.
 - **Home** is in the signed-in top bar (a labelled button on desktop, a house icon with the accessible name "Home" below the `md` breakpoint), first in the website header's links, and first in the website's mobile menu. It opens `/`; on the landing page itself it scrolls back to the top.
 - A signed-in user who chooses Home sees the website with its own header ("My Workspace" / "Admin Panel", Sign out). The choice travels as router state (`WEBSITE_HOME_STATE`), so reloading the landing page keeps it; opening `/` without it still goes to the tool.
 - **Sign out** anywhere (sidebar, account menu, website header, mobile menu) ends the session (`POST /auth/logout`) and opens `/` (`useSignOut`).
+- A session that ends any other way (signed out in another tab or in PMS, expired) also opens `/` (`SignedOutRedirect`).
+- **No customer data after sign-out:** the page showing it is replaced by the website home page; a session check already in flight cannot restore the old session, and checks wait for the server-side logout; recent knowledge searches kept in this browser are removed; a late cart count is dropped; API answers are sent with `Cache-Control: no-store`. Theme, language, region and time zone are device settings and stay.
 - Text: `nav.home` in `en.json` ("Home") and `es.json` ("Inicio").
-- Tests: [TC-PRT-032](../../../test-cases/functional/application-layout/TC-PRT-032.md), [TC-PRT-033](../../../test-cases/functional/application-layout/TC-PRT-033.md).
+- Tests: [TC-PRT-032](../../../test-cases/functional/application-layout/TC-PRT-032.md), [TC-PRT-033](../../../test-cases/functional/application-layout/TC-PRT-033.md), [TC-PRT-034](../../../test-cases/functional/application-layout/TC-PRT-034.md).
 
 ## Top bar: cart icon
 Added by [C59](../../01-business/roadmap/open-decisions.md#c59) ([REQ-MKT-003.7](../../02-requirements/FRD/cart-checkout/requirement.md)), Draft.

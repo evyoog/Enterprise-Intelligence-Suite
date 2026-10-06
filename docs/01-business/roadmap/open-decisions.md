@@ -642,7 +642,12 @@ Screen: [business-dashboard.md](../../05-ui/screen-requirements/business-dashboa
 - The signed-in top bar ([application layout](../../05-ui/screen-requirements/application-layout.md)) and the public website header (`SiteNavbar`, desktop and mobile menu) show a **Home** link to the website landing page `/`.
 - A signed-in user who chooses Home (or the website logo) sees the website at `/`, with "My Workspace" / "Admin Panel" and Sign out in its header. Opening `/` any other way (typing the address, signing in, returning from SSO) still opens the tool, as before.
 - **Sign out** from any page (sidebar, account menu, website header, mobile menu) ends the session and opens the website home page `/`.
-**Not specified:** whether a session that ends in another tab or expires should also move the open page to `/` (today protected pages already go to `/`; public pages stay where they are).
+- **Follow-up (product owner, 2026-10-06): "after logout there is no data related to that customer is visible in the screen."** Built the same day:
+  - A session that ends any other way (sign-out in another tab or in PMS, expiry) also opens `/` (`SignedOutRedirect`), so no page keeps showing the person's data.
+  - A session check that was already running when the person signed out can no longer put the old session back, and checks wait until the server-side logout has finished (`AuthProvider`). Before this fix, a check that happened to be in flight could sign the person straight back in.
+  - The browser's recent knowledge searches are forgotten when a session ends; a cart count that arrives after sign-out is dropped.
+  - Every API answer carries `Cache-Control: no-store` (Spring Security default, now covered by `NoCacheHeadersTest`), so Back or a shared computer cannot show cached customer data.
+  - Device settings that are not customer data (theme, language, region, time zone) stay in the browser.
 
 ### DN-2 Sprint scope, length and dates
 **Decision:**
@@ -750,7 +755,7 @@ These documents are **not** changed by this file. Update them to match:
 | C76 | Built 2026-10-05: public knowledge of every type, transcripts and chapters in the platform index; restricted content searched among visible items only |
 | C77 | Sprint pages 2027.1.1 and 2027.1.3 (and 2026.4.1 for D23, 2027.1.2 for ticket prefill) note the Draft FRDs; dates unchanged. Remaining: "Approved" per FRD, then build phases with "Built early" notes |
 | C78 | Built 2026-10-05 (all knowledge FRDs Approved with default answers). Remaining: confirm or change the defaults; bucket names and region; retention periods; run UAT-KNW-001–004 with a test bucket |
-| C79 | Built 2026-10-06; [application layout](../../05-ui/screen-requirements/application-layout.md) updated; TC-PRT-032, TC-PRT-033. Remaining: whether a session ending in another tab should also open `/` |
+| C79 | Built 2026-10-06 (with the follow-up: no customer data after sign-out); [application layout](../../05-ui/screen-requirements/application-layout.md) updated; TC-PRT-032 to TC-PRT-034 |
 | C54 | The wider navigation-consolidation / shared `<DataTable>`/`<FilterBar>` pass ([C44](#c44)) would make the business dashboard's new click-to-filter table and sort behavior reusable elsewhere instead of page-local — still carried, same as before. `database/seed/README.md` now points to [docs/07-database/demo-data.md](../../07-database/demo-data.md) for exactly what `DemoDataSeeder` adds |
 
 **Done (2026-09-26), no longer follow-up:** C31 (sprint pages 2026.4.1 through 2027.2.2, and the "Sprint" field on application pages 02, 03, 04, 05, 10, 11, 12, 13, 15, all updated to the corrected sequence — this superseded the older "C21: add the general policy engine to `SPRINT-2027.2.2.md`" and "C16, C17: add the deferred functions to `SPRINT-2027.1.3.md`" rows, and the "C21: add the agent controls to `SPRINT-2027.1.2.md`" row, which are now folded into C31's own sprint pages); C32–C35 (FRDs written and Approved, sprint 2026.4.1 built, carry-over recorded on `SPRINT-2026.4.2.md`).

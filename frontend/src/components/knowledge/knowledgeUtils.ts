@@ -76,3 +76,12 @@ export function rememberSearch(term: string) {
     // storage unavailable: nothing to remember
   }
 }
+
+/** C79: forget this browser's recent knowledge searches when a session ends. */
+export function forgetRecentSearches() {
+  try {
+    localStorage.removeItem(RECENT_KEY)
+  } catch {
+    // storage unavailable: nothing stored
+  }
+}

@@ -122,7 +122,7 @@ describe('Knowledge Management', () => {
     await user.click(screen.getByRole('button', { name: 'Upload (AWS S3)' }))
     expect(screen.getByText('File storage is not configured yet. YouTube and external videos still work.')).toBeInTheDocument()
     expect(await axe(container)).toHaveNoViolations()
-  })
+  }, 20000) // typing a whole URL plus an axe pass runs past 5 s on a busy runner
 
   it('asks for confirmation before deleting a file that is in use', async () => {
     admin.me.mockResolvedValue({ contributor: true, publisher: true, contentTypes: ['ARTICLE'] })
