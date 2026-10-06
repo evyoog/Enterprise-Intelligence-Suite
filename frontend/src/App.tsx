@@ -74,6 +74,7 @@ import { RequireAuth } from './components/routing/RequireAuth'
 import { AuthAwareLayout, PublicOnly } from './components/layout/AppShell'
 import { useAuth } from './auth/AuthProvider'
 import { AuthModalProvider } from './auth/AuthModalContext'
+import { SignedOutRedirect } from './auth/SignedOutRedirect'
 import { PreferenceSync } from './theming/PreferenceSync'
 
 function App() {
@@ -101,6 +102,7 @@ function MainApp() {
   return (
     <AuthModalProvider>
       <PreferenceSync />
+      <SignedOutRedirect />
       <Routes>
         {/* Public website: visitors only. A signed-in user opening "/" goes
             straight to the software tool (see PublicOnly / appHomePath). */}

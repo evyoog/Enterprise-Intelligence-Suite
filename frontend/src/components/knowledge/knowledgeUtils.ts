@@ -78,6 +78,7 @@ export function rememberSearch(term: string) {
   }
 }
 
+<<<<<<< HEAD
 /** True only when the server answered "no such content" (404). Anything else is a failed load, not a missing item. */
 export function isNotFound(error: unknown): boolean {
   return error instanceof ApiError && error.status === 404
@@ -95,5 +96,13 @@ export async function loadWithRetry<T>(load: () => Promise<T>, retries = 2, dela
       if (isNotFound(error) || attempt >= retries) throw error
       await new Promise((resolve) => setTimeout(resolve, delayMs * (attempt + 1)))
     }
+=======
+/** C79: forget this browser's recent knowledge searches when a session ends. */
+export function forgetRecentSearches() {
+  try {
+    localStorage.removeItem(RECENT_KEY)
+  } catch {
+    // storage unavailable: nothing stored
+>>>>>>> 52c656c40b0ce9ed8fa2e44ea54bd9ff58c8430f
   }
 }

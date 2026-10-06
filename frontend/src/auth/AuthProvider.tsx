@@ -69,8 +69,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [error, setError] = useState<string | null>(null)
   const hasSessionRef = useRef(false)
   const checkInFlightRef = useRef<Promise<void> | null>(null)
+  // C79: bumped on every sign-in or sign-out, so a session check that started
+  // before one cannot undo it when its answer arrives late (for example
+  // putting the old session back right after Sign out).
+  const sessionGenRef = useRef(0)
+  // C79: the server-side logout call; session checks wait for it, so the
+  // still-valid session cookie is never read back in the meantime.
+  const logoutPendingRef = useRef<Promise<void> | null>(null)
 
   const applyToken = useCallback((token: string | undefined) => {
+    sessionGenRef.current += 1
     hasSessionRef.current = !!token
     // Registered synchronously here, not in a useEffect keyed on accessToken —
     // on the render where isBootstrapping flips to false (routes mounting for
@@ -112,10 +120,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       return
     }
     const promise = (async () => {
+      if (logoutPendingRef.current) await logoutPendingRef.current
+      const generation = sessionGenRef.current
       try {
         const result = await authApi.session()
+        if (generation !== sessionGenRef.current) return
         applyToken(result.accessToken)
       } catch {
+        if (generation !== sessionGenRef.current) return
         // A 401 here means genuinely signed out everywhere (own session dead
         // AND no usable cross-app bridge) — only act if we previously thought
         // we were logged in, so an already-signed-out tab doesn't loop.
@@ -205,7 +217,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     // this tab's local copy) — this is what makes PMS's own session die too,
     // if it's currently open. Fire-and-forget: local state clears regardless
     // of whether this network call succeeds.
-    authApi.logout().catch(() => {})
+    const pending = authApi.logout().catch(() => {}).finally(() => {
+      if (logoutPendingRef.current === pending) logoutPendingRef.current = null
+    })
+    logoutPendingRef.current = pending
     applyToken(undefined)
   }, [applyToken])
 

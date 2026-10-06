@@ -30,6 +30,8 @@ html { scroll-behavior: smooth; }
 .vyoog-landing .brand-logo { height: 29px; width: auto; display: block; }
 .vyoog-landing .nav-links { display: flex; align-items: center; gap: 34px; margin-left: 80px; color: #9da2af; font-size: 12px; }
 .vyoog-landing .nav-links a:hover { color: #fff; }
+.vyoog-landing .nav-home { display: inline-flex; align-items: center; gap: 5px; }
+.vyoog-landing .nav-home[aria-current="page"] { color: #fff; }
 
 /* Dropdown / mega-menu: each nav item with real inner content (Products,
    Solutions, Company, Resources) opens a panel of its actual sub-links on

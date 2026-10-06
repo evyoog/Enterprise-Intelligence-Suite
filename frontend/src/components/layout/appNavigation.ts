@@ -201,3 +201,13 @@ export function isNavItemActive(item: AppNavItem, pathname: string) {
   if (item.to !== '/admin' && pathname.startsWith(item.to + '/')) return true
   return (item.matchPrefixes ?? []).some((prefix) => pathname.startsWith(prefix))
 }
+
+/** Router state that lets a signed-in user see the public website at "/"
+ * (C79). Without it, "/" sends a signed-in user into the tool (PublicOnly),
+ * which is what sign-in and SSO returns rely on. Browsers keep this state on
+ * reload, so a refreshed landing page stays the landing page. */
+export const WEBSITE_HOME_STATE = { website: true } as const
+
+export function wantsWebsite(state: unknown) {
+  return typeof state === 'object' && state !== null && (state as { website?: unknown }).website === true
+}
