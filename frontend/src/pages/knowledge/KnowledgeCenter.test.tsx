@@ -1,3 +1,4 @@
+import { ApiError } from '../../api/client'
 import '../../i18n'
 import { screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
@@ -75,9 +76,17 @@ describe('Knowledge Center', () => {
   })
 
   it('shows a missing or hidden item as not available', async () => {
-    api.get.mockRejectedValue(new Error('Content not found'))
+    api.get.mockRejectedValue(new ApiError(404, 'Content not found'))
     renderWithProviders(<Routes><Route path="/knowledge/content/:idOrSlug" element={<KnowledgeItemPage />} /></Routes>, { route: '/knowledge/content/99' })
     expect(await screen.findByText('This content is not available.')).toBeInTheDocument()
+  })
+
+  it('retries a failed load and shows the item instead of "not available"', async () => {
+    api.get.mockRejectedValueOnce(new ApiError(503, 'Service unavailable')).mockResolvedValue(item())
+    renderWithProviders(<Routes><Route path="/knowledge/content/:idOrSlug" element={<KnowledgeItemPage />} /></Routes>, { route: '/knowledge/content/reset' })
+    expect(await screen.findByRole('heading', { level: 1 }, { timeout: 3000 })).toBeInTheDocument()
+    expect(screen.queryByText('This content is not available.')).not.toBeInTheDocument()
+    expect(api.get).toHaveBeenCalledTimes(2)
   })
 
   it('groups search results by type and offers a ticket with the query', async () => {

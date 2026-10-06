@@ -1,3 +1,4 @@
+import { ApiError } from '../../api/client'
 import type { ContentType } from '../../api/knowledgeApi'
 
 /** Block types the editor offers (REQ-KNW-002.2); the backend validates the same list. */
@@ -74,6 +75,26 @@ export function rememberSearch(term: string) {
     localStorage.setItem(RECENT_KEY, JSON.stringify(next))
   } catch {
     // storage unavailable: nothing to remember
+  }
+}
+
+/** True only when the server answered "no such content" (404). Anything else is a failed load, not a missing item. */
+export function isNotFound(error: unknown): boolean {
+  return error instanceof ApiError && error.status === 404
+}
+
+/**
+ * Runs a load and retries it on failures that are not a 404 (a network blip, a 5xx, or a 401 from a token that is
+ * being refreshed), so a momentary problem does not show up as "This content is not available".
+ */
+export async function loadWithRetry<T>(load: () => Promise<T>, retries = 2, delayMs = 700): Promise<T> {
+  for (let attempt = 0; ; attempt++) {
+    try {
+      return await load()
+    } catch (error) {
+      if (isNotFound(error) || attempt >= retries) throw error
+      await new Promise((resolve) => setTimeout(resolve, delayMs * (attempt + 1)))
+    }
   }
 }
 

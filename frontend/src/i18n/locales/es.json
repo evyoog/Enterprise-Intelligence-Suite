@@ -2433,6 +2433,8 @@
       "bookmarked": "Guardado",
       "breadcrumb": "Ruta de navegación",
       "notFound": "Este contenido no está disponible.",
+      "loadError": "No se pudo cargar este contenido. Inténtalo de nuevo.",
+      "retry": "Reintentar",
       "previewBanner": "Vista previa: así lo verán los lectores.",
       "download": "Descargar",
       "view": "Ver",

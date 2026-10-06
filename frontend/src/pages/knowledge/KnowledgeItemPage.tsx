@@ -10,7 +10,7 @@ import { KnowledgeBlocksView } from '../../components/knowledge/KnowledgeBlocksV
 import { KnowledgeFeedback } from '../../components/knowledge/KnowledgeFeedback'
 import { KnowledgeSupport } from '../../components/knowledge/KnowledgeSupport'
 import { KnowledgeVideoPlayer } from '../../components/knowledge/KnowledgeVideoPlayer'
-import { formatDate, isEisRoute } from '../../components/knowledge/knowledgeUtils'
+import { formatDate, isEisRoute, isNotFound, loadWithRetry } from '../../components/knowledge/knowledgeUtils'
 
 /** Type-specific fields shown above the blocks (error codes, release notes, FAQs, glossary). */
 function TypeFieldsView({ item }: { item: Item }) {
@@ -119,16 +119,27 @@ export function KnowledgeItemView({ item, glossary }: { item: Item; glossary: Gl
 export function KnowledgeItemPage() {
   const { t } = useTranslation()
   const { idOrSlug = '' } = useParams()
-  const [loaded, setLoaded] = useState<{ key: string; item: Item | null } | null>(null)
+  const [loaded, setLoaded] = useState<{ key: string; item: Item | null; failed: boolean } | null>(null)
+  const [attempt, setAttempt] = useState(0)
   const [glossary, setGlossary] = useState<GlossaryTerm[]>([])
   useEffect(() => {
-    knowledgeApi.get(idOrSlug).then((item) => setLoaded({ key: idOrSlug, item })).catch(() => setLoaded({ key: idOrSlug, item: null }))
-  }, [idOrSlug])
+    let active = true
+    loadWithRetry(() => knowledgeApi.get(idOrSlug))
+      .then((item) => active && setLoaded({ key: idOrSlug, item, failed: false }))
+      .catch((error) => active && setLoaded({ key: idOrSlug, item: null, failed: !isNotFound(error) }))
+    return () => { active = false }
+  }, [idOrSlug, attempt])
   const current = loaded?.key === idOrSlug ? loaded : null
   const item = current?.item ?? null
-  const missing = !!current && !current.item
   useEffect(() => { knowledgeApi.glossary().then(setGlossary).catch(() => setGlossary([])) }, [])
-  if (missing) return <Alert severity="warning">{t('knowledge.item.notFound')}</Alert>
+  if (current && !current.item && current.failed) {
+    return (
+      <Alert severity="error" action={<Button color="inherit" size="small" onClick={() => { setLoaded(null); setAttempt((n) => n + 1) }}>{t('knowledge.item.retry')}</Button>}>
+        {t('knowledge.item.loadError')}
+      </Alert>
+    )
+  }
+  if (current && !current.item) return <Alert severity="warning">{t('knowledge.item.notFound')}</Alert>
   if (!item) return <Box sx={{ display: 'grid', placeItems: 'center', py: 6 }}><CircularProgress aria-label={t('knowledge.common.loading')} /></Box>
   return <KnowledgeItemView key={item.id} item={item} glossary={glossary.filter((g) => g.id !== item.id)} />
 }

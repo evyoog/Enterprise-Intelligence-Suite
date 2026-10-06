@@ -4,18 +4,32 @@ import { useTranslation } from 'react-i18next'
 import { Link as RouterLink, useParams } from 'react-router-dom'
 import { knowledgeApi, type ProductHub } from '../../api/knowledgeApi'
 import { CardGrid, SummaryCard } from '../../components/knowledge/KnowledgeCards'
+import { isNotFound, loadWithRetry } from '../../components/knowledge/knowledgeUtils'
 import { SectionHeading } from './KnowledgeCenterLayout'
 
 /** A product knowledge hub: its modules and their content (REQ-KNW-005.11). */
 export function KnowledgeProductHubPage() {
   const { t } = useTranslation()
   const { slug = '' } = useParams()
-  const [loaded, setLoaded] = useState<{ slug: string; hub: ProductHub | null } | null>(null)
-  useEffect(() => { knowledgeApi.hub(slug).then((hub) => setLoaded({ slug, hub })).catch(() => setLoaded({ slug, hub: null })) }, [slug])
+  const [loaded, setLoaded] = useState<{ slug: string; hub: ProductHub | null; failed: boolean } | null>(null)
+  const [attempt, setAttempt] = useState(0)
+  useEffect(() => {
+    let active = true
+    loadWithRetry(() => knowledgeApi.hub(slug))
+      .then((hub) => active && setLoaded({ slug, hub, failed: false }))
+      .catch((error) => active && setLoaded({ slug, hub: null, failed: !isNotFound(error) }))
+    return () => { active = false }
+  }, [slug, attempt])
   const current = loaded?.slug === slug ? loaded : null
   const hub = current?.hub ?? null
-  const error = !!current && !current.hub
-  if (error) return <Alert severity="warning">{t('knowledge.item.notFound')}</Alert>
+  if (current && !current.hub && current.failed) {
+    return (
+      <Alert severity="error" action={<Button color="inherit" size="small" onClick={() => { setLoaded(null); setAttempt((n) => n + 1) }}>{t('knowledge.item.retry')}</Button>}>
+        {t('knowledge.item.loadError')}
+      </Alert>
+    )
+  }
+  if (current && !current.hub) return <Alert severity="warning">{t('knowledge.item.notFound')}</Alert>
   if (!hub) return <Box sx={{ display: 'grid', placeItems: 'center', py: 6 }}><CircularProgress aria-label={t('knowledge.common.loading')} /></Box>
   const p = hub.product
   return (
