@@ -6,7 +6,7 @@ import {
   Tooltip, Typography, useMediaQuery, useTheme,
 } from '@mui/material'
 import { AppWindow, LayoutGrid, Link2, List, Pencil, Plus, Search, Star, Trash2, Unlink, X } from 'lucide-react'
-import { Link as RouterLink } from 'react-router-dom'
+import { Link as RouterLink, useSearchParams } from 'react-router-dom'
 import { ApiError, resolveAssetUrl } from '../../api/client'
 import { productsApi, type Product } from '../../api/productsApi'
 import { ProductForm } from '../../components/admin/ProductForm'
@@ -44,7 +44,14 @@ export function AdminProductsPage() {
   const [products, setProducts] = useState<Product[] | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [reload, setReload] = useState(0)
-  const [createOpen, setCreateOpen] = useState(false)
+  // C80: the old Settings → App page redirects here with ?new=1 to open the Add dialog.
+  const [searchParams, setSearchParams] = useSearchParams()
+  const [createOpen, setCreateOpen] = useState(searchParams.get('new') === '1')
+  useEffect(() => {
+    if (searchParams.get('new') !== '1') return
+    setSearchParams((prev) => { const p = new URLSearchParams(prev); p.delete('new'); return p }, { replace: true })
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
   const [status, setStatus] = useState<StatusFilter>('ALL')
   const [platformId, setPlatformId] = useState<number | ''>('')
   const [query, setQuery] = useState('')

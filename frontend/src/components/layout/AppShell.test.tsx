@@ -31,6 +31,7 @@ function renderAt(path: string) {
               <Route path="/products" element={<Probe label="Catalog" />} />
               <Route path="/admin" element={<Probe label="Admin home" />} />
               <Route path="/organization/business-dashboard" element={<Probe label="Dashboard" />} />
+              <Route path="*" element={<Probe label="Page" />} />
             </Route>
           </Routes>
         </LocalePreferenceProvider>
@@ -74,8 +75,8 @@ describe('Public website vs signed-in tool', () => {
 
     expect(screen.getByText('Dashboard (in app)')).toBeInTheDocument()
     const sidebar = screen.getByRole('navigation', { name: 'Application' })
-    expect(await within(sidebar).findByRole('link', { name: 'Identity federation' }, SIDEBAR_WAIT)).toBeInTheDocument()
-    expect(within(sidebar).getByRole('link', { name: 'Business dashboard' })).toHaveAttribute('aria-current', 'page')
+    expect(await within(sidebar).findByRole('link', { name: 'Sign-in security' }, SIDEBAR_WAIT)).toBeInTheDocument()
+    expect(within(sidebar).getByRole('link', { name: 'Dashboard' })).toHaveAttribute('aria-current', 'page')
     expect(within(sidebar).queryByRole('link', { name: 'Registrations' })).not.toBeInTheDocument()
   })
 
@@ -87,8 +88,8 @@ describe('Public website vs signed-in tool', () => {
     expect(screen.getByText('Admin home (in app)')).toBeInTheDocument()
     const sidebar = screen.getByRole('navigation', { name: 'Application' })
     expect(await within(sidebar).findByRole('link', { name: 'Registrations' }, SIDEBAR_WAIT)).toBeInTheDocument()
-    expect(within(sidebar).queryByRole('link', { name: 'Roles' })).not.toBeInTheDocument()
-    expect(within(sidebar).queryByRole('link', { name: 'My products' })).not.toBeInTheDocument()
+    expect(within(sidebar).queryByRole('link', { name: 'Roles & permissions' })).not.toBeInTheDocument()
+    expect(within(sidebar).queryByRole('link', { name: 'My applications' })).not.toBeInTheDocument()
   })
 
   it('offers account pages and sign out from the user menu', async () => {
@@ -134,7 +135,7 @@ describe('Public website vs signed-in tool', () => {
     renderAt('/products')
     const sidebar = screen.getByRole('navigation', { name: 'Application' })
     expect(within(sidebar).getByRole('link', { name: 'Product catalog' })).toHaveAttribute('aria-current', 'page')
-    expect(within(sidebar).getByRole('link', { name: 'My products' })).toBeInTheDocument()
+    expect(within(sidebar).getByRole('link', { name: 'My applications' })).toBeInTheDocument()
   })
 
   it('has no detectable a11y violations', async () => {
@@ -145,4 +146,89 @@ describe('Public website vs signed-in tool', () => {
     await within(sidebar).findByRole('link', { name: 'Products' }, SIDEBAR_WAIT)
     expect(await axe(container)).toHaveNoViolations()
   }, 20000)
+})
+
+// C80: one menu config, three kinds of user.
+describe('Sidebar by kind of user (C80)', () => {
+  beforeEach(() => {
+    mockUseAuth.mockReset()
+    getPermissions.mockReset()
+  })
+
+  const groupLabels = (sidebar: HTMLElement) =>
+    Array.from(sidebar.querySelectorAll('.MuiListSubheader-root')).map((e) => e.textContent)
+  const linkNames = (sidebar: HTMLElement) => within(sidebar).queryAllByRole('link').map((e) => e.textContent)
+
+  it('shows a regular member the short menu with Help and Billing groups and no admin module', async () => {
+    signedIn(false)
+    getPermissions.mockResolvedValue({ platform: [], organization: [] })
+    renderAt('/my/products')
+    const sidebar = screen.getByRole('navigation', { name: 'Application' })
+    await within(sidebar).findByRole('link', { name: 'Invoices & payments' }, SIDEBAR_WAIT)
+    expect(groupLabels(sidebar)).toEqual(['Workspace', 'Help', 'Billing', 'Account'])
+    // Knowledge Center's children stay folded until the user is inside it.
+    expect(linkNames(sidebar)).toEqual([
+      'My applications', 'Product catalog', 'Knowledge Center', 'Support', 'Overview', 'Invoices & payments', 'Security', 'Preferences',
+    ])
+    expect(within(sidebar).queryByRole('link', { name: /service status|audit|partners|members/i })).not.toBeInTheDocument()
+  })
+
+  it('shows an organization admin Organization, Platform (status only) and Operations with Support once', async () => {
+    signedIn(false)
+    getPermissions.mockResolvedValue({
+      platform: [],
+      organization: ['MANAGE_ORGANIZATION', 'MANAGE_USERS', 'MANAGE_PRIVILEGED_ACCESS', 'MANAGE_ORDERS'],
+    })
+    renderAt('/organization/members')
+    const sidebar = screen.getByRole('navigation', { name: 'Application' })
+    await within(sidebar).findByRole('link', { name: 'Members' }, SIDEBAR_WAIT)
+    expect(groupLabels(sidebar)).toEqual(['Workspace', 'Organization', 'Platform', 'Operations', 'Account'])
+    expect(within(sidebar).getAllByRole('link', { name: 'Support' })).toHaveLength(1)
+    expect(within(sidebar).getAllByRole('link', { name: 'Service status' })).toHaveLength(1)
+    expect(within(sidebar).queryByRole('link', { name: 'Applications' })).not.toBeInTheDocument()
+  })
+
+  it('shows an intermediate role (billing manager) exactly its Billing items, with no empty groups', async () => {
+    signedIn(true)
+    getPermissions.mockResolvedValue({ platform: ['MANAGE_BILLING'], organization: [] })
+    renderAt('/admin/billing/payment-gateway')
+    const sidebar = screen.getByRole('navigation', { name: 'Application' })
+    await within(sidebar).findByRole('link', { name: 'Payment gateway' }, SIDEBAR_WAIT)
+    expect(groupLabels(sidebar)).toEqual(['Workspace', 'Platform', 'Operations', 'Account'])
+    expect(within(sidebar).getByRole('link', { name: 'Payment gateway' })).toHaveAttribute('aria-current', 'page')
+    expect(within(sidebar).getByRole('link', { name: 'Billing settings' })).toBeInTheDocument()
+    expect(within(sidebar).queryByRole('link', { name: /audit log|reviews|partners|support/i })).not.toBeInTheDocument()
+  })
+
+  it('opens only the group holding the current page, on a deep link or refresh', async () => {
+    signedIn(true)
+    getPermissions.mockResolvedValue({ platform: ['MANAGE_INTEGRATIONS', 'MANAGE_BILLING'], organization: [] })
+    renderAt('/admin/integrations/api-keys')
+    const sidebar = screen.getByRole('navigation', { name: 'Application' })
+    expect(await within(sidebar).findByRole('link', { name: 'API keys' }, SIDEBAR_WAIT)).toHaveAttribute('aria-current', 'page')
+    expect(within(sidebar).getByRole('link', { name: 'Platform events' })).toBeInTheDocument()
+    expect(within(sidebar).queryByRole('link', { name: 'Payment gateway' })).not.toBeInTheDocument()
+    expect(within(sidebar).getByRole('button', { name: 'Integrations' })).toHaveAttribute('aria-expanded', 'true')
+    expect(within(sidebar).getByRole('button', { name: 'Billing' })).toHaveAttribute('aria-expanded', 'false')
+  })
+
+  it('makes Knowledge Center one clickable entry whose children are the readers\' ones', async () => {
+    signedIn(false)
+    getPermissions.mockResolvedValue({ platform: [], organization: [] })
+    renderAt('/knowledge/guides')
+    const sidebar = screen.getByRole('navigation', { name: 'Application' })
+    expect(await within(sidebar).findByRole('link', { name: 'Guides' }, SIDEBAR_WAIT)).toHaveAttribute('aria-current', 'page')
+    expect(within(sidebar).getByRole('link', { name: 'Knowledge Center' })).toHaveAttribute('href', '/knowledge')
+    expect(within(sidebar).getAllByRole('link', { name: /knowledge/i })).toHaveLength(1)
+    expect(within(sidebar).getByRole('link', { name: 'FAQs' })).toBeInTheDocument()
+  })
+
+  it('shows breadcrumbs on a nested page', async () => {
+    signedIn(true)
+    getPermissions.mockResolvedValue({ platform: ['MANAGE_INTEGRATIONS'], organization: [] })
+    renderAt('/admin/integrations/api-keys')
+    const crumbs = await screen.findByRole('navigation', { name: 'Breadcrumb' })
+    expect(within(crumbs).getByText('Platform')).toBeInTheDocument()
+    expect(within(crumbs).getByText('API keys')).toHaveAttribute('aria-current', 'page')
+  })
 })

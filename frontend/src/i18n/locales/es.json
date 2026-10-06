@@ -422,16 +422,20 @@
       "workspace": "Espacio de trabajo",
       "organization": "Organización",
       "administration": "Administración",
-      "account": "Cuenta"
+      "account": "Cuenta",
+      "platform": "Plataforma",
+      "operations": "Operaciones",
+      "help": "Ayuda",
+      "billing": "Facturación"
     },
     "nav": {
-      "dashboard": "Panel de negocio",
+      "dashboard": "Panel",
       "platformDashboard": "Panel",
       "myProducts": "Mis productos",
       "catalog": "Catálogo de productos",
       "identityFederation": "Federación de identidad",
-      "platforms": "Plataformas",
-      "apps": "Todas las aplicaciones",
+      "platforms": "Productos",
+      "apps": "Aplicaciones",
       "registrations": "Registros",
       "privilegedAccess": "Acceso privilegiado",
       "roles": "Roles",
@@ -461,7 +465,18 @@
       "orgSettings": "Configuración de la organización",
       "searchAdmin": "Búsqueda",
       "knowledgeCenter": "Centro de conocimiento",
-      "knowledgeManagement": "Gestión del conocimiento"
+      "knowledgeManagement": "Gestión del conocimiento",
+      "myApplications": "Mis aplicaciones",
+      "members": "Miembros",
+      "rolesPermissions": "Roles y permisos",
+      "orgSecurity": "Seguridad de acceso",
+      "knowledgeArticles": "Artículos",
+      "knowledgeGuides": "Guías",
+      "knowledgeFaqs": "Preguntas frecuentes",
+      "knowledgeCategories": "Categorías",
+      "knowledgeDrafts": "Borradores",
+      "knowledgeManage": "Administrar",
+      "billingOverview": "Resumen"
     },
     "catalogTitle": "Catálogo de productos",
     "catalogSubtitle": "Busque y filtre los productos disponibles en la plataforma.",
@@ -482,7 +497,21 @@
       "account": "Cuenta",
       "help": "Ayuda",
       "integrations": "Integraciones"
-    }
+    },
+    "navHint": {
+      "catalog": "Descubre productos y aplicaciones",
+      "platforms": "Administra productos y la configuración de la plataforma"
+    },
+    "crumb": {
+      "new": "Nuevo",
+      "details": "Detalles",
+      "edit": "Editar",
+      "editProduct": "Editar producto",
+      "editApplication": "Editar aplicación"
+    },
+    "breadcrumbs": "Ruta de navegación",
+    "expandGroup": "Expandir {{name}}",
+    "collapseGroup": "Contraer {{name}}"
   },
   "mfaReset": {
     "column": "Dos pasos",
@@ -2895,5 +2924,41 @@
         "seconds": "{{count}} s"
       }
     }
+  },
+  "orgMembers": {
+    "title": "Miembros",
+    "subtitle": "Invita personas, asigna roles y administra los grupos de tu organización.",
+    "tabs": {
+      "members": "Miembros",
+      "groups": "Grupos"
+    }
+  },
+  "orgPrivileged": {
+    "title": "Acceso privilegiado",
+    "subtitle": "Revisa y aprueba las solicitudes de acceso elevado temporal en tu organización."
+  },
+  "orgSecurity": {
+    "title": "Seguridad de acceso",
+    "tabs": {
+      "federation": "Federación de identidad",
+      "mfa": "Política multifactor"
+    },
+    "mfaTitle": "Política multifactor",
+    "mfaSubtitle": "Exige un código de autenticador cuando los miembros inician sesión."
+  },
+  "productsTabs": {
+    "products": "Productos",
+    "configuration": "Configuración"
+  },
+  "rolesTabs": {
+    "roles": "Roles",
+    "permissions": "Permisos",
+    "assignments": "Asignaciones de rol",
+    "assignmentsHelp": "Los roles se asignan a cada miembro de tu organización en la página Miembros.",
+    "goToMembers": "Ir a Miembros"
+  },
+  "serviceTabs": {
+    "status": "Estado",
+    "manage": "Administrar"
   }
 }

@@ -75,7 +75,7 @@ function StatusDot({ tone, label }: { tone: Tone; label: string }) {
  * Launches are stored as totals per user and application — there is no
  * launch history — so there is no launches-over-time chart or date-range
  * filter; see C69. Organization administration (members, groups, MFA policy,
- * privileged access) lives on /organization/settings.
+ * privileged access) lives on /organization/members, /organization/privileged-access and /organization/identity-federation.
  */
 export function BusinessDashboardPage() {
   const { t, i18n } = useTranslation()
@@ -233,7 +233,7 @@ export function BusinessDashboardPage() {
   const quickActions: { label: string; to: string; icon: ComponentType<{ size?: number | string }> }[] = [
     { label: t('bizDash.quick.myApps'), to: '/my/products', icon: AppWindow },
     { label: t('bizDash.quick.catalog'), to: '/products', icon: Store },
-    { label: t('bizDash.quick.members'), to: '/organization/settings#members', icon: UsersRound },
+    { label: t('bizDash.quick.members'), to: '/organization/members', icon: UsersRound },
     { label: t('bizDash.quick.billing'), to: '/organization/billing', icon: CreditCard },
     { label: t('bizDash.quick.support'), to: '/support/tickets', icon: LifeBuoy },
   ]
@@ -272,7 +272,7 @@ export function BusinessDashboardPage() {
             </ButtonBase>
             : <Skeleton width={180} />}
           {seats && (unusedSeats > 0 || overLimit) && (
-            <Button component={RouterLink} to="/organization/settings#members" size="small" variant="outlined" color={overLimit ? 'warning' : 'primary'}
+            <Button component={RouterLink} to="/organization/members" size="small" variant="outlined" color={overLimit ? 'warning' : 'primary'}
               endIcon={<ArrowRight size={14} aria-hidden />}>
               {overLimit ? t('bizDash.welcome.overLimit') : t('bizDash.welcome.unusedSeats', { count: unusedSeats })}
             </Button>
@@ -298,12 +298,12 @@ export function BusinessDashboardPage() {
             <KpiCard index={0} motion={motion} icon={Users} label={t('bizDash.kpi.seats')} value={seats?.licensedSeats}
               sub={seats ? t('bizDash.kpi.seatsUsed', { percent: Math.round(seats.utilizationPercent) }) : undefined}
               footer={seats && <MeterBar motion={motion} value={seats.utilizationPercent} tone={overLimit ? 'error' : seats.utilizationPercent >= 90 ? 'warning' : 'primary'} label={t('bizDash.seats.utilization')} />}
-              to="/organization/settings#members" actionLabel={t('bizDash.kpi.manage')} />
+              to="/organization/members" actionLabel={t('bizDash.kpi.manage')} />
           </Grid>
           <Grid size={{ xs: 12, sm: 6, lg: 3 }}>
             <KpiCard index={1} motion={motion} icon={UsersRound} label={t('bizDash.kpi.members')} value={seats?.activeMemberCount}
               sub={seats ? t('bizDash.kpi.membersOf', { count: seats.licensedSeats }) : undefined}
-              to="/organization/settings#members" actionLabel={t('bizDash.kpi.view')} />
+              to="/organization/members" actionLabel={t('bizDash.kpi.view')} />
           </Grid>
           <Grid size={{ xs: 12, sm: 6, lg: 3 }}>
             <KpiCard index={2} motion={motion} icon={AppWindow} label={t('bizDash.kpi.apps')} value={dashboard ? applications.length : undefined}
@@ -416,7 +416,7 @@ export function BusinessDashboardPage() {
         </Grid>
         <Grid size={{ xs: 12, md: 6, lg: 4 }}>
           <DashPanel id="seat-utilization" title={t('bizDash.seats.title')} loading={!seats} sx={{ height: '100%' }}
-            action={<PanelLink to="/organization/settings#members">{t('bizDash.seats.manage')}</PanelLink>}>
+            action={<PanelLink to="/organization/members">{t('bizDash.seats.manage')}</PanelLink>}>
             {seats && (
               <Box>
                 <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', mb: 1 }}>

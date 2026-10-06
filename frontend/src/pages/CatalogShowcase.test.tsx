@@ -54,7 +54,7 @@ describe('Product Catalog (C66)', () => {
   it('filters by category and offers Add Product to administrators', async () => {
     isAdmin = true
     renderWithProviders(<ProductsPage />)
-    expect(await screen.findByRole('link', { name: 'Add Product' })).toHaveAttribute('href', '/admin/settings/platform')
+    expect(await screen.findByRole('link', { name: 'Add Product' })).toHaveAttribute('href', '/admin/platforms/new')
     await userEvent.setup().click(screen.getByRole('button', { name: 'Planning (1)' }))
     expect(search).toHaveBeenLastCalledWith(expect.objectContaining({ category: 'Planning' }))
     // Thiran has no Planning apps, so its card is filtered out.

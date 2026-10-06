@@ -99,7 +99,7 @@ export function ProductsPage() {
         title={t('catalog.title')}
         subtitle={t('catalog.subtitle')}
         action={auth.isAdmin ? (
-          <Button component={RouterLink} to="/admin/settings/platform" variant="contained" startIcon={<Plus size={16} />}>
+          <Button component={RouterLink} to="/admin/platforms/new" variant="contained" startIcon={<Plus size={16} />}>
             {t('catalog.addProduct')}
           </Button>
         ) : undefined}

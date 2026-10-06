@@ -13,6 +13,7 @@ import {
 } from '../api/billingApi'
 import { ApiError } from '../api/client'
 import { PageHeader } from '../components/layout/PageHeader'
+import { useTabParam } from '../components/layout/useTabParam'
 import { openRazorpayCheckout } from '../utils/razorpayCheckout'
 
 type BillingScope = typeof myBillingApi
@@ -28,11 +29,12 @@ function statusColor(status: string): 'success' | 'warning' | 'error' | 'default
   return 'default'
 }
 
-type TabKey = 'overview' | 'invoices' | 'methods' | 'history' | 'details'
+const BILLING_TABS = ['overview', 'invoices', 'methods', 'history', 'details'] as const
 
 function BillingScreen({ api }: { api: BillingScope }) {
   const { t } = useTranslation()
-  const [tab, setTab] = useState<TabKey>('overview')
+  // C80: the tab is in the URL (?tab=), so the sidebar's Overview and Invoices & payments open the right one.
+  const [tab, setTab] = useTabParam(BILLING_TABS, 'overview')
   const [overview, setOverview] = useState<BillingOverview | null>(null)
   const [reloadToken, setReloadToken] = useState(0)
 

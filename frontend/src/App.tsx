@@ -8,11 +8,17 @@ import { HomePage } from './pages/HomePage'
 import { ProductsPage } from './pages/ProductsPage'
 import { MyProductsPage } from './pages/MyProductsPage'
 import { MySubscriptionsPage } from './pages/MySubscriptionsPage'
-import { OrganizationSettingsPage } from './pages/OrganizationSettingsPage'
+import { OrganizationSettingsRedirect } from './pages/OrganizationSettingsPage'
+import { OrganizationMembersPage } from './pages/OrganizationMembersPage'
+import { OrganizationPrivilegedAccessPage } from './pages/OrganizationPrivilegedAccessPage'
+import { OrganizationSecurityPage } from './pages/OrganizationSecurityPage'
+import { ProductsAdminPage } from './pages/admin/ProductsAdminPage'
+import { RolesPermissionsPage } from './pages/admin/RolesPermissionsPage'
+import { ServiceStatusRoutePage } from './pages/ServiceStatusRoutePage'
+import { LEGACY_ADMIN_REDIRECTS } from './components/routing/legacyRedirects'
 import { BusinessDashboardPage } from './pages/BusinessDashboardPage'
 import { SecuritySettingsPage } from './pages/SecuritySettingsPage'
 import { PreferencesPage } from './pages/PreferencesPage'
-import { OrganizationSamlProvidersPage } from './pages/OrganizationSamlProvidersPage'
 import { OrganizationRegisterPage } from './pages/register/OrganizationRegisterPage'
 import { CheckEmailPage } from './pages/register/CheckEmailPage'
 import { VerifyEmailPage } from './pages/register/VerifyEmailPage'
@@ -20,20 +26,13 @@ import { ForgotPasswordPage } from './pages/ForgotPasswordPage'
 import { ResetPasswordPage } from './pages/ResetPasswordPage'
 import { AdminProductsPage } from './pages/admin/AdminProductsPage'
 import { EditProductPage } from './pages/admin/EditProductPage'
-import { PlatformsListPage } from './pages/admin/PlatformsListPage'
 import { PlatformDashboardPage } from './pages/admin/PlatformDashboardPage'
 import { PlatformAdminDashboardPage } from './pages/admin/PlatformAdminDashboardPage'
 import { EditPlatformPage } from './pages/admin/EditPlatformPage'
-import { ProductSettingsPage } from './pages/admin/settings/ProductSettingsPage'
 import { PlatformSettingsPage } from './pages/admin/settings/PlatformSettingsPage'
-import { CommonSettingsPage } from './pages/admin/settings/CommonSettingsPage'
 import { RegistrationsAdminPage } from './pages/admin/RegistrationsAdminPage'
 import { AdminAuditLogPage } from './pages/admin/AdminAuditLogPage'
 import { AdminPrivilegedAccessPage } from './pages/admin/AdminPrivilegedAccessPage'
-import { RolesAdminPage } from './pages/admin/RolesAdminPage'
-import { PermissionsAdminPage } from './pages/admin/PermissionsAdminPage'
-import { ServiceStatusAdminPage } from './pages/admin/ServiceStatusAdminPage'
-import { ServiceStatusPage } from './pages/ServiceStatusPage'
 import { OrganizationOrdersPage } from './pages/OrganizationOrdersPage'
 import { KnowledgeCenterLayout } from './pages/knowledge/KnowledgeCenterLayout'
 import { KnowledgeHomePage } from './pages/knowledge/KnowledgeHomePage'
@@ -150,11 +149,13 @@ function MainApp() {
           <Route path="/my/subscriptions" element={<RequireAuth><MySubscriptionsPage /></RequireAuth>} />
           <Route path="/organization/business-dashboard" element={<RequireAuth><BusinessDashboardPage /></RequireAuth>} />
           {/* C69: organization administration moved off the dashboard. */}
-          <Route path="/organization/settings" element={<RequireAuth><OrganizationSettingsPage /></RequireAuth>} />
+          <Route path="/organization/settings" element={<RequireAuth><OrganizationSettingsRedirect /></RequireAuth>} />
+          <Route path="/organization/members" element={<RequireAuth><OrganizationMembersPage /></RequireAuth>} />
+          <Route path="/organization/privileged-access" element={<RequireAuth><OrganizationPrivilegedAccessPage /></RequireAuth>} />
           <Route path="/account/security" element={<RequireAuth><SecuritySettingsPage /></RequireAuth>} />
-          <Route path="/organization/identity-federation" element={<RequireAuth><OrganizationSamlProvidersPage /></RequireAuth>} />
+          <Route path="/organization/identity-federation" element={<RequireAuth><OrganizationSecurityPage /></RequireAuth>} />
           {/* REQ-PRT-001 (C26): signed-in customers. */}
-          <Route path="/status" element={<RequireAuth><ServiceStatusPage /></RequireAuth>} />
+          <Route path="/status" element={<RequireAuth><ServiceStatusRoutePage /></RequireAuth>} />
           {/* REQ-KNW-005 Knowledge Center (C71–C77): public, same as /products
               above; what each reader sees is decided by the backend
               (BR-KVS-001). The old /knowledge-base route redirects here
@@ -205,31 +206,25 @@ function MainApp() {
           <Route path="/checkout" element={<RequireAuth><CheckoutPage /></RequireAuth>} />
           <Route path="/checkout/:productId" element={<LegacyCheckoutRedirect />} />
 
-          {/* "settings" is a category (see the sidebar's expandable Settings
-              group), so a bare /admin/settings visit redirects to its first
-              sub-page. */}
+          {/* C80: the generic Settings group is gone. Its old URLs redirect to where each setting
+              now lives (see docs/05-ui/screen-requirements/application-layout.md). */}
           <Route path="/admin" element={<RequireAdmin><Outlet /></RequireAdmin>}>
             {/* Platforms, not the flat app list, is the admin landing page —
                 grouping is the primary mental model here. The flat cross-platform
                 list still exists at its own path for when that's actually needed. */}
-            <Route index element={<PlatformsListPage />} />
+            <Route index element={<ProductsAdminPage />} />
             <Route path="dashboard" element={<PlatformAdminDashboardPage />} />
             <Route path="apps" element={<AdminProductsPage />} />
             <Route path="products/:id/edit" element={<EditProductPage />} />
-            <Route path="platforms" element={<PlatformsListPage />} />
+            <Route path="platforms" element={<ProductsAdminPage />} />
+            <Route path="platforms/new" element={<PlatformSettingsPage />} />
             <Route path="platforms/:id" element={<PlatformDashboardPage />} />
             <Route path="platforms/:id/edit" element={<EditPlatformPage />} />
-            <Route path="settings" element={<Navigate to="/admin/settings/product" replace />} />
-            <Route path="settings/product" element={<ProductSettingsPage />} />
-            <Route path="settings/platform" element={<PlatformSettingsPage />} />
-            <Route path="settings/common" element={<CommonSettingsPage />} />
+            {LEGACY_ADMIN_REDIRECTS.map(([path, to]) => <Route key={path} path={path} element={<Navigate to={to} replace />} />)}
             <Route path="registrations" element={<RegistrationsAdminPage />} />
             <Route path="audit-log" element={<AdminAuditLogPage />} />
             <Route path="privileged-access" element={<AdminPrivilegedAccessPage />} />
-            <Route path="roles" element={<RolesAdminPage />} />
-            <Route path="permissions" element={<PermissionsAdminPage />} />
-            <Route path="service-status" element={<ServiceStatusAdminPage />} />
-            <Route path="knowledge-base" element={<Navigate to="/knowledge-management/content?type=ARTICLE" replace />} />
+            <Route path="roles" element={<RolesPermissionsPage />} />
             <Route path="support/tickets" element={<AdminSupportTicketsPage />} />
             <Route path="reviews" element={<AdminReviewsPage />} />
             <Route path="partners" element={<AdminPartnersPage />} />

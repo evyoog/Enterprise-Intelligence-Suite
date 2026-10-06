@@ -48,11 +48,11 @@ export function worstStatus(statuses: ServiceStatusValue[]): ServiceStatusValue 
 /** Where each backend dashboard alert type is resolved. */
 export const ALERT_ROUTES: Record<string, string> = {
   SERVICE_STATUS: '/status',
-  SEAT_LIMIT_REACHED: '/organization/settings#members',
-  UNDERUTILIZED_SEATS: '/organization/settings#members',
-  UNUSED_PRODUCT_ACCESS: '/organization/settings#members',
+  SEAT_LIMIT_REACHED: '/organization/members',
+  UNDERUTILIZED_SEATS: '/organization/members',
+  UNUSED_PRODUCT_ACCESS: '/organization/members',
   ORGANIZATION_MFA_REQUIRED: '/account/security',
   SUBSCRIPTION_EXPIRING_SOON: '/organization/billing',
-  PRIVILEGED_ACCESS_PENDING: '/organization/settings#privileged-access',
-  PRIVILEGED_ACCESS_ACTIVE: '/organization/settings#privileged-access',
+  PRIVILEGED_ACCESS_PENDING: '/organization/privileged-access',
+  PRIVILEGED_ACCESS_ACTIVE: '/organization/privileged-access',
 }
