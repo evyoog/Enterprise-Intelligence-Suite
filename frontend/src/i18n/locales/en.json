@@ -2403,6 +2403,8 @@
       "bookmarked": "Saved",
       "breadcrumb": "Breadcrumb",
       "notFound": "This content is not available.",
+      "loadError": "This content could not be loaded. Please try again.",
+      "retry": "Try again",
       "previewBanner": "Preview — this is how readers will see it.",
       "download": "Download",
       "view": "View",
