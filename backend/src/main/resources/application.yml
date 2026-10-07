@@ -249,7 +249,17 @@ eis:
       api-key: ${EIS_YOUTUBE_API_KEY:}
       timeout-ms: 3000
 
+  # REQ-CAT-004 Product content (C81). Files use the knowledge storage bucket
+  # above; sizes and expiries are the defaults applied on 2026-10-07.
+  product-content:
+    image-max-size: ${EIS_PRODUCT_CONTENT_IMAGE_MAX_SIZE:5242880}
+    document-max-size: ${EIS_PRODUCT_CONTENT_DOCUMENT_MAX_SIZE:20971520}
+    upload-url-expiry: ${EIS_PRODUCT_CONTENT_UPLOAD_URL_EXPIRY:PT15M}
+    download-url-expiry: ${EIS_PRODUCT_CONTENT_DOWNLOAD_URL_EXPIRY:PT5M}
+    view-url-expiry: ${EIS_PRODUCT_CONTENT_VIEW_URL_EXPIRY:PT1H}
+
 # OpenAPI / Swagger 
+
 springdoc:
   api-docs:
     enabled: ${SWAGGER_ENABLED:false}

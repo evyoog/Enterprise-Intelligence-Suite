@@ -105,7 +105,7 @@ AI required: decided in the feature FRD ([C12](../open-decisions.md#c12)). [WB:F
 
 ## 02.04 Product Content
 
-[C72](../open-decisions.md#c72) (2026-10-05): D23 answered — private AWS S3 with presigned URLs for knowledge media (built 2026-10-05). Whether 02.04 Product Content also uses it is Not specified.
+[C72](../open-decisions.md#c72) (2026-10-05): D23 answered — private AWS S3 with presigned URLs for knowledge media (built 2026-10-05). **Built 2026-10-07 ([C81](../open-decisions.md#c81)):** all six functions of 02.04 are built as the administrator's **Content** tab on an application and the public **Resources** tab on the product page, on the same S3 storage (FRD [REQ-CAT-004](../../../02-requirements/FRD/product-content/requirement.md); screens [product-content](../../../05-ui/screen-requirements/product-content.md)). Still Not specified: moving the uploaded logo to S3, a CDN, per-language content.
 
 ### Feature 02.04.01 Product Documentation
 

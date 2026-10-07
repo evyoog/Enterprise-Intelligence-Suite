@@ -29,9 +29,11 @@
 | Decided | [C33](../open-decisions.md#c33) Plan Management: currency, usage limit, included features, usage price, overage charge, tier-pricing text — data fields only, no billing engine | [plan-management](../../../02-requirements/FRD/plan-management/requirement.md) | REQ-CAT-002 |
 | Decided | [C34](../open-decisions.md#c34) Member Lifecycle: Suspend/Reactivate/Remove and Review access; Invite/Create user carried to 2026.4.2 | [member-lifecycle](../../../02-requirements/FRD/member-lifecycle/requirement.md) | REQ-TEN-002 |
 | Decided | [C66](../open-decisions.md#c66) UI/UX redesign with the Product Catalog as reference; catalog showcase fields (platform colour, catalog visibility and order; app accent colour, feature tags, documentation/support links); public catalog API | [catalog-showcase](../../../02-requirements/FRD/catalog-showcase/requirement.md) | REQ-CAT-003 |
+| [product-content](../../../02-requirements/FRD/product-content/requirement.md) | REQ-CAT-004 | 02.04.01.01–.03, 02.04.02.01–.03 | Approved (2026-10-07, C81) |
 | Decided | [C67](../open-decisions.md#c67) Preferences page redesign: four sections, personal accent colour, date/time/week formats, notification email categories on the existing API; renewal reminders unchanged | - (screen spec [preferences](../../../05-ui/screen-requirements/preferences.md)) | - |
 | Decided | [C35](../open-decisions.md#c35) Groups: create/add/remove member; Projects (05.04.02) carried to 2026.4.2 | [group-management](../../../02-requirements/FRD/group-management/requirement.md) | REQ-TEN-003 |
 | Decided | [C72](../open-decisions.md#c72) (2026-10-05) D23 answered: file storage is a private AWS S3 bucket with presigned URLs, for knowledge media (built 2026-10-05, C78). 02.04 Product Content (still not started) is **not** moved by this decision — whether product images and datasheets also use S3 is Not specified. This sprint's dates are unchanged | - ([aws-s3](../../../09-integrations/aws-s3.md)) | - |
+| Decided | [C81](../open-decisions.md#c81) (2026-10-07) 02.04 Product Content: datasheets, documentation (knowledge articles), images, videos (links) and case studies configured on the application's Content tab; PC-1 to PC-6 answered with the recommended defaults; S3 shared with knowledge media | [product-content](../../../02-requirements/FRD/product-content/requirement.md) | REQ-CAT-004 |
 
 ### FRDs in this sprint
 
@@ -51,7 +53,7 @@
 | 02.01.02 Product Structure | Done | Hierarchy, variants, dependencies built |
 | 02.02 Offering Management | Not started | Needs its own FRD — no decision recorded yet |
 | 02.03 Plan Management | Done (this FRD's scope) | Currency, usage limit, included features, usage price, overage charge, tier-pricing text built; Create plan/billing frequency/subscription price were already built |
-| 02.04 Product Content | Not started | Needs its own FRD |
+| 02.04 Product Content | Done (2026-10-07) | FRD [REQ-CAT-004](../../../02-requirements/FRD/product-content/requirement.md) Approved with default answers ([C81](../open-decisions.md#c81)); Upload datasheet, Publish documentation, Version content, Upload images, Upload videos (links) and Manage case studies built as the admin Content tab and the public Resources tab. Needs a test bucket for the real-S3 check (TC-CAT-032) |
 | 02.05 Localization | Not started | Needs its own FRD |
 | 05.02 Tenant Lifecycle | Not started | Needs its own FRD (what "tenant" means beyond Organization is undecided) |
 | 05.03.01 User Lifecycle | Partly done | Suspend/Reactivate/Remove built; Invite/Create user carried to 2026.4.2 (C34) |

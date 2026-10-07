@@ -68,11 +68,15 @@ class LayeredArchitectureTest {
         // - ..modules.cart.. (REQ-MKT-003, C59) reads the same catalog to
         //   price cart items and check purchase validation (published
         //   product, plan, dependencies) — no second catalog or price list.
+        // - ..modules.productcontent.. (REQ-CAT-004, 02.04 Product Content,
+        //   sprint 2026.4.1, C81) hangs content items off the same catalog
+        //   product (existence and Active check, delete hook) — no second
+        //   catalog.
         ArchRule rule = classes().that().resideInAPackage("..modules.product..")
             .should().onlyHaveDependentClassesThat().resideInAnyPackage(
                 "..modules.product..", "..modules.platform..", "..modules.registration..", "..modules.dashboard..",
                 "..modules.servicestatus..", "..modules.administration..", "..modules.search..", "..modules.reviews..",
-                "..modules.billing..", "..modules.cart..",
+                "..modules.billing..", "..modules.cart..", "..modules.productcontent..",
                 "com.vyoog.eisplatform", "..config.."
             );
 

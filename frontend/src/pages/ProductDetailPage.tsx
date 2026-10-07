@@ -1,3 +1,6 @@
+import { productContentApi, type PublicContent } from '../api/productContentApi'
+import { ProductResources } from '../components/productcontent/ProductResources'
+import { hasPublishedContent } from '../components/productcontent/productContentUtils'
 import { Package as PHPackage } from 'lucide-react'
 import { useBuy } from '../components/cart/useBuy'
 import { useEffect, useMemo, useState } from 'react'
@@ -25,7 +28,7 @@ const FLOW_STEPS = [
 
 const BILLING_SUFFIX: Record<ProductPlan['billingPeriod'], string> = { MONTHLY: '/mo', YEARLY: '/yr', ONE_TIME: '' }
 
-type TabKey = 'overview' | 'pricing' | 'reviews'
+type TabKey = 'overview' | 'pricing' | 'resources' | 'reviews'
 
 /** "/products/:id" — public product detail: description, pricing, the
  * platform's own subscribe → access → launch flow, and ratings/reviews
@@ -51,12 +54,15 @@ export function ProductDetailPage() {
   const [justSubmitted, setJustSubmitted] = useState(false)
 
   const [tab, setTab] = useState<TabKey>('overview')
+  // REQ-CAT-004: published product content (datasheets, documentation, images, videos, case studies).
+  const [content, setContent] = useState<PublicContent | null>(null)
   const [starFilter, setStarFilter] = useState<number | null>(null)
 
   const loadRatings = () => reviewsApi.getRatings(productId).then(setRatings).catch(() => {})
 
   useEffect(() => {
     productsApi.get(productId).then(setProduct).catch(() => {})
+    productContentApi.get(productId).then(setContent).catch(() => setContent(null))
     loadRatings()
     if (auth.isAuthenticated) {
       reviewsApi.getMine(productId)
@@ -200,6 +206,7 @@ export function ProductDetailPage() {
       >
         <Tab value="overview" label={t('productDetail.tabs.overview')} />
         <Tab value="pricing" label={t('productDetail.tabs.pricing')} />
+        {hasPublishedContent(content) && <Tab value="resources" label={t('productContent.public.tab')} />}
         <Tab value="reviews" label={t('productDetail.tabs.reviews', { count: ratings?.reviewCount ?? 0 })} />
       </Tabs>
 
@@ -298,6 +305,8 @@ export function ProductDetailPage() {
           </Box>
         </Fade>
       )}
+
+      {tab === 'resources' && content && <ProductResources productId={productId} content={content} />}
 
       {tab === 'reviews' && (
         <Fade in timeout={250}>

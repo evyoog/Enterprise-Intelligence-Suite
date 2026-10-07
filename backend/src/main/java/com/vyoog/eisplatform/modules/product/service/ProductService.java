@@ -50,6 +50,7 @@ public class ProductService {
     private final ProductMapper productMapper;
     private final PlatformRepository platformRepository;
     private final List<ProductUsageGuard> usageGuards;
+    private final List<ProductDeleteListener> deleteListeners;
 
     /** platformIds -> Set<Platform> needs a repository lookup, so it can't be
      * done in the mapper (see ProductMapper's @Mapping(target="platforms", ignore)). */
@@ -329,6 +330,8 @@ public class ProductService {
             throw new ProductInUseException(
                 "Cannot delete this product: " + reasons + ". Set its status to INACTIVE instead.");
         }
+
+        deleteListeners.forEach((listener) -> listener.onProductDeleted(id));
 
         try {
             productRepository.delete(product);

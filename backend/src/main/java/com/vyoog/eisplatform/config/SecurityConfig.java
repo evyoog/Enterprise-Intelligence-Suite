@@ -153,6 +153,9 @@ public class SecurityConfig {
                 // resolves to (empty for a signed-out caller) — see
                 // GlobalSearchController's own doc.
                 .requestMatchers(HttpMethod.GET, "/search", "/search/suggest").permitAll()
+                // REQ-CAT-004 Product content administration (02.04): the catalog
+                // permission, same as every product mutation above (BR-PCON-001).
+                .requestMatchers("/admin/products/**").access(permissions.platformPermission("MANAGE_CATALOG"))
                 .requestMatchers("/admin/knowledge-base/**").access(permissions.platformPermission("MANAGE_KNOWLEDGE_BASE"))
                 // REQ-KNW-008 Knowledge Management: contributors
                 // (KNOWLEDGE_CONTRIBUTE) or publishers (MANAGE_KNOWLEDGE_BASE,

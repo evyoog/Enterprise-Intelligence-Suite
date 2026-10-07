@@ -658,6 +658,16 @@ Screen: [business-dashboard.md](../../05-ui/screen-requirements/business-dashboa
 - Orders: members see it under Workspace, holders of `MANAGE_ORDERS` under Organization.
 - Administration pages still need the platform-administrator role (`RequireAdmin`), so an intermediate platform role works for people who are platform administrators; the sidebar checks permissions only.
 
+### C81
+**Decision (product owner, 2026-10-07) — 02.04 Product content:** "complete this feature completely": datasheets, documentation, images, videos and case studies are configured by the administrator on the application's edit screen (a Content tab beside the existing form) and shown on the product page. FRD [REQ-CAT-004](../../02-requirements/FRD/product-content/requirement.md) is **Approved** and the feature was built in sprint [2026.4.1](sprints/SPRINT-2026.4.1.md) (its own sprint; dates unchanged). The open questions PC-1 to PC-6 were not answered, so the recommended answers were applied as defaults, each listed in the FRD under "Answers applied on 2026-10-07":
+- **PC-1** files in the private S3 bucket with presigned URLs (same bucket as knowledge media, prefix `product-content/{applicationId}/`); no CDN;
+- **PC-2** documentation = knowledge-base articles linked to the application, the external Documentation and Support links stay;
+- **PC-3** videos are YouTube, Vimeo or other web links; no upload;
+- **PC-4** a case study = customer name, logo, problem, result, optional PDF;
+- **PC-5** latest version only, with the version number and "Updated on";
+- **PC-6** images PNG, JPG, WebP up to 5 MB (SVG and GIF left out: files do not pass through the backend, so SVG cannot be sanitised, as decided for knowledge media in [C78](#c78)); PDF up to 20 MB; limits in `eis.product-content.*`.
+**Still Not specified:** moving the uploaded logo to S3 and a CDN; per-language content (02.05); version history, approval or scheduled publishing for product content; a limit on items per application; cleanup of uploads never attached to an item. **Limitation:** no real S3 bucket was available in the build environment, so uploads were tested against an in-memory store and the real AWS SDK signer (as for C78); the manual test [TC-CAT-032](../../../test-cases/functional/product-content/TC-CAT-032.md) needs a test bucket.
+
 ### DN-2 Sprint scope, length and dates
 **Decision:**
 - **Sprint length:** sprints are **calendar months**. Sprint `.1`, `.2` and `.3` are the first, second and third months of the PI's calendar quarter. Example: 2026.3.3 = 1–30 Sep 2026; 2026.4.1 = 1–31 Oct 2026.
@@ -766,6 +776,7 @@ These documents are **not** changed by this file. Update them to match:
 | C78 | Built 2026-10-05 (all knowledge FRDs Approved with default answers). Remaining: confirm or change the defaults; bucket names and region; retention periods; run UAT-KNW-001–004 with a test bucket |
 | C79 | Built 2026-10-06 (with the follow-up: no customer data after sign-out); [application layout](../../05-ui/screen-requirements/application-layout.md) updated; TC-PRT-032 to TC-PRT-034 |
 | C80 | Built 2026-10-06; [application layout](../../05-ui/screen-requirements/application-layout.md); TC-PRT-035 to TC-PRT-038. Remaining: confirm the Not-specified items above (member dashboard, staff own-tickets tab, billing-view permission) |
+| C81 | Built 2026-10-07 (PC-1 to PC-6 default answers). FRD REQ-CAT-004. Remaining: confirm or change the defaults; bucket names and region (shared with C72); run TC-CAT-032 with a test bucket |
 | C54 | The wider navigation-consolidation / shared `<DataTable>`/`<FilterBar>` pass ([C44](#c44)) would make the business dashboard's new click-to-filter table and sort behavior reusable elsewhere instead of page-local — still carried, same as before. `database/seed/README.md` now points to [docs/07-database/demo-data.md](../../07-database/demo-data.md) for exactly what `DemoDataSeeder` adds |
 
 **Done (2026-09-26), no longer follow-up:** C31 (sprint pages 2026.4.1 through 2027.2.2, and the "Sprint" field on application pages 02, 03, 04, 05, 10, 11, 12, 13, 15, all updated to the corrected sequence — this superseded the older "C21: add the general policy engine to `SPRINT-2027.2.2.md`" and "C16, C17: add the deferred functions to `SPRINT-2027.1.3.md`" rows, and the "C21: add the agent controls to `SPRINT-2027.1.2.md`" row, which are now folded into C31's own sprint pages); C32–C35 (FRDs written and Approved, sprint 2026.4.1 built, carry-over recorded on `SPRINT-2026.4.2.md`).

@@ -2962,5 +2962,159 @@
   "serviceTabs": {
     "status": "Estado",
     "manage": "Administrar"
+  },
+  "productContent": {
+    "tabs": {
+      "details": "Detalles",
+      "content": "Contenido",
+      "label": "Secciones de la aplicación"
+    },
+    "title": "Contenido del producto",
+    "intro": "Fichas técnicas, documentación, imágenes, vídeos y casos de éxito que los clientes ven en la página de producto de esta aplicación. Los elementos empiezan como borrador; solo se muestran los publicados.",
+    "storageOff": "El almacenamiento de archivos aún no está configurado. Los enlaces y los casos de éxito sin archivos siguen funcionando.",
+    "loadError": "No se pudo cargar el contenido del producto.",
+    "retry": "Reintentar",
+    "saveFirst": "El contenido del producto (fichas técnicas, imágenes, vídeos, casos de éxito) se añade después de guardar la aplicación, en su pestaña Contenido.",
+    "listAction": "Contenido",
+    "sections": {
+      "DATASHEET": {
+        "title": "Ficha técnica",
+        "help": "Un PDF que los clientes pueden descargar (hasta {{size}}).",
+        "empty": "Aún no hay ficha técnica.",
+        "add": "Añadir ficha técnica"
+      },
+      "DOCUMENTATION": {
+        "title": "Documentación",
+        "help": "Enlaces a artículos publicados de la base de conocimiento. Los enlaces de Documentación y Soporte de la pestaña Detalles siguen como enlaces adicionales.",
+        "empty": "Aún no hay documentación enlazada.",
+        "add": "Enlazar documentación"
+      },
+      "IMAGE": {
+        "title": "Imágenes",
+        "help": "Una galería de imágenes PNG, JPG o WebP de hasta {{size}}, cada una con texto alternativo.",
+        "empty": "Aún no hay imágenes.",
+        "add": "Añadir imagen"
+      },
+      "VIDEO": {
+        "title": "Vídeos",
+        "help": "Un enlace de YouTube, Vimeo u otra web. Los vídeos no se suben aquí.",
+        "empty": "Aún no hay vídeos.",
+        "add": "Añadir vídeo"
+      },
+      "CASE_STUDY": {
+        "title": "Casos de éxito",
+        "help": "La historia de un cliente: el problema, el resultado y, opcionalmente, un logotipo y un PDF.",
+        "empty": "Aún no hay casos de éxito.",
+        "add": "Añadir caso de éxito"
+      }
+    },
+    "status": {
+      "DRAFT": "Borrador",
+      "PUBLISHED": "Publicado"
+    },
+    "meta": {
+      "version": "Versión {{n}}",
+      "updated": "actualizado {{date}}",
+      "file": "{{name}} · {{size}}",
+      "orphan": "El artículo enlazado ya no está publicado o no es público, por lo que no se muestra a los clientes.",
+      "noFile": "Sin archivo"
+    },
+    "actions": {
+      "edit": "Editar",
+      "delete": "Eliminar",
+      "publish": "Publicar",
+      "unpublish": "Despublicar",
+      "moveUp": "Subir {{title}}",
+      "moveDown": "Bajar {{title}}",
+      "editItem": "Editar {{title}}",
+      "deleteItem": "Eliminar {{title}}",
+      "publishItem": "Publicar {{title}}",
+      "unpublishItem": "Despublicar {{title}}"
+    },
+    "dialog": {
+      "addTitle": "Añadir {{kind}}",
+      "editTitle": "Editar {{kind}}",
+      "save": "Guardar",
+      "saving": "Guardando…",
+      "cancel": "Cancelar",
+      "kind": {
+        "DATASHEET": "ficha técnica",
+        "DOCUMENTATION": "documentación",
+        "IMAGE": "imagen",
+        "VIDEO": "vídeo",
+        "CASE_STUDY": "caso de éxito"
+      },
+      "chooseFile": "Elegir archivo",
+      "replaceFile": "Reemplazar archivo",
+      "chooseLogo": "Elegir logotipo del cliente",
+      "replaceLogo": "Reemplazar logotipo",
+      "fileReady": "Listo: {{name}}",
+      "fileKept": "Archivo actual: {{name}}",
+      "logoKept": "Logotipo actual: {{name}}",
+      "cancelUpload": "Cancelar subida",
+      "uploading": "Subiendo {{name}}…",
+      "uploadFailed": "La subida falló. Inténtalo de nuevo.",
+      "uploaded": "Subido {{name}}"
+    },
+    "fields": {
+      "title": "Título",
+      "description": "Descripción",
+      "altText": "Texto alternativo (describe la imagen)",
+      "videoUrl": "Enlace del vídeo",
+      "videoHelp": "Un enlace de YouTube o Vimeo se reproduce en la página de producto; cualquier otro enlace https se abre en una pestaña nueva.",
+      "customerName": "Nombre del cliente",
+      "problem": "El problema",
+      "result": "El resultado",
+      "article": "Artículo de conocimiento",
+      "articleHelp": "Solo se pueden enlazar artículos publicados visibles para todos.",
+      "thisProduct": "de esta aplicación"
+    },
+    "errors": {
+      "title": "Introduce un título (hasta 200 caracteres).",
+      "alt": "Introduce el texto alternativo de la imagen.",
+      "videoUrl": "Introduce un enlace de vídeo seguro (https).",
+      "customer": "Introduce el nombre del cliente.",
+      "article": "Elige un artículo.",
+      "file": "Elige y sube primero el archivo.",
+      "fileType": "Este tipo de archivo no está permitido aquí. Permitidos: {{types}}.",
+      "fileSize": "El archivo es demasiado grande. El máximo es {{size}}.",
+      "save": "No se pudo guardar. Inténtalo de nuevo."
+    },
+    "delete": {
+      "title": "¿Eliminar este contenido?",
+      "body": "«{{title}}» y sus archivos se eliminarán definitivamente."
+    },
+    "toast": {
+      "saved": "Guardado.",
+      "published": "Publicado.",
+      "unpublished": "Despublicado y oculto para los clientes.",
+      "deleted": "Eliminado."
+    },
+    "public": {
+      "tab": "Recursos",
+      "tabCount": "Recursos",
+      "empty": "Aún no hay recursos.",
+      "datasheets": "Fichas técnicas",
+      "documentation": "Documentación",
+      "gallery": "Galería",
+      "videos": "Vídeos",
+      "caseStudies": "Casos de éxito",
+      "download": "Descargar",
+      "downloadItem": "Descargar {{title}} ({{size}})",
+      "versionUpdated": "Versión {{n}} · actualizado {{date}}",
+      "read": "Leer el artículo",
+      "watch": "Ver el vídeo",
+      "watchItem": "Ver {{title}}",
+      "openVideo": "Abrir el vídeo en una pestaña nueva",
+      "playerTitle": "Vídeo: {{title}}",
+      "problem": "El problema",
+      "result": "El resultado",
+      "caseStudyPdf": "Leer el caso completo (PDF)",
+      "downloadFailed": "No se pudo iniciar la descarga. Inténtalo de nuevo.",
+      "loadError": "No se pudieron cargar los recursos.",
+      "zoomItem": "Ampliar {{title}}",
+      "close": "Cerrar"
+    },
+    "listActionLabel": "Contenido de {{name}}"
   }
 }

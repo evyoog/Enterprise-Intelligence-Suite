@@ -17,6 +17,8 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 public class InMemoryMediaStorage implements MediaStorageService {
 
+    /** Tests switch this off to see "storage not configured". */
+    public volatile boolean configured = true;
     public final Map<String, StoredObject> objects = new ConcurrentHashMap<>();
     public final List<String> deleted = new ArrayList<>();
     public final List<Duration> issuedExpiries = new ArrayList<>();
@@ -27,7 +29,7 @@ public class InMemoryMediaStorage implements MediaStorageService {
 
     @Override
     public boolean configured() {
-        return true;
+        return configured;
     }
 
     @Override
