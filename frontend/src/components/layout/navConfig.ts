@@ -2,7 +2,7 @@ import type { ComponentType } from 'react'
 import {
   Activity, BookOpen, Cable, ClipboardList, CreditCard, FolderTree, Handshake, KeyRound, Landmark, LayoutDashboard,
   LayoutGrid, Layers, LifeBuoy, NotebookPen, Palette, Package, PlugZap, Radio, ScrollText, SearchCheck, ShieldCheck, Star,
-  Store, UserCheck, UserCog, UsersRound, Wrench, FileText, Receipt, Gauge,
+  Network, Store, UserCheck, UserCog, UsersRound, Wrench, FileText, Receipt, Gauge,
 } from 'lucide-react'
 
 /**
@@ -108,6 +108,7 @@ export const NAV_CONFIG: NavDef[] = [
 
   // ------------------------------------------------------------- ORGANIZATION
   { id: 'members', labelKey: 'members', icon: UsersRound, group: 'organization', to: '/organization/members', when: orgAdmin },
+  { id: 'orgStructure', labelKey: 'orgStructure', icon: Network, group: 'organization', to: '/organization/structure', when: orgAdmin },
   {
     id: 'rolesPermissions', labelKey: 'rolesPermissions', icon: ShieldCheck, group: 'organization', to: '/admin/roles',
     matchPrefixes: ['/admin/permissions'],

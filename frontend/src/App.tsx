@@ -10,6 +10,7 @@ import { MyProductsPage } from './pages/MyProductsPage'
 import { MySubscriptionsPage } from './pages/MySubscriptionsPage'
 import { OrganizationSettingsRedirect } from './pages/OrganizationSettingsPage'
 import { OrganizationMembersPage } from './pages/OrganizationMembersPage'
+import { OrganizationStructurePage } from './pages/OrganizationStructurePage'
 import { OrganizationPrivilegedAccessPage } from './pages/OrganizationPrivilegedAccessPage'
 import { OrganizationSecurityPage } from './pages/OrganizationSecurityPage'
 import { ProductsAdminPage } from './pages/admin/ProductsAdminPage'
@@ -151,6 +152,8 @@ function MainApp() {
           {/* C69: organization administration moved off the dashboard. */}
           <Route path="/organization/settings" element={<RequireAuth><OrganizationSettingsRedirect /></RequireAuth>} />
           <Route path="/organization/members" element={<RequireAuth><OrganizationMembersPage /></RequireAuth>} />
+          {/* REQ-TEN-006 (C82): organization hierarchy; MANAGE_ORGANIZATION is enforced by the backend. */}
+          <Route path="/organization/structure" element={<RequireAuth><OrganizationStructurePage /></RequireAuth>} />
           <Route path="/organization/privileged-access" element={<RequireAuth><OrganizationPrivilegedAccessPage /></RequireAuth>} />
           <Route path="/account/security" element={<RequireAuth><SecuritySettingsPage /></RequireAuth>} />
           <Route path="/organization/identity-federation" element={<RequireAuth><OrganizationSecurityPage /></RequireAuth>} />

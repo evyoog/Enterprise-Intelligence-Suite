@@ -58,6 +58,10 @@ public class OrganizationMember implements OrganizationOwnedResource {
     @Column(name = "last_reviewed_by_customer_id")
     private Long lastReviewedByCustomerId;
 
+    /** REQ-TEN-006: the member's home node in the organization hierarchy (optional). */
+    @Column(name = "org_node_id")
+    private Long orgNodeId;
+
     @Override
     public Long organizationId() {
         return organizationId;
