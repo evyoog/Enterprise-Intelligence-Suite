@@ -87,12 +87,12 @@ describe('Public website vs signed-in tool', () => {
 
     expect(screen.getByText('Admin home (in app)')).toBeInTheDocument()
     const sidebar = screen.getByRole('navigation', { name: 'Application' })
-    expect(await within(sidebar).findByRole('link', { name: 'Registrations' }, SIDEBAR_WAIT)).toBeInTheDocument()
+    expect(await within(sidebar).findByRole('link', { name: 'Organizations' }, SIDEBAR_WAIT)).toBeInTheDocument()
     expect(within(sidebar).queryByRole('link', { name: 'Roles & permissions' })).not.toBeInTheDocument()
     expect(within(sidebar).queryByRole('link', { name: 'My applications' })).not.toBeInTheDocument()
   })
 
-  it('offers account pages and sign out from the user menu', async () => {
+  it('offers account pages, the profile header and sign out from the user menu', async () => {
     const logout = vi.fn()
     signedIn(false, logout)
     getPermissions.mockResolvedValue({ platform: [], organization: [] })
@@ -102,6 +102,8 @@ describe('Public website vs signed-in tool', () => {
     await user.click(screen.getByRole('button', { name: 'Account menu for ada@example.com' }))
     const menu = await screen.findByRole('menu')
     expect(within(menu).getByRole('menuitem', { name: 'Security' })).toBeInTheDocument()
+    expect(within(menu).getByRole('menuitem', { name: 'Preferences' })).toBeInTheDocument()
+    expect(within(menu).getByText('ada@example.com')).toBeInTheDocument()
     await user.click(within(menu).getByRole('menuitem', { name: 'Sign out' }))
     expect(logout).toHaveBeenCalled()
   })
@@ -165,12 +167,12 @@ describe('Sidebar by kind of user (C80)', () => {
     renderAt('/my/products')
     const sidebar = screen.getByRole('navigation', { name: 'Application' })
     await within(sidebar).findByRole('link', { name: 'Invoices & payments' }, SIDEBAR_WAIT)
-    expect(groupLabels(sidebar)).toEqual(['Workspace', 'Help', 'Billing', 'Account'])
+    expect(groupLabels(sidebar)).toEqual(['Workspace', 'Help', 'Billing'])
     // Knowledge Center's children stay folded until the user is inside it.
     expect(linkNames(sidebar)).toEqual([
-      'My applications', 'Product catalog', 'Knowledge Center', 'Support', 'Overview', 'Invoices & payments', 'Security', 'Preferences',
+      'My applications', 'Product catalog', 'Knowledge Center', 'Support', 'Overview', 'Invoices & payments',
     ])
-    expect(within(sidebar).queryByRole('link', { name: /service status|audit|partners|members/i })).not.toBeInTheDocument()
+    expect(within(sidebar).queryByRole('link', { name: /service status|audit|partners|members|structure|account/i })).not.toBeInTheDocument()
   })
 
   it('shows an organization admin Organization, Platform (status only) and Operations with Support once', async () => {
@@ -181,8 +183,8 @@ describe('Sidebar by kind of user (C80)', () => {
     })
     renderAt('/organization/members')
     const sidebar = screen.getByRole('navigation', { name: 'Application' })
-    await within(sidebar).findByRole('link', { name: 'Members' }, SIDEBAR_WAIT)
-    expect(groupLabels(sidebar)).toEqual(['Workspace', 'Organization', 'Platform', 'Operations', 'Account'])
+    await within(sidebar).findByRole('link', { name: 'People & structure' }, SIDEBAR_WAIT)
+    expect(groupLabels(sidebar)).toEqual(['Workspace', 'Organization', 'Platform', 'Operations'])
     expect(within(sidebar).getAllByRole('link', { name: 'Support' })).toHaveLength(1)
     expect(within(sidebar).getAllByRole('link', { name: 'Service status' })).toHaveLength(1)
     expect(within(sidebar).queryByRole('link', { name: 'Applications' })).not.toBeInTheDocument()
@@ -194,7 +196,7 @@ describe('Sidebar by kind of user (C80)', () => {
     renderAt('/admin/billing/payment-gateway')
     const sidebar = screen.getByRole('navigation', { name: 'Application' })
     await within(sidebar).findByRole('link', { name: 'Payment gateway' }, SIDEBAR_WAIT)
-    expect(groupLabels(sidebar)).toEqual(['Workspace', 'Platform', 'Operations', 'Account'])
+    expect(groupLabels(sidebar)).toEqual(['Workspace', 'Platform', 'Operations'])
     expect(within(sidebar).getByRole('link', { name: 'Payment gateway' })).toHaveAttribute('aria-current', 'page')
     expect(within(sidebar).getByRole('link', { name: 'Billing settings' })).toBeInTheDocument()
     expect(within(sidebar).queryByRole('link', { name: /audit log|reviews|partners|support/i })).not.toBeInTheDocument()

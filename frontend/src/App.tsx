@@ -10,7 +10,6 @@ import { MyProductsPage } from './pages/MyProductsPage'
 import { MySubscriptionsPage } from './pages/MySubscriptionsPage'
 import { OrganizationSettingsRedirect } from './pages/OrganizationSettingsPage'
 import { OrganizationMembersPage } from './pages/OrganizationMembersPage'
-import { OrganizationStructurePage } from './pages/OrganizationStructurePage'
 import { OrganizationPrivilegedAccessPage } from './pages/OrganizationPrivilegedAccessPage'
 import { OrganizationSecurityPage } from './pages/OrganizationSecurityPage'
 import { ProductsAdminPage } from './pages/admin/ProductsAdminPage'
@@ -31,7 +30,8 @@ import { PlatformDashboardPage } from './pages/admin/PlatformDashboardPage'
 import { PlatformAdminDashboardPage } from './pages/admin/PlatformAdminDashboardPage'
 import { EditPlatformPage } from './pages/admin/EditPlatformPage'
 import { PlatformSettingsPage } from './pages/admin/settings/PlatformSettingsPage'
-import { RegistrationsAdminPage } from './pages/admin/RegistrationsAdminPage'
+import { AdminOrganizationsPage } from './pages/admin/AdminOrganizationsPage'
+import { AdminOrganizationDetailPage } from './pages/admin/AdminOrganizationDetailPage'
 import { AdminAuditLogPage } from './pages/admin/AdminAuditLogPage'
 import { AdminPrivilegedAccessPage } from './pages/admin/AdminPrivilegedAccessPage'
 import { OrganizationOrdersPage } from './pages/OrganizationOrdersPage'
@@ -153,7 +153,7 @@ function MainApp() {
           <Route path="/organization/settings" element={<RequireAuth><OrganizationSettingsRedirect /></RequireAuth>} />
           <Route path="/organization/members" element={<RequireAuth><OrganizationMembersPage /></RequireAuth>} />
           {/* REQ-TEN-006 (C82): organization hierarchy; MANAGE_ORGANIZATION is enforced by the backend. */}
-          <Route path="/organization/structure" element={<RequireAuth><OrganizationStructurePage /></RequireAuth>} />
+          <Route path="/organization/structure" element={<Navigate to="/organization/members?tab=structure" replace />} />
           <Route path="/organization/privileged-access" element={<RequireAuth><OrganizationPrivilegedAccessPage /></RequireAuth>} />
           <Route path="/account/security" element={<RequireAuth><SecuritySettingsPage /></RequireAuth>} />
           <Route path="/organization/identity-federation" element={<RequireAuth><OrganizationSecurityPage /></RequireAuth>} />
@@ -224,7 +224,9 @@ function MainApp() {
             <Route path="platforms/:id" element={<PlatformDashboardPage />} />
             <Route path="platforms/:id/edit" element={<EditPlatformPage />} />
             {LEGACY_ADMIN_REDIRECTS.map(([path, to]) => <Route key={path} path={path} element={<Navigate to={to} replace />} />)}
-            <Route path="registrations" element={<RegistrationsAdminPage />} />
+            <Route path="organizations" element={<AdminOrganizationsPage />} />
+            <Route path="organizations/:kind/:id" element={<AdminOrganizationDetailPage />} />
+            <Route path="registrations" element={<Navigate to="/admin/organizations" replace />} />
             <Route path="audit-log" element={<AdminAuditLogPage />} />
             <Route path="privileged-access" element={<AdminPrivilegedAccessPage />} />
             <Route path="roles" element={<RolesPermissionsPage />} />

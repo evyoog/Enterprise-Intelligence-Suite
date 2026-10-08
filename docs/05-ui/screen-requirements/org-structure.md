@@ -1,8 +1,10 @@
-# Screen: Organization structure (`/organization/structure`)
+# Screen: Organization structure (tab "Org structure" of `/organization/members`)
+
+> C83: the separate sidebar entry is gone; the screen is the third tab of **People & structure**. `/organization/structure` redirects to `/organization/members?tab=structure`. Platform administrators see the same chart read-only in the Structure tab of an organization ([admin-organization-detail.md](admin-organization-detail.md)).
 
 **Requirement:** [REQ-TEN-006](../../02-requirements/FRD/org-hierarchy/requirement.md) · **Access:** `MANAGE_ORGANIZATION` · Cloned from the Thittam org-hierarchy page ([C82](../../01-business/roadmap/open-decisions.md#c82)).
 
-- **Header:** title "Structure"; actions *Configure levels*, *Import CSV*, *Add node* (always enabled: adds under the selected node, or under the root when none is selected).
+- **Toolbar:** actions *Configure levels*, *Import CSV*, *Add node* (always enabled: adds under the selected node, or under the root when none is selected).
 - **Toolbar:** search (name, code, type; matches are highlighted, other cards dimmed, ancestors opened), type filter chips (one per level), *Active only* switch, *Expand all*, *Collapse all*.
 - **Org chart canvas:** one card per node joined by connector lines. A card shows the type icon, name, a *Root* tag on the root, type and code, a type chip, "Total: N" nodes beneath, "Inactive" when inactive, a **⋯ menu** (Add child, Edit, Move, Activate/Deactivate, Delete; the root offers only Add child and Edit) and a **Details** button. A round badge under a card shows how many children it has (click to expand) or a minus (click to collapse). The first two levels are open by default.
 - **Navigation:** zoom bar (zoom out, percentage, zoom in, fit to view), mouse wheel zoom, drag to pan, and a **minimap** (click to jump).

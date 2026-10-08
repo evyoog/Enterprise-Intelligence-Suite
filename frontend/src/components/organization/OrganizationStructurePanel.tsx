@@ -1,19 +1,18 @@
-import { ArrowDown, ArrowUp, Network, Trash2, X } from 'lucide-react'
+import { ArrowDown, ArrowUp, Trash2, X } from 'lucide-react'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import {
   Alert, Box, Button, Chip, CircularProgress, Dialog, DialogActions, DialogContent, DialogTitle, FormControl,
   FormControlLabel, IconButton, Switch, InputLabel, MenuItem, Paper, Select, Stack, Tab, Tabs, TextField, Typography,
 } from '@mui/material'
-import { ApiError } from '../api/client'
+import { ApiError } from '../../api/client'
 import {
   orgHierarchyApi, type OrgImportResult, type OrgLevel, type OrgNode, type OrgNodeDetail, type OrgNodeHistoryEntry,
   type OrgTree,
-} from '../api/orgHierarchyApi'
-import { organizationApi, type OrgMember } from '../api/registrationApi'
-import { PageHeader } from '../components/layout/PageHeader'
-import { OrgChart } from '../components/organization/OrgChart'
-import { ConfirmDialog } from '../components/ui/ConfirmDialog'
+} from '../../api/orgHierarchyApi'
+import { organizationApi, type OrgMember } from '../../api/registrationApi'
+import { OrgChart } from './OrgChart'
+import { ConfirmDialog } from '../ui/ConfirmDialog'
 
 type DialogState =
   | { kind: 'create'; parent: OrgNode }
@@ -28,13 +27,13 @@ type DialogState =
 const message = (e: unknown) => (e instanceof ApiError ? e.message : 'Request failed')
 
 /**
- * "/organization/structure" — REQ-TEN-006 Organization hierarchy. Organization
+ * The "Org structure" tab of "/organization/members" (formerly "the Org structure tab") — REQ-TEN-006 Organization hierarchy. Organization
  * administrators (MANAGE_ORGANIZATION) model the organization as one tree of
  * nodes, shown as a visual org chart (cloned from Thittam). The backend enforces
  * every rule (level order, cycles, names, guards); this page only offers what is
  * valid and shows the backend's reason otherwise.
  */
-export function OrganizationStructurePage() {
+export function OrganizationStructurePanel() {
   const { t } = useTranslation()
   const [tree, setTree] = useState<OrgTree | null>(null)
   const [error, setError] = useState<string | null>(null)
@@ -145,16 +144,16 @@ export function OrganizationStructurePage() {
 
   return (
     <Box>
-      <PageHeader title={t('orgStructure.title')} subtitle={t('orgStructure.subtitle')} area="organization" icon={Network}
-        action={(
-          <Stack direction="row" spacing={1} useFlexGap sx={{ flexWrap: 'wrap' }}>
-            <Button variant="outlined" onClick={() => setDialog({ kind: 'levels' })}>{t('orgStructure.configureLevels')}</Button>
-            <Button variant="outlined" onClick={() => setDialog({ kind: 'import' })}>{t('orgStructure.importCsv')}</Button>
-            <Button variant="contained" disabled={!addTarget} onClick={() => addTarget && setDialog({ kind: 'create', parent: addTarget })}>
-              {t('orgStructure.addNode')}
-            </Button>
-          </Stack>
-        )} />
+      <Stack direction="row" spacing={1} useFlexGap sx={{ flexWrap: 'wrap', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
+        <Typography color="text.secondary">{t('orgStructure.subtitle')}</Typography>
+        <Stack direction="row" spacing={1} useFlexGap sx={{ flexWrap: 'wrap' }}>
+          <Button variant="outlined" onClick={() => setDialog({ kind: 'levels' })}>{t('orgStructure.configureLevels')}</Button>
+          <Button variant="outlined" onClick={() => setDialog({ kind: 'import' })}>{t('orgStructure.importCsv')}</Button>
+          <Button variant="contained" disabled={!addTarget} onClick={() => addTarget && setDialog({ kind: 'create', parent: addTarget })}>
+            {t('orgStructure.addNode')}
+          </Button>
+        </Stack>
+      </Stack>
       {notice && <Alert severity="success" onClose={() => setNotice(null)} sx={{ mb: 2 }}>{notice}</Alert>}
       {error && (
         <Alert severity="error" sx={{ mb: 2 }} action={<Button color="inherit" size="small" onClick={() => void load()}>{t('orgStructure.retry')}</Button>}>

@@ -65,6 +65,41 @@ public class OrgHierarchyService {
     public NodeDetailDto detail(Long customerId, Long nodeId) {
         Long orgId = organizationSelfService.requireOrganizationManagement(customerId);
         ensureInitialised(orgId);
+        return detailOf(orgId, nodeId);
+    }
+
+    public List<HistoryDto> history(Long customerId, Long nodeId) {
+        Long orgId = organizationSelfService.requireOrganizationManagement(customerId);
+        return historyOf(orgId, nodeId);
+    }
+
+    /** REQ-TEN-007: read-only views for the platform administrator (BR-DIR-008). The caller's
+     * permission is checked by the security configuration; these never create the root. */
+    public TreeDto adminTree(Long orgId) {
+        if (!nodeRepository.existsByOrganizationIdAndParentIdIsNull(orgId)) {
+            List<LevelDto> levels = new ArrayList<>();
+            for (int i = 0; i < DEFAULT_LEVELS.size(); i++) {
+                levels.add(new LevelDto(DEFAULT_LEVELS.get(i), prettify(DEFAULT_LEVELS.get(i)), i));
+            }
+            return new TreeDto(levels, List.of());
+        }
+        return buildTree(orgId);
+    }
+
+    public NodeDetailDto adminDetail(Long orgId, Long nodeId) {
+        return detailOf(orgId, nodeId);
+    }
+
+    public List<HistoryDto> adminHistory(Long orgId, Long nodeId) {
+        return historyOf(orgId, nodeId);
+    }
+
+    /** Number of hierarchy nodes of an organization (0 when never opened). */
+    public int nodeCount(Long orgId) {
+        return nodeRepository.findByOrganizationIdOrderBySortOrderAscNameAsc(orgId).size();
+    }
+
+    private NodeDetailDto detailOf(Long orgId, Long nodeId) {
         OrgNode node = requireNode(orgId, nodeId);
         Map<Long, OrgNode> byId = nodesById(orgId);
         LinkedList<String> path = new LinkedList<>();
@@ -78,8 +113,7 @@ public class OrgHierarchyService {
         return new NodeDetailDto(toDto(node, byId.values(), memberCounts(orgId)), path, members);
     }
 
-    public List<HistoryDto> history(Long customerId, Long nodeId) {
-        Long orgId = organizationSelfService.requireOrganizationManagement(customerId);
+    private List<HistoryDto> historyOf(Long orgId, Long nodeId) {
         requireNode(orgId, nodeId);
         Map<Long, OrgNode> byId = nodesById(orgId);
         return historyRepository.findByOrgNodeIdOrderByEffectiveAtDescIdDesc(nodeId).stream()

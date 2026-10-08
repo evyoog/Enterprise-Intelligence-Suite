@@ -30,7 +30,6 @@ describe('regular member (C80 §3)', () => {
       workspace: ['myApplications', 'catalog', 'knowledgeCenter', 'knowledgeCenter>knowledgeArticles', 'knowledgeCenter>knowledgeGuides', 'knowledgeCenter>knowledgeFaqs'],
       help: ['support'],
       billing: ['billingOverview', 'billingInvoices'],
-      account: ['security', 'preferences'],
     })
   })
 
@@ -54,10 +53,9 @@ describe('organization admin (C80 §2)', () => {
 
   it('sees workspace, organization, status, billing and support under their groups', () => {
     expect(t.workspace).toEqual(['dashboard', 'myApplications', 'catalog', 'knowledgeCenter', 'knowledgeCenter>knowledgeArticles', 'knowledgeCenter>knowledgeGuides', 'knowledgeCenter>knowledgeFaqs'])
-    expect(t.organization).toEqual(['members', 'orgStructure', 'privilegedAccess', 'identityFederation', 'orders'])
+    expect(t.organization).toEqual(['members', 'privilegedAccess', 'identityFederation', 'orders'])
     expect(t.platform).toEqual(['serviceStatus'])
     expect(t.operations).toEqual(['billing', 'billing>billingOverview', 'billing>billingInvoices', 'support'])
-    expect(t.account).toEqual(['security', 'preferences'])
     expect(t.help).toBeUndefined()
     expect(t.billing).toBeUndefined()
   })
@@ -87,7 +85,6 @@ describe('platform administrator (C80 §2)', () => {
       'billing', 'billing>adminBillingInvoices', 'billing>adminPaymentGateway', 'billing>adminBillingSettings',
       'support', 'reviews', 'partners', 'auditLog',
     ])
-    expect(t.account).toEqual(['security', 'preferences'])
   })
 
   it('has no generic Settings item and no separate Knowledge Management or sidebar Search', () => {

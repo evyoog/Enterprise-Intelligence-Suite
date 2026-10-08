@@ -10,6 +10,7 @@ import { Link as RouterLink, Navigate, Outlet, useLocation, useNavigate } from '
 import { useAuth } from '../../auth/AuthProvider'
 import { useSignOut } from '../../auth/useSignOut'
 import { myPermissionsApi, type MyPermissions } from '../../api/myPermissionsApi'
+import { organizationApi } from '../../api/registrationApi'
 import { useThemeMode } from '../../theming/ThemeModeProvider'
 import { NotificationBell } from './NotificationBell'
 import { CartButton } from '../cart/CartButton'
@@ -63,6 +64,7 @@ export function AppShell() {
   const [mobileOpen, setMobileOpen] = useState(false)
   const [openGroups, setOpenGroups] = useState<Record<string, boolean>>({})
   const [userAnchor, setUserAnchor] = useState<HTMLElement | null>(null)
+  const [orgName, setOrgName] = useState<string | null>(null)
 
   useEffect(() => {
     let active = true
@@ -71,6 +73,17 @@ export function AppShell() {
       .catch(() => { if (active) setPermissions(null) })
     return () => { active = false }
   }, [auth.user?.username])
+
+  // The profile menu names the organization of a signed-in organization member (C83).
+  const inOrganization = (permissions?.organization.length ?? 0) > 0
+  useEffect(() => {
+    if (!inOrganization) return
+    let active = true
+    organizationApi.getMyOrganization()
+      .then((o) => { if (active) setOrgName(o.name) })
+      .catch(() => { if (active) setOrgName(null) })
+    return () => { active = false }
+  }, [inOrganization, auth.user?.username])
 
   const sections = useMemo(
     () => buildAppNavigation({ isAdmin: auth.isAdmin, permissions }),
@@ -327,11 +340,21 @@ export function AppShell() {
                 </IconButton>
               </Tooltip>
               <Menu anchorEl={userAnchor} open={Boolean(userAnchor)} onClose={() => setUserAnchor(null)}>
-                <Box sx={{ px: 2, py: 1 }}>
-                  <Typography variant="body2" sx={{ fontWeight: 700 }}>{username}</Typography>
-                  <Typography variant="caption" sx={{ color: 'text.secondary' }}>
-                    {auth.isAdmin ? t('appShell.rolePlatformAdmin') : t('appShell.roleUser')}
-                  </Typography>
+                <Box sx={{ px: 2, py: 1, minWidth: 240 }}>
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+                    <Avatar sx={{ width: 40, height: 40, bgcolor: 'primary.main' }}>{username.slice(0, 1).toUpperCase()}</Avatar>
+                    <Box sx={{ minWidth: 0 }}>
+                      <Typography variant="body2" sx={{ fontWeight: 700, overflow: 'hidden', textOverflow: 'ellipsis' }}>{username}</Typography>
+                      <Typography variant="caption" sx={{ color: 'text.secondary' }}>
+                        {auth.isAdmin ? t('appShell.rolePlatformAdmin') : inOrganization && permissions?.organization.includes('MANAGE_ORGANIZATION') ? t('appShell.roleOrgAdmin') : t('appShell.roleUser')}
+                      </Typography>
+                    </Box>
+                  </Box>
+                  {orgName && (
+                    <Typography variant="caption" sx={{ display: 'block', mt: 1, color: 'text.secondary' }}>
+                      {t('appShell.profileOrganization', { name: orgName })}
+                    </Typography>
+                  )}
                 </Box>
                 <Divider />
                 <MenuItem onClick={() => { setUserAnchor(null); navigate('/account/security') }}>

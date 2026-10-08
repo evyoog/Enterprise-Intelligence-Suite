@@ -1,8 +1,8 @@
 import type { ComponentType } from 'react'
 import {
   Activity, BookOpen, Cable, ClipboardList, CreditCard, FolderTree, Handshake, KeyRound, Landmark, LayoutDashboard,
-  LayoutGrid, Layers, LifeBuoy, NotebookPen, Palette, Package, PlugZap, Radio, ScrollText, SearchCheck, ShieldCheck, Star,
-  Network, Store, UserCheck, UserCog, UsersRound, Wrench, FileText, Receipt, Gauge,
+  LayoutGrid, Layers, LifeBuoy, NotebookPen, Package, PlugZap, Radio, ScrollText, SearchCheck, ShieldCheck, Star,
+  Building2, Store, UserCog, UsersRound, Wrench, FileText, Receipt, Gauge,
 } from 'lucide-react'
 
 /**
@@ -16,10 +16,10 @@ import {
  * allow. The one exception is `admin`, which mirrors the existing `/admin/*`
  * route guard (RequireAdmin).
  */
-export type NavGroup = 'workspace' | 'organization' | 'platform' | 'operations' | 'help' | 'billing' | 'account'
+export type NavGroup = 'workspace' | 'organization' | 'platform' | 'operations' | 'help' | 'billing'
 
 /** Group order, top to bottom. A group with no visible item is not rendered. */
-export const NAV_GROUP_ORDER: NavGroup[] = ['workspace', 'organization', 'platform', 'operations', 'help', 'billing', 'account']
+export const NAV_GROUP_ORDER: NavGroup[] = ['workspace', 'organization', 'platform', 'operations', 'help', 'billing']
 
 export type NavRule =
   /** A platform permission. Needs the platform-admin role (like the /admin guard); while permissions load, an admin sees it. */
@@ -107,14 +107,16 @@ export const NAV_CONFIG: NavDef[] = [
   },
 
   // ------------------------------------------------------------- ORGANIZATION
-  { id: 'members', labelKey: 'members', icon: UsersRound, group: 'organization', to: '/organization/members', when: orgAdmin },
-  { id: 'orgStructure', labelKey: 'orgStructure', icon: Network, group: 'organization', to: '/organization/structure', when: orgAdmin },
+  { id: 'members', labelKey: 'peopleStructure', icon: UsersRound, group: 'organization', to: '/organization/members', when: orgAdmin },
   {
     id: 'rolesPermissions', labelKey: 'rolesPermissions', icon: ShieldCheck, group: 'organization', to: '/admin/roles',
     matchPrefixes: ['/admin/permissions'],
     when: { any: [platform('MANAGE_ROLES'), platform('MANAGE_PERMISSIONS')] },
   },
-  { id: 'registrations', labelKey: 'registrations', icon: UserCheck, group: 'organization', to: '/admin/registrations', when: platform('MANAGE_REGISTRATIONS') },
+  {
+    id: 'registrations', labelKey: 'organizationsDirectory', icon: Building2, group: 'organization', to: '/admin/organizations',
+    matchPrefixes: ['/admin/organizations'], when: platform('MANAGE_REGISTRATIONS'),
+  },
   {
     id: 'privilegedAccess', labelKey: 'privilegedAccess', icon: KeyRound, group: 'organization',
     to: [
@@ -189,9 +191,6 @@ export const NAV_CONFIG: NavDef[] = [
   { id: 'partners', labelKey: 'partners', icon: Handshake, group: 'operations', to: '/admin/partners', when: platform('MANAGE_PARTNERS') },
   { id: 'auditLog', labelKey: 'auditLog', icon: ScrollText, group: 'operations', to: '/admin/audit-log', when: platform('VIEW_AUDIT_LOG') },
 
-  // ------------------------------------------------------------------ ACCOUNT
-  { id: 'security', labelKey: 'security', icon: UserCog, group: 'account', to: '/account/security', when: { signedIn: true } },
-  { id: 'preferences', labelKey: 'preferences', icon: Palette, group: 'account', to: '/account/preferences', when: { signedIn: true } },
 ]
 
 

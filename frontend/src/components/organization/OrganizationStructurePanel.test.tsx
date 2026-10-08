@@ -1,11 +1,11 @@
-import '../i18n'
+import '../../i18n'
 import { screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { axe } from 'jest-axe'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
-import { ApiError } from '../api/client'
-import { renderWithProviders } from '../test/renderWithProviders'
-import { OrganizationStructurePage } from './OrganizationStructurePage'
+import { ApiError } from '../../api/client'
+import { renderWithProviders } from '../../test/renderWithProviders'
+import { OrganizationStructurePanel } from './OrganizationStructurePanel'
 
 const tree = vi.fn()
 const detail = vi.fn()
@@ -16,8 +16,8 @@ const importCsv = vi.fn()
 const history = vi.fn()
 const listUsers = vi.fn()
 
-vi.mock('../api/orgHierarchyApi', async () => {
-  const actual = await vi.importActual<typeof import('../api/orgHierarchyApi')>('../api/orgHierarchyApi')
+vi.mock('../../api/orgHierarchyApi', async () => {
+  const actual = await vi.importActual<typeof import('../../api/orgHierarchyApi')>('../../api/orgHierarchyApi')
   return {
     ...actual,
     orgHierarchyApi: {
@@ -36,8 +36,8 @@ vi.mock('../api/orgHierarchyApi', async () => {
     },
   }
 })
-vi.mock('../api/registrationApi', async () => {
-  const actual = await vi.importActual<typeof import('../api/registrationApi')>('../api/registrationApi')
+vi.mock('../../api/registrationApi', async () => {
+  const actual = await vi.importActual<typeof import('../../api/registrationApi')>('../../api/registrationApi')
   return { ...actual, registrationApi: { ...actual.registrationApi, listMyOrgUsers: () => listUsers() } }
 })
 
@@ -57,7 +57,7 @@ const nodes = [
   node(4, 2, 'Platform', 'DEPARTMENT'),
 ]
 
-describe('OrganizationStructurePage', () => {
+describe('OrganizationStructurePanel', () => {
   beforeEach(() => {
     for (const m of [tree, detail, create, move, remove, importCsv, history, listUsers]) m.mockReset()
     tree.mockResolvedValue({ levels, nodes })
@@ -67,7 +67,7 @@ describe('OrganizationStructurePage', () => {
   })
 
   it('shows the org chart cards, opens the top levels, collapses and expands a branch and has no accessibility violations', async () => {
-    const { container } = renderWithProviders(<OrganizationStructurePage />)
+    const { container } = renderWithProviders(<OrganizationStructurePanel />)
     expect(await screen.findByRole('article', { name: 'Acme' })).toBeInTheDocument()
     expect(screen.getByRole('article', { name: 'Engineering' })).toBeInTheDocument()
     expect(screen.getByRole('article', { name: 'Platform' })).toBeInTheDocument()
@@ -79,14 +79,14 @@ describe('OrganizationStructurePage', () => {
   })
 
   it('opens the details panel from a card', async () => {
-    renderWithProviders(<OrganizationStructurePage />)
+    renderWithProviders(<OrganizationStructurePanel />)
     await userEvent.setup().click(await screen.findByRole('button', { name: 'Details: Engineering' }))
     expect(await screen.findByRole('heading', { name: 'Engineering' })).toBeInTheDocument()
     expect(detail).toHaveBeenCalledWith(2)
   })
 
   it('search highlights matches and dims the rest', async () => {
-    renderWithProviders(<OrganizationStructurePage />)
+    renderWithProviders(<OrganizationStructurePanel />)
     const user = userEvent.setup()
     await user.type(await screen.findByLabelText('Search nodes'), 'platform')
     expect(await screen.findByRole('article', { name: 'Platform' })).toHaveAttribute('data-match', 'true')
@@ -95,7 +95,7 @@ describe('OrganizationStructurePage', () => {
 
   it('Add node is enabled without a selection and adds under the root; the backend reason is shown on failure', async () => {
     create.mockRejectedValueOnce(new ApiError(409, 'A node named Ops already exists under this parent'))
-    renderWithProviders(<OrganizationStructurePage />)
+    renderWithProviders(<OrganizationStructurePanel />)
     const user = userEvent.setup()
     await screen.findByRole('article', { name: 'Acme' })
     const add = screen.getByRole('button', { name: 'Add node' })
@@ -108,7 +108,7 @@ describe('OrganizationStructurePage', () => {
   })
 
   it('the root card offers no move, deactivate or delete; other cards do', async () => {
-    renderWithProviders(<OrganizationStructurePage />)
+    renderWithProviders(<OrganizationStructurePanel />)
     const user = userEvent.setup()
     await user.click(await screen.findByRole('button', { name: 'Actions for Acme' }))
     expect(await screen.findByRole('menuitem', { name: 'Edit' })).toBeInTheDocument()
@@ -121,7 +121,7 @@ describe('OrganizationStructurePage', () => {
 
   it('imports a CSV and lists failed rows', async () => {
     importCsv.mockResolvedValue({ created: 2, failed: 1, errors: [{ row: 4, message: 'Parent not found: X' }] })
-    renderWithProviders(<OrganizationStructurePage />)
+    renderWithProviders(<OrganizationStructurePanel />)
     const user = userEvent.setup()
     await screen.findByRole('article', { name: 'Acme' })
     await user.click(screen.getByRole('button', { name: 'Import CSV' }))
@@ -137,7 +137,7 @@ describe('OrganizationStructurePage', () => {
 
   it('shows a retry when the structure cannot be loaded', async () => {
     tree.mockRejectedValueOnce(new ApiError(403, 'You do not have permission to do this'))
-    renderWithProviders(<OrganizationStructurePage />)
+    renderWithProviders(<OrganizationStructurePanel />)
     expect(await screen.findByText(/could not be loaded/)).toBeInTheDocument()
     expect(screen.getByRole('button', { name: 'Retry' })).toBeInTheDocument()
   })

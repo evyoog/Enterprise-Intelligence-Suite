@@ -3,7 +3,7 @@
 ## Screens
 | Screen | Route | Roles | Wireframe |
 |---|---|---|---|
-| Organizations tab of the existing registrations page | `/admin/registrations` | `MANAGE_REGISTRATIONS` | Not specified |
+| Organization detail page header (moved from the Registrations list by [C83](../../../01-business/roadmap/open-decisions.md#c83)); the list is the Organizations directory | `/admin/organizations/organization/:id` (`/admin/registrations` redirects) | `MANAGE_REGISTRATIONS` | Not specified |
 | Edit organization dialog | same | same | Not specified |
 | Confirm suspend / activate / close dialog | same | same | Not specified |
 
@@ -27,4 +27,4 @@ Title "Suspend / Activate / Close {{name}}?", a sentence on the effect, an optio
 A success alert "{{name}} is suspended. N member login(s) disabled." If some logins were not updated, a warning alert lists them and says to repeat the action to retry.
 
 ## Accessibility and localization
-New text is in `en.json` and `es.json` under `adminOrgLifecycle`. A jest-axe check runs in `RegistrationsAdminPage.test.tsx`.
+New text is in `en.json` and `es.json` under `adminOrgLifecycle`. A jest-axe check runs in `AdminOrganizationDetailPage.test.tsx`.

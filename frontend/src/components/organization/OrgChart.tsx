@@ -168,7 +168,10 @@ export interface OrgChartActions {
   onDelete: (node: OrgNode) => void
 }
 
-interface ChartProps extends OrgChartActions {
+/** Read-only charts (platform administrators, REQ-TEN-007) only select; they have no node menu. */
+type ChartActions = Pick<OrgChartActions, 'onSelect'> & Partial<OrgChartActions>
+
+interface ChartProps extends ChartActions {
   roots: OrgNode[]
   byParent: Map<number | null, OrgNode[]>
   descendants: Map<number, number>
@@ -203,9 +206,13 @@ function NodeMenu({ node, actions }: { node: OrgNode; actions: OrgChartActions }
   )
 }
 
+function isEditable(a: ChartActions): a is OrgChartActions {
+  return !!(a.onAddChild && a.onEdit && a.onMove && a.onToggleActive && a.onDelete)
+}
+
 function OrgCard({ node, isRoot, total, selected, dimmed, matched, labelOf, actions }: {
   node: OrgNode; isRoot: boolean; total: number; selected: boolean; dimmed: boolean; matched: boolean
-  labelOf: (type: string) => string; actions: OrgChartActions
+  labelOf: (type: string) => string; actions: ChartActions
 }) {
   const { t } = useTranslation()
   const meta = typeMeta(node.type)
@@ -232,7 +239,7 @@ function OrgCard({ node, isRoot, total, selected, dimmed, matched, labelOf, acti
               {labelOf(node.type)}{node.code ? ` · ${node.code}` : ''}
             </Typography>
           </Box>
-          <NodeMenu node={node} actions={actions} />
+          {isEditable(actions) && <NodeMenu node={node} actions={actions} />}
         </Box>
         <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mt: 1.25 }}>
           <Chip size="small" label={labelOf(node.type)} sx={{ background: `${meta.color}1f`, color: meta.color, fontWeight: 600, height: 22 }} />
