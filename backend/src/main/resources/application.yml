@@ -37,11 +37,7 @@ spring:
           time_zone: UTC
     open-in-view: false
 
-  # Flyway is deliberately NOT used — schema changes are made by hand, tracked in
-  # one file (db/schema.sql), not a growing set of versioned migration files.
-  # See CLAUDE.md decision 1 and db/schema.sql's own header comment for the
-  # actual workflow and its real limitation (editing that file does not, by
-  # itself, alter an already-existing table anywhere).
+
   flyway:
     enabled: false
 
@@ -51,16 +47,11 @@ spring:
         jwt:
           issuer-uri: ${KEYCLOAK_ISSUER_URI:https://user.evyoog.com/realms/eVyoog}
           jwk-set-uri: ${KEYCLOAK_JWK_SET_URI:https://user.evyoog.com/realms/eVyoog/protocol/openid-connect/certs}
-
-  # Registration verification emails only — no other feature in this app sends
-  # email. Every value externalized via env vars, same pattern as the Keycloak
-  # secrets above — override SMTP_USER/SMTP_PASSWORD in a real deployment
-  # rather than relying on this default account.
   mail:
     host: ${SMTP_HOST:smtp.gmail.com}
     port: ${SMTP_PORT:587}
-    username: ${SMTP_USER:logesh.b@vyoog.com}
-    password: ${SMTP_PASSWORD:rgnntcfmsrypgpfl}
+    username: ${SMTP_USER:notifications@evyoog.com}
+    password: ${SMTP_PASSWORD:jgnk rlrq utyv xbmt}
     properties:
       mail:
         smtp:
@@ -87,38 +78,13 @@ vyoog:
     end-session-uri: ${KEYCLOAK_END_SESSION_URI:https://user.evyoog.com/realms/eVyoog/protocol/openid-connect/logout}
     ropc-client-id: ${KEYCLOAK_ROPC_CLIENT_ID:eis-platform-ui}
     ropc-client-secret: ${KEYCLOAK_ROPC_CLIENT_SECRET:KaoYtuxZxM6ODlFBJjZ1jzwU3rsLouIP}
-    # Phase 8: Keycloak Admin REST API root — reuses the SAME eVyoog
-    # confidential client already configured below (vyoog.internal.impersonation-client-*),
-    # confirmed live to already hold "manage-users" on this realm (see
-    # KeycloakAdminClient's own javadoc for how that was verified before
-    # writing any code against it).
     admin-base-uri: ${KEYCLOAK_ADMIN_BASE_URI:https://user.evyoog.com/admin/realms/eVyoog}
   auth:
     cookie-secure: ${AUTH_COOKIE_SECURE:true}
-    # Deliberately much shorter than the registration email-verification TTL
-    # (24h) — a password-reset link is more sensitive and time-boxed tighter
-    # by convention.
     password-reset-token-ttl-minutes: ${PASSWORD_RESET_TTL_MINUTES:30}
-    # OFF by default — this app never reveals WHY a login was rejected to the
-    # browser (that's the deliberate anti-enumeration posture the rest of
-    # this app follows, e.g. PasswordResetService). Set
-    # VYOOG_AUTH_DEBUG_LOGIN_ERRORS=true locally only, to see Keycloak's real
-    # rejection reason (e.g. "Account is not fully set up" vs "Invalid user
-    # credentials") in the login response and browser console while
-    # diagnosing a specific account. Never enable this outside local
-    # debugging.
     debug-login-errors: ${VYOOG_AUTH_DEBUG_LOGIN_ERRORS:true}
-    # Phase 2 (2026.3.3): Platform-owned TOTP second factor, layered on top
-    # of (not replacing) Keycloak's own username/password authentication —
-    # see PlatformMfaService's own javadoc for why this exists alongside
-    # Keycloak rather than through it (CONFIGURE_TOTP requires a
-    # Keycloak-hosted page; there is no headless enrollment path).
     platform-mfa:
       issuer: ${PLATFORM_MFA_ISSUER:Vyoog}
-      # AES-256-GCM key (base64), used only to encrypt TOTP secrets at rest —
-      # never used for password/token data. Override in real deployments;
-      # this default is for local dev only, same convention as every other
-      # committed fallback secret in this file.
       encryption-key: ${PLATFORM_MFA_ENCRYPTION_KEY:LKb+gXXGU4wZ2GWbKr8duwjPpXfN081ul35H6vSS7HU=}
       challenge-ttl-minutes: ${PLATFORM_MFA_CHALLENGE_TTL_MINUTES:5}
       max-challenge-attempts: ${PLATFORM_MFA_MAX_ATTEMPTS:5}
@@ -133,16 +99,10 @@ vyoog:
     impersonation-client-id: ${KEYCLOAK_IMPERSONATION_CLIENT_ID:eVyoog}
     impersonation-client-secret: ${KEYCLOAK_IMPERSONATION_CLIENT_SECRET:ssFF0O7wX5UlmWECCxjfOmflw4WRSJng}
   mail:
-    # Gmail requires the From address to match the authenticated account (or a
-    # verified alias of it) — it silently rewrites/rejects anything else.
-    from: ${MAIL_FROM:logesh.b@vyoog.com}
+    from: ${MAIL_FROM:notifications@evyoog.com}
   registration:
     verification-token-ttl-hours: ${REGISTRATION_VERIFICATION_TTL_HOURS:24}
-  # 08 Billing & Payments (sprint 2026.4.3, C46). Deliberately EMPTY
-  # defaults, unlike every other secret above — "not configured" is a real,
-  # intended mode for this integration (BR-10), not a placeholder waiting to
-  # be filled in for local dev. Set these in config/secrets.env
-  # (BR-SEC-001), never here.
+
   billing:
     razorpay:
       key-id: ${RAZORPAY_KEY_ID:}
@@ -163,17 +123,11 @@ server:
 app:
   cors-allowed-origins: ${CORS_ORIGINS}
   frontend-url: ${FRONTEND_URL:http://localhost:5173}
-  # Phase 4 (2026.3.3): this backend's own externally-reachable base URL —
-  # needed to build absolute SAML SP entity id / ACS URLs (an IdP redirects
-  # the browser's SAML response straight back here, so these must be real,
-  # externally-resolvable URLs, not relative paths).
+
   backend-url: ${BACKEND_URL:http://localhost:8081/api}
-  # Local disk for now — fine for a single instance; would need a shared store
-  # (e.g. S3) behind a load balancer with more than one app instance.
+
   file-upload-dir: ${UPLOAD_DIR:./uploads/products}
-  # REQ-INT-002 (C62): the outbox dispatcher. Engineering defaults until the
-  # FRD's open questions are answered (10 attempts, doubling from 30 s,
-  # capped at 6 h; delivered events kept 30 days).
+
   events:
     dispatcher:
       enabled: ${EVENTS_DISPATCHER_ENABLED:true}
@@ -183,15 +137,12 @@ app:
       initial-delay-seconds: 30
       max-delay-seconds: 21600
     retention-days: 30
-  # REQ-INT-001 (C61): requests per minute, fixed windows, per backend
-  # instance. Engineering defaults until the FRD's open question 2 is answered.
+
   rate-limit:
     per-key: 120
     per-user: 300
     per-ip: 60
-  # REQ-PRT-002 / REQ-PRT-003 (C70): keyword and semantic search. Threshold and
-  # chunk values are the ones chosen with the quality test set
-  # (docs/02-requirements/FRD/semantic-search/quality-report.md).
+
   search:
     backfill-on-startup: ${SEARCH_BACKFILL_ON_STARTUP:true}
     result-limit: 50
@@ -199,8 +150,6 @@ app:
     correction-threshold: 0.45
     maintenance-interval-ms: 60000
     semantic:
-      # The embedding model's address is a model setting: it is set only in
-      # config/secrets.env (EMBEDDING_SERVICE_URL). Empty = keyword search only.
       service-url: ${EMBEDDING_SERVICE_URL:}
       timeout-ms: 400
       similarity-threshold: 0.45
@@ -209,23 +158,13 @@ app:
       rrf-k: 60
       candidates: 40
 
-# REQ-KNW-001 to REQ-KNW-008 (C71–C77): Knowledge Center and Knowledge
-# Management. Non-secret settings only, each overridable by an environment
-# variable (docs/09-integrations/aws-s3.md). Storage access keys and the
-# YouTube API key are secrets: they are set only in config/secrets.env
-# (EIS_KNOWLEDGE_AWS_ACCESS_KEY_ID / EIS_KNOWLEDGE_AWS_SECRET_ACCESS_KEY,
-# EIS_YOUTUBE_API_KEY); without keys an IAM role is used. Sizes and URL
-# expiries are the defaults applied on 2026-10-05 until the product owner
-# sets others (REQ-KNW-003 open question 1).
+
 eis:
   knowledge:
     storage:
-      # s3, or none (uploads and hosted playback switched off; YouTube and
-      # external videos still work)
       provider: ${EIS_KNOWLEDGE_STORAGE_PROVIDER:none}
       bucket: ${EIS_KNOWLEDGE_BUCKET:}
       region: ${EIS_KNOWLEDGE_REGION:}
-      # optional S3-compatible endpoint, for example MinIO in development
       endpoint: ${EIS_KNOWLEDGE_STORAGE_ENDPOINT:}
     video:
       max-size: ${EIS_KNOWLEDGE_VIDEO_MAX_SIZE:5368709120}
@@ -248,9 +187,6 @@ eis:
     youtube:
       api-key: ${EIS_YOUTUBE_API_KEY:}
       timeout-ms: 3000
-
-  # REQ-CAT-004 Product content (C81). Files use the knowledge storage bucket
-  # above; sizes and expiries are the defaults applied on 2026-10-07.
   product-content:
     image-max-size: ${EIS_PRODUCT_CONTENT_IMAGE_MAX_SIZE:5242880}
     document-max-size: ${EIS_PRODUCT_CONTENT_DOCUMENT_MAX_SIZE:20971520}
