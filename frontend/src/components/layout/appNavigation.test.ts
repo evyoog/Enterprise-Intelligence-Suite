@@ -11,7 +11,7 @@ const tree = (sections: AppNavSection[]) =>
 const nav = (isAdmin: boolean, platform: string[] | null, organization: string[] = []) =>
   buildAppNavigation({ isAdmin, permissions: platform === null ? null : { platform, organization } })
 const allItems = (sections: AppNavSection[]) => sections.flatMap((s) => s.items.flatMap((i) => [i, ...(i.children ?? [])]))
-const ORG_ADMIN = ['MANAGE_ORGANIZATION', 'MANAGE_USERS', 'MANAGE_PRODUCT_ACCESS', 'MANAGE_PRIVILEGED_ACCESS', 'MANAGE_ORDERS']
+const ORG_ADMIN = ['MANAGE_ORGANIZATION', 'MANAGE_USERS', 'MANAGE_PRODUCT_ACCESS', 'MANAGE_PRIVILEGED_ACCESS', 'MANAGE_ORDERS', 'INVITE_USERS']
 
 describe('nav config', () => {
   it('has no duplicate ids', () => {
@@ -44,6 +44,13 @@ describe('regular member (C80 §3)', () => {
     const member = tree(nav(false, [], ['MANAGE_PRIVILEGED_ACCESS_SELF']))
     expect(member.workspace).toContain('orders')
     expect(member.organization).toBeUndefined()
+  })
+})
+
+describe('member allowed to invite (C84)', () => {
+  it('sees People & structure (for the Invitations tab) and no other organization item', () => {
+    const t = tree(nav(false, [], ['INVITE_USERS']))
+    expect(t.organization).toEqual(['members'])
   })
 })
 
@@ -80,7 +87,7 @@ describe('platform administrator (C80 §2)', () => {
       'knowledgeCenter>knowledgeDrafts', 'knowledgeCenter>knowledgeManage',
     ])
     expect(t.organization).toEqual(['rolesPermissions', 'registrations', 'privilegedAccess'])
-    expect(t.platform).toEqual(['products', 'applications', 'integrations', 'integrations>platformEvents', 'integrations>apiKeys', 'searchAdmin', 'serviceStatus'])
+    expect(t.platform).toEqual(['products', 'applications', 'offerings', 'integrations', 'integrations>platformEvents', 'integrations>apiKeys', 'searchAdmin', 'serviceStatus'])
     expect(t.operations).toEqual([
       'billing', 'billing>adminBillingInvoices', 'billing>adminPaymentGateway', 'billing>adminBillingSettings',
       'support', 'reviews', 'partners', 'auditLog',

@@ -37,7 +37,7 @@ public class PermissionAdminService {
      * one wouldn't error, it would just silently make that check always deny. */
     private static final Set<String> PROTECTED_PERMISSION_NAMES = Set.of(
         "MANAGE_CATALOG", "MANAGE_REGISTRATIONS", "MANAGE_PRIVILEGED_ACCESS", "VIEW_AUDIT_LOG",
-        "MANAGE_ORGANIZATION", "MANAGE_USERS", "MANAGE_PRODUCT_ACCESS",
+        "MANAGE_ORGANIZATION", "MANAGE_USERS", "MANAGE_PRODUCT_ACCESS", "INVITE_USERS",
         "MANAGE_ROLES", "MANAGE_PERMISSIONS"
     );
 

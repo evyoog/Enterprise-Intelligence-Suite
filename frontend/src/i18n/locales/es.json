@@ -477,7 +477,8 @@
       "knowledgeManage": "Administrar",
       "billingOverview": "Resumen",
       "peopleStructure": "Personas y estructura",
-      "organizationsDirectory": "Organizaciones"
+      "organizationsDirectory": "Organizaciones",
+      "offerings": "Ofertas"
     },
     "catalogTitle": "Catálogo de productos",
     "catalogSubtitle": "Busque y filtre los productos disponibles en la plataforma.",
@@ -1647,7 +1648,8 @@
       "priceChanged": "El precio cambió de {{old}} a {{new}}.",
       "alreadySubscribed": "Ya tienes una suscripción activa a {{product}}.",
       "missingDependency": "{{product}} requiere {{required}}.",
-      "currencyMismatch": "Este artículo tiene un precio en otra moneda que el resto de tu carrito. Págalo por separado."
+      "currencyMismatch": "Este artículo tiene un precio en otra moneda que el resto de tu carrito. Págalo por separado.",
+      "notEligible": "{{product}} no está disponible para su tipo de cuenta."
     }
   },
   "apiKeys": {
@@ -1799,7 +1801,8 @@
       "categories": "Categorías",
       "helpTitle": "¿Necesita ayuda?",
       "helpBody": "Nuestro equipo de soporte puede ayudarle a elegir, configurar y usar este producto."
-    }
+    },
+    "viewOfferings": "Ver ofertas"
   },
   "forms": {
     "required": "Este campo es obligatorio.",
@@ -2936,7 +2939,8 @@
     "tabs": {
       "members": "Miembros",
       "groups": "Grupos",
-      "structure": "Estructura"
+      "structure": "Estructura",
+      "invitations": "Invitaciones"
     }
   },
   "orgPrivileged": {
@@ -3391,6 +3395,161 @@
         "outcome": "Resultado",
         "detail": "Detalle"
       }
+    }
+  },
+  "invitations": {
+    "title": "Invitaciones",
+    "invite": "Invitar usuario",
+    "search": "Buscar correo",
+    "status": "Estado",
+    "none": "Aún no hay invitaciones.",
+    "noMatches": "Ninguna invitación coincide con los filtros.",
+    "loadError": "No se pudieron cargar las invitaciones.",
+    "actionError": "No se pudo completar la acción.",
+    "statuses": {
+      "PENDING": "Pendiente",
+      "ACCEPTED": "Aceptada",
+      "DECLINED": "Rechazada",
+      "EXPIRED": "Vencida",
+      "REVOKED": "Revocada"
+    },
+    "col": {
+      "email": "Correo",
+      "status": "Estado",
+      "role": "Rol",
+      "node": "Nodo de estructura",
+      "invitedBy": "Invitada por",
+      "invitedAt": "Invitada el",
+      "expiresAt": "Vence el",
+      "acceptedAt": "Aceptada el",
+      "lastResent": "Último reenvío",
+      "actions": "Acciones",
+      "declinedAt": "Rechazada el",
+      "revokedAt": "Revocada el",
+      "acceptedBy": "Aceptada por",
+      "sendCount": "Veces enviada"
+    },
+    "resend": "Reenviar",
+    "revoke": "Revocar",
+    "details": "Detalles",
+    "resendFor": "Reenviar invitación a {{email}}",
+    "revokeFor": "Revocar invitación a {{email}}",
+    "detailsFor": "Detalles de la invitación a {{email}}",
+    "revokeTitle": "¿Revocar la invitación a {{email}}?",
+    "revokeBody": "El enlace del correo deja de funcionar. Puede enviar una nueva invitación después.",
+    "sent": "Invitación enviada a {{email}}.",
+    "resent": "Invitación reenviada a {{email}}.",
+    "revoked": "Invitación a {{email}} revocada.",
+    "emailFailed": "La invitación se guardó pero no se pudo enviar el correo. Use Reenviar para intentarlo de nuevo.",
+    "inviteTitle": "Invitar usuario",
+    "useResend": "Use Reenviar en la lista.",
+    "form": {
+      "email": "Correo",
+      "emailHelp": "El enlace se envía a esta dirección y funciona durante 7 días.",
+      "role": "Rol en la organización",
+      "adminOnly": "Solo un administrador de la organización puede invitar a otro administrador.",
+      "node": "Nodo de estructura (opcional)",
+      "noNode": "Sin ubicación",
+      "summary": "{{email}} se unirá como {{role}}{{node}}. La invitación vence en 7 días.",
+      "send": "Enviar invitación"
+    },
+    "canInvite": "Puede invitar",
+    "canInviteFor": "Permitir que {{name}} envíe invitaciones",
+    "alwaysAllowed": "Siempre",
+    "page": {
+      "title": "Invitación para unirse a una organización",
+      "invalid": "Este enlace de invitación no es válido o ya no está disponible.",
+      "intro": "{{inviter}} le invitó a unirse a {{organization}}.",
+      "someone": "Alguien",
+      "status": {
+        "EXPIRED": "Esta invitación ha vencido. Solicite una nueva invitación.",
+        "REVOKED": "Esta invitación ya no es válida.",
+        "DECLINED": "Esta invitación ya no es válida.",
+        "ACCEPTED": "Esta invitación ya fue aceptada."
+      },
+      "unavailable": "Esta organización no está disponible para nuevos miembros por ahora.",
+      "wrongAccount": "Ha iniciado sesión como {{signedIn}}, pero esta invitación es para {{invited}}. Cierre sesión y use esa cuenta.",
+      "signOut": "Cerrar sesión",
+      "haveAccount": "Ya tiene una cuenta. Inicie sesión para aceptar; volverá a esta página.",
+      "login": "Iniciar sesión para aceptar",
+      "accept": "Aceptar invitación",
+      "decline": "Rechazar",
+      "createTitle": "Cree su cuenta para unirse",
+      "firstName": "Nombre",
+      "lastName": "Apellido",
+      "password": "Contraseña",
+      "passwordHelp": "Al menos 8 caracteres, con una letra y un número.",
+      "confirmPassword": "Confirmar contraseña",
+      "createAndJoin": "Crear cuenta y unirse",
+      "joined": "Se ha unido a {{organization}}.",
+      "continue": "Continuar",
+      "declined": "Rechazó esta invitación.",
+      "personalKept": "Sus suscripciones y facturas personales no cambian.",
+      "error": "No se pudo completar. Inténtelo de nuevo."
+    }
+  },
+  "offerings": {
+    "status": {
+      "DRAFT": "Borrador",
+      "ACTIVE": "Activa",
+      "RETIRED": "Retirada"
+    },
+    "audience": {
+      "BOTH": "Personas y organizaciones",
+      "INDIVIDUAL": "Solo personas",
+      "ORGANIZATION": "Solo organizaciones"
+    },
+    "admin": {
+      "title": "Ofertas",
+      "subtitle": "Agrupe productos en ofertas y defina quién puede comprar cada producto.",
+      "priceNote": "Una oferta no tiene precio propio: cada producto conserva los planes y precios fijados por el administrador de la plataforma.",
+      "tabs": {
+        "offerings": "Ofertas",
+        "rules": "Reglas de producto"
+      },
+      "new": "Nueva oferta",
+      "newTitle": "Nueva oferta",
+      "editTitle": "Editar oferta",
+      "name": "Nombre",
+      "description": "Descripción",
+      "status": "Estado",
+      "statusHelp": "Solo una oferta activa se muestra a los clientes. Necesita al menos un producto activo.",
+      "products": "Productos",
+      "actions": "Acciones",
+      "save": "Guardar",
+      "edit": "Editar",
+      "delete": "Eliminar",
+      "editNamed": "Editar {{name}}",
+      "deleteNamed": "Eliminar {{name}}",
+      "deleteTitle": "¿Eliminar {{name}}?",
+      "deleteBody": "Solo se pueden eliminar ofertas en borrador. Los productos que contiene no se ven afectados.",
+      "empty": "Aún no hay ofertas",
+      "emptyHint": "Cree una oferta para agrupar productos para los clientes.",
+      "loadFailed": "No se pudieron cargar las ofertas.",
+      "saveFailed": "No se pudo guardar.",
+      "deleteFailed": "No se pudo eliminar la oferta."
+    },
+    "rules": {
+      "intro": "Quién puede comprar cada producto y con qué productos funciona. Un producto sin regla está abierto a todos.",
+      "product": "Producto",
+      "audience": "Quién puede comprar",
+      "worksWith": "Funciona con",
+      "editTitle": "Reglas de {{product}}",
+      "editNamed": "Editar reglas de {{name}}",
+      "requiredHint": "El producto requerido se define en el propio producto, como su dependencia."
+    },
+    "public": {
+      "title": "Ofertas",
+      "subtitle": "Grupos de productos a los que puede suscribirse.",
+      "empty": "Todavía no hay ofertas disponibles.",
+      "view": "Ver oferta",
+      "viewProduct": "Ver producto",
+      "included": "Productos incluidos",
+      "loadFailed": "No se pudieron cargar las ofertas.",
+      "priceNote": "Cada producto tiene su precio y se compra en su propia página."
+    },
+    "worksWith": {
+      "title": "Funciona con"
     }
   }
 }

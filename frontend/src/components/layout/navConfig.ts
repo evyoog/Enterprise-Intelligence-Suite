@@ -2,7 +2,7 @@ import type { ComponentType } from 'react'
 import {
   Activity, BookOpen, Cable, ClipboardList, CreditCard, FolderTree, Handshake, KeyRound, Landmark, LayoutDashboard,
   LayoutGrid, Layers, LifeBuoy, NotebookPen, Package, PlugZap, Radio, ScrollText, SearchCheck, ShieldCheck, Star,
-  Building2, Store, UserCog, UsersRound, Wrench, FileText, Receipt, Gauge,
+  Boxes, Building2, Store, UserCog, UsersRound, Wrench, FileText, Receipt, Gauge,
 } from 'lucide-react'
 
 /**
@@ -107,7 +107,9 @@ export const NAV_CONFIG: NavDef[] = [
   },
 
   // ------------------------------------------------------------- ORGANIZATION
-  { id: 'members', labelKey: 'peopleStructure', icon: UsersRound, group: 'organization', to: '/organization/members', when: orgAdmin },
+  { id: 'members', labelKey: 'peopleStructure', icon: UsersRound, group: 'organization', to: '/organization/members',
+    // Administrators, and members allowed only to send invitations (REQ-TEN-008).
+    when: { any: [orgAdmin, organization('INVITE_USERS')] } },
   {
     id: 'rolesPermissions', labelKey: 'rolesPermissions', icon: ShieldCheck, group: 'organization', to: '/admin/roles',
     matchPrefixes: ['/admin/permissions'],
@@ -140,6 +142,10 @@ export const NAV_CONFIG: NavDef[] = [
   {
     id: 'applications', labelKey: 'apps', icon: LayoutGrid, group: 'platform', to: '/admin/apps',
     matchPrefixes: ['/admin/products'], when: platform('MANAGE_CATALOG'),
+  },
+  {
+    id: 'offerings', labelKey: 'offerings', icon: Boxes, group: 'platform', to: '/admin/offerings',
+    matchPrefixes: ['/admin/offerings'], when: platform('MANAGE_CATALOG'),
   },
   {
     id: 'integrations', labelKey: 'integrations', icon: Cable, group: 'platform', matchPrefixes: ['/admin/integrations'],

@@ -6,7 +6,8 @@ import com.fasterxml.jackson.annotation.JsonInclude;
  * ({@code reason} PRODUCT or PLAN), PRICE_CHANGED ({@code oldPrice},
  * {@code newPrice}), ALREADY_SUBSCRIBED, MISSING_DEPENDENCY
  * ({@code requiredProductId}, {@code requiredProductName}) or
- * CURRENCY_MISMATCH (the item's currency differs from the cart's). */
+ * CURRENCY_MISMATCH (the item's currency differs from the cart's) or
+ * NOT_ELIGIBLE (the product's audience rule excludes this buyer, REQ-CAT-005). */
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public record CartIssueDto(
     Long itemId,

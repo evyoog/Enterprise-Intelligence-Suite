@@ -31,4 +31,9 @@ public interface EmailService {
      * varies per category in a way a dedicated method per type doesn't
      * scale to. */
     void sendNotificationEmail(String toEmail, String subject, String message);
+
+    /** REQ-TEN-008: the invitation to join an organization. Returns false when the message could not be
+     * handed to the mail server, so the caller can tell the inviter to resend. */
+    boolean sendInvitationEmail(String toEmail, String organizationName, String inviterName, String roleLabel,
+                                String structurePlacement, java.time.Instant expiresAt, String invitationLink);
 }

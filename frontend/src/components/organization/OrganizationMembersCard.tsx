@@ -1,9 +1,10 @@
 import { useEffect, useState, type HTMLAttributes } from 'react'
 import { useTranslation } from 'react-i18next'
 import {
-  Alert, Box, Button, Chip, MenuItem, Paper, Table, TableBody, TableCell, TableHead, TableRow, TextField, Typography,
+  Alert, Box, Button, Chip, MenuItem, Paper, Switch, Table, TableBody, TableCell, TableHead, TableRow, TextField, Typography,
 } from '@mui/material'
 import { ApiError } from '../../api/client'
+import { invitationsApi } from '../../api/invitationsApi'
 import { organizationApi, type MemberStatusAction, type OrgMember } from '../../api/registrationApi'
 import { ResetMfaDialog } from '../security/ResetMfaDialog'
 
@@ -30,6 +31,8 @@ export function OrganizationMembersCard() {
   // C30: the member whose two-factor authentication is being reset.
   const [resetTarget, setResetTarget] = useState<OrgMember | null>(null)
   const [notice, setNotice] = useState<string | null>(null)
+  // REQ-TEN-008: members allowed to send invitations; null when the caller may not manage that (not an administrator).
+  const [inviters, setInviters] = useState<Set<number> | null>(null)
 
   useEffect(() => {
     organizationApi.listMyOrgUsers()
@@ -39,6 +42,25 @@ export function OrganizationMembersCard() {
         else setError(e instanceof ApiError ? e.message : t('orgSettings.loadError'))
       })
   }, [t])
+
+  useEffect(() => {
+    let alive = true
+    invitationsApi.inviters().then((r) => { if (alive) setInviters(new Set(r.memberIds)) }).catch(() => { if (alive) setInviters(null) })
+    return () => { alive = false }
+  }, [])
+
+  const setCanInvite = async (member: OrgMember, allowed: boolean) => {
+    setSavingId(member.organizationMemberId)
+    setError(null)
+    try {
+      const r = await invitationsApi.setInvitePermission(member.organizationMemberId, allowed)
+      setInviters(new Set(r.memberIds))
+    } catch (e) {
+      setError(e instanceof ApiError ? e.message : t('orgSettings.roleSaveError'))
+    } finally {
+      setSavingId(null)
+    }
+  }
 
   const changeRole = async (member: OrgMember, orgRole: OrgMember['orgRole']) => {
     if (orgRole === member.orgRole) return
@@ -109,12 +131,13 @@ export function OrganizationMembersCard() {
               <TableCell>{t('orgSettings.email')}</TableCell>
               <TableCell>{t('orgSettings.status')}</TableCell>
               <TableCell>{t('orgSettings.role')}</TableCell>
+              {inviters && <TableCell>{t('invitations.canInvite')}</TableCell>}
               <TableCell>{t('orgSettings.actions')}</TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
             {members.length === 0 && (
-              <TableRow><TableCell colSpan={5} sx={{ color: 'text.secondary' }}>{t('orgSettings.noMembers')}</TableCell></TableRow>
+              <TableRow><TableCell colSpan={inviters ? 6 : 5} sx={{ color: 'text.secondary' }}>{t('orgSettings.noMembers')}</TableCell></TableRow>
             )}
             {members.map((member) => {
               const saving = savingId === member.organizationMemberId
@@ -145,6 +168,18 @@ export function OrganizationMembersCard() {
                     ))}
                   </TextField>
                 </TableCell>
+                {inviters && (
+                  <TableCell>
+                    {member.orgRole === 'ORG_ADMIN'
+                      ? <Typography variant="caption" color="text.secondary">{t('invitations.alwaysAllowed')}</Typography>
+                      : (
+                        <Switch size="small" checked={inviters.has(member.organizationMemberId)}
+                          disabled={saving || member.status !== 'ACTIVE'}
+                          onChange={(e) => void setCanInvite(member, e.target.checked)}
+                          slotProps={{ input: { 'aria-label': t('invitations.canInviteFor', { name }) } }} />
+                      )}
+                  </TableCell>
+                )}
                 <TableCell>
                   <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
                     {member.status === 'ACTIVE' && (

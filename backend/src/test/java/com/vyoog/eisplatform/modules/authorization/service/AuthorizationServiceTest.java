@@ -73,7 +73,9 @@ class AuthorizationServiceTest {
         // 09.04 Approval Management (sprint 2027.1.1): MANAGE_ORDERS.
         assertThat(authorizationService.hasOrganizationPermission(OrgRole.ORG_ADMIN, "MANAGE_ORDERS")).isTrue();
         assertThat(authorizationService.listOrganizationPermissions(OrgRole.ORG_ADMIN))
-            .containsExactlyInAnyOrder("MANAGE_ORGANIZATION", "MANAGE_USERS", "MANAGE_PRODUCT_ACCESS", "MANAGE_PRIVILEGED_ACCESS", "MANAGE_ORDERS");
+            .containsExactlyInAnyOrder("MANAGE_ORGANIZATION", "MANAGE_USERS", "MANAGE_PRODUCT_ACCESS", "MANAGE_PRIVILEGED_ACCESS", "MANAGE_ORDERS",
+                // REQ-TEN-008 (C84): sending invitations.
+                "INVITE_USERS");
     }
 
     @Test

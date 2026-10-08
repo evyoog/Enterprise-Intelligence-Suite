@@ -10,6 +10,7 @@ import { MyProductsPage } from './pages/MyProductsPage'
 import { MySubscriptionsPage } from './pages/MySubscriptionsPage'
 import { OrganizationSettingsRedirect } from './pages/OrganizationSettingsPage'
 import { OrganizationMembersPage } from './pages/OrganizationMembersPage'
+import { InvitationPage } from './pages/InvitationPage'
 import { OrganizationPrivilegedAccessPage } from './pages/OrganizationPrivilegedAccessPage'
 import { OrganizationSecurityPage } from './pages/OrganizationSecurityPage'
 import { ProductsAdminPage } from './pages/admin/ProductsAdminPage'
@@ -58,6 +59,8 @@ import { MyTicketsPage } from './pages/MyTicketsPage'
 import { AdminSupportTicketsPage } from './pages/admin/AdminSupportTicketsPage'
 import { GlobalSearchPage } from './pages/GlobalSearchPage'
 import { ProductDetailPage } from './pages/ProductDetailPage'
+import { OfferingDetailPage, OfferingsPage } from './pages/OfferingsPage'
+import { AdminOfferingsPage } from './pages/admin/AdminOfferingsPage'
 import { AdminReviewsPage } from './pages/admin/AdminReviewsPage'
 import { ProviderApplicationPage } from './pages/ProviderApplicationPage'
 import { AdminPartnersPage } from './pages/admin/AdminPartnersPage'
@@ -137,12 +140,17 @@ function MainApp() {
           <Route path="/products" element={<ProductsPage />} />
           {/* 03.04 Reviews & Ratings (sprint 2027.1.3): public product detail. */}
           <Route path="/products/:id" element={<ProductDetailPage />} />
+          {/* 02.02 Offering management (REQ-CAT-005, C85): public browsing of published offerings. */}
+          <Route path="/offerings" element={<OfferingsPage />} />
+          <Route path="/offerings/:id" element={<OfferingDetailPage />} />
           {/* C66: public platform (product family) details from the catalog. */}
           <Route path="/catalog/platforms/:id" element={<PlatformDetailPage />} />
           {/* 01.03 Global Search (sprint 2027.1.3): public; ticket results need a sign-in. */}
           <Route path="/search" element={<GlobalSearchPage />} />
           {/* 14.01.01.01 Register provider (sprint 2027.2.1): public, no Vyoog account required. */}
           <Route path="/partners/apply" element={<ProviderApplicationPage />} />
+          {/* REQ-TEN-008 (C84): the invitation link; the token is the credential, so it is public. */}
+          <Route path="/invitations/:token" element={<InvitationPage />} />
           {/* Deliberately NOT behind RequireAuth — see that component's own
               doc on why preferences stay reachable signed out. */}
           <Route path="/account/preferences" element={<PreferencesPage />} />
@@ -218,6 +226,7 @@ function MainApp() {
             <Route index element={<ProductsAdminPage />} />
             <Route path="dashboard" element={<PlatformAdminDashboardPage />} />
             <Route path="apps" element={<AdminProductsPage />} />
+            <Route path="offerings" element={<AdminOfferingsPage />} />
             <Route path="products/:id/edit" element={<EditProductPage />} />
             <Route path="platforms" element={<ProductsAdminPage />} />
             <Route path="platforms/new" element={<PlatformSettingsPage />} />

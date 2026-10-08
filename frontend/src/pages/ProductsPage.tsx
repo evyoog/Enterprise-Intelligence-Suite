@@ -98,11 +98,16 @@ export function ProductsPage() {
         eyebrow={t('catalog.label')}
         title={t('catalog.title')}
         subtitle={t('catalog.subtitle')}
-        action={auth.isAdmin ? (
-          <Button component={RouterLink} to="/admin/platforms/new" variant="contained" startIcon={<Plus size={16} />}>
-            {t('catalog.addProduct')}
-          </Button>
-        ) : undefined}
+        action={(
+          <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
+            <Button component={RouterLink} to="/offerings" variant="outlined">{t('catalog.viewOfferings')}</Button>
+            {auth.isAdmin && (
+              <Button component={RouterLink} to="/admin/platforms/new" variant="contained" startIcon={<Plus size={16} />}>
+                {t('catalog.addProduct')}
+              </Button>
+            )}
+          </Box>
+        )}
       />
 
       <Grid container spacing={2} sx={{ mb: 3 }}>

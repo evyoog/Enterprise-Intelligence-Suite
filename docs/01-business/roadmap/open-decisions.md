@@ -688,6 +688,23 @@ Screen: [business-dashboard.md](../../05-ui/screen-requirements/business-dashboa
 - Profile completion is a computed percentage with a missing-items list (rules BR-DIR-003 to 005).
 **Still Not specified:** CSV export of the list; server-side filtering and paging (done in the browser; fine for hundreds of tenants); platform-admin editing of the hierarchy; an editable "My profile" page; exact profile items to count (defaults in BR-DIR-004/005).
 
+### C84
+**Decision (product owner, 2026-10-08) — 05.03.01 Invite user (IN-1):** a person joins an organization by **email invitation**; the recommendations of the analysis were approved: [REQ-TEN-008](../../02-requirements/FRD/invite-user/requirement.md) is **Approved** and built in sprint [2026.4.1](sprints/SPRINT-2026.4.1.md) (carried earlier by [C34](#c34)).
+- **Delegation:** `INVITE_USERS` is its own permission. A slice of [REQ-TEN-005](../../02-requirements/FRD/access-management/requirement.md) is built for it (`member_access_override`, permission items only); the rest of REQ-TEN-005 stays Draft.
+- **Re-admission:** accepting a new invitation reactivates a removed member's earlier row (BR-INV-008); REQ-TEN-002 otherwise stays one-way.
+- **Roles:** only an organization administrator invites as `ORG_ADMIN`; a delegated inviter sees and manages only their own invitations.
+- **One organization per person** this sprint; **pending invitations hold no seat**; seats are checked on send and on accept; names are collected as first and last name; paths follow `/organization/me/...`.
+- **05.03.01.02 Create user stays out** (and stays carried); so do bulk CSV invitations and multi-organization membership.
+**Still Not specified:** direct Create user; multi-organization membership; invitation reminders; notifying the inviter on accept or decline; product access in an invitation; whether removing `INVITE_USERS` should revoke the member's pending invitations (today it does not); privileged-access grants for `INVITE_USERS`.
+
+### C85
+**Decision (product owner, 2026-10-08) — 02.02 Offering management (OF-1 to OF-7):** [REQ-CAT-005](../../02-requirements/FRD/offering-management/requirement.md) is **Approved** and built in sprint [2026.4.1](sprints/SPRINT-2026.4.1.md).
+- **OF-1 A:** an Offering is a new catalog object above products. **OF-2 left open** by the product owner: the platform administrator keeps setting prices, so an offering has no price of its own and nothing in checkout changes. Customers therefore still subscribe to products; buying an offering as a whole waits for bundle pricing.
+- **OF-3 A:** every product is sold in every region. **OF-4 not chosen:** the platform is the one sales channel; others may come with future products. No channel data is stored.
+- **OF-5 B:** per product, who can buy it (`BOTH`, `INDIVIDUAL`, `ORGANIZATION`) and a required product. **OF-6 A:** the required product is the existing product dependency. **OF-7 B:** a one-directional "works with" list per product, shown on the product page.
+- **Conflict, not resolved:** OF-5 B lists "allowed regions" while OF-3 A says no regional limits. No regional rule is built. The product owner is asked to withdraw one of the two.
+**Still Not specified:** bundle pricing and buying an offering as a whole (OF-2); channels (OF-4); regions (above); offering images and offering-level plans; symmetrical "works with"; per-offering eligibility.
+
 ### DN-2 Sprint scope, length and dates
 **Decision:**
 - **Sprint length:** sprints are **calendar months**. Sprint `.1`, `.2` and `.3` are the first, second and third months of the PI's calendar quarter. Example: 2026.3.3 = 1–30 Sep 2026; 2026.4.1 = 1–31 Oct 2026.
@@ -799,6 +816,8 @@ These documents are **not** changed by this file. Update them to match:
 | C81 | Built 2026-10-07 (PC-1 to PC-6 default answers). FRD REQ-CAT-004. Remaining: confirm or change the defaults; bucket names and region (shared with C72); run TC-CAT-032 with a test bucket |
 | C82 | Built 2026-10-07 (default answers). FRD REQ-TEN-006, migration V025. Remaining: confirm or change the defaults; apply V025 to each database; decide the Not-specified items (role assignments at a node, member read access) |
 | C83 | Built 2026-10-08. FRD REQ-TEN-007. Remaining: confirm the profile-completion items, decide CSV export and server-side paging |
+| C84 | Built 2026-10-08 (recommended answers). FRD REQ-TEN-008, migration V026. Remaining: apply V026; confirm the Not-specified items; Create user (05.03.01.02) is still carried |
+| C85 | Built 2026-10-08. FRD REQ-CAT-005, migration V027. Remaining: apply V027; decide bundle pricing (OF-2) and then buying an offering as a whole; resolve the regions conflict (OF-3 vs OF-5); confirm the Not-specified items |
 | C54 | The wider navigation-consolidation / shared `<DataTable>`/`<FilterBar>` pass ([C44](#c44)) would make the business dashboard's new click-to-filter table and sort behavior reusable elsewhere instead of page-local — still carried, same as before. `database/seed/README.md` now points to [docs/07-database/demo-data.md](../../07-database/demo-data.md) for exactly what `DemoDataSeeder` adds |
 
 **Done (2026-09-26), no longer follow-up:** C31 (sprint pages 2026.4.1 through 2027.2.2, and the "Sprint" field on application pages 02, 03, 04, 05, 10, 11, 12, 13, 15, all updated to the corrected sequence — this superseded the older "C21: add the general policy engine to `SPRINT-2027.2.2.md`" and "C16, C17: add the deferred functions to `SPRINT-2027.1.3.md`" rows, and the "C21: add the agent controls to `SPRINT-2027.1.2.md`" row, which are now folded into C31's own sprint pages); C32–C35 (FRDs written and Approved, sprint 2026.4.1 built, carry-over recorded on `SPRINT-2026.4.2.md`).

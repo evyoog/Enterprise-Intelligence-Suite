@@ -65,6 +65,34 @@ public class OrganizationMemberService {
             });
     }
 
+    /** Plain (non-throwing) form of {@link #assertSeatAvailable}: is there room for one more active member right now?
+     * Used by invitations to refuse early; acceptance still runs the authoritative assertion. */
+    @Transactional(readOnly = true)
+    public boolean hasSeatCapacity(Long organizationId) {
+        try {
+            assertSeatAvailable(organizationId);
+            return true;
+        } catch (SeatLimitExceededException e) {
+            return false;
+        }
+    }
+
+    /** REQ-TEN-008 (BR-INV-008): the one way a removed (INACTIVE) member comes back — accepting a new
+     * invitation. Reuses the earlier row (the (organization, person) pair is unique) with the invited role. */
+    public OrganizationMember readmitMember(Long organizationMemberId, OrgRole orgRole) {
+        OrganizationMember member = memberRepository.findById(organizationMemberId)
+            .orElseThrow(() -> new ResourceNotFoundException("Member not found"));
+        if (member.getStatus() != MembershipStatus.INACTIVE) {
+            throw new IllegalArgumentException("Only a removed member can be re-admitted.");
+        }
+        assertSeatAvailable(member.getOrganizationId());
+        member.setOrgRole(orgRole);
+        member.setStatus(MembershipStatus.ACTIVE);
+        member.setJoinedAt(Instant.now());
+        member.setDeactivatedAt(null);
+        return memberRepository.save(member);
+    }
+
     public OrganizationMember addMember(Long organizationId, Long customerId, OrgRole orgRole) {
         assertSeatAvailable(organizationId);
         OrganizationMember member = new OrganizationMember();

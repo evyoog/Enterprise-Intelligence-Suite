@@ -101,6 +101,33 @@ public class SmtpEmailService implements EmailService {
         send(mailMessage);
     }
 
+    @Override
+    public boolean sendInvitationEmail(String toEmail, String organizationName, String inviterName, String roleLabel,
+                                       String structurePlacement, java.time.Instant expiresAt, String invitationLink) {
+        SimpleMailMessage message = new SimpleMailMessage();
+        message.setFrom(fromAddress);
+        message.setTo(toEmail);
+        message.setSubject("You have been invited to join " + organizationName);
+        message.setText(
+            "You have been invited to join " + organizationName + " on Vyoog.\n\n"
+                + "Invited by: " + inviterName + "\n"
+                + "Role: " + roleLabel + "\n"
+                + (structurePlacement == null ? "" : "Placement: " + structurePlacement + "\n")
+                + "\nThis invitation expires on " + java.time.format.DateTimeFormatter.ofPattern("d MMM yyyy")
+                    .withZone(java.time.ZoneOffset.UTC).format(expiresAt) + " (UTC).\n\n"
+                + "Accept the invitation:\n" + invitationLink + "\n\n"
+                + "If you were not expecting this, you can ignore this email.\n\n"
+                + "— Vyoog"
+        );
+        try {
+            mailSender.send(message);
+            return true;
+        } catch (Exception e) {
+            log.error("Failed to send invitation email to {}: {}", toEmail, e.getMessage());
+            return false;
+        }
+    }
+
     private void send(SimpleMailMessage message) {
         try {
             mailSender.send(message);

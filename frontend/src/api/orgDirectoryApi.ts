@@ -1,5 +1,6 @@
 import { apiRequest } from './client'
 import type { OrganizationAdmin } from './adminRegistrationApi'
+import type { Invitation } from './invitationsApi'
 import type { OrgNodeDetail, OrgNodeHistoryEntry, OrgTree } from './orgHierarchyApi'
 
 /** REQ-TEN-007 Organizations directory (platform administrators, read-only; MANAGE_REGISTRATIONS). */
@@ -74,6 +75,7 @@ export const orgDirectoryApi = {
   members: (id: number) => apiRequest<MemberRow[]>(`${base}/${id}/members`),
   subscriptions: (id: number) => apiRequest<SubscriptionRow[]>(`${base}/${id}/subscriptions`),
   invoices: (id: number) => apiRequest<InvoiceRow[]>(`${base}/${id}/invoices`),
+  invitations: (id: number) => apiRequest<Invitation[]>(`${base}/${id}/invitations`),
   tickets: (id: number) => apiRequest<TicketRow[]>(`${base}/${id}/tickets`),
   hierarchy: (id: number) =>
     apiRequest<OrgTree>(`${base}/${id}/org-hierarchy`)

@@ -195,6 +195,7 @@ export function CartPage() {
       case 'ALREADY_SUBSCRIBED': return t('cart.issue.alreadySubscribed', { product: item.productName })
       case 'MISSING_DEPENDENCY': return t('cart.issue.missingDependency', { product: item.productName, required: issue.requiredProductName })
       case 'CURRENCY_MISMATCH': return t('cart.issue.currencyMismatch')
+      case 'NOT_ELIGIBLE': return t('cart.issue.notEligible', { product: item.productName })
     }
   }
 

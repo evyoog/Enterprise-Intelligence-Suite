@@ -80,6 +80,8 @@ public class CartService {
     private final SubscriptionService subscriptionService;
     private final InvoiceService invoiceService;
     private final OrderService orderService;
+    /** REQ-CAT-005 (C85): per-product audience rule. */
+    private final com.vyoog.eisplatform.modules.offering.service.EligibilityService eligibilityService;
     /** REQ-INT-002 (C62): CheckoutCompleted. */
     private final com.vyoog.eisplatform.modules.integration.service.OutboxService outboxService;
 
@@ -265,6 +267,9 @@ public class CartService {
             }
             if (item.getCurrency() != cartCurrency) {
                 issues.add(CartIssueDto.of(item.getId(), "CURRENCY_MISMATCH"));
+            }
+            if (!eligibilityService.isEligible(product.getId(), member.isPresent())) {
+                issues.add(CartIssueDto.of(item.getId(), "NOT_ELIGIBLE"));
             }
             if (hasActiveSubscription(customerId, member, product.getId())) {
                 issues.add(CartIssueDto.of(item.getId(), "ALREADY_SUBSCRIBED"));

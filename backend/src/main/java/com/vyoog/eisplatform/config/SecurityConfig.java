@@ -80,6 +80,9 @@ public class SecurityConfig {
                 .requestMatchers(HttpMethod.GET, "/products/admin", "/products/admin/search")
                     .access(permissions.platformPermission("MANAGE_CATALOG"))
                 .requestMatchers(HttpMethod.GET, "/products/**").permitAll()
+                // REQ-CAT-005 Offerings (02.02): public browsing of ACTIVE offerings (the
+                // service filters; the same visibility as GET /products/**).
+                .requestMatchers(HttpMethod.GET, "/offerings", "/offerings/*").permitAll()
                 // Product mutations require the MANAGE_CATALOG permission. This check is
                 // the real security boundary — the frontend hiding the "Settings" menu
                 // from non-admins is just UX, not enforcement; someone could still POST
@@ -156,6 +159,8 @@ public class SecurityConfig {
                 // REQ-CAT-004 Product content administration (02.04): the catalog
                 // permission, same as every product mutation above (BR-PCON-001).
                 .requestMatchers("/admin/products/**").access(permissions.platformPermission("MANAGE_CATALOG"))
+                // REQ-CAT-005 Offering management + product rules: the catalog permission (BR-OFR-001).
+                .requestMatchers("/admin/offerings/**").access(permissions.platformPermission("MANAGE_CATALOG"))
                 .requestMatchers("/admin/knowledge-base/**").access(permissions.platformPermission("MANAGE_KNOWLEDGE_BASE"))
                 // REQ-KNW-008 Knowledge Management: contributors
                 // (KNOWLEDGE_CONTRIBUTE) or publishers (MANAGE_KNOWLEDGE_BASE,
@@ -240,6 +245,10 @@ public class SecurityConfig {
                 // organization only") happens inside the service layer, never here,
                 // since that scoping depends on data (which org a caller belongs to)
                 // a URL pattern can't express.
+                // REQ-TEN-008 (C84): the invitation link is the credential for preview, account creation and
+                // decline; accepting needs a signed-in account (the default rule below).
+                .requestMatchers(HttpMethod.GET, "/invitations/*").permitAll()
+                .requestMatchers(HttpMethod.POST, "/invitations/*/account", "/invitations/*/decline").permitAll()
                 .requestMatchers("/me/**").authenticated()
                 .requestMatchers("/organization/me/**").authenticated()
                 .requestMatchers("/actuator/health", "/actuator/info").permitAll()

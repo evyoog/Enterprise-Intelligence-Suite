@@ -2,7 +2,9 @@ spring:
   # Datasource is no longer set per-profile — see the comment/uncomment toggle in
   # the base application.yml instead.
   jpa:
-    show-sql: true
+    # SQL echo is off by default (it floods the console, e.g. the outbox poller every few seconds).
+    # To debug a query, start with JPA_SHOW_SQL=true.
+    show-sql: ${JPA_SHOW_SQL:false}
 
 app:
   cors-allowed-origins: ${CORS_ORIGINS:http://localhost:5173,http://192.168.1.4:5173}
