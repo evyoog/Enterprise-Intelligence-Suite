@@ -24,6 +24,7 @@ vi.mock('../../api/orgDirectoryApi', () => ({
     subscriptions: vi.fn().mockResolvedValue([]),
     invoices: vi.fn().mockResolvedValue([]),
     tickets: vi.fn().mockResolvedValue([]),
+    invitations: vi.fn().mockResolvedValue([{ id: 1, email: 'inv@acme.example', status: 'PENDING', orgRole: 'MEMBER', invitedByName: 'Asha Rao', expiresAt: '2026-10-15T00:00:00Z' }]),
     individual: () => individual(),
   },
 }))
@@ -87,7 +88,9 @@ describe('AdminOrganizationDetailPage — organization', () => {
 
   it('shows the members and the security settings', async () => {
     renderAt('/admin/organizations/organization/7?tab=members')
-    expect(await screen.findByText('Asha Rao')).toBeInTheDocument()
+    expect((await screen.findAllByText('Asha Rao')).length).toBeGreaterThan(0)
+    expect(await screen.findByText('asha@acme.example')).toBeInTheDocument()
+    expect(await screen.findByText('inv@acme.example')).toBeInTheDocument()
     await userEvent.setup().click(screen.getByRole('tab', { name: 'Security' }))
     expect(await screen.findByText('Required')).toBeInTheDocument()
   })

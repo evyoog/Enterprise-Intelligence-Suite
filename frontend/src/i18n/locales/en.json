@@ -2936,7 +2936,8 @@
     "tabs": {
       "members": "Members",
       "groups": "Groups",
-      "structure": "Org structure"
+      "structure": "Org structure",
+      "invitations": "Invitations"
     }
   },
   "orgPrivileged": {
@@ -3391,6 +3392,97 @@
         "outcome": "Outcome",
         "detail": "Detail"
       }
+    }
+  },
+  "invitations": {
+    "title": "Invitations",
+    "invite": "Invite user",
+    "search": "Search email",
+    "status": "Status",
+    "none": "No invitations yet.",
+    "noMatches": "No invitation matches the filters.",
+    "loadError": "The invitations could not be loaded.",
+    "actionError": "That action could not be completed.",
+    "statuses": {
+      "PENDING": "Pending",
+      "ACCEPTED": "Accepted",
+      "DECLINED": "Declined",
+      "EXPIRED": "Expired",
+      "REVOKED": "Revoked"
+    },
+    "col": {
+      "email": "Email",
+      "status": "Status",
+      "role": "Role",
+      "node": "Structure node",
+      "invitedBy": "Invited by",
+      "invitedAt": "Invited at",
+      "expiresAt": "Expires at",
+      "acceptedAt": "Accepted at",
+      "lastResent": "Last resent",
+      "actions": "Actions",
+      "declinedAt": "Declined at",
+      "revokedAt": "Revoked at",
+      "acceptedBy": "Accepted by",
+      "sendCount": "Times sent"
+    },
+    "resend": "Resend",
+    "revoke": "Revoke",
+    "details": "Details",
+    "resendFor": "Resend invitation to {{email}}",
+    "revokeFor": "Revoke invitation to {{email}}",
+    "detailsFor": "Details of the invitation to {{email}}",
+    "revokeTitle": "Revoke the invitation to {{email}}?",
+    "revokeBody": "The link in the email stops working. You can send a new invitation later.",
+    "sent": "Invitation sent to {{email}}.",
+    "resent": "Invitation resent to {{email}}.",
+    "revoked": "Invitation to {{email}} revoked.",
+    "emailFailed": "The invitation was saved but the email could not be sent. Use Resend to try again.",
+    "inviteTitle": "Invite user",
+    "useResend": "Use Resend in the list.",
+    "form": {
+      "email": "Email",
+      "emailHelp": "The link is sent to this address and works for 7 days.",
+      "role": "Organization role",
+      "adminOnly": "Only an organization administrator can invite another administrator.",
+      "node": "Structure node (optional)",
+      "noNode": "No placement",
+      "summary": "{{email}} will join as {{role}}{{node}}. The invitation expires in 7 days.",
+      "send": "Send invitation"
+    },
+    "canInvite": "Can invite",
+    "canInviteFor": "Allow {{name}} to send invitations",
+    "alwaysAllowed": "Always",
+    "page": {
+      "title": "Invitation to join an organization",
+      "invalid": "This invitation link is invalid or no longer available.",
+      "intro": "{{inviter}} invited you to join {{organization}}.",
+      "someone": "Someone",
+      "status": {
+        "EXPIRED": "This invitation has expired. Please request a new invitation.",
+        "REVOKED": "This invitation is no longer valid.",
+        "DECLINED": "This invitation is no longer valid.",
+        "ACCEPTED": "This invitation has already been accepted."
+      },
+      "unavailable": "This organization is currently unavailable for new members.",
+      "wrongAccount": "You are signed in as {{signedIn}}, but this invitation is for {{invited}}. Sign out and use that account.",
+      "signOut": "Sign out",
+      "haveAccount": "You already have an account. Sign in to accept; you will come back to this page.",
+      "login": "Log in to accept",
+      "accept": "Accept invitation",
+      "decline": "Decline",
+      "createTitle": "Create your account to join",
+      "firstName": "First name",
+      "lastName": "Last name",
+      "password": "Password",
+      "passwordHelp": "At least 8 characters, with a letter and a number.",
+      "confirmPassword": "Confirm password",
+      "createAndJoin": "Create account and join",
+      "joined": "You have joined {{organization}}.",
+      "continue": "Continue",
+      "declined": "You declined this invitation.",
+      "personalKept": "Your personal subscriptions and invoices stay as they are.",
+      "error": "That could not be completed. Please try again."
     }
   }
 }

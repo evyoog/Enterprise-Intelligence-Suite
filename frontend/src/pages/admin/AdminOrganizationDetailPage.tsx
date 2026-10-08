@@ -8,6 +8,7 @@ import {
 } from '@mui/material'
 import type { OrganizationAdmin } from '../../api/adminRegistrationApi'
 import { ApiError } from '../../api/client'
+import type { Invitation } from '../../api/invitationsApi'
 import { auditLogApi, type AuditLogEntry } from '../../api/auditLogApi'
 import {
   orgDirectoryApi, type Completion, type IndividualDetail, type InvoiceRow, type MemberRow, type SubscriptionRow, type TicketRow,
@@ -82,10 +83,34 @@ function Empty({ children }: { children: ReactNode }) {
 
 const date = (v?: string) => (v ? new Date(v).toLocaleString() : '—')
 
+function InvitationsList({ id }: { id: number }) {
+  const { t } = useTranslation()
+  const r = useAsync<Invitation[]>(() => orgDirectoryApi.invitations(id), `v${id}`)
+  return (
+    <Async result={r}>
+      {(rows) => rows.length === 0 ? <Empty>{t('invitations.none')}</Empty> : (
+        <Table size="small" aria-label={t('invitations.title')}>
+          <TableHead><TableRow>
+            {['email', 'status', 'role', 'invitedBy', 'expiresAt'].map((c) => <TableCell key={c}>{t(`invitations.col.${c}`)}</TableCell>)}
+          </TableRow></TableHead>
+          <TableBody>{rows.map((i) => (
+            <TableRow key={i.id}>
+              <TableCell>{i.email}</TableCell><TableCell>{t(`invitations.statuses.${i.status}`)}</TableCell>
+              <TableCell>{t(`orgSettings.roles.${i.orgRole}`)}</TableCell><TableCell>{i.invitedByName ?? '—'}</TableCell>
+              <TableCell>{date(i.expiresAt)}</TableCell>
+            </TableRow>
+          ))}</TableBody>
+        </Table>
+      )}
+    </Async>
+  )
+}
+
 function MembersTab({ id }: { id: number }) {
   const { t } = useTranslation()
   const r = useAsync<MemberRow[]>(() => orgDirectoryApi.members(id), `m${id}`)
   return (
+    <>
     <Async result={r}>
       {(rows) => rows.length === 0 ? <Empty>{t('orgDirectory.detail.noMembers')}</Empty> : (
         <Table size="small" aria-label={t('orgDirectory.detail.tabs.members')}>
@@ -101,6 +126,9 @@ function MembersTab({ id }: { id: number }) {
         </Table>
       )}
     </Async>
+    <Typography variant="subtitle1" component="h3" sx={{ mt: 3, mb: 1 }}>{t('invitations.title')}</Typography>
+    <InvitationsList id={id} />
+    </>
   )
 }
 

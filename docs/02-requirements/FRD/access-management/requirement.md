@@ -125,7 +125,7 @@ Whether `MANAGE_ORGANIZATION` should be split into smaller permissions (sign-in,
 - Access carried by groups (Open question 5; groups carry none today, [C35](../../../01-business/roadmap/open-decisions.md#c35)).
 - Notifications to members about access changes (Open question 6) — the existing role-change notification stays.
 - Product-internal permissions (what a member can do inside Valam.ai etc.); only which products they can open.
-- Invitations (05.03.01, carried under [C34](../../../01-business/roadmap/open-decisions.md#c34)).
+- Invitations (05.03.01): [REQ-TEN-008](../invite-user/requirement.md) (C84) builds one slice of this FRD for `INVITE_USERS`: the table `member_access_override` with permission items only.
 
 ## Dependencies
 REQ-IAM-002 (member role assignment), REQ-IAM-003 (role and permission administration), REQ-IAM-004 (privileged access), REQ-TEN-002 (member lifecycle, review stamp), REQ-TEN-003 (groups), REQ-SUB-001 (subscription lifecycle), REQ-SUB-002 (entitlements), REQ-SUB-003 (seats), REQ-BIL-001 (organization billing), audit.

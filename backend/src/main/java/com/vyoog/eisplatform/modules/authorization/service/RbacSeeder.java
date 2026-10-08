@@ -103,7 +103,9 @@ public class RbacSeeder implements ApplicationRunner {
         // order is its own permission — distinct from MANAGE_PRODUCT_ACCESS
         // (assigning ALREADY-purchased access to a member), since an order
         // decision commits the organization to a new subscription.
-        "ORG_ADMIN", List.of("MANAGE_ORGANIZATION", "MANAGE_USERS", "MANAGE_PRODUCT_ACCESS", "MANAGE_PRIVILEGED_ACCESS", "MANAGE_ORDERS"),
+        "ORG_ADMIN", List.of("MANAGE_ORGANIZATION", "MANAGE_USERS", "MANAGE_PRODUCT_ACCESS", "MANAGE_PRIVILEGED_ACCESS", "MANAGE_ORDERS",
+            // REQ-TEN-008 (C84): sending invitations; a member can be given it individually.
+            "INVITE_USERS"),
         "MEMBER", List.of()
     );
 

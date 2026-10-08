@@ -27,6 +27,7 @@
 | Sequence correction | [C31](../open-decisions.md#c31) Adopts the corrected sprint sequence: 05 Tenant pulled into this sprint (from 2026.4.2) | - | - |
 | Decided | [C32](../open-decisions.md#c32) Product Lifecycle & Structure: version counter, Publish/Retire actions and the new RETIRED status, hierarchy/variant/dependency fields | [product-lifecycle](../../../02-requirements/FRD/product-lifecycle/requirement.md) | REQ-CAT-001 |
 | Decided | [C33](../open-decisions.md#c33) Plan Management: currency, usage limit, included features, usage price, overage charge, tier-pricing text — data fields only, no billing engine | [plan-management](../../../02-requirements/FRD/plan-management/requirement.md) | REQ-CAT-002 |
+| Decided | [C84](../open-decisions.md#c84) Invite user (05.03.01.01) by email, with `INVITE_USERS` delegation; Create user stays carried | [invite-user](../../../02-requirements/FRD/invite-user/requirement.md) | REQ-TEN-008 |
 | Decided | [C34](../open-decisions.md#c34) Member Lifecycle: Suspend/Reactivate/Remove and Review access; Invite/Create user carried to 2026.4.2 | [member-lifecycle](../../../02-requirements/FRD/member-lifecycle/requirement.md) | REQ-TEN-002 |
 | Decided | [C66](../open-decisions.md#c66) UI/UX redesign with the Product Catalog as reference; catalog showcase fields (platform colour, catalog visibility and order; app accent colour, feature tags, documentation/support links); public catalog API | [catalog-showcase](../../../02-requirements/FRD/catalog-showcase/requirement.md) | REQ-CAT-003 |
 | [product-content](../../../02-requirements/FRD/product-content/requirement.md) | REQ-CAT-004 | 02.04.01.01–.03, 02.04.02.01–.03 | Approved (2026-10-07, C81) |
@@ -42,6 +43,7 @@
 | [product-lifecycle](../../../02-requirements/FRD/product-lifecycle/requirement.md) | REQ-CAT-001 | 02.01.01.03–.05, 02.01.02 | Approved |
 | [plan-management](../../../02-requirements/FRD/plan-management/requirement.md) | REQ-CAT-002 | 02.03.01.03–.04, 02.03.02.02–.04 | Approved |
 | [member-lifecycle](../../../02-requirements/FRD/member-lifecycle/requirement.md) | REQ-TEN-002 | 05.03.01.03–.05, 05.03.02.03 | Approved |
+| [invite-user](../../../02-requirements/FRD/invite-user/requirement.md) | REQ-TEN-008 | 05.03.01.01 | Approved |
 | [group-management](../../../02-requirements/FRD/group-management/requirement.md) | REQ-TEN-003 | 05.04.01 | Approved |
 | [catalog-showcase](../../../02-requirements/FRD/catalog-showcase/requirement.md) | REQ-CAT-003 | No function ID (restyles 02.01/02.03 screens; links touch 02.04.01.02) | Approved |
 
@@ -56,7 +58,7 @@
 | 02.04 Product Content | Done (2026-10-07) | FRD [REQ-CAT-004](../../../02-requirements/FRD/product-content/requirement.md) Approved with default answers ([C81](../open-decisions.md#c81)); Upload datasheet, Publish documentation, Version content, Upload images, Upload videos (links) and Manage case studies built as the admin Content tab and the public Resources tab. Needs a test bucket for the real-S3 check (TC-CAT-032) |
 | 02.05 Localization | Not started | Needs its own FRD |
 | 05.02 Tenant Lifecycle | Not started | Needs its own FRD (what "tenant" means beyond Organization is undecided) |
-| 05.03.01 User Lifecycle | Partly done | Suspend/Reactivate/Remove built; Invite/Create user carried to 2026.4.2 (C34) |
+| 05.03.01 User Lifecycle | Partly done | Suspend/Reactivate/Remove built; **Invite user built 2026-10-08** ([C84](../open-decisions.md#c84), [REQ-TEN-008](../../../02-requirements/FRD/invite-user/requirement.md)); Create user (05.03.01.02) stays carried |
 | 05.03.02 Role Assignment | Done | Assign role and Assign group were already built/built this sprint; Review access built this sprint |
 | 05.04.01 Groups | Done | Create/add/remove member built |
 | 05.04.02 Projects | Not started | Carried to 2026.4.2 (C35) |
@@ -142,7 +144,7 @@ Full breakdown: [applications/05-customer-tenant-management.md](../applications/
 | Capability | Feature | Functions (requirement candidates from [WB:Functions]) | Priority | Commitment |
 |---|---|---|---|---|
 | [05.02 Tenant Management](../applications/05-customer-tenant-management.md#0502-tenant-management) | 05.02.01 Tenant Lifecycle | Create tenant; Configure tenant; Assign region; Configure isolation; Configure tenant policies | P0 | Commit (not started — needs its own FRD) |
-| [05.03 User Management](../applications/05-customer-tenant-management.md#0503-user-management) | 05.03.01 User Lifecycle | Invite user; Create user; Activate user; Suspend user; Remove user | P0 | Partly (Activate/Suspend/Remove built; Invite/Create user carried to 2026.4.2, [C34](../open-decisions.md#c34)) |
+| [05.03 User Management](../applications/05-customer-tenant-management.md#0503-user-management) | 05.03.01 User Lifecycle | Invite user; Create user; Activate user; Suspend user; Remove user | P0 | Partly (Activate/Suspend/Remove and Invite user built; Create user carried, [C34](../open-decisions.md#c34), [C84](../open-decisions.md#c84)) |
 | [05.03 User Management](../applications/05-customer-tenant-management.md#0503-user-management) | 05.03.02 Role Assignment | Assign role; Assign group; Review access | P0 | Commit (built) |
 | [05.04 Group & Project Management](../applications/05-customer-tenant-management.md#0504-group--project-management) | 05.04.01 Groups | Create group; Add member; Remove member | P0 | Commit (built) |
 | [05.04 Group & Project Management](../applications/05-customer-tenant-management.md#0504-group--project-management) | 05.04.02 Projects | Create project; Assign users; Assign resources | P0 | Carried to 2026.4.2 ([C35](../open-decisions.md#c35)) |

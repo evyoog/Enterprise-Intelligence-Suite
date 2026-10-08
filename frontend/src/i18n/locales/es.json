@@ -2936,7 +2936,8 @@
     "tabs": {
       "members": "Miembros",
       "groups": "Grupos",
-      "structure": "Estructura"
+      "structure": "Estructura",
+      "invitations": "Invitaciones"
     }
   },
   "orgPrivileged": {
@@ -3391,6 +3392,97 @@
         "outcome": "Resultado",
         "detail": "Detalle"
       }
+    }
+  },
+  "invitations": {
+    "title": "Invitaciones",
+    "invite": "Invitar usuario",
+    "search": "Buscar correo",
+    "status": "Estado",
+    "none": "Aún no hay invitaciones.",
+    "noMatches": "Ninguna invitación coincide con los filtros.",
+    "loadError": "No se pudieron cargar las invitaciones.",
+    "actionError": "No se pudo completar la acción.",
+    "statuses": {
+      "PENDING": "Pendiente",
+      "ACCEPTED": "Aceptada",
+      "DECLINED": "Rechazada",
+      "EXPIRED": "Vencida",
+      "REVOKED": "Revocada"
+    },
+    "col": {
+      "email": "Correo",
+      "status": "Estado",
+      "role": "Rol",
+      "node": "Nodo de estructura",
+      "invitedBy": "Invitada por",
+      "invitedAt": "Invitada el",
+      "expiresAt": "Vence el",
+      "acceptedAt": "Aceptada el",
+      "lastResent": "Último reenvío",
+      "actions": "Acciones",
+      "declinedAt": "Rechazada el",
+      "revokedAt": "Revocada el",
+      "acceptedBy": "Aceptada por",
+      "sendCount": "Veces enviada"
+    },
+    "resend": "Reenviar",
+    "revoke": "Revocar",
+    "details": "Detalles",
+    "resendFor": "Reenviar invitación a {{email}}",
+    "revokeFor": "Revocar invitación a {{email}}",
+    "detailsFor": "Detalles de la invitación a {{email}}",
+    "revokeTitle": "¿Revocar la invitación a {{email}}?",
+    "revokeBody": "El enlace del correo deja de funcionar. Puede enviar una nueva invitación después.",
+    "sent": "Invitación enviada a {{email}}.",
+    "resent": "Invitación reenviada a {{email}}.",
+    "revoked": "Invitación a {{email}} revocada.",
+    "emailFailed": "La invitación se guardó pero no se pudo enviar el correo. Use Reenviar para intentarlo de nuevo.",
+    "inviteTitle": "Invitar usuario",
+    "useResend": "Use Reenviar en la lista.",
+    "form": {
+      "email": "Correo",
+      "emailHelp": "El enlace se envía a esta dirección y funciona durante 7 días.",
+      "role": "Rol en la organización",
+      "adminOnly": "Solo un administrador de la organización puede invitar a otro administrador.",
+      "node": "Nodo de estructura (opcional)",
+      "noNode": "Sin ubicación",
+      "summary": "{{email}} se unirá como {{role}}{{node}}. La invitación vence en 7 días.",
+      "send": "Enviar invitación"
+    },
+    "canInvite": "Puede invitar",
+    "canInviteFor": "Permitir que {{name}} envíe invitaciones",
+    "alwaysAllowed": "Siempre",
+    "page": {
+      "title": "Invitación para unirse a una organización",
+      "invalid": "Este enlace de invitación no es válido o ya no está disponible.",
+      "intro": "{{inviter}} le invitó a unirse a {{organization}}.",
+      "someone": "Alguien",
+      "status": {
+        "EXPIRED": "Esta invitación ha vencido. Solicite una nueva invitación.",
+        "REVOKED": "Esta invitación ya no es válida.",
+        "DECLINED": "Esta invitación ya no es válida.",
+        "ACCEPTED": "Esta invitación ya fue aceptada."
+      },
+      "unavailable": "Esta organización no está disponible para nuevos miembros por ahora.",
+      "wrongAccount": "Ha iniciado sesión como {{signedIn}}, pero esta invitación es para {{invited}}. Cierre sesión y use esa cuenta.",
+      "signOut": "Cerrar sesión",
+      "haveAccount": "Ya tiene una cuenta. Inicie sesión para aceptar; volverá a esta página.",
+      "login": "Iniciar sesión para aceptar",
+      "accept": "Aceptar invitación",
+      "decline": "Rechazar",
+      "createTitle": "Cree su cuenta para unirse",
+      "firstName": "Nombre",
+      "lastName": "Apellido",
+      "password": "Contraseña",
+      "passwordHelp": "Al menos 8 caracteres, con una letra y un número.",
+      "confirmPassword": "Confirmar contraseña",
+      "createAndJoin": "Crear cuenta y unirse",
+      "joined": "Se ha unido a {{organization}}.",
+      "continue": "Continuar",
+      "declined": "Rechazó esta invitación.",
+      "personalKept": "Sus suscripciones y facturas personales no cambian.",
+      "error": "No se pudo completar. Inténtelo de nuevo."
     }
   }
 }

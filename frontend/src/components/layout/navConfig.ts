@@ -107,7 +107,9 @@ export const NAV_CONFIG: NavDef[] = [
   },
 
   // ------------------------------------------------------------- ORGANIZATION
-  { id: 'members', labelKey: 'peopleStructure', icon: UsersRound, group: 'organization', to: '/organization/members', when: orgAdmin },
+  { id: 'members', labelKey: 'peopleStructure', icon: UsersRound, group: 'organization', to: '/organization/members',
+    // Administrators, and members allowed only to send invitations (REQ-TEN-008).
+    when: { any: [orgAdmin, organization('INVITE_USERS')] } },
   {
     id: 'rolesPermissions', labelKey: 'rolesPermissions', icon: ShieldCheck, group: 'organization', to: '/admin/roles',
     matchPrefixes: ['/admin/permissions'],

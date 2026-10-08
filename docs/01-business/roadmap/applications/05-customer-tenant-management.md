@@ -83,6 +83,8 @@ AI required: decided in the feature FRD ([C12](../open-decisions.md#c12)). [WB:F
 | 05.03.02.02 | Assign group | Yes | Phase 1 / MVP | P0 | No | Platform Service | `/user-management/assign-group` | - | Tenant Service | Organization | - | UJ-005 Provision Service |
 | 05.03.02.03 | Review access | Yes | Phase 1 / MVP | P0 | No | Platform Service | `/user-management/review-access` | - | Tenant Service | Organization | - | UJ-005 Provision Service |
 
+> **05.03.01.01 Invite user** is built ([C84](../open-decisions.md#c84), [REQ-TEN-008](../../../02-requirements/FRD/invite-user/requirement.md)). 05.03.01.02 Create user stays carried.
+
 ### Added by decision: Organization hierarchy (C82)
 
 Not a roadmap function. A tree of organization nodes with level order, move history, CSV import and member placement, adapted from the Thittam product ([C82](../open-decisions.md#c82), [REQ-TEN-006](../../../02-requirements/FRD/org-hierarchy/requirement.md)). Sprint [2026.4.2](../sprints/SPRINT-2026.4.2.md).

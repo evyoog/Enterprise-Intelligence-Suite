@@ -10,6 +10,7 @@ import { MyProductsPage } from './pages/MyProductsPage'
 import { MySubscriptionsPage } from './pages/MySubscriptionsPage'
 import { OrganizationSettingsRedirect } from './pages/OrganizationSettingsPage'
 import { OrganizationMembersPage } from './pages/OrganizationMembersPage'
+import { InvitationPage } from './pages/InvitationPage'
 import { OrganizationPrivilegedAccessPage } from './pages/OrganizationPrivilegedAccessPage'
 import { OrganizationSecurityPage } from './pages/OrganizationSecurityPage'
 import { ProductsAdminPage } from './pages/admin/ProductsAdminPage'
@@ -143,6 +144,8 @@ function MainApp() {
           <Route path="/search" element={<GlobalSearchPage />} />
           {/* 14.01.01.01 Register provider (sprint 2027.2.1): public, no Vyoog account required. */}
           <Route path="/partners/apply" element={<ProviderApplicationPage />} />
+          {/* REQ-TEN-008 (C84): the invitation link; the token is the credential, so it is public. */}
+          <Route path="/invitations/:token" element={<InvitationPage />} />
           {/* Deliberately NOT behind RequireAuth — see that component's own
               doc on why preferences stay reachable signed out. */}
           <Route path="/account/preferences" element={<PreferencesPage />} />

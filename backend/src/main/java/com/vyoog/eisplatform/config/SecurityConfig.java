@@ -240,6 +240,10 @@ public class SecurityConfig {
                 // organization only") happens inside the service layer, never here,
                 // since that scoping depends on data (which org a caller belongs to)
                 // a URL pattern can't express.
+                // REQ-TEN-008 (C84): the invitation link is the credential for preview, account creation and
+                // decline; accepting needs a signed-in account (the default rule below).
+                .requestMatchers(HttpMethod.GET, "/invitations/*").permitAll()
+                .requestMatchers(HttpMethod.POST, "/invitations/*/account", "/invitations/*/decline").permitAll()
                 .requestMatchers("/me/**").authenticated()
                 .requestMatchers("/organization/me/**").authenticated()
                 .requestMatchers("/actuator/health", "/actuator/info").permitAll()

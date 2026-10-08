@@ -58,6 +58,7 @@ public class OrganizationSelfService {
     private final OrganizationMemberService organizationMemberService;
     private final CustomerRepository customerRepository;
     private final AuthorizationService authorizationService;
+    private final com.vyoog.eisplatform.modules.authorization.service.MemberAccessService memberAccessService;
     private final PrivilegedAccessService privilegedAccessService;
     private final PlatformMfaService platformMfaService;
     private final NotificationService notificationService;
@@ -331,7 +332,7 @@ public class OrganizationSelfService {
      * since not belonging to one isn't an error at this specific call site. */
     public List<String> listMyOrganizationPermissions(Long customerId) {
         return memberRepository.findFirstByCustomerIdAndStatus(customerId, MembershipStatus.ACTIVE)
-            .map(member -> authorizationService.listOrganizationPermissions(member.getOrgRole()))
+            .map(memberAccessService::listPermissions)
             .orElse(List.of());
     }
 

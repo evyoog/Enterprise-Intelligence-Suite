@@ -33,6 +33,17 @@ public class FakeEmailService implements EmailService {
         this.lastChangedNoticeEmail = toEmail;
     }
 
+    public String lastInvitationEmail;
+    public String lastInvitationLink;
+
+    @Override
+    public boolean sendInvitationEmail(String toEmail, String organizationName, String inviterName, String roleLabel,
+                                       String structurePlacement, java.time.Instant expiresAt, String invitationLink) {
+        this.lastInvitationEmail = toEmail;
+        this.lastInvitationLink = invitationLink;
+        return true;
+    }
+
     @Override
     public void sendNotificationEmail(String toEmail, String subject, String message) {
         this.lastNotificationEmail = toEmail;

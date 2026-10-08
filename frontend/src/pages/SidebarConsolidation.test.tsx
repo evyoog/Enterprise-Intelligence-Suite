@@ -13,6 +13,9 @@ import { RolesPermissionsPage } from './admin/RolesPermissionsPage'
 
 // The pages inside the tabs are tested on their own; here only the shells are.
 vi.mock('../components/organization/OrganizationMembersCard', () => ({ OrganizationMembersCard: () => <p>Members card</p> }))
+vi.mock('../api/myPermissionsApi', () => ({ myPermissionsApi: { get: () => Promise.resolve({ platform: [], organization: ['MANAGE_ORGANIZATION', 'MANAGE_USERS', 'INVITE_USERS'] }) } }))
+vi.mock('../components/organization/OrganizationInvitationsCard', () => ({ OrganizationInvitationsCard: () => <p>Invitations card</p> }))
+vi.mock('../components/organization/OrganizationStructurePanel', () => ({ OrganizationStructurePanel: () => <p>Structure panel</p> }))
 vi.mock('../components/organization/OrganizationGroupsCard', () => ({ OrganizationGroupsCard: () => <p>Groups card</p> }))
 vi.mock('./ServiceStatusPage', () => ({ ServiceStatusPage: () => <p>Status page</p> }))
 vi.mock('./admin/ServiceStatusAdminPage', () => ({ ServiceStatusAdminPage: () => <p>Manage status page</p> }))
@@ -76,14 +79,14 @@ describe('compatibility redirects (C80)', () => {
 describe('Organization → Members', () => {
   it('has Members and Groups tabs and keeps the tab in the URL', async () => {
     at('/organization/members', <OrganizationMembersPage />)
-    expect(screen.getByText('Members card')).toBeInTheDocument()
-    await userEvent.setup().click(screen.getByRole('tab', { name: 'Groups' }))
+    expect(await screen.findByText('Members card')).toBeInTheDocument()
+    await userEvent.setup().click(await screen.findByRole('tab', { name: 'Groups' }))
     expect(screen.getByText('Groups card')).toBeInTheDocument()
   })
 
-  it('opens the Groups tab from ?tab=groups', () => {
+  it('opens the Groups tab from ?tab=groups', async () => {
     at('/organization/members?tab=groups', <OrganizationMembersPage />)
-    expect(screen.getByText('Groups card')).toBeInTheDocument()
+    expect(await screen.findByText('Groups card')).toBeInTheDocument()
   })
 })
 

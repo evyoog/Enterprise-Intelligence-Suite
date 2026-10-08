@@ -18,6 +18,7 @@ import java.util.List;
 public class AdminOrganizationDirectoryController {
 
     private final OrgDirectoryService service;
+    private final com.vyoog.eisplatform.modules.invitation.service.InvitationService invitationService;
 
     @GetMapping("/directory")
     public DirectoryDto directory() {
@@ -47,6 +48,11 @@ public class AdminOrganizationDirectoryController {
     @GetMapping("/{id}/tickets")
     public List<TicketRow> tickets(@PathVariable Long id) {
         return service.tickets(id);
+    }
+
+    @GetMapping("/{id}/invitations")
+    public List<com.vyoog.eisplatform.modules.invitation.dto.InvitationDtos.InvitationDto> invitations(@PathVariable Long id) {
+        return invitationService.adminList(id);
     }
 
     @GetMapping("/{id}/org-hierarchy")
