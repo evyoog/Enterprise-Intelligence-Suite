@@ -40,7 +40,7 @@ export interface Cart {
   continueAs: ContinueAs
 }
 
-export type CartIssueCode = 'NOT_AVAILABLE' | 'PRICE_CHANGED' | 'ALREADY_SUBSCRIBED' | 'MISSING_DEPENDENCY' | 'CURRENCY_MISMATCH'
+export type CartIssueCode = 'NOT_AVAILABLE' | 'PRICE_CHANGED' | 'ALREADY_SUBSCRIBED' | 'MISSING_DEPENDENCY' | 'CURRENCY_MISMATCH' | 'NOT_ELIGIBLE'
 
 export interface CartIssue {
   itemId: number

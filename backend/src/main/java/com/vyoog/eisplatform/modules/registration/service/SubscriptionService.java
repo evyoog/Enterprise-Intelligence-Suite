@@ -61,6 +61,8 @@ public class SubscriptionService {
     private final InvoiceService invoiceService;
     /** REQ-INT-002 (C62): lifecycle events, written in the same transaction. */
     private final OutboxService outboxService;
+    /** REQ-CAT-005 (C85): per-product audience rule. */
+    private final com.vyoog.eisplatform.modules.offering.service.EligibilityService eligibilityService;
 
     /** REQ-INT-002.8: IDs, status and dates only (BR-2). */
     private void publish(String eventType, ProductSubscription subscription) {
@@ -135,6 +137,7 @@ public class SubscriptionService {
         Product product = productRepository.findById(productId)
             .filter(p -> p.getStatus() == ProductStatus.ACTIVE)
             .orElseThrow(() -> new ResourceNotFoundException("Product not found"));
+        eligibilityService.assertEligible(productId, false);
 
         ProductSubscription subscription = subscriptionRepository
             .findByOwnerCustomerIdAndProductId(customerId, productId)
@@ -172,6 +175,7 @@ public class SubscriptionService {
         Product product = productRepository.findById(productId)
             .filter(p -> p.getStatus() == ProductStatus.ACTIVE)
             .orElseThrow(() -> new ResourceNotFoundException("Product not found"));
+        eligibilityService.assertEligible(productId, false);
 
         ProductSubscription subscription = subscriptionRepository
             .findByOwnerCustomerIdAndProductId(customerId, productId)

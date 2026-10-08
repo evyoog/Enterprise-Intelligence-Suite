@@ -477,7 +477,8 @@
       "knowledgeManage": "Administrar",
       "billingOverview": "Resumen",
       "peopleStructure": "Personas y estructura",
-      "organizationsDirectory": "Organizaciones"
+      "organizationsDirectory": "Organizaciones",
+      "offerings": "Ofertas"
     },
     "catalogTitle": "Catálogo de productos",
     "catalogSubtitle": "Busque y filtre los productos disponibles en la plataforma.",
@@ -1647,7 +1648,8 @@
       "priceChanged": "El precio cambió de {{old}} a {{new}}.",
       "alreadySubscribed": "Ya tienes una suscripción activa a {{product}}.",
       "missingDependency": "{{product}} requiere {{required}}.",
-      "currencyMismatch": "Este artículo tiene un precio en otra moneda que el resto de tu carrito. Págalo por separado."
+      "currencyMismatch": "Este artículo tiene un precio en otra moneda que el resto de tu carrito. Págalo por separado.",
+      "notEligible": "{{product}} no está disponible para su tipo de cuenta."
     }
   },
   "apiKeys": {
@@ -1799,7 +1801,8 @@
       "categories": "Categorías",
       "helpTitle": "¿Necesita ayuda?",
       "helpBody": "Nuestro equipo de soporte puede ayudarle a elegir, configurar y usar este producto."
-    }
+    },
+    "viewOfferings": "Ver ofertas"
   },
   "forms": {
     "required": "Este campo es obligatorio.",
@@ -3483,6 +3486,70 @@
       "declined": "Rechazó esta invitación.",
       "personalKept": "Sus suscripciones y facturas personales no cambian.",
       "error": "No se pudo completar. Inténtelo de nuevo."
+    }
+  },
+  "offerings": {
+    "status": {
+      "DRAFT": "Borrador",
+      "ACTIVE": "Activa",
+      "RETIRED": "Retirada"
+    },
+    "audience": {
+      "BOTH": "Personas y organizaciones",
+      "INDIVIDUAL": "Solo personas",
+      "ORGANIZATION": "Solo organizaciones"
+    },
+    "admin": {
+      "title": "Ofertas",
+      "subtitle": "Agrupe productos en ofertas y defina quién puede comprar cada producto.",
+      "priceNote": "Una oferta no tiene precio propio: cada producto conserva los planes y precios fijados por el administrador de la plataforma.",
+      "tabs": {
+        "offerings": "Ofertas",
+        "rules": "Reglas de producto"
+      },
+      "new": "Nueva oferta",
+      "newTitle": "Nueva oferta",
+      "editTitle": "Editar oferta",
+      "name": "Nombre",
+      "description": "Descripción",
+      "status": "Estado",
+      "statusHelp": "Solo una oferta activa se muestra a los clientes. Necesita al menos un producto activo.",
+      "products": "Productos",
+      "actions": "Acciones",
+      "save": "Guardar",
+      "edit": "Editar",
+      "delete": "Eliminar",
+      "editNamed": "Editar {{name}}",
+      "deleteNamed": "Eliminar {{name}}",
+      "deleteTitle": "¿Eliminar {{name}}?",
+      "deleteBody": "Solo se pueden eliminar ofertas en borrador. Los productos que contiene no se ven afectados.",
+      "empty": "Aún no hay ofertas",
+      "emptyHint": "Cree una oferta para agrupar productos para los clientes.",
+      "loadFailed": "No se pudieron cargar las ofertas.",
+      "saveFailed": "No se pudo guardar.",
+      "deleteFailed": "No se pudo eliminar la oferta."
+    },
+    "rules": {
+      "intro": "Quién puede comprar cada producto y con qué productos funciona. Un producto sin regla está abierto a todos.",
+      "product": "Producto",
+      "audience": "Quién puede comprar",
+      "worksWith": "Funciona con",
+      "editTitle": "Reglas de {{product}}",
+      "editNamed": "Editar reglas de {{name}}",
+      "requiredHint": "El producto requerido se define en el propio producto, como su dependencia."
+    },
+    "public": {
+      "title": "Ofertas",
+      "subtitle": "Grupos de productos a los que puede suscribirse.",
+      "empty": "Todavía no hay ofertas disponibles.",
+      "view": "Ver oferta",
+      "viewProduct": "Ver producto",
+      "included": "Productos incluidos",
+      "loadFailed": "No se pudieron cargar las ofertas.",
+      "priceNote": "Cada producto tiene su precio y se compra en su propia página."
+    },
+    "worksWith": {
+      "title": "Funciona con"
     }
   }
 }

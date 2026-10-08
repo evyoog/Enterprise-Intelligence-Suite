@@ -53,7 +53,7 @@
 |---|---|---|
 | 02.01.01 Product Lifecycle | Done (this FRD's scope) | Version, Publish, Retire built; Create/Update product were already built |
 | 02.01.02 Product Structure | Done | Hierarchy, variants, dependencies built |
-| 02.02 Offering Management | Not started | Needs its own FRD — no decision recorded yet |
+| 02.02 Offering Management | Partly done (2026-10-08) | FRD [REQ-CAT-005](../../../02-requirements/FRD/offering-management/requirement.md) Approved ([C85](../open-decisions.md#c85)). Built: Create offering, Bundle products (grouping and public browsing, **no offering price** — OF-2 open), Define prerequisites (the product dependencies, OF-6), Define compatibility ("works with", OF-7), Define eligibility (individuals / organizations, enforced in cart, subscribe and order), Define channels (platform only, OF-4). **Not built:** Define regions (OF-3 and OF-5 conflict); buying an offering as a whole (needs bundle pricing) |
 | 02.03 Plan Management | Done (this FRD's scope) | Currency, usage limit, included features, usage price, overage charge, tier-pricing text built; Create plan/billing frequency/subscription price were already built |
 | 02.04 Product Content | Done (2026-10-07) | FRD [REQ-CAT-004](../../../02-requirements/FRD/product-content/requirement.md) Approved with default answers ([C81](../open-decisions.md#c81)); Upload datasheet, Publish documentation, Version content, Upload images, Upload videos (links) and Manage case studies built as the admin Content tab and the public Resources tab. Needs a test bucket for the real-S3 check (TC-CAT-032) |
 | 02.05 Localization | Not started | Needs its own FRD |

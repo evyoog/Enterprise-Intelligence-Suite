@@ -151,6 +151,15 @@ describe('CartPage (C59, REQ-MKT-003)', () => {
     expect(await screen.findByText('Your cart is empty')).toBeInTheDocument()
   })
 
+  it('tells the customer when a product is not available for their account type (REQ-CAT-005)', async () => {
+    cartGet.mockResolvedValue(cart([item({ id: 44, productId: 10, productName: 'Yukth.ai' })]))
+    cartValidate.mockResolvedValue({ valid: false, issues: [{ itemId: 44, code: 'NOT_ELIGIBLE' }] })
+    renderCart()
+    await userEvent.setup().click(await screen.findByRole('button', { name: 'Proceed to checkout' }))
+    expect(await screen.findByText('Yukth.ai is not available for your account type.')).toBeInTheDocument()
+    expect(cartCheckout).not.toHaveBeenCalled()
+  })
+
   it('keeps the customer on the cart and shows each validation issue in its item', async () => {
     cartGet.mockResolvedValue(cart([item(), item({ id: 42, productId: 8, productName: 'Varthan.ai' }), item({ id: 43, productId: 9, productName: 'Thiran.ai' })]))
     cartValidate.mockResolvedValue({

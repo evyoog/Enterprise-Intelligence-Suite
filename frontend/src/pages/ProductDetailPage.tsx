@@ -3,6 +3,7 @@ import { ProductResources } from '../components/productcontent/ProductResources'
 import { hasPublishedContent } from '../components/productcontent/productContentUtils'
 import { Package as PHPackage } from 'lucide-react'
 import { useBuy } from '../components/cart/useBuy'
+import { WorksWith } from '../components/offerings/WorksWith'
 import { useEffect, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import {
@@ -213,6 +214,7 @@ export function ProductDetailPage() {
       {tab === 'overview' && (
         <Fade in timeout={250}>
           <Box>
+            <WorksWith productId={productId} />
             {plan?.includedFeatures && (
               <Box sx={{ mb: 4 }}>
                 <Typography variant="h6" component="h5" sx={{ fontWeight: 700, mb: 1.5 }}>{t('productDetail.included')}</Typography>

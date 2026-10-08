@@ -58,6 +58,8 @@ AI required: decided in the feature FRD ([C12](../open-decisions.md#c12)). [WB:F
 
 ## 02.02 Offering Management
 
+**Built 2026-10-08 ([C85](../open-decisions.md#c85), [REQ-CAT-005](../../../02-requirements/FRD/offering-management/requirement.md)):** create offering, bundle products (grouping and browsing only — an offering has **no price**, OF-2 is open), prerequisites (the product dependencies), compatibility ("works with"), eligibility (individuals / organizations) and channels (the platform only). **Not built:** define regions (OF-3 and OF-5 conflict) and buying an offering as a whole.
+
 ### Feature 02.02.01 Offering Definition
 
 AI required: decided in the feature FRD ([C12](../open-decisions.md#c12)). [WB:Features] flag, informational only: No.

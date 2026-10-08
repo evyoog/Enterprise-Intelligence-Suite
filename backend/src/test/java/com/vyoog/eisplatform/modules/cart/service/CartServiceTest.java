@@ -38,6 +38,7 @@ import org.springframework.test.context.ActiveProfiles;
 
 import java.math.BigDecimal;
 import java.util.List;
+import com.vyoog.eisplatform.modules.offering.dto.OfferingDtos.ProductRuleRequest;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -57,6 +58,8 @@ class CartServiceTest {
     @Autowired private OrderRepository orderRepository;
     @Autowired private OrganizationRepository organizationRepository;
     @Autowired private OrganizationMemberService organizationMemberService;
+
+    @Autowired private com.vyoog.eisplatform.modules.offering.service.EligibilityService eligibilityService;
 
     @MockBean private RazorpayClient razorpayClient;
 
@@ -180,6 +183,20 @@ class CartServiceTest {
             .isInstanceOf(CartConflictException.class)
             .satisfies(e -> assertThat(((CartConflictException) e).getCode()).isEqualTo("CART_INVALID"));
         assertThat(cartService.getCart(customer.getId()).itemCount()).isEqualTo(4);
+    }
+
+    @Test
+    void anOrganizationOnlyProductIsFlaggedNotEligibleForAnIndividual() {
+        Customer customer = newCustomer();
+        Product product = newProduct("Org only");
+        ProductPlan plan = newPlan(product, "Pro", BillingPeriod.MONTHLY, "10.00");
+        cartService.addItem(customer.getId(), new AddCartItemRequest(product.getId(), plan.getId()));
+        assertThat(cartService.validate(customer.getId()).valid()).isTrue();
+
+        eligibilityService.setRules("sub", "a@test", product.getId(), new ProductRuleRequest("ORGANIZATION", List.of()));
+
+        assertThat(cartService.validate(customer.getId()).issues()).extracting(CartIssueDto::code).containsExactly("NOT_ELIGIBLE");
+        assertThatThrownBy(() -> cartService.checkout(customer.getId())).isInstanceOf(CartConflictException.class);
     }
 
     @Test

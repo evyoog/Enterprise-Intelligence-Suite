@@ -35,6 +35,9 @@ vi.mock('../api/reviewsApi', async () => {
 const getContent = vi.fn()
 vi.mock('../api/productContentApi', () => ({ productContentApi: { get: (id: number) => getContent(id), download: vi.fn() } }))
 
+const getWorksWith = vi.fn()
+vi.mock('../api/offeringsApi', () => ({ offeringsApi: { worksWith: (id: number) => getWorksWith(id) } }))
+
 let authState = { isAuthenticated: false }
 vi.mock('../auth/AuthProvider', async () => {
   const actual = await vi.importActual<typeof import('../auth/AuthProvider')>('../auth/AuthProvider')
@@ -66,6 +69,8 @@ describe('ProductDetailPage', () => {
   beforeEach(() => {
     for (const m of [getProduct, getRatings, getMine, submit, getContent]) m.mockReset()
     getContent.mockRejectedValue(new Error('none'))
+    getWorksWith.mockReset()
+    getWorksWith.mockResolvedValue([])
     authState = { isAuthenticated: false }
     getMine.mockRejectedValue(new ApiError(404, 'Review not found'))
   })
@@ -84,6 +89,22 @@ describe('ProductDetailPage', () => {
     await user.click(await screen.findByRole('tab', { name: 'Resources' }))
     expect(await screen.findByText('Platform datasheet')).toBeInTheDocument()
     expect(screen.getByRole('button', { name: /Download Platform datasheet/ })).toBeInTheDocument()
+  })
+
+  it('lists the products it works with on the overview, and nothing when there are none (REQ-CAT-005, OF-7)', async () => {
+    getProduct.mockResolvedValue(product)
+    getRatings.mockResolvedValue({ averageRating: 0, reviewCount: 0, reviews: [] })
+    getWorksWith.mockResolvedValue([{ id: 2, name: 'Varthan.ai' }])
+    const { unmount } = renderDetail()
+    const link = await screen.findByRole('link', { name: 'Varthan.ai' })
+    expect(link).toHaveAttribute('href', '/products/2')
+    expect(screen.getByText('Works with')).toBeInTheDocument()
+    unmount()
+
+    getWorksWith.mockResolvedValue([])
+    renderDetail()
+    await screen.findByRole('tab', { name: 'Overview' })
+    expect(screen.queryByText('Works with')).not.toBeInTheDocument()
   })
 
   it('has no Resources tab when nothing is published', async () => {

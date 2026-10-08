@@ -62,6 +62,8 @@ public class OrderService {
     private final SubscriptionService subscriptionService;
     private final NotificationService notificationService;
     private final AuditService auditService;
+    /** REQ-CAT-005 (C85): per-product audience rule. */
+    private final com.vyoog.eisplatform.modules.offering.service.EligibilityService eligibilityService;
     /** REQ-INT-002 (C62): OrderApproved. */
     private final OutboxService outboxService;
 
@@ -108,6 +110,7 @@ public class OrderService {
         Product product = productRepository.findById(request.productId())
             .filter(p -> p.getStatus() == ProductStatus.ACTIVE)
             .orElseThrow(() -> new ResourceNotFoundException("Product not found"));
+        eligibilityService.assertEligible(product.getId(), true);
         if (request.planId() != null) {
             ProductPlan plan = productPlanRepository.findById(request.planId())
                 .orElseThrow(() -> new ResourceNotFoundException("Plan not found: " + request.planId()));

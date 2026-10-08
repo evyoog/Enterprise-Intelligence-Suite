@@ -477,7 +477,8 @@
       "knowledgeManage": "Manage",
       "billingOverview": "Overview",
       "peopleStructure": "People & structure",
-      "organizationsDirectory": "Organizations"
+      "organizationsDirectory": "Organizations",
+      "offerings": "Offerings"
     },
     "catalogTitle": "Product catalog",
     "catalogSubtitle": "Search and filter the products available on the platform.",
@@ -1647,7 +1648,8 @@
       "priceChanged": "The price changed from {{old}} to {{new}}.",
       "alreadySubscribed": "You already have an active subscription to {{product}}.",
       "missingDependency": "{{product}} requires {{required}}.",
-      "currencyMismatch": "This item is priced in a different currency from the rest of your cart. Check out separately."
+      "currencyMismatch": "This item is priced in a different currency from the rest of your cart. Check out separately.",
+      "notEligible": "{{product}} is not available for your account type."
     }
   },
   "apiKeys": {
@@ -1799,7 +1801,8 @@
       "categories": "Categories",
       "helpTitle": "Need help?",
       "helpBody": "Our support team can help you choose, set up and use this product."
-    }
+    },
+    "viewOfferings": "View offerings"
   },
   "forms": {
     "required": "This field is required.",
@@ -3483,6 +3486,70 @@
       "declined": "You declined this invitation.",
       "personalKept": "Your personal subscriptions and invoices stay as they are.",
       "error": "That could not be completed. Please try again."
+    }
+  },
+  "offerings": {
+    "status": {
+      "DRAFT": "Draft",
+      "ACTIVE": "Active",
+      "RETIRED": "Retired"
+    },
+    "audience": {
+      "BOTH": "Individuals and organizations",
+      "INDIVIDUAL": "Individuals only",
+      "ORGANIZATION": "Organizations only"
+    },
+    "admin": {
+      "title": "Offerings",
+      "subtitle": "Group products into offerings, and set who can buy each product.",
+      "priceNote": "An offering has no price of its own: each product keeps the plans and prices set by the platform administrator.",
+      "tabs": {
+        "offerings": "Offerings",
+        "rules": "Product rules"
+      },
+      "new": "New offering",
+      "newTitle": "New offering",
+      "editTitle": "Edit offering",
+      "name": "Name",
+      "description": "Description",
+      "status": "Status",
+      "statusHelp": "Only an active offering is shown to customers. It needs at least one active product.",
+      "products": "Products",
+      "actions": "Actions",
+      "save": "Save",
+      "edit": "Edit",
+      "delete": "Delete",
+      "editNamed": "Edit {{name}}",
+      "deleteNamed": "Delete {{name}}",
+      "deleteTitle": "Delete {{name}}?",
+      "deleteBody": "Only draft offerings can be deleted. The products in it are not affected.",
+      "empty": "No offerings yet",
+      "emptyHint": "Create an offering to group products for customers.",
+      "loadFailed": "Could not load offerings.",
+      "saveFailed": "Could not save.",
+      "deleteFailed": "Could not delete the offering."
+    },
+    "rules": {
+      "intro": "Who may buy each product, and which products it works with. A product with no rule is open to everyone.",
+      "product": "Product",
+      "audience": "Who can buy",
+      "worksWith": "Works with",
+      "editTitle": "Rules for {{product}}",
+      "editNamed": "Edit rules for {{name}}",
+      "requiredHint": "A required product is set on the product itself, as its dependency."
+    },
+    "public": {
+      "title": "Offerings",
+      "subtitle": "Groups of products you can subscribe to.",
+      "empty": "No offerings are available yet.",
+      "view": "View offering",
+      "viewProduct": "View product",
+      "included": "Included products",
+      "loadFailed": "Could not load offerings.",
+      "priceNote": "Each product is priced and bought on its own page."
+    },
+    "worksWith": {
+      "title": "Works with"
     }
   }
 }
