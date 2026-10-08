@@ -1,5 +1,5 @@
 import '../i18n'
-import { screen, within } from '@testing-library/react'
+import { screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { axe } from 'jest-axe'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
@@ -66,53 +66,68 @@ describe('OrganizationStructurePage', () => {
     listUsers.mockResolvedValue([])
   })
 
-  it('shows the tree, expands a node and has no accessibility violations', async () => {
+  it('shows the org chart cards, opens the top levels, collapses and expands a branch and has no accessibility violations', async () => {
     const { container } = renderWithProviders(<OrganizationStructurePage />)
-    const treeEl = await screen.findByRole('tree', { name: 'Organization structure' })
-    expect(within(treeEl).getByText('Acme')).toBeInTheDocument()
-    expect(within(treeEl).getByText('Engineering')).toBeInTheDocument()
-    expect(within(treeEl).queryByText('Platform')).not.toBeInTheDocument()
-    await userEvent.setup().click(screen.getByRole('button', { name: /^Engineering/ }))
-    expect(await screen.findByRole('heading', { name: 'Engineering' })).toBeInTheDocument()
+    expect(await screen.findByRole('article', { name: 'Acme' })).toBeInTheDocument()
+    expect(screen.getByRole('article', { name: 'Engineering' })).toBeInTheDocument()
+    expect(screen.getByRole('article', { name: 'Platform' })).toBeInTheDocument()
+    await userEvent.setup().click(screen.getByRole('button', { name: 'Collapse Engineering' }))
+    expect(screen.queryByRole('article', { name: 'Platform' })).not.toBeInTheDocument()
+    await userEvent.setup().click(screen.getByRole('button', { name: 'Expand Engineering' }))
+    expect(await screen.findByRole('article', { name: 'Platform' })).toBeInTheDocument()
     expect(await axe(container)).toHaveNoViolations()
   })
 
-  it('search shows matches with their parents', async () => {
+  it('opens the details panel from a card', async () => {
+    renderWithProviders(<OrganizationStructurePage />)
+    await userEvent.setup().click(await screen.findByRole('button', { name: 'Details: Engineering' }))
+    expect(await screen.findByRole('heading', { name: 'Engineering' })).toBeInTheDocument()
+    expect(detail).toHaveBeenCalledWith(2)
+  })
+
+  it('search highlights matches and dims the rest', async () => {
     renderWithProviders(<OrganizationStructurePage />)
     const user = userEvent.setup()
     await user.type(await screen.findByLabelText('Search nodes'), 'platform')
-    const treeEl = screen.getByRole('tree')
-    expect(within(treeEl).getByText('Platform')).toBeInTheDocument()
-    expect(within(treeEl).getByText('Engineering')).toBeInTheDocument()
-    expect(within(treeEl).queryByText('Sales')).not.toBeInTheDocument()
+    expect(await screen.findByRole('article', { name: 'Platform' })).toHaveAttribute('data-match', 'true')
+    expect(screen.getByRole('article', { name: 'Sales' })).toHaveAttribute('data-match', 'false')
   })
 
-  it('creates a child under the selected node and shows the backend reason on failure', async () => {
+  it('Add node is enabled without a selection and adds under the root; the backend reason is shown on failure', async () => {
     create.mockRejectedValueOnce(new ApiError(409, 'A node named Ops already exists under this parent'))
     renderWithProviders(<OrganizationStructurePage />)
     const user = userEvent.setup()
-    await screen.findByRole('tree')
-    await user.click(screen.getByRole('button', { name: 'Add node' }))
+    await screen.findByRole('article', { name: 'Acme' })
+    const add = screen.getByRole('button', { name: 'Add node' })
+    expect(add).toBeEnabled()
+    await user.click(add)
     await user.type(await screen.findByLabelText(/^Name/), 'Ops')
     await user.click(screen.getByRole('button', { name: 'Save' }))
     expect(await screen.findByText(/already exists under this parent/)).toBeInTheDocument()
     expect(create).toHaveBeenCalledWith(1, expect.objectContaining({ name: 'Ops', type: 'DIVISION' }))
   })
 
-  it('does not offer move or delete for the root', async () => {
+  it('the root card offers no move, deactivate or delete; other cards do', async () => {
     renderWithProviders(<OrganizationStructurePage />)
-    await screen.findByRole('tree')
-    expect(await screen.findByRole('button', { name: 'Edit' })).toBeInTheDocument()
-    expect(screen.queryByRole('button', { name: 'Delete' })).not.toBeInTheDocument()
-    expect(screen.queryByRole('button', { name: 'Move' })).not.toBeInTheDocument()
+    const user = userEvent.setup()
+    await user.click(await screen.findByRole('button', { name: 'Actions for Acme' }))
+    expect(await screen.findByRole('menuitem', { name: 'Edit' })).toBeInTheDocument()
+    expect(screen.queryByRole('menuitem', { name: 'Delete' })).not.toBeInTheDocument()
+    expect(screen.queryByRole('menuitem', { name: 'Move' })).not.toBeInTheDocument()
+    await user.keyboard('{Escape}')
+    await user.click(screen.getByRole('button', { name: 'Actions for Sales' }))
+    expect(await screen.findByRole('menuitem', { name: 'Delete' })).toBeInTheDocument()
   })
 
   it('imports a CSV and lists failed rows', async () => {
     importCsv.mockResolvedValue({ created: 2, failed: 1, errors: [{ row: 4, message: 'Parent not found: X' }] })
     renderWithProviders(<OrganizationStructurePage />)
     const user = userEvent.setup()
-    await screen.findByRole('tree')
+    await screen.findByRole('article', { name: 'Acme' })
     await user.click(screen.getByRole('button', { name: 'Import CSV' }))
+    expect(await screen.findByText(/name,type,code,description,parentName/)).toBeInTheDocument()
+    expect(screen.getByText(/Blank puts the node directly under the root/)).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Download sample CSV' })).toBeInTheDocument()
     const input = await screen.findByLabelText('CSV file')
     await user.upload(input, new File(['name,type\nA,Division'], 'nodes.csv', { type: 'text/csv' }))
     await user.click(screen.getByRole('button', { name: 'Import' }))

@@ -1,5 +1,7 @@
 package com.vyoog.eisplatform.modules.orghierarchy.dto;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
+
 import java.time.Instant;
 import java.util.List;
 
@@ -12,6 +14,7 @@ public final class OrgHierarchyDtos {
     public record LevelDto(String type, String label, int rank) {
     }
 
+    @JsonInclude(JsonInclude.Include.ALWAYS)
     public record NodeDto(Long id, Long parentId, String name, String type, String code, String description,
                           int sortOrder, boolean active, int childCount, int memberCount,
                           Instant createdAt, Instant updatedAt) {
@@ -27,6 +30,7 @@ public final class OrgHierarchyDtos {
     public record NodeDetailDto(NodeDto node, List<String> path, List<NodeMemberDto> members) {
     }
 
+    @JsonInclude(JsonInclude.Include.ALWAYS)
     public record HistoryDto(Long id, Long previousParentId, String previousParentName, Long newParentId,
                              String newParentName, Long changedByCustomerId, Instant effectiveAt) {
     }

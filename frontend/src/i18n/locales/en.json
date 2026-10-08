@@ -3196,12 +3196,30 @@
       "file": "CSV file",
       "upload": "Import",
       "result": "{{created}} created, {{failed}} failed.",
-      "row": "Row {{row}}: {{message}}"
+      "row": "Row {{row}}: {{message}}",
+      "columns": "Columns",
+      "colName": "required, unique among nodes with the same parent",
+      "colType": "required, one of: {{types}}",
+      "colCode": "optional, up to 50 characters",
+      "colDescription": "optional",
+      "colParent": "optional; the name of an existing node or of a node on an earlier row. Blank puts the node directly under the root.",
+      "sample": "Sample file",
+      "download": "Download sample CSV"
     },
     "saved": "Saved.",
     "close": "Close",
     "cancel": "Cancel",
     "expandNode": "Expand {{name}}",
-    "collapseNode": "Collapse {{name}}"
+    "collapseNode": "Collapse {{name}}",
+    "root": "Root",
+    "total": "Total: {{count}}",
+    "detailsButton": "Details",
+    "actionsFor": "Actions for {{name}}",
+    "zoomIn": "Zoom in",
+    "zoomOut": "Zoom out",
+    "fit": "Fit to view",
+    "minimap": "Minimap — click to jump",
+    "filterByType": "Filter by type",
+    "activeOnly": "Active only"
   }
 }

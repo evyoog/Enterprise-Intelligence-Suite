@@ -34,10 +34,10 @@ An organization administrator models how the organization is structured: a singl
 | REQ-TEN-006.10 | **History:** the administrator can open a node's move history, newest first. | Should |
 | REQ-TEN-006.11 | Every change (create, update, move, activate/deactivate, delete, import, level change, member placement) is audited. | Must |
 | REQ-TEN-006.12 | Everything is limited to the caller's organization; another organization's node answers "not found" (NFR-003). | Must |
-| REQ-TEN-006.13 | The screen (Organization → Structure) offers a searchable tree with expand/collapse, a details panel (type, code, path, members, history), actions per node, a level-configuration dialog and CSV import. All text uses i18n (English and Spanish), has keyboard access and passes the accessibility checks. | Must |
+| REQ-TEN-006.13 | The screen (Organization → Structure) shows the hierarchy as an org chart (cards with connector lines, expand/collapse badges, zoom, pan and minimap) with search, type filter and active-only filter, a details panel (type, code, path, members, history), actions per node, a level-configuration dialog and CSV import with the file format and a downloadable sample. All text uses i18n (English and Spanish), has keyboard access and passes the accessibility checks. | Must |
 
 ## Out of scope (not built)
-See "Not specified" in [C82](../../../01-business/roadmap/open-decisions.md#c82): role assignments at a node, the org-chart canvas, teams and allocations, project hierarchy, member read access, multiple roots.
+See "Not specified" in [C82](../../../01-business/roadmap/open-decisions.md#c82): role assignments at a node, the org-chart canvas, teams and allocations, project hierarchy, member read access, multiple roots, the working calendar per node.
 
 ## Dependencies
 - REQ-TEN-001 organization and members; REQ-TEN-003 groups (unchanged, independent).

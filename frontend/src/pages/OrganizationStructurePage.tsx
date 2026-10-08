@@ -1,9 +1,9 @@
-import { ArrowDown, ArrowUp, ChevronDown, ChevronRight, Network, Trash2 } from 'lucide-react'
-import { useCallback, useEffect, useMemo, useState, type ReactElement } from 'react'
+import { ArrowDown, ArrowUp, Network, Trash2, X } from 'lucide-react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import {
   Alert, Box, Button, Chip, CircularProgress, Dialog, DialogActions, DialogContent, DialogTitle, FormControl,
-  IconButton, InputLabel, MenuItem, Paper, Select, Stack, Tab, Tabs, TextField, Typography,
+  FormControlLabel, IconButton, Switch, InputLabel, MenuItem, Paper, Select, Stack, Tab, Tabs, TextField, Typography,
 } from '@mui/material'
 import { ApiError } from '../api/client'
 import {
@@ -12,6 +12,7 @@ import {
 } from '../api/orgHierarchyApi'
 import { organizationApi, type OrgMember } from '../api/registrationApi'
 import { PageHeader } from '../components/layout/PageHeader'
+import { OrgChart } from '../components/organization/OrgChart'
 import { ConfirmDialog } from '../components/ui/ConfirmDialog'
 
 type DialogState =
@@ -29,8 +30,9 @@ const message = (e: unknown) => (e instanceof ApiError ? e.message : 'Request fa
 /**
  * "/organization/structure" — REQ-TEN-006 Organization hierarchy. Organization
  * administrators (MANAGE_ORGANIZATION) model the organization as one tree of
- * nodes. The backend enforces every rule (level order, cycles, names, guards);
- * this page only offers what is valid and shows the backend's reason otherwise.
+ * nodes, shown as a visual org chart (cloned from Thittam). The backend enforces
+ * every rule (level order, cycles, names, guards); this page only offers what is
+ * valid and shows the backend's reason otherwise.
  */
 export function OrganizationStructurePage() {
   const { t } = useTranslation()
@@ -40,9 +42,11 @@ export function OrganizationStructurePage() {
   const [selectedId, setSelectedId] = useState<number | null>(null)
   const [expanded, setExpanded] = useState<Set<number>>(new Set())
   const [query, setQuery] = useState('')
+  const [typeFilter, setTypeFilter] = useState<Set<string>>(new Set())
+  const [activeOnly, setActiveOnly] = useState(false)
   const [dialog, setDialog] = useState<DialogState>(null)
-
   const [version, setVersion] = useState(0)
+  const seeded = useRef(false)
   const load = useCallback(async () => { setVersion((v) => v + 1) }, [])
 
   useEffect(() => {
@@ -51,36 +55,68 @@ export function OrganizationStructurePage() {
       if (!alive) return
       setTree(data)
       setError(null)
-      const root = data.nodes.find((n) => n.parentId === null)
-      setSelectedId((cur) => (cur !== null && data.nodes.some((n) => n.id === cur) ? cur : root?.id ?? null))
-      setExpanded((cur) => (cur.size === 0 && root ? new Set([root.id]) : cur))
+      if (!seeded.current) {
+        // Progressive disclosure (as in Thittam): the root and its children are open, deeper levels collapsed.
+        seeded.current = true
+        const depth = new Map<number, number>()
+        const kids = new Map<number | null, OrgNode[]>()
+        data.nodes.forEach((n) => kids.set(n.parentId, [...(kids.get(n.parentId) ?? []), n]))
+        const walk = (id: number | null, d: number) => (kids.get(id) ?? []).forEach((c) => { depth.set(c.id, d); walk(c.id, d + 1) })
+        walk(null, 0)
+        setExpanded(new Set(data.nodes.filter((n) => (depth.get(n.id) ?? 0) < 2).map((n) => n.id)))
+      }
+      setSelectedId((cur) => (cur !== null && data.nodes.some((n) => n.id === cur) ? cur : null))
     }).catch((e) => { if (alive) setError(message(e)) })
     return () => { alive = false }
   }, [version])
 
   const nodes = useMemo(() => tree?.nodes ?? [], [tree])
   const byId = useMemo(() => new Map(nodes.map((n) => [n.id, n])), [nodes])
-  const children = useMemo(() => {
-    const map = new Map<number | null, OrgNode[]>()
-    nodes.forEach((n) => map.set(n.parentId, [...(map.get(n.parentId) ?? []), n]))
-    return map
-  }, [nodes])
   const levels = useMemo(() => tree?.levels ?? [], [tree])
   const labelOf = useCallback((type: string) => levels.find((l) => l.type === type)?.label ?? type, [levels])
   const rankOf = useCallback((type: string) => levels.find((l) => l.type === type)?.rank ?? Number.MAX_SAFE_INTEGER, [levels])
 
-  const searching = query.trim().length > 0
-  const visible = useMemo(() => {
-    if (!searching) return null
-    const q = query.trim().toLowerCase()
-    const keep = new Set<number>()
+  const byParent = useMemo(() => {
+    const map = new Map<number | null, OrgNode[]>()
+    nodes.filter((n) => !activeOnly || n.active).forEach((n) => map.set(n.parentId, [...(map.get(n.parentId) ?? []), n]))
+    return map
+  }, [nodes, activeOnly])
+  const allChildren = useMemo(() => {
+    const map = new Map<number | null, OrgNode[]>()
+    nodes.forEach((n) => map.set(n.parentId, [...(map.get(n.parentId) ?? []), n]))
+    return map
+  }, [nodes])
+  const descendants = useMemo(() => {
+    const out = new Map<number, number>()
+    const count = (id: number): number => {
+      const total = (byParent.get(id) ?? []).reduce((sum, c) => sum + 1 + count(c.id), 0)
+      out.set(id, total)
+      return total
+    }
+    ;(byParent.get(null) ?? []).forEach((r) => count(r.id))
+    return out
+  }, [byParent])
+  const roots = byParent.get(null) ?? []
+  const root = allChildren.get(null)?.[0]
+
+  const term = query.trim().toLowerCase()
+  const matchIds = useMemo(() => {
+    if (!term && typeFilter.size === 0) return null
+    const set = new Set<number>()
     nodes.forEach((n) => {
-      if (`${n.name} ${n.code ?? ''} ${labelOf(n.type)}`.toLowerCase().includes(q)) {
-        for (let cur: OrgNode | undefined = n; cur; cur = cur.parentId === null ? undefined : byId.get(cur.parentId)) keep.add(cur.id)
-      }
+      const termOk = !term || `${n.name} ${n.code ?? ''} ${labelOf(n.type)}`.toLowerCase().includes(term)
+      if (termOk && (typeFilter.size === 0 || typeFilter.has(n.type))) set.add(n.id)
     })
-    return keep
-  }, [searching, query, nodes, byId, labelOf])
+    return set
+  }, [term, typeFilter, nodes, labelOf])
+  const effectiveExpanded = useMemo(() => {
+    if (!matchIds) return expanded
+    const set = new Set(expanded)
+    matchIds.forEach((id) => {
+      for (let cur = byId.get(id); cur && cur.parentId !== null; cur = byId.get(cur.parentId)) set.add(cur.parentId)
+    })
+    return set
+  }, [matchIds, expanded, byId])
 
   const toggle = (id: number) => setExpanded((cur) => {
     const next = new Set(cur)
@@ -88,41 +124,24 @@ export function OrganizationStructurePage() {
     else next.add(id)
     return next
   })
+  const toggleType = (type: string) => setTypeFilter((cur) => {
+    const next = new Set(cur)
+    if (next.has(type)) next.delete(type)
+    else next.add(type)
+    return next
+  })
 
   const selected = selectedId === null ? undefined : byId.get(selectedId)
   const done = async (text: string) => { setDialog(null); setNotice(text); await load() }
-
-  const renderNode = (node: OrgNode): ReactElement | null => {
-    if (visible && !visible.has(node.id)) return null
-    const kids = children.get(node.id) ?? []
-    const open = searching || expanded.has(node.id)
-    return (
-      <Box component="li" key={node.id} role="treeitem" aria-expanded={kids.length ? open : undefined}
-        aria-selected={selectedId === node.id} sx={{ listStyle: 'none' }}>
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, pl: 0.5 }}>
-          {kids.length > 0 ? (
-            <IconButton size="small" onClick={() => toggle(node.id)} aria-label={open ? t('orgStructure.collapseNode', { name: node.name }) : t('orgStructure.expandNode', { name: node.name })}>
-              {open ? <ChevronDown size={16} /> : <ChevronRight size={16} />}
-            </IconButton>
-          ) : <Box sx={{ width: 30 }} />}
-          <Button onClick={() => setSelectedId(node.id)} color={selectedId === node.id ? 'primary' : 'inherit'}
-            variant={selectedId === node.id ? 'contained' : 'text'} size="small"
-            sx={{ justifyContent: 'flex-start', textTransform: 'none', flex: 1, opacity: node.active ? 1 : 0.6 }}>
-            <Box component="span" sx={{ fontWeight: 600, mr: 1 }}>{node.name}</Box>
-            <Box component="span" sx={{ fontSize: 12, opacity: 0.8 }}>
-              {labelOf(node.type)}{node.code ? ` · ${node.code}` : ''}{node.memberCount ? ` · ${t('orgStructure.membersCount', { count: node.memberCount })}` : ''}
-            </Box>
-            {!node.active && <Chip size="small" label={t('orgStructure.inactive')} sx={{ ml: 1 }} />}
-          </Button>
-        </Box>
-        {kids.length > 0 && open && (
-          <Box component="ul" role="group" sx={{ m: 0, pl: 3 }}>{kids.map(renderNode)}</Box>
-        )}
-      </Box>
-    )
+  const activate = async (node: OrgNode) => {
+    try {
+      await orgHierarchyApi.update(node.id, { name: node.name, type: node.type, code: node.code ?? undefined, description: node.description ?? undefined, active: true })
+      setNotice(t('orgStructure.saved'))
+      await load()
+    } catch (e) { setError(message(e)) }
   }
-
-  const root = children.get(null)?.[0]
+  const addTarget = selected ?? root
+  const fitKey = `${nodes.length}|${[...effectiveExpanded].sort().join(',')}|${activeOnly}|${selectedId !== null}`
 
   return (
     <Box>
@@ -131,7 +150,7 @@ export function OrganizationStructurePage() {
           <Stack direction="row" spacing={1} useFlexGap sx={{ flexWrap: 'wrap' }}>
             <Button variant="outlined" onClick={() => setDialog({ kind: 'levels' })}>{t('orgStructure.configureLevels')}</Button>
             <Button variant="outlined" onClick={() => setDialog({ kind: 'import' })}>{t('orgStructure.importCsv')}</Button>
-            <Button variant="contained" disabled={!selected} onClick={() => selected && setDialog({ kind: 'create', parent: selected })}>
+            <Button variant="contained" disabled={!addTarget} onClick={() => addTarget && setDialog({ kind: 'create', parent: addTarget })}>
               {t('orgStructure.addNode')}
             </Button>
           </Stack>
@@ -144,37 +163,51 @@ export function OrganizationStructurePage() {
       )}
       {!tree && !error && <CircularProgress aria-label="loading" />}
       {tree && (
-        <Box sx={{ display: 'grid', gap: 2, gridTemplateColumns: { xs: '1fr', md: 'minmax(320px, 5fr) 7fr' } }}>
-          <Paper variant="outlined" sx={{ p: 2 }}>
-            <Stack direction="row" spacing={1} sx={{ mb: 1, alignItems: 'center' }}>
-              <TextField size="small" fullWidth label={t('orgStructure.search')} placeholder={t('orgStructure.searchHint')}
-                value={query} onChange={(e) => setQuery(e.target.value)} />
-              <Button size="small" onClick={() => setExpanded(new Set(nodes.filter((n) => (children.get(n.id) ?? []).length).map((n) => n.id)))}>
-                {t('orgStructure.expandAll')}
-              </Button>
-              <Button size="small" onClick={() => setExpanded(root ? new Set([root.id]) : new Set())}>{t('orgStructure.collapseAll')}</Button>
+        <Paper variant="outlined" sx={{ p: 2 }}>
+          <Stack direction="row" spacing={1.5} useFlexGap sx={{ mb: 2, flexWrap: 'wrap', alignItems: 'center' }}>
+            <TextField size="small" label={t('orgStructure.search')} placeholder={t('orgStructure.searchHint')}
+              value={query} onChange={(e) => setQuery(e.target.value)} sx={{ minWidth: 260 }} />
+            <Stack direction="row" spacing={0.5} useFlexGap role="group" aria-label={t('orgStructure.filterByType')} sx={{ flexWrap: 'wrap' }}>
+              {levels.map((l) => (
+                <Chip key={l.type} size="small" label={l.label} clickable onClick={() => toggleType(l.type)}
+                  color={typeFilter.has(l.type) ? 'primary' : 'default'} aria-pressed={typeFilter.has(l.type)} />
+              ))}
             </Stack>
-            {visible && visible.size === 0 && <Typography color="text.secondary">{t('orgStructure.noMatches')}</Typography>}
-            <Box component="ul" role="tree" aria-label={t('orgStructure.treeLabel')} sx={{ m: 0, p: 0 }}>
-              {root && renderNode(root)}
-            </Box>
-          </Paper>
-          <Paper variant="outlined" sx={{ p: 2 }}>
-            {selected
-              ? <NodeDetails key={selected.id} node={selected} labelOf={labelOf} byId={byId}
-                  onDialog={setDialog} onChanged={load} />
-              : <Typography color="text.secondary">{t('orgStructure.select')}</Typography>}
-          </Paper>
-        </Box>
+            <FormControlLabel control={<Switch size="small" checked={activeOnly} onChange={(e) => setActiveOnly(e.target.checked)} />}
+              label={t('orgStructure.activeOnly')} />
+            <Box sx={{ flex: 1 }} />
+            <Button size="small" onClick={() => setExpanded(new Set(nodes.filter((n) => (allChildren.get(n.id) ?? []).length).map((n) => n.id)))}>
+              {t('orgStructure.expandAll')}
+            </Button>
+            <Button size="small" onClick={() => setExpanded(new Set())}>{t('orgStructure.collapseAll')}</Button>
+          </Stack>
+          {matchIds && matchIds.size === 0 && <Typography color="text.secondary" sx={{ mb: 1 }}>{t('orgStructure.noMatches')}</Typography>}
+          <Box sx={{ display: 'grid', gap: 2, gridTemplateColumns: { xs: '1fr', lg: selected ? 'minmax(0, 1fr) 400px' : '1fr' } }}>
+            <OrgChart roots={roots} byParent={byParent} descendants={descendants} expanded={effectiveExpanded} onToggle={toggle}
+              selectedId={selectedId} matchIds={matchIds} labelOf={labelOf} fitKey={fitKey}
+              onSelect={(n) => setSelectedId(n.id)}
+              onAddChild={(n) => setDialog({ kind: 'create', parent: n })}
+              onEdit={(n) => setDialog({ kind: 'edit', node: n })}
+              onMove={(n) => setDialog({ kind: 'move', node: n })}
+              onToggleActive={(n) => (n.active ? setDialog({ kind: 'deactivate', node: n }) : void activate(n))}
+              onDelete={(n) => setDialog({ kind: 'delete', node: n })} />
+            {selected && (
+              <Paper variant="outlined" sx={{ p: 2, maxHeight: 640, overflow: 'auto' }}>
+                <NodeDetails key={selected.id} node={selected} labelOf={labelOf} byId={byId}
+                  onDialog={setDialog} onChanged={load} onClose={() => setSelectedId(null)} />
+              </Paper>
+            )}
+          </Box>
+        </Paper>
       )}
 
       {dialog?.kind === 'create' && (
-        <NodeFormDialog mode="create" parent={dialog.parent} levels={levels} rankOf={rankOf} children={children} byId={byId}
+        <NodeFormDialog mode="create" parent={dialog.parent} levels={levels} rankOf={rankOf} children={allChildren} byId={byId}
           onClose={() => setDialog(null)} onSaved={() => done(t('orgStructure.saved'))} />
       )}
       {dialog?.kind === 'edit' && (
         <NodeFormDialog mode="edit" node={dialog.node} parent={dialog.node.parentId === null ? undefined : byId.get(dialog.node.parentId)}
-          levels={levels} rankOf={rankOf} children={children} byId={byId}
+          levels={levels} rankOf={rankOf} children={allChildren} byId={byId}
           onClose={() => setDialog(null)} onSaved={() => done(t('orgStructure.saved'))} />
       )}
       {dialog?.kind === 'move' && (
@@ -195,24 +228,25 @@ export function OrganizationStructurePage() {
         <ActionConfirm title={t('orgStructure.deleteTitle', { name: dialog.node.name })} body={t('orgStructure.deleteBody')}
           confirmLabel={t('orgStructure.deleteConfirm')} destructive
           run={() => orgHierarchyApi.remove(dialog.node.id)}
-          onClose={() => setDialog(null)} onDone={() => { setSelectedId(dialog.node.parentId); return done(t('orgStructure.saved')) }} />
+          onClose={() => setDialog(null)} onDone={() => { setSelectedId(null); return done(t('orgStructure.saved')) }} />
       )}
       {dialog?.kind === 'levels' && (
         <LevelsDialog levels={levels} onClose={() => setDialog(null)} onSaved={() => done(t('orgStructure.saved'))} />
       )}
       {dialog?.kind === 'import' && (
-        <ImportDialog onClose={() => setDialog(null)} onImported={() => load()} />
+        <ImportDialog levels={levels} onClose={() => setDialog(null)} onImported={() => load()} />
       )}
     </Box>
   )
 }
 
-function NodeDetails({ node, byId, labelOf, onDialog, onChanged }: {
+function NodeDetails({ node, byId, labelOf, onDialog, onChanged, onClose }: {
   node: OrgNode
   byId: Map<number, OrgNode>
   labelOf: (type: string) => string
   onDialog: (d: DialogState) => void
   onChanged: () => Promise<void>
+  onClose: () => void
 }) {
   const { t } = useTranslation()
   const [tab, setTab] = useState<'details' | 'history'>('details')
@@ -252,6 +286,7 @@ function NodeDetails({ node, byId, labelOf, onDialog, onChanged }: {
           <Typography variant="h6" component="h2">{node.name}</Typography>
           <Typography variant="body2" color="text.secondary">{labelOf(node.type)}{node.code ? ` · ${node.code}` : ''}</Typography>
         </Box>
+        <IconButton size="small" aria-label={t('orgStructure.close')} onClick={onClose}><X size={16} /></IconButton>
         <Stack direction="row" spacing={1} useFlexGap sx={{ flexWrap: 'wrap' }}>
           <Button size="small" onClick={() => onDialog({ kind: 'create', parent: node })}>{t('orgStructure.addChild')}</Button>
           <Button size="small" onClick={() => onDialog({ kind: 'edit', node })}>{t('orgStructure.edit')}</Button>
@@ -511,7 +546,17 @@ function LevelsDialog({ levels, onClose, onSaved }: { levels: OrgLevel[]; onClos
   )
 }
 
-function ImportDialog({ onClose, onImported }: { onClose: () => void; onImported: () => void | Promise<void> }) {
+const SAMPLE_CSV = [
+  'name,type,code,description,parentName',
+  'Engineering,DIVISION,ENG,Product engineering,',
+  'Sales,DIVISION,SAL,Revenue and accounts,',
+  'Platform,DEPARTMENT,ENG-PLT,Core platform,Engineering',
+  'Inside Sales,DEPARTMENT,SAL-IS,,Sales',
+  'Bengaluru,LOCATION,BLR,Head office,Platform',
+  'Backend,TEAM,ENG-BE,,Platform',
+].join('\n')
+
+function ImportDialog({ levels, onClose, onImported }: { levels: OrgLevel[]; onClose: () => void; onImported: () => void | Promise<void> }) {
   const { t } = useTranslation()
   const [file, setFile] = useState<File | null>(null)
   const [busy, setBusy] = useState(false)
@@ -531,6 +576,25 @@ function ImportDialog({ onClose, onImported }: { onClose: () => void; onImported
       <DialogTitle id="import-title">{t('orgStructure.import.title')}</DialogTitle>
       <DialogContent>
         <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>{t('orgStructure.import.help')}</Typography>
+        <Typography variant="subtitle2" component="h3" sx={{ mb: 0.5 }}>{t('orgStructure.import.columns')}</Typography>
+        <Box component="ul" sx={{ m: 0, mb: 2, pl: 3, fontSize: 14 }}>
+          <li><code>name</code> — {t('orgStructure.import.colName')}</li>
+          <li><code>type</code> — {t('orgStructure.import.colType', { types: levels.map((l) => l.type).join(', ') })}</li>
+          <li><code>code</code> — {t('orgStructure.import.colCode')}</li>
+          <li><code>description</code> — {t('orgStructure.import.colDescription')}</li>
+          <li><code>parentName</code> — {t('orgStructure.import.colParent')}</li>
+        </Box>
+        <Typography variant="subtitle2" component="h3" sx={{ mb: 0.5 }}>{t('orgStructure.import.sample')}</Typography>
+        <Box component="pre" tabIndex={0} aria-label={t('orgStructure.import.sample')}
+          sx={{ m: 0, mb: 1, p: 1.5, borderRadius: 1, bgcolor: 'action.hover', fontSize: 12, overflow: 'auto' }}>{SAMPLE_CSV}</Box>
+        <Button size="small" sx={{ mb: 2 }} onClick={() => {
+          const url = URL.createObjectURL(new Blob([SAMPLE_CSV + '\n'], { type: 'text/csv' }))
+          const a = document.createElement('a')
+          a.href = url
+          a.download = 'org-structure-sample.csv'
+          a.click()
+          URL.revokeObjectURL(url)
+        }}>{t('orgStructure.import.download')}</Button>
         {err && <Alert severity="error" sx={{ mb: 2 }}>{err}</Alert>}
         <Box component="label" sx={{ display: 'block' }}>
           <Typography component="span" variant="body2">{t('orgStructure.import.file')}</Typography>
