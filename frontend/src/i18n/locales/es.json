@@ -3196,12 +3196,30 @@
       "file": "Archivo CSV",
       "upload": "Importar",
       "result": "{{created}} creados, {{failed}} con error.",
-      "row": "Fila {{row}}: {{message}}"
+      "row": "Fila {{row}}: {{message}}",
+      "columns": "Columnas",
+      "colName": "obligatoria, única entre nodos con el mismo padre",
+      "colType": "obligatoria, una de: {{types}}",
+      "colCode": "opcional, hasta 50 caracteres",
+      "colDescription": "opcional",
+      "colParent": "opcional; el nombre de un nodo existente o de un nodo en una fila anterior. Si está vacío, el nodo queda directamente bajo la raíz.",
+      "sample": "Archivo de ejemplo",
+      "download": "Descargar CSV de ejemplo"
     },
     "saved": "Guardado.",
     "close": "Cerrar",
     "cancel": "Cancelar",
     "expandNode": "Expandir {{name}}",
-    "collapseNode": "Contraer {{name}}"
+    "collapseNode": "Contraer {{name}}",
+    "root": "Raíz",
+    "total": "Total: {{count}}",
+    "detailsButton": "Detalles",
+    "actionsFor": "Acciones de {{name}}",
+    "zoomIn": "Acercar",
+    "zoomOut": "Alejar",
+    "fit": "Ajustar a la vista",
+    "minimap": "Minimapa — clic para ir",
+    "filterByType": "Filtrar por tipo",
+    "activeOnly": "Solo activos"
   }
 }

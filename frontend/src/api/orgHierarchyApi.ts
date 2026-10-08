@@ -54,7 +54,8 @@ export interface OrgImportResult { created: number; failed: number; errors: { ro
 const base = '/organization/me/org-hierarchy'
 
 export const orgHierarchyApi = {
-  tree: () => apiRequest<OrgTree>(base),
+  // The API omits null fields, so the root's parentId arrives as undefined: normalise it to null.
+  tree: () => apiRequest<OrgTree>(base).then((t) => ({ ...t, nodes: t.nodes.map((n) => ({ ...n, parentId: n.parentId ?? null })) })),
   detail: (id: number) => apiRequest<OrgNodeDetail>(`${base}/nodes/${id}`),
   history: (id: number) => apiRequest<OrgNodeHistoryEntry[]>(`${base}/nodes/${id}/history`),
   create: (parentId: number, input: OrgNodeInput) =>
