@@ -1,11 +1,13 @@
 import { Package as PHPackage } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { Alert, Box, Breadcrumbs, Button, Link, Skeleton, Tooltip, Typography } from '@mui/material'
+import { Alert, Box, Breadcrumbs, Button, Link, Skeleton, Tab, Tabs, Tooltip, Typography } from '@mui/material'
 import { Link as RouterLink, useLocation, useParams } from 'react-router-dom'
 import { ApiError } from '../../api/client'
 import { productsApi, type Product } from '../../api/productsApi'
 import { ProductForm } from '../../components/admin/ProductForm'
+import { useTabParam } from '../../components/layout/useTabParam'
+import { ProductContentManager } from '../../components/productcontent/ProductContentManager'
 import { PageHeader } from '../../components/layout/PageHeader'
 import { ConfirmDialog } from '../../components/ui/ConfirmDialog'
 import { ErrorState } from '../../components/ui/ErrorState'
@@ -30,6 +32,8 @@ export function EditProductPage() {
   const [isChangingStatus, setIsChangingStatus] = useState(false)
   const [statusError, setStatusError] = useState<string | null>(null)
   const [confirmRetire, setConfirmRetire] = useState(false)
+  // REQ-CAT-004: the application's details form and its product content are two tabs (?tab=content).
+  const [tab, setTab] = useTabParam(['details', 'content'] as const, 'details')
 
   useEffect(() => {
     if (!id) return
@@ -89,6 +93,15 @@ export function EditProductPage() {
       )}
 
       {product && (
+        <Tabs value={tab} onChange={(_, v) => setTab(v)} aria-label={t('productContent.tabs.label')} sx={{ mb: 2.5, borderBottom: '1px solid', borderColor: 'divider' }}>
+          <Tab value="details" label={t('productContent.tabs.details')} />
+          <Tab value="content" label={t('productContent.tabs.content')} />
+        </Tabs>
+      )}
+
+      {product && tab === 'content' && <ProductContentManager productId={product.id} />}
+
+      {product && tab === 'details' && (
         <ProductForm
           key={product.id}
           initialProduct={product}

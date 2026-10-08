@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useState, type ReactElement } from 'react'
 import { useTranslation } from 'react-i18next'
 import {
   AppBar, Avatar, Box, Button, Collapse, Divider, Drawer, IconButton, List, ListItemButton, ListItemIcon,
@@ -14,8 +14,9 @@ import { useThemeMode } from '../../theming/ThemeModeProvider'
 import { NotificationBell } from './NotificationBell'
 import { CartButton } from '../cart/CartButton'
 import { TopBarSearch } from './TopBarSearch'
-import { AppShellContext } from './appShellContext'
-import { appHomePath, buildAppNavigation, isNavItemActive, wantsWebsite, WEBSITE_HOME_STATE, type AppNavItem } from './appNavigation'
+import { AppShellContext, NavAccessContext } from './appShellContext'
+import { NavBreadcrumbs } from './NavBreadcrumbs'
+import { appHomePath, buildAppNavigation, isNavBranchActive, isNavItemActive, wantsWebsite, WEBSITE_HOME_STATE, type AppNavItem } from './appNavigation'
 
 const DRAWER_WIDTH = 240
 const LOGO = 'https://www.vyoog.com/wp-content/uploads/2022/03/evyoog-logonew1.png'
@@ -54,6 +55,9 @@ export function AppShell() {
   const signOut = useSignOut()
   const theme = useTheme()
   const isMobile = useMediaQuery(theme.breakpoints.down('md'))
+  // Tablet: the sidebar stays beside the page but can be folded away.
+  const isTablet = useMediaQuery(theme.breakpoints.between('md', 'lg'))
+  const [tabletOpen, setTabletOpen] = useState(false)
   const { resolvedMode, setMode } = useThemeMode()
   const [permissions, setPermissions] = useState<MyPermissions | null>(null)
   const [mobileOpen, setMobileOpen] = useState(false)
@@ -76,6 +80,8 @@ export function AppShell() {
   const username = auth.user?.username ?? ''
   const home = appHomePath(auth.isAdmin)
   const closeMobile = () => setMobileOpen(false)
+  const drawerOpen = isMobile ? mobileOpen : isTablet ? tabletOpen : true
+  const navAccess = useMemo(() => ({ isAdmin: auth.isAdmin, permissions }), [auth.isAdmin, permissions])
 
   // C66: plain icons; the current page gets a light indigo background, an
   // indigo icon and text, and a small indicator on the left.
@@ -96,21 +102,61 @@ export function AppShell() {
     },
   })
 
+  const labelOf = (item: AppNavItem) => t(`appShell.nav.${item.labelKey}`)
+  const withHint = (item: AppNavItem, node: ReactElement) => (
+    item.hintKey
+      ? <Tooltip describeChild title={t(`appShell.navHint.${item.hintKey}`)} placement="right" enterDelay={600}>{node}</Tooltip>
+      : node
+  )
+
   const renderItem = (item: AppNavItem, nested = false) => {
-    const active = isNavItemActive(item, location.pathname)
+    const branchActive = isNavBranchActive(item, location.pathname, location.search)
     if (item.children) {
-      const open = openGroups[item.key] ?? active
+      // Only the group holding the current page opens by itself; clicking the
+      // chevron opens or closes any group and the choice is kept.
+      const open = openGroups[item.key] ?? branchActive
+      const childActive = item.children.some((c) => isNavBranchActive(c, location.pathname, location.search))
+      const toggle = () => setOpenGroups((g) => ({ ...g, [item.key]: !open }))
       return (
         <Box key={item.key}>
-          <ListItemButton
-            onClick={() => setOpenGroups((g) => ({ ...g, [item.key]: !open }))}
-            aria-expanded={open}
-            sx={{ borderRadius: 2, mx: 1, color: 'text.secondary' }}
-          >
-            {navIcon(item, false, false)}
-            <ListItemText primary={t(`appShell.nav.${item.labelKey}`)} />
-            {open ? <ChevronDown size={16} /> : <ChevronRight size={16} />}
-          </ListItemButton>
+          <Box sx={{ display: 'flex', alignItems: 'center' }}>
+            {item.to ? (
+              // The parent has a page of its own (Knowledge Center): the label opens it,
+              // the chevron beside it opens or closes the children.
+              <ListItemButton
+                component={RouterLink}
+                to={item.to}
+                selected={!childActive && isNavItemActive(item, location.pathname, location.search)}
+                aria-current={!childActive && isNavItemActive(item, location.pathname, location.search) ? 'page' : undefined}
+                onClick={closeMobile}
+                sx={{ borderRadius: 2, ml: 1, flexGrow: 1, my: 0.25, '& .MuiListItemText-primary': { fontSize: 14 }, ...activeSx() }}
+              >
+                {navIcon(item, false, branchActive)}
+                <ListItemText primary={labelOf(item)} />
+              </ListItemButton>
+            ) : (
+              <ListItemButton
+                onClick={toggle}
+                aria-expanded={open}
+                sx={{ borderRadius: 2, mx: 1, flexGrow: 1, my: 0.25, color: branchActive ? 'primary.main' : 'text.secondary', '& .MuiListItemText-primary': { fontSize: 14, fontWeight: branchActive ? 600 : 400 } }}
+              >
+                {navIcon(item, false, branchActive)}
+                <ListItemText primary={labelOf(item)} />
+                {open ? <ChevronDown size={16} /> : <ChevronRight size={16} />}
+              </ListItemButton>
+            )}
+            {item.to && (
+              <IconButton
+                size="small"
+                onClick={toggle}
+                aria-expanded={open}
+                aria-label={t(open ? 'appShell.collapseGroup' : 'appShell.expandGroup', { name: labelOf(item) })}
+                sx={{ mr: 1 }}
+              >
+                {open ? <ChevronDown size={16} /> : <ChevronRight size={16} />}
+              </IconButton>
+            )}
+          </Box>
           <Collapse in={open} timeout="auto" unmountOnExit>
             <List component="div" disablePadding>
               {item.children.map((child) => renderItem(child, true))}
@@ -119,20 +165,21 @@ export function AppShell() {
         </Box>
       )
     }
-    return (
+    const active = isNavItemActive(item, location.pathname, location.search)
+    return withHint(item, (
       <ListItemButton
         key={item.key}
         component={RouterLink}
-        to={item.to}
+        to={item.to ?? '/'}
         selected={active}
         aria-current={active ? 'page' : undefined}
         onClick={closeMobile}
         sx={{ borderRadius: 2, mx: 1, pl: nested ? 4.5 : 2, my: 0.25, '& .MuiListItemText-primary': { fontSize: 14 }, ...activeSx() }}
       >
         {navIcon(item, nested, active)}
-        <ListItemText primary={t(`appShell.nav.${item.labelKey}`)} />
+        <ListItemText primary={labelOf(item)} />
       </ListItemButton>
-    )
+    ))
   }
 
   const sidebar = (
@@ -182,6 +229,7 @@ export function AppShell() {
 
   return (
     <AppShellContext.Provider value={true}>
+      <NavAccessContext.Provider value={navAccess}>
       <Box sx={{ display: 'flex', minHeight: '100vh', bgcolor: 'background.default' }}>
         <Box
           component="a"
@@ -196,12 +244,12 @@ export function AppShell() {
         </Box>
 
         <Drawer
-          variant={isMobile ? 'temporary' : 'permanent'}
-          open={isMobile ? mobileOpen : true}
+          variant={isMobile ? 'temporary' : isTablet ? 'persistent' : 'permanent'}
+          open={drawerOpen}
           onClose={closeMobile}
           ModalProps={{ keepMounted: true }}
           sx={{
-            width: DRAWER_WIDTH,
+            width: isTablet && !tabletOpen ? 0 : DRAWER_WIDTH,
             flexShrink: 0,
             '& .MuiDrawer-paper': { width: DRAWER_WIDTH, boxSizing: 'border-box', borderRight: '1px solid', borderColor: 'divider', bgcolor: 'background.paper' },
           }}
@@ -217,8 +265,13 @@ export function AppShell() {
             sx={{ borderBottom: '1px solid', borderColor: 'divider', bgcolor: 'background.paper', backdropFilter: 'none' }}
           >
             <Toolbar sx={{ gap: 1 }}>
-              {isMobile && (
-                <IconButton edge="start" aria-label={t('nav.openMenu')} onClick={() => setMobileOpen(true)}>
+              {(isMobile || isTablet) && (
+                <IconButton
+                  edge="start"
+                  aria-label={t(isTablet && tabletOpen ? 'nav.closeMenu' : 'nav.openMenu')}
+                  aria-expanded={isTablet ? tabletOpen : mobileOpen}
+                  onClick={() => (isTablet ? setTabletOpen((v) => !v) : setMobileOpen(true))}
+                >
                   <MenuIcon size={22} />
                 </IconButton>
               )}
@@ -299,10 +352,12 @@ export function AppShell() {
           </AppBar>
 
           <Box component="main" id="main-content" tabIndex={-1} sx={{ flexGrow: 1, p: { xs: 2, sm: 3, md: 4 }, outline: 'none' }}>
+            <NavBreadcrumbs sections={sections} />
             <Outlet />
           </Box>
         </Box>
       </Box>
+      </NavAccessContext.Provider>
     </AppShellContext.Provider>
   )
 }

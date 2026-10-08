@@ -422,16 +422,20 @@
       "workspace": "Espacio de trabajo",
       "organization": "Organización",
       "administration": "Administración",
-      "account": "Cuenta"
+      "account": "Cuenta",
+      "platform": "Plataforma",
+      "operations": "Operaciones",
+      "help": "Ayuda",
+      "billing": "Facturación"
     },
     "nav": {
-      "dashboard": "Panel de negocio",
+      "dashboard": "Panel",
       "platformDashboard": "Panel",
       "myProducts": "Mis productos",
       "catalog": "Catálogo de productos",
       "identityFederation": "Federación de identidad",
-      "platforms": "Plataformas",
-      "apps": "Todas las aplicaciones",
+      "platforms": "Productos",
+      "apps": "Aplicaciones",
       "registrations": "Registros",
       "privilegedAccess": "Acceso privilegiado",
       "roles": "Roles",
@@ -461,7 +465,19 @@
       "orgSettings": "Configuración de la organización",
       "searchAdmin": "Búsqueda",
       "knowledgeCenter": "Centro de conocimiento",
-      "knowledgeManagement": "Gestión del conocimiento"
+      "knowledgeManagement": "Gestión del conocimiento",
+      "myApplications": "Mis aplicaciones",
+      "members": "Miembros",
+      "rolesPermissions": "Roles y permisos",
+      "orgSecurity": "Seguridad de acceso",
+      "knowledgeArticles": "Artículos",
+      "knowledgeGuides": "Guías",
+      "knowledgeFaqs": "Preguntas frecuentes",
+      "knowledgeCategories": "Categorías",
+      "knowledgeDrafts": "Borradores",
+      "knowledgeManage": "Administrar",
+      "billingOverview": "Resumen",
+      "orgStructure": "Estructura"
     },
     "catalogTitle": "Catálogo de productos",
     "catalogSubtitle": "Busque y filtre los productos disponibles en la plataforma.",
@@ -482,7 +498,21 @@
       "account": "Cuenta",
       "help": "Ayuda",
       "integrations": "Integraciones"
-    }
+    },
+    "navHint": {
+      "catalog": "Descubre productos y aplicaciones",
+      "platforms": "Administra productos y la configuración de la plataforma"
+    },
+    "crumb": {
+      "new": "Nuevo",
+      "details": "Detalles",
+      "edit": "Editar",
+      "editProduct": "Editar producto",
+      "editApplication": "Editar aplicación"
+    },
+    "breadcrumbs": "Ruta de navegación",
+    "expandGroup": "Expandir {{name}}",
+    "collapseGroup": "Contraer {{name}}"
   },
   "mfaReset": {
     "column": "Dos pasos",
@@ -2897,5 +2927,281 @@
         "seconds": "{{count}} s"
       }
     }
+  },
+  "orgMembers": {
+    "title": "Miembros",
+    "subtitle": "Invita personas, asigna roles y administra los grupos de tu organización.",
+    "tabs": {
+      "members": "Miembros",
+      "groups": "Grupos"
+    }
+  },
+  "orgPrivileged": {
+    "title": "Acceso privilegiado",
+    "subtitle": "Revisa y aprueba las solicitudes de acceso elevado temporal en tu organización."
+  },
+  "orgSecurity": {
+    "title": "Seguridad de acceso",
+    "tabs": {
+      "federation": "Federación de identidad",
+      "mfa": "Política multifactor"
+    },
+    "mfaTitle": "Política multifactor",
+    "mfaSubtitle": "Exige un código de autenticador cuando los miembros inician sesión."
+  },
+  "productsTabs": {
+    "products": "Productos",
+    "configuration": "Configuración"
+  },
+  "rolesTabs": {
+    "roles": "Roles",
+    "permissions": "Permisos",
+    "assignments": "Asignaciones de rol",
+    "assignmentsHelp": "Los roles se asignan a cada miembro de tu organización en la página Miembros.",
+    "goToMembers": "Ir a Miembros"
+  },
+  "serviceTabs": {
+    "status": "Estado",
+    "manage": "Administrar"
+  },
+  "productContent": {
+    "tabs": {
+      "details": "Detalles",
+      "content": "Contenido",
+      "label": "Secciones de la aplicación"
+    },
+    "title": "Contenido del producto",
+    "intro": "Fichas técnicas, documentación, imágenes, vídeos y casos de éxito que los clientes ven en la página de producto de esta aplicación. Los elementos empiezan como borrador; solo se muestran los publicados.",
+    "storageOff": "El almacenamiento de archivos aún no está configurado. Los enlaces y los casos de éxito sin archivos siguen funcionando.",
+    "loadError": "No se pudo cargar el contenido del producto.",
+    "retry": "Reintentar",
+    "saveFirst": "El contenido del producto (fichas técnicas, imágenes, vídeos, casos de éxito) se añade después de guardar la aplicación, en su pestaña Contenido.",
+    "listAction": "Contenido",
+    "sections": {
+      "DATASHEET": {
+        "title": "Ficha técnica",
+        "help": "Un PDF que los clientes pueden descargar (hasta {{size}}).",
+        "empty": "Aún no hay ficha técnica.",
+        "add": "Añadir ficha técnica"
+      },
+      "DOCUMENTATION": {
+        "title": "Documentación",
+        "help": "Enlaces a artículos publicados de la base de conocimiento. Los enlaces de Documentación y Soporte de la pestaña Detalles siguen como enlaces adicionales.",
+        "empty": "Aún no hay documentación enlazada.",
+        "add": "Enlazar documentación"
+      },
+      "IMAGE": {
+        "title": "Imágenes",
+        "help": "Una galería de imágenes PNG, JPG o WebP de hasta {{size}}, cada una con texto alternativo.",
+        "empty": "Aún no hay imágenes.",
+        "add": "Añadir imagen"
+      },
+      "VIDEO": {
+        "title": "Vídeos",
+        "help": "Un enlace de YouTube, Vimeo u otra web. Los vídeos no se suben aquí.",
+        "empty": "Aún no hay vídeos.",
+        "add": "Añadir vídeo"
+      },
+      "CASE_STUDY": {
+        "title": "Casos de éxito",
+        "help": "La historia de un cliente: el problema, el resultado y, opcionalmente, un logotipo y un PDF.",
+        "empty": "Aún no hay casos de éxito.",
+        "add": "Añadir caso de éxito"
+      }
+    },
+    "status": {
+      "DRAFT": "Borrador",
+      "PUBLISHED": "Publicado"
+    },
+    "meta": {
+      "version": "Versión {{n}}",
+      "updated": "actualizado {{date}}",
+      "file": "{{name}} · {{size}}",
+      "orphan": "El artículo enlazado ya no está publicado o no es público, por lo que no se muestra a los clientes.",
+      "noFile": "Sin archivo"
+    },
+    "actions": {
+      "edit": "Editar",
+      "delete": "Eliminar",
+      "publish": "Publicar",
+      "unpublish": "Despublicar",
+      "moveUp": "Subir {{title}}",
+      "moveDown": "Bajar {{title}}",
+      "editItem": "Editar {{title}}",
+      "deleteItem": "Eliminar {{title}}",
+      "publishItem": "Publicar {{title}}",
+      "unpublishItem": "Despublicar {{title}}"
+    },
+    "dialog": {
+      "addTitle": "Añadir {{kind}}",
+      "editTitle": "Editar {{kind}}",
+      "save": "Guardar",
+      "saving": "Guardando…",
+      "cancel": "Cancelar",
+      "kind": {
+        "DATASHEET": "ficha técnica",
+        "DOCUMENTATION": "documentación",
+        "IMAGE": "imagen",
+        "VIDEO": "vídeo",
+        "CASE_STUDY": "caso de éxito"
+      },
+      "chooseFile": "Elegir archivo",
+      "replaceFile": "Reemplazar archivo",
+      "chooseLogo": "Elegir logotipo del cliente",
+      "replaceLogo": "Reemplazar logotipo",
+      "fileReady": "Listo: {{name}}",
+      "fileKept": "Archivo actual: {{name}}",
+      "logoKept": "Logotipo actual: {{name}}",
+      "cancelUpload": "Cancelar subida",
+      "uploading": "Subiendo {{name}}…",
+      "uploadFailed": "La subida falló. Inténtalo de nuevo.",
+      "uploaded": "Subido {{name}}"
+    },
+    "fields": {
+      "title": "Título",
+      "description": "Descripción",
+      "altText": "Texto alternativo (describe la imagen)",
+      "videoUrl": "Enlace del vídeo",
+      "videoHelp": "Un enlace de YouTube o Vimeo se reproduce en la página de producto; cualquier otro enlace https se abre en una pestaña nueva.",
+      "customerName": "Nombre del cliente",
+      "problem": "El problema",
+      "result": "El resultado",
+      "article": "Artículo de conocimiento",
+      "articleHelp": "Solo se pueden enlazar artículos publicados visibles para todos.",
+      "thisProduct": "de esta aplicación"
+    },
+    "errors": {
+      "title": "Introduce un título (hasta 200 caracteres).",
+      "alt": "Introduce el texto alternativo de la imagen.",
+      "videoUrl": "Introduce un enlace de vídeo seguro (https).",
+      "customer": "Introduce el nombre del cliente.",
+      "article": "Elige un artículo.",
+      "file": "Elige y sube primero el archivo.",
+      "fileType": "Este tipo de archivo no está permitido aquí. Permitidos: {{types}}.",
+      "fileSize": "El archivo es demasiado grande. El máximo es {{size}}.",
+      "save": "No se pudo guardar. Inténtalo de nuevo."
+    },
+    "delete": {
+      "title": "¿Eliminar este contenido?",
+      "body": "«{{title}}» y sus archivos se eliminarán definitivamente."
+    },
+    "toast": {
+      "saved": "Guardado.",
+      "published": "Publicado.",
+      "unpublished": "Despublicado y oculto para los clientes.",
+      "deleted": "Eliminado."
+    },
+    "public": {
+      "tab": "Recursos",
+      "tabCount": "Recursos",
+      "empty": "Aún no hay recursos.",
+      "datasheets": "Fichas técnicas",
+      "documentation": "Documentación",
+      "gallery": "Galería",
+      "videos": "Vídeos",
+      "caseStudies": "Casos de éxito",
+      "download": "Descargar",
+      "downloadItem": "Descargar {{title}} ({{size}})",
+      "versionUpdated": "Versión {{n}} · actualizado {{date}}",
+      "read": "Leer el artículo",
+      "watch": "Ver el vídeo",
+      "watchItem": "Ver {{title}}",
+      "openVideo": "Abrir el vídeo en una pestaña nueva",
+      "playerTitle": "Vídeo: {{title}}",
+      "problem": "El problema",
+      "result": "El resultado",
+      "caseStudyPdf": "Leer el caso completo (PDF)",
+      "downloadFailed": "No se pudo iniciar la descarga. Inténtalo de nuevo.",
+      "loadError": "No se pudieron cargar los recursos.",
+      "zoomItem": "Ampliar {{title}}",
+      "close": "Cerrar"
+    },
+    "listActionLabel": "Contenido de {{name}}"
+  },
+  "orgStructure": {
+    "title": "Estructura",
+    "subtitle": "Modele cómo se organiza su organización: divisiones, departamentos, ubicaciones y equipos.",
+    "area": "Organización",
+    "addNode": "Agregar nodo",
+    "addChild": "Agregar hijo",
+    "edit": "Editar",
+    "move": "Mover",
+    "delete": "Eliminar",
+    "activate": "Activar",
+    "deactivate": "Desactivar",
+    "importCsv": "Importar CSV",
+    "configureLevels": "Configurar niveles",
+    "search": "Buscar nodos",
+    "searchHint": "Buscar por nombre, código o tipo",
+    "expandAll": "Expandir todo",
+    "collapseAll": "Contraer todo",
+    "treeLabel": "Estructura de la organización",
+    "inactive": "Inactivo",
+    "members": "Miembros",
+    "noMembers": "No hay miembros asignados a este nodo.",
+    "addMember": "Asignar un miembro",
+    "memberSelect": "Miembro",
+    "place": "Asignar",
+    "remove": "Quitar",
+    "path": "Ruta",
+    "type": "Tipo",
+    "code": "Código",
+    "description": "Descripción",
+    "status": "Estado",
+    "active": "Activo",
+    "details": "Detalles",
+    "history": "Historial",
+    "noHistory": "Este nodo nunca se ha movido.",
+    "movedFromTo": "Movido de {{from}} a {{to}}",
+    "noParent": "(ninguno)",
+    "select": "Seleccione un nodo para ver sus detalles.",
+    "loadError": "No se pudo cargar la estructura.",
+    "retry": "Reintentar",
+    "noMatches": "Ningún nodo coincide con su búsqueda.",
+    "children": "{{count}} nodos hijos",
+    "membersCount": "{{count}} miembros",
+    "nodeForm": {
+      "createTitle": "Agregar nodo bajo {{parent}}",
+      "editTitle": "Editar {{name}}",
+      "name": "Nombre",
+      "type": "Tipo",
+      "code": "Código",
+      "description": "Descripción",
+      "save": "Guardar",
+      "rootTypeFixed": "La raíz conserva su tipo."
+    },
+    "moveTitle": "Mover {{name}}",
+    "moveTo": "Nuevo padre",
+    "moveConfirm": "Mover",
+    "deactivateTitle": "¿Desactivar {{name}}?",
+    "deactivateBody": "Este nodo tiene {{children}} nodo(s) hijo(s) y {{members}} miembro(s). No se modifican.",
+    "deactivateConfirm": "Desactivar de todos modos",
+    "deleteTitle": "¿Eliminar {{name}}?",
+    "deleteBody": "Esta acción no se puede deshacer.",
+    "deleteConfirm": "Eliminar",
+    "levels": {
+      "title": "Configurar niveles",
+      "help": "Un nodo solo puede estar bajo un nodo de un nivel superior. El primer nivel sigue siendo Organización.",
+      "type": "Tipo",
+      "label": "Etiqueta",
+      "add": "Agregar nivel",
+      "up": "Subir {{name}}",
+      "down": "Bajar {{name}}",
+      "removeLevel": "Quitar {{name}}",
+      "save": "Guardar niveles"
+    },
+    "import": {
+      "title": "Importar nodos desde CSV",
+      "help": "Columnas: name, type (obligatorias), code, description, parentName. Si parentName está vacío, el nodo queda directamente bajo la raíz.",
+      "file": "Archivo CSV",
+      "upload": "Importar",
+      "result": "{{created}} creados, {{failed}} con error.",
+      "row": "Fila {{row}}: {{message}}"
+    },
+    "saved": "Guardado.",
+    "close": "Cerrar",
+    "cancel": "Cancelar",
+    "expandNode": "Expandir {{name}}",
+    "collapseNode": "Contraer {{name}}"
   }
 }

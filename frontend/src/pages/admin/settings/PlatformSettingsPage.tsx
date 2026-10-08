@@ -5,7 +5,7 @@ import { PageHeader } from '../../../components/layout/PageHeader'
 import { platformsApi } from '../../../api/platformsApi'
 import { PlatformForm } from '../../../components/admin/PlatformForm'
 
-/** "/admin/settings/platform" — Create Platform (C66 form with live preview). */
+/** "/admin/platforms/new" — Create product (C80; was "/admin/settings/platform") (C66 form with live preview). */
 export function PlatformSettingsPage() {
   const { t } = useTranslation()
   const navigate = useNavigate()

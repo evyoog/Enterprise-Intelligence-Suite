@@ -19,6 +19,7 @@ videos/{tutorials|training|troubleshooting|webinars|demos}/{product}/{module}/{u
 images/{screenshots|diagrams|thumbnails}/{product}/{module}/{uuid}.{ext}
 documents/{manuals|guides|brochures|release-notes}/{product}/{module}/{uuid}.{ext}
 templates/{product}/{module}/{uuid}.{ext}
+product-content/{applicationId}/{datasheet|image|case_study|case_study-logo}/{uuid}.{ext}   (REQ-CAT-004, C81: product datasheets, images, case-study files; same bucket and storage service)
 audio/{product}/{module}/{uuid}.{ext}
 transcripts/{video-uuid}/{language}.vtt
 uploads-pending/   (never used: pending objects live at their final key; the database marks them PENDING)

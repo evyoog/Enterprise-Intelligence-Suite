@@ -15,16 +15,16 @@ import {
 } from '../../../api/platformAdministrationApi'
 
 /**
- * "/admin/settings/common" — 15.01 Platform Administration (sprint 2026.4.2):
+ * "Configuration" tab of Platform → Products (C80; was "/admin/settings/common") — 15.01 Platform Administration (sprint 2026.4.2):
  * currencies, regions and feature flags an admin can manage; languages shown
  * read-only (see SupportedLanguageDto's own backend javadoc for why).
  * "Configure defaults" and "Manage templates" (15.01.02) are not built this
  * sprint — see SPRINT-2026.4.2.md.
  */
-export function CommonSettingsPage() {
+export function CommonSettingsPage({ embedded = false }: { embedded?: boolean }) {
   return (
     <Box sx={{ maxWidth: 720, display: 'flex', flexDirection: 'column', gap: 3 }}>
-      <PageHeader icon={PHGlobe} accent="teal" area="settings" title="Common" subtitle="Platform-wide currencies, regions and feature flags." />
+      {!embedded && <PageHeader icon={PHGlobe} accent="teal" area="settings" title="Common" subtitle="Platform-wide currencies, regions and feature flags." />}
       <LanguagesSection />
       <CurrenciesSection />
       <RegionsSection />

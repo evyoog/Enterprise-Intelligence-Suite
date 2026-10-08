@@ -649,6 +649,36 @@ Screen: [business-dashboard.md](../../05-ui/screen-requirements/business-dashboa
   - Every API answer carries `Cache-Control: no-store` (Spring Security default, now covered by `NoCacheHeadersTest`), so Back or a shared computer cannot show cached customer data.
   - Device settings that are not customer data (theme, language, region, time zone) stay in the browser.
 
+### C80
+**Decision (product owner, 2026-10-06) — Sidebar information architecture:** every feature has one primary location and the menu is permission-aware, for administrators, organization administrators, members and intermediate roles, from one navigation config. Mapping approved and the six open questions answered with my recommendations; built on 2026-10-06 (frontend only: no backend, route-path, authentication or authorization change; old URLs redirect). See [application layout](../../05-ui/screen-requirements/application-layout.md).
+- Members have **no Dashboard** entry (no member dashboard page exists; they open on My applications). A member dashboard is Not specified.
+- Staff with `MANAGE_SUPPORT_TICKETS` get the agent queue under Support; a tab for their own tickets is **not built** (they reach `/support/tickets` directly). Not specified.
+- Billing is shown to every customer (there is no billing-view permission; adding one is a backend change). For platform administrators there is no Overview child because no overview page exists.
+- Service status is in the sidebar for platform and organization administrators only; members reach `/status` by URL (the menu defined for members has no status item).
+- Orders: members see it under Workspace, holders of `MANAGE_ORDERS` under Organization.
+- Administration pages still need the platform-administrator role (`RequireAdmin`), so an intermediate platform role works for people who are platform administrators; the sidebar checks permissions only.
+
+### C81
+**Decision (product owner, 2026-10-07) — 02.04 Product content:** "complete this feature completely": datasheets, documentation, images, videos and case studies are configured by the administrator on the application's edit screen (a Content tab beside the existing form) and shown on the product page. FRD [REQ-CAT-004](../../02-requirements/FRD/product-content/requirement.md) is **Approved** and the feature was built in sprint [2026.4.1](sprints/SPRINT-2026.4.1.md) (its own sprint; dates unchanged). The open questions PC-1 to PC-6 were not answered, so the recommended answers were applied as defaults, each listed in the FRD under "Answers applied on 2026-10-07":
+- **PC-1** files in the private S3 bucket with presigned URLs (same bucket as knowledge media, prefix `product-content/{applicationId}/`); no CDN;
+- **PC-2** documentation = knowledge-base articles linked to the application, the external Documentation and Support links stay;
+- **PC-3** videos are YouTube, Vimeo or other web links; no upload;
+- **PC-4** a case study = customer name, logo, problem, result, optional PDF;
+- **PC-5** latest version only, with the version number and "Updated on";
+- **PC-6** images PNG, JPG, WebP up to 5 MB (SVG and GIF left out: files do not pass through the backend, so SVG cannot be sanitised, as decided for knowledge media in [C78](#c78)); PDF up to 20 MB; limits in `eis.product-content.*`.
+**Still Not specified:** moving the uploaded logo to S3 and a CDN; per-language content (02.05); version history, approval or scheduled publishing for product content; a limit on items per application; cleanup of uploads never attached to an item. **Limitation:** no real S3 bucket was available in the build environment, so uploads were tested against an in-memory store and the real AWS SDK signer (as for C78); the manual test [TC-CAT-032](../../../test-cases/functional/product-content/TC-CAT-032.md) needs a test bucket.
+
+### C82
+**Decision (product owner, 2026-10-07) — Organization hierarchy cloned from Thittam:** "Analyse evyoog-thittam-macro … it has the org-hierarchy concept, UI and backend logic; clone it in EIS", then "Approved, use your recommendations". FRD [REQ-TEN-006](../../02-requirements/FRD/org-hierarchy/requirement.md) is **Approved** and was built on 2026-10-07 in sprint [2026.4.2](sprints/SPRINT-2026.4.2.md) (dates unchanged). The six questions were answered with the recommended defaults:
+- **Scope:** tree with level rules, move with history, deactivate/delete guards, CSV import, level configuration, member placement. The org-chart canvas (zoom, pan, mini-map) is **not built**; a searchable tree and a details panel are.
+- **Tenancy:** one tree per EIS organization (`organization_id` on every table instead of Thittam's schema per tenant); one root, created on first open and named after the organization.
+- **Permission:** the existing `MANAGE_ORGANIZATION`; no new permission. Sidebar: Organization → Structure.
+- **Role assignments at a node:** **not built** (conflicts with the unapproved two-tier model of REQ-TEN-005).
+- **Members and groups:** a member may have one optional home node; groups (REQ-TEN-003) are unchanged.
+- **Level types:** Thittam's seven as defaults, editable per organization (unlike Thittam, a node type must be one of the organization's levels, and the order cannot be broken by a reorder).
+**Differences from Thittam, on purpose:** one root only (Thittam allows several root-level nodes); types are not free text; MapStruct, Flyway-per-tenant, Tailwind and the `ADMIN`-role guard are replaced by EIS conventions.
+**Still Not specified (not built, not invented):** role assignments with effective dates at a node; the org-chart canvas; Teams and allocations, project/plan hierarchy and cross links, templates and working calendars (Thittam features outside the org-hierarchy); read access for members who are not administrators; several roots; a `parentId` for groups; restoring a deleted node; showing the node on the Members page and in the member API; automatic placement of new members. **Limitation:** tested with H2 (service tests) and component tests only; the partial and case-insensitive unique indexes exist in `schema.sql` and `V025` but were not run against PostgreSQL here. Apply `V025__org_hierarchy.sql` to each database by hand.
+
 ### DN-2 Sprint scope, length and dates
 **Decision:**
 - **Sprint length:** sprints are **calendar months**. Sprint `.1`, `.2` and `.3` are the first, second and third months of the PI's calendar quarter. Example: 2026.3.3 = 1–30 Sep 2026; 2026.4.1 = 1–31 Oct 2026.
@@ -756,6 +786,9 @@ These documents are **not** changed by this file. Update them to match:
 | C77 | Sprint pages 2027.1.1 and 2027.1.3 (and 2026.4.1 for D23, 2027.1.2 for ticket prefill) note the Draft FRDs; dates unchanged. Remaining: "Approved" per FRD, then build phases with "Built early" notes |
 | C78 | Built 2026-10-05 (all knowledge FRDs Approved with default answers). Remaining: confirm or change the defaults; bucket names and region; retention periods; run UAT-KNW-001–004 with a test bucket |
 | C79 | Built 2026-10-06 (with the follow-up: no customer data after sign-out); [application layout](../../05-ui/screen-requirements/application-layout.md) updated; TC-PRT-032 to TC-PRT-034 |
+| C80 | Built 2026-10-06; [application layout](../../05-ui/screen-requirements/application-layout.md); TC-PRT-035 to TC-PRT-038. Remaining: confirm the Not-specified items above (member dashboard, staff own-tickets tab, billing-view permission) |
+| C81 | Built 2026-10-07 (PC-1 to PC-6 default answers). FRD REQ-CAT-004. Remaining: confirm or change the defaults; bucket names and region (shared with C72); run TC-CAT-032 with a test bucket |
+| C82 | Built 2026-10-07 (default answers). FRD REQ-TEN-006, migration V025. Remaining: confirm or change the defaults; apply V025 to each database; decide the Not-specified items (role assignments at a node, canvas, member read access) |
 | C54 | The wider navigation-consolidation / shared `<DataTable>`/`<FilterBar>` pass ([C44](#c44)) would make the business dashboard's new click-to-filter table and sort behavior reusable elsewhere instead of page-local — still carried, same as before. `database/seed/README.md` now points to [docs/07-database/demo-data.md](../../07-database/demo-data.md) for exactly what `DemoDataSeeder` adds |
 
 **Done (2026-09-26), no longer follow-up:** C31 (sprint pages 2026.4.1 through 2027.2.2, and the "Sprint" field on application pages 02, 03, 04, 05, 10, 11, 12, 13, 15, all updated to the corrected sequence — this superseded the older "C21: add the general policy engine to `SPRINT-2027.2.2.md`" and "C16, C17: add the deferred functions to `SPRINT-2027.1.3.md`" rows, and the "C21: add the agent controls to `SPRINT-2027.1.2.md`" row, which are now folded into C31's own sprint pages); C32–C35 (FRDs written and Approved, sprint 2026.4.1 built, carry-over recorded on `SPRINT-2026.4.2.md`).

@@ -31,4 +31,9 @@ public interface OrganizationMemberRepository extends JpaRepository<Organization
      * membership in this phase) — used to resolve "which org is the caller
      * an ORG_ADMIN of" from their own customer id. */
     Optional<OrganizationMember> findFirstByCustomerIdAndStatus(Long customerId, MembershipStatus status);
+
+    /** REQ-TEN-006: members placed on an organization-hierarchy node. */
+    List<OrganizationMember> findByOrgNodeId(Long orgNodeId);
+
+    long countByOrgNodeId(Long orgNodeId);
 }

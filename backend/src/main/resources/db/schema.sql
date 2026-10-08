@@ -1355,3 +1355,85 @@ CREATE TABLE IF NOT EXISTS knowledge_lesson (
     content_id BIGINT REFERENCES knowledge_article(id),
     title VARCHAR(200) NOT NULL
 );
+
+-- REQ-CAT-004 / 02.04 Product content (C81, 2026-10-07): datasheets,
+-- documentation links, images, videos and case studies per catalog product.
+-- Files are referenced by private S3 object key only. Additive; mirrors
+-- database/migrations/V024__product_content.sql. Data model:
+-- docs/07-database/data-model/product-content.md.
+CREATE TABLE IF NOT EXISTS product_content_item (
+    id BIGSERIAL PRIMARY KEY,
+    product_id BIGINT NOT NULL REFERENCES products(id) ON DELETE CASCADE,
+    kind VARCHAR(20) NOT NULL CHECK (kind IN ('DATASHEET', 'DOCUMENTATION', 'IMAGE', 'VIDEO', 'CASE_STUDY')),
+    title VARCHAR(200) NOT NULL,
+    description VARCHAR(1000),
+    status VARCHAR(20) NOT NULL DEFAULT 'DRAFT' CHECK (status IN ('DRAFT', 'PUBLISHED')),
+    display_order INT NOT NULL DEFAULT 0,
+    content_version INT NOT NULL DEFAULT 1,
+    object_key VARCHAR(500) UNIQUE,
+    file_name VARCHAR(255),
+    file_size BIGINT,
+    mime_type VARCHAR(100),
+    alt_text VARCHAR(250),
+    logo_object_key VARCHAR(500) UNIQUE,
+    logo_file_name VARCHAR(255),
+    logo_file_size BIGINT,
+    logo_mime_type VARCHAR(100),
+    video_provider VARCHAR(20) CHECK (video_provider IN ('YOUTUBE', 'VIMEO', 'EXTERNAL')),
+    video_url VARCHAR(1000),
+    video_ref VARCHAR(50),
+    thumbnail_url VARCHAR(1000),
+    customer_name VARCHAR(200),
+    problem TEXT,
+    result_text TEXT,
+    knowledge_content_id BIGINT REFERENCES knowledge_article(id) ON DELETE SET NULL,
+    published_at TIMESTAMP,
+    created_by_sub VARCHAR(100),
+    updated_by_sub VARCHAR(100),
+    created_at TIMESTAMP NOT NULL DEFAULT now(),
+    updated_at TIMESTAMP NOT NULL DEFAULT now()
+);
+CREATE INDEX IF NOT EXISTS idx_product_content_product ON product_content_item (product_id, status, display_order);
+
+-- REQ-TEN-006 Organization hierarchy (C82). Additive; mirrors database/migrations/V025__org_hierarchy.sql.
+-- Data model: docs/07-database/data-model/org-hierarchy.md.
+CREATE TABLE IF NOT EXISTS org_node (
+    id BIGSERIAL PRIMARY KEY,
+    organization_id BIGINT NOT NULL REFERENCES organization(id) ON DELETE CASCADE,
+    parent_id BIGINT REFERENCES org_node(id) ON DELETE RESTRICT,
+    name VARCHAR(150) NOT NULL,
+    node_type VARCHAR(50) NOT NULL,
+    code VARCHAR(50),
+    description VARCHAR(1000),
+    sort_order INTEGER NOT NULL DEFAULT 0,
+    active BOOLEAN NOT NULL DEFAULT TRUE,
+    created_at TIMESTAMP NOT NULL DEFAULT now(),
+    updated_at TIMESTAMP NOT NULL DEFAULT now()
+);
+CREATE INDEX IF NOT EXISTS idx_org_node_parent ON org_node (organization_id, parent_id);
+CREATE UNIQUE INDEX IF NOT EXISTS ux_org_node_root ON org_node (organization_id) WHERE parent_id IS NULL;
+CREATE UNIQUE INDEX IF NOT EXISTS ux_org_node_sibling_name ON org_node (organization_id, parent_id, lower(name)) WHERE parent_id IS NOT NULL;
+
+CREATE TABLE IF NOT EXISTS org_level (
+    id BIGSERIAL PRIMARY KEY,
+    organization_id BIGINT NOT NULL REFERENCES organization(id) ON DELETE CASCADE,
+    node_type VARCHAR(50) NOT NULL,
+    label VARCHAR(100) NOT NULL,
+    level_rank INTEGER NOT NULL,
+    UNIQUE (organization_id, node_type),
+    UNIQUE (organization_id, level_rank) DEFERRABLE INITIALLY DEFERRED
+);
+
+CREATE TABLE IF NOT EXISTS org_node_history (
+    id BIGSERIAL PRIMARY KEY,
+    organization_id BIGINT NOT NULL REFERENCES organization(id) ON DELETE CASCADE,
+    org_node_id BIGINT NOT NULL REFERENCES org_node(id) ON DELETE CASCADE,
+    previous_parent_id BIGINT,
+    new_parent_id BIGINT,
+    changed_by_customer_id BIGINT,
+    effective_at TIMESTAMP NOT NULL DEFAULT now()
+);
+CREATE INDEX IF NOT EXISTS idx_org_node_history_node ON org_node_history (org_node_id, effective_at DESC);
+
+ALTER TABLE organization_member ADD COLUMN IF NOT EXISTS org_node_id BIGINT REFERENCES org_node(id) ON DELETE SET NULL;
+CREATE INDEX IF NOT EXISTS idx_org_member_node ON organization_member (org_node_id);

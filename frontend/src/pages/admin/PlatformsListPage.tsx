@@ -45,7 +45,7 @@ export function PlatformsListPage() {
   }
 
   const addButton = (
-    <Button component={RouterLink} to="/admin/settings/platform" variant="contained" startIcon={<Plus size={16} />}>
+    <Button component={RouterLink} to="/admin/platforms/new" variant="contained" startIcon={<Plus size={16} />}>
       {t('catalog.addProduct')}
     </Button>
   )

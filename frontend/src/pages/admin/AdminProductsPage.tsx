@@ -5,8 +5,8 @@ import {
   Skeleton, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, TextField, ToggleButton, ToggleButtonGroup,
   Tooltip, Typography, useMediaQuery, useTheme,
 } from '@mui/material'
-import { AppWindow, LayoutGrid, Link2, List, Pencil, Plus, Search, Star, Trash2, Unlink, X } from 'lucide-react'
-import { Link as RouterLink } from 'react-router-dom'
+import { AppWindow, FolderOpen, LayoutGrid, Link2, List, Pencil, Plus, Search, Star, Trash2, Unlink, X } from 'lucide-react'
+import { Link as RouterLink, useSearchParams } from 'react-router-dom'
 import { ApiError, resolveAssetUrl } from '../../api/client'
 import { productsApi, type Product } from '../../api/productsApi'
 import { ProductForm } from '../../components/admin/ProductForm'
@@ -44,7 +44,14 @@ export function AdminProductsPage() {
   const [products, setProducts] = useState<Product[] | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [reload, setReload] = useState(0)
-  const [createOpen, setCreateOpen] = useState(false)
+  // C80: the old Settings → App page redirects here with ?new=1 to open the Add dialog.
+  const [searchParams, setSearchParams] = useSearchParams()
+  const [createOpen, setCreateOpen] = useState(searchParams.get('new') === '1')
+  useEffect(() => {
+    if (searchParams.get('new') !== '1') return
+    setSearchParams((prev) => { const p = new URLSearchParams(prev); p.delete('new'); return p }, { replace: true })
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
   const [status, setStatus] = useState<StatusFilter>('ALL')
   const [platformId, setPlatformId] = useState<number | ''>('')
   const [query, setQuery] = useState('')
@@ -225,6 +232,12 @@ export function AdminProductsPage() {
                       </Typography>
                     </TableCell>
                     <TableCell align="right" sx={{ whiteSpace: 'nowrap' }}>
+                      <Tooltip title={t('productContent.listAction')}>
+                        <IconButton component={RouterLink} to={`/admin/products/${app.id}/edit?tab=content`} size="small"
+                          aria-label={t('productContent.listActionLabel', { name: app.name })}>
+                          <FolderOpen size={16} />
+                        </IconButton>
+                      </Tooltip>
                       <Tooltip title={t('catalog.app.edit')}>
                         <IconButton component={RouterLink} to={`/admin/products/${app.id}/edit`} size="small"
                           aria-label={t('catalog.app.editLabel', { name: app.name })}>
@@ -255,6 +268,7 @@ export function AdminProductsPage() {
           </IconButton>
         </DialogTitle>
         <DialogContent sx={{ bgcolor: 'background.default', pt: '16px !important' }}>
+          <Alert severity="info" sx={{ mb: 2 }}>{t('productContent.saveFirst')}</Alert>
           <ProductForm
             onSubmit={productsApi.create}
             submitLabel={t('admin.apps.add')}

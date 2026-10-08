@@ -147,17 +147,17 @@ describe('BusinessDashboardPage — C69 workspace', () => {
     expect(await screen.findByRole('heading', { level: 1, name: 'Acme Corp' })).toBeInTheDocument()
     expect(await screen.findByText(/^Good (morning|afternoon|evening), Ada Lovelace$/)).toBeInTheDocument()
     expect(screen.getAllByText('All systems operational').length).toBeGreaterThan(0)
-    expect(screen.getByRole('link', { name: /6 unused seats/ })).toHaveAttribute('href', '/organization/settings#members')
+    expect(screen.getByRole('link', { name: /6 unused seats/ })).toHaveAttribute('href', '/organization/members')
     // Quick actions only use existing routes.
     const quick = screen.getByRole('navigation', { name: 'Quick actions' })
     expect(within(quick).getAllByRole('link').map((a) => a.getAttribute('href')))
-      .toEqual(['/my/products', '/products', '/organization/settings#members', '/organization/billing', '/support/tickets'])
+      .toEqual(['/my/products', '/products', '/organization/members', '/organization/billing', '/support/tickets'])
   })
 
   it('derives the KPIs from the business dashboard (no invented trends)', async () => {
     renderPage()
     const kpis = await screen.findByRole('region', { name: 'Overview' })
-    expect(within(kpis).getByRole('link', { name: /Licensed seats: 10/ })).toHaveAttribute('href', '/organization/settings#members')
+    expect(within(kpis).getByRole('link', { name: /Licensed seats: 10/ })).toHaveAttribute('href', '/organization/members')
     expect(within(kpis).getByRole('link', { name: /Active members: 4/ })).toBeInTheDocument()
     expect(within(kpis).getByRole('link', { name: /Applications: 2/ })).toBeInTheDocument()
     expect(within(kpis).getByRole('link', { name: /Application launches: 42/ })).toBeInTheDocument()
@@ -227,7 +227,7 @@ describe('BusinessDashboardPage — C69 workspace', () => {
     renderPage()
     const attention = await screen.findByRole('region', { name: 'Attention required' })
     expect(await within(attention).findByText('Unused licensed seats')).toBeInTheDocument()
-    expect(within(attention).getByRole('link', { name: 'Manage members' })).toHaveAttribute('href', '/organization/settings#members')
+    expect(within(attention).getByRole('link', { name: 'Manage members' })).toHaveAttribute('href', '/organization/members')
     expect(within(attention).queryByText('Upcoming renewal')).not.toBeInTheDocument()
 
     const billing = screen.getByRole('region', { name: 'Billing' })

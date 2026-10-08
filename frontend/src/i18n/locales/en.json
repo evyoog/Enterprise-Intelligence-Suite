@@ -422,16 +422,20 @@
       "workspace": "Workspace",
       "organization": "Organization",
       "administration": "Administration",
-      "account": "Account"
+      "account": "Account",
+      "platform": "Platform",
+      "operations": "Operations",
+      "help": "Help",
+      "billing": "Billing"
     },
     "nav": {
-      "dashboard": "Business dashboard",
+      "dashboard": "Dashboard",
       "platformDashboard": "Dashboard",
       "myProducts": "My products",
       "catalog": "Product catalog",
       "identityFederation": "Identity federation",
       "platforms": "Products",
-      "apps": "All apps",
+      "apps": "Applications",
       "registrations": "Registrations",
       "privilegedAccess": "Privileged access",
       "roles": "Roles",
@@ -461,7 +465,19 @@
       "orgSettings": "Organization settings",
       "searchAdmin": "Search",
       "knowledgeCenter": "Knowledge Center",
-      "knowledgeManagement": "Knowledge Management"
+      "knowledgeManagement": "Knowledge Management",
+      "myApplications": "My applications",
+      "members": "Members",
+      "rolesPermissions": "Roles & permissions",
+      "orgSecurity": "Sign-in security",
+      "knowledgeArticles": "Articles",
+      "knowledgeGuides": "Guides",
+      "knowledgeFaqs": "FAQs",
+      "knowledgeCategories": "Categories",
+      "knowledgeDrafts": "Drafts",
+      "knowledgeManage": "Manage",
+      "billingOverview": "Overview",
+      "orgStructure": "Structure"
     },
     "catalogTitle": "Product catalog",
     "catalogSubtitle": "Search and filter the products available on the platform.",
@@ -482,7 +498,21 @@
       "account": "Account",
       "help": "Help",
       "integrations": "Integrations"
-    }
+    },
+    "navHint": {
+      "catalog": "Discover products and applications",
+      "platforms": "Manage products and platform configuration"
+    },
+    "crumb": {
+      "new": "New",
+      "details": "Details",
+      "edit": "Edit",
+      "editProduct": "Edit product",
+      "editApplication": "Edit application"
+    },
+    "breadcrumbs": "Breadcrumb",
+    "expandGroup": "Expand {{name}}",
+    "collapseGroup": "Collapse {{name}}"
   },
   "mfaReset": {
     "column": "Two-factor",
@@ -2897,5 +2927,281 @@
         "seconds": "{{count}} s"
       }
     }
+  },
+  "orgMembers": {
+    "title": "Members",
+    "subtitle": "Invite people, assign roles and manage groups for your organization.",
+    "tabs": {
+      "members": "Members",
+      "groups": "Groups"
+    }
+  },
+  "orgPrivileged": {
+    "title": "Privileged access",
+    "subtitle": "Review and approve requests for temporary elevated access in your organization."
+  },
+  "orgSecurity": {
+    "title": "Sign-in security",
+    "tabs": {
+      "federation": "Identity federation",
+      "mfa": "Multi-factor policy"
+    },
+    "mfaTitle": "Multi-factor policy",
+    "mfaSubtitle": "Require an authenticator code when members sign in."
+  },
+  "productsTabs": {
+    "products": "Products",
+    "configuration": "Configuration"
+  },
+  "rolesTabs": {
+    "roles": "Roles",
+    "permissions": "Permissions",
+    "assignments": "Role assignments",
+    "assignmentsHelp": "Roles are assigned to each member in your organization, on the Members page.",
+    "goToMembers": "Go to Members"
+  },
+  "serviceTabs": {
+    "status": "Status",
+    "manage": "Manage"
+  },
+  "productContent": {
+    "tabs": {
+      "details": "Details",
+      "content": "Content",
+      "label": "Application sections"
+    },
+    "title": "Product content",
+    "intro": "Datasheets, documentation, images, videos and case studies customers see on this application's product page. Items start as drafts; only published items are shown.",
+    "storageOff": "File storage is not configured yet. Links and case studies without files still work.",
+    "loadError": "Could not load the product content.",
+    "retry": "Retry",
+    "saveFirst": "Product content (datasheets, images, videos, case studies) is added after the application is saved, on its Content tab.",
+    "listAction": "Content",
+    "sections": {
+      "DATASHEET": {
+        "title": "Datasheet",
+        "help": "A PDF customers can download (up to {{size}}).",
+        "empty": "No datasheet yet.",
+        "add": "Add datasheet"
+      },
+      "DOCUMENTATION": {
+        "title": "Documentation",
+        "help": "Links to published knowledge-base articles. The Documentation and Support links in the Details tab stay as extra links.",
+        "empty": "No documentation linked yet.",
+        "add": "Link documentation"
+      },
+      "IMAGE": {
+        "title": "Images",
+        "help": "A gallery of PNG, JPG or WebP images up to {{size}}, each with alt text.",
+        "empty": "No images yet.",
+        "add": "Add image"
+      },
+      "VIDEO": {
+        "title": "Videos",
+        "help": "A YouTube, Vimeo or other web link. Videos are not uploaded here.",
+        "empty": "No videos yet.",
+        "add": "Add video"
+      },
+      "CASE_STUDY": {
+        "title": "Case studies",
+        "help": "A customer story: the problem, the result, and optionally a logo and a PDF.",
+        "empty": "No case studies yet.",
+        "add": "Add case study"
+      }
+    },
+    "status": {
+      "DRAFT": "Draft",
+      "PUBLISHED": "Published"
+    },
+    "meta": {
+      "version": "Version {{n}}",
+      "updated": "updated {{date}}",
+      "file": "{{name}} · {{size}}",
+      "orphan": "The linked article is no longer live or public, so it is not shown to customers.",
+      "noFile": "No file"
+    },
+    "actions": {
+      "edit": "Edit",
+      "delete": "Delete",
+      "publish": "Publish",
+      "unpublish": "Unpublish",
+      "moveUp": "Move {{title}} up",
+      "moveDown": "Move {{title}} down",
+      "editItem": "Edit {{title}}",
+      "deleteItem": "Delete {{title}}",
+      "publishItem": "Publish {{title}}",
+      "unpublishItem": "Unpublish {{title}}"
+    },
+    "dialog": {
+      "addTitle": "Add {{kind}}",
+      "editTitle": "Edit {{kind}}",
+      "save": "Save",
+      "saving": "Saving…",
+      "cancel": "Cancel",
+      "kind": {
+        "DATASHEET": "datasheet",
+        "DOCUMENTATION": "documentation",
+        "IMAGE": "image",
+        "VIDEO": "video",
+        "CASE_STUDY": "case study"
+      },
+      "chooseFile": "Choose file",
+      "replaceFile": "Replace file",
+      "chooseLogo": "Choose customer logo",
+      "replaceLogo": "Replace logo",
+      "fileReady": "Ready: {{name}}",
+      "fileKept": "Current file: {{name}}",
+      "logoKept": "Current logo: {{name}}",
+      "cancelUpload": "Cancel upload",
+      "uploading": "Uploading {{name}}…",
+      "uploadFailed": "The upload failed. Please try again.",
+      "uploaded": "Uploaded {{name}}"
+    },
+    "fields": {
+      "title": "Title",
+      "description": "Description",
+      "altText": "Alt text (describes the image)",
+      "videoUrl": "Video link",
+      "videoHelp": "A YouTube or Vimeo link plays on the product page; any other https link opens in a new tab.",
+      "customerName": "Customer name",
+      "problem": "The problem",
+      "result": "The result",
+      "article": "Knowledge article",
+      "articleHelp": "Only live articles visible to everyone can be linked.",
+      "thisProduct": "for this application"
+    },
+    "errors": {
+      "title": "Enter a title (up to 200 characters).",
+      "alt": "Enter alt text for the image.",
+      "videoUrl": "Enter a secure https video link.",
+      "customer": "Enter the customer name.",
+      "article": "Choose an article.",
+      "file": "Choose and upload the file first.",
+      "fileType": "This file type is not allowed here. Allowed: {{types}}.",
+      "fileSize": "The file is too large. The maximum is {{size}}.",
+      "save": "Could not save. Please try again."
+    },
+    "delete": {
+      "title": "Delete this content?",
+      "body": "\"{{title}}\" and its files will be removed for good."
+    },
+    "toast": {
+      "saved": "Saved.",
+      "published": "Published.",
+      "unpublished": "Unpublished and hidden from customers.",
+      "deleted": "Deleted."
+    },
+    "public": {
+      "tab": "Resources",
+      "tabCount": "Resources",
+      "empty": "No resources yet.",
+      "datasheets": "Datasheets",
+      "documentation": "Documentation",
+      "gallery": "Gallery",
+      "videos": "Videos",
+      "caseStudies": "Case studies",
+      "download": "Download",
+      "downloadItem": "Download {{title}} ({{size}})",
+      "versionUpdated": "Version {{n}} · updated {{date}}",
+      "read": "Read the article",
+      "watch": "Watch the video",
+      "watchItem": "Watch {{title}}",
+      "openVideo": "Open video in a new tab",
+      "playerTitle": "Video: {{title}}",
+      "problem": "The problem",
+      "result": "The result",
+      "caseStudyPdf": "Read the full case study (PDF)",
+      "downloadFailed": "Could not start the download. Please try again.",
+      "loadError": "Could not load the resources.",
+      "zoomItem": "Enlarge {{title}}",
+      "close": "Close"
+    },
+    "listActionLabel": "Content of {{name}}"
+  },
+  "orgStructure": {
+    "title": "Structure",
+    "subtitle": "Model how your organization is organized: divisions, departments, locations and teams.",
+    "area": "Organization",
+    "addNode": "Add node",
+    "addChild": "Add child",
+    "edit": "Edit",
+    "move": "Move",
+    "delete": "Delete",
+    "activate": "Activate",
+    "deactivate": "Deactivate",
+    "importCsv": "Import CSV",
+    "configureLevels": "Configure levels",
+    "search": "Search nodes",
+    "searchHint": "Search by name, code or type",
+    "expandAll": "Expand all",
+    "collapseAll": "Collapse all",
+    "treeLabel": "Organization structure",
+    "inactive": "Inactive",
+    "members": "Members",
+    "noMembers": "No members are placed on this node.",
+    "addMember": "Place a member",
+    "memberSelect": "Member",
+    "place": "Place",
+    "remove": "Remove",
+    "path": "Path",
+    "type": "Type",
+    "code": "Code",
+    "description": "Description",
+    "status": "Status",
+    "active": "Active",
+    "details": "Details",
+    "history": "History",
+    "noHistory": "This node has never been moved.",
+    "movedFromTo": "Moved from {{from}} to {{to}}",
+    "noParent": "(none)",
+    "select": "Select a node to see its details.",
+    "loadError": "The structure could not be loaded.",
+    "retry": "Retry",
+    "noMatches": "No node matches your search.",
+    "children": "{{count}} child nodes",
+    "membersCount": "{{count}} members",
+    "nodeForm": {
+      "createTitle": "Add node under {{parent}}",
+      "editTitle": "Edit {{name}}",
+      "name": "Name",
+      "type": "Type",
+      "code": "Code",
+      "description": "Description",
+      "save": "Save",
+      "rootTypeFixed": "The root keeps its type."
+    },
+    "moveTitle": "Move {{name}}",
+    "moveTo": "New parent",
+    "moveConfirm": "Move",
+    "deactivateTitle": "Deactivate {{name}}?",
+    "deactivateBody": "This node has {{children}} child node(s) and {{members}} member(s). They are not changed.",
+    "deactivateConfirm": "Deactivate anyway",
+    "deleteTitle": "Delete {{name}}?",
+    "deleteBody": "This cannot be undone.",
+    "deleteConfirm": "Delete",
+    "levels": {
+      "title": "Configure levels",
+      "help": "A node can only sit under a node on a higher level. The first level stays Organization.",
+      "type": "Type",
+      "label": "Label",
+      "add": "Add level",
+      "up": "Move {{name}} up",
+      "down": "Move {{name}} down",
+      "removeLevel": "Remove {{name}}",
+      "save": "Save levels"
+    },
+    "import": {
+      "title": "Import nodes from CSV",
+      "help": "Columns: name, type (required), code, description, parentName. A blank parentName puts the node directly under the root.",
+      "file": "CSV file",
+      "upload": "Import",
+      "result": "{{created}} created, {{failed}} failed.",
+      "row": "Row {{row}}: {{message}}"
+    },
+    "saved": "Saved.",
+    "close": "Close",
+    "cancel": "Cancel",
+    "expandNode": "Expand {{name}}",
+    "collapseNode": "Collapse {{name}}"
   }
 }

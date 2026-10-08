@@ -32,6 +32,9 @@ vi.mock('../api/reviewsApi', async () => {
   }
 })
 
+const getContent = vi.fn()
+vi.mock('../api/productContentApi', () => ({ productContentApi: { get: (id: number) => getContent(id), download: vi.fn() } }))
+
 let authState = { isAuthenticated: false }
 vi.mock('../auth/AuthProvider', async () => {
   const actual = await vi.importActual<typeof import('../auth/AuthProvider')>('../auth/AuthProvider')
@@ -61,9 +64,35 @@ function renderDetail() {
 
 describe('ProductDetailPage', () => {
   beforeEach(() => {
-    for (const m of [getProduct, getRatings, getMine, submit]) m.mockReset()
+    for (const m of [getProduct, getRatings, getMine, submit, getContent]) m.mockReset()
+    getContent.mockRejectedValue(new Error('none'))
     authState = { isAuthenticated: false }
     getMine.mockRejectedValue(new ApiError(404, 'Review not found'))
+  })
+
+  it('shows a Resources tab only when the product has published content (REQ-CAT-004.9)', async () => {
+    getProduct.mockResolvedValue(product)
+    getRatings.mockResolvedValue({ averageRating: 0, reviewCount: 0, reviews: [] })
+    getContent.mockResolvedValue({
+      datasheets: [{ id: 1, kind: 'DATASHEET', title: 'Platform datasheet', description: null, version: 1, updatedAt: '2026-10-07T10:00:00Z',
+        file: { fileName: 'd.pdf', size: 1024, mimeType: 'application/pdf' }, imageUrl: null, altText: null, logoUrl: null, videoProvider: null,
+        videoUrl: null, embedUrl: null, thumbnailUrl: null, customerName: null, problem: null, result: null, articleRef: null, articleType: null }],
+      documentation: [], images: [], videos: [], caseStudies: [],
+    })
+    renderDetail()
+    const user = userEvent.setup()
+    await user.click(await screen.findByRole('tab', { name: 'Resources' }))
+    expect(await screen.findByText('Platform datasheet')).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: /Download Platform datasheet/ })).toBeInTheDocument()
+  })
+
+  it('has no Resources tab when nothing is published', async () => {
+    getProduct.mockResolvedValue(product)
+    getRatings.mockResolvedValue({ averageRating: 0, reviewCount: 0, reviews: [] })
+    getContent.mockResolvedValue({ datasheets: [], documentation: [], images: [], videos: [], caseStudies: [] })
+    renderDetail()
+    await screen.findByRole('tab', { name: 'Overview' })
+    expect(screen.queryByRole('tab', { name: 'Resources' })).not.toBeInTheDocument()
   })
 
   it('sends a signed-out visitor to sign in first, with a way back to the cart', async () => {
