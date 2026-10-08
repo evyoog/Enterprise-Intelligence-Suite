@@ -6,7 +6,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { ApiError } from '../../api/client'
 import { renderWithProviders } from '../../test/renderWithProviders'
 import { OrganizationMembersCard } from '../organization/OrganizationMembersCard'
-import { RegistrationsAdminPage } from '../../pages/admin/RegistrationsAdminPage'
+import { AdminOrganizationsPage } from '../../pages/admin/AdminOrganizationsPage'
 
 const listMyOrgUsers = vi.fn()
 const resetMemberMfa = vi.fn()
@@ -25,6 +25,15 @@ vi.mock('../../api/adminRegistrationApi', () => ({
     listAllIndividuals: vi.fn().mockResolvedValue([]),
     listPendingProvisioning: vi.fn().mockResolvedValue([]),
     resetMfa: (email: string) => resetMfa(email),
+  },
+}))
+
+vi.mock('../../api/orgDirectoryApi', () => ({
+  orgDirectoryApi: {
+    directory: () => Promise.resolve({
+      rows: [],
+      summary: { total: 0, organizations: 0, individuals: 0, profileComplete: 0, profileInProgress: 0, profileNotStarted: 0, averageCompletion: 0 },
+    }),
   },
 }))
 
@@ -65,7 +74,7 @@ describe('Two-factor reset by an administrator', () => {
 
   it('lets a platform admin reset any account by email', async () => {
     resetMfa.mockResolvedValue(undefined)
-    renderWithProviders(<RegistrationsAdminPage />)
+    renderWithProviders(<AdminOrganizationsPage />)
 
     const user = userEvent.setup()
     await user.click(screen.getByRole('button', { name: "Reset a user's 2FA" }))

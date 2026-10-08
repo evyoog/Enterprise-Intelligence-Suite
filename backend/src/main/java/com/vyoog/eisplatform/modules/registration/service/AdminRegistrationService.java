@@ -82,6 +82,12 @@ public class AdminRegistrationService {
             .toList();
     }
 
+    /** REQ-TEN-007: one organization's full admin view. */
+    public OrganizationAdminDto getOrganization(Long organizationId) {
+        return organizationRepository.findById(organizationId).map(this::toAdminDto)
+            .orElseThrow(() -> new com.vyoog.eisplatform.common.exception.ResourceNotFoundException("Organization not found"));
+    }
+
     private OrganizationAdminDto toAdminDto(Organization org) {
         List<OrganizationMember> members = memberRepository.findByOrganizationId(org.getId());
         long activeMembers = members.stream().filter(m -> m.getStatus() == MembershipStatus.ACTIVE).count();

@@ -72,11 +72,13 @@ class LayeredArchitectureTest {
         //   sprint 2026.4.1, C81) hangs content items off the same catalog
         //   product (existence and Active check, delete hook) — no second
         //   catalog.
+        // - ..modules.orgdirectory.. (REQ-TEN-007, C83) reads the catalog only to show a
+        //   subscription's product name — no second catalog.
         ArchRule rule = classes().that().resideInAPackage("..modules.product..")
             .should().onlyHaveDependentClassesThat().resideInAnyPackage(
                 "..modules.product..", "..modules.platform..", "..modules.registration..", "..modules.dashboard..",
                 "..modules.servicestatus..", "..modules.administration..", "..modules.search..", "..modules.reviews..",
-                "..modules.billing..", "..modules.cart..", "..modules.productcontent..",
+                "..modules.billing..", "..modules.cart..", "..modules.productcontent..", "..modules.orgdirectory..",
                 "com.vyoog.eisplatform", "..config.."
             );
 

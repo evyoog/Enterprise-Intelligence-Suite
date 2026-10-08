@@ -185,6 +185,8 @@ public class SecurityConfig {
                 // today, see RbacSeeder, but this is now a distinct, separately
                 // revocable permission from MANAGE_CATALOG above).
                 .requestMatchers("/admin/registrations/**").access(permissions.platformPermission("MANAGE_REGISTRATIONS"))
+                // REQ-TEN-007 (C83): the read-only Organizations directory and detail tabs.
+                .requestMatchers("/admin/organizations/**").access(permissions.platformPermission("MANAGE_REGISTRATIONS"))
                 // C26 (REQ-PRT-001): posting product status and incidents.
                 .requestMatchers("/admin/service-status/**").access(permissions.platformPermission("MANAGE_SERVICE_STATUS"))
                 // 15.01 Platform Administration (sprint 2026.4.2): currencies, regions, feature flags.

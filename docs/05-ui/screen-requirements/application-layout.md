@@ -44,12 +44,12 @@ Requested by the product owner on 2026-10-06 and approved with the mapping in [C
 | Group | Items (permission) |
 |---|---|
 | **Workspace** | Dashboard (`VIEW_PLATFORM_DASHBOARD` → `/admin/dashboard`, or organization `MANAGE_ORGANIZATION` → business dashboard; members have none), My applications (customer), Product catalog (everyone: *discover*), Knowledge Center (one entry), Orders (members; see Organization) |
-| **Organization** | Members (`MANAGE_ORGANIZATION`), Roles & permissions (`MANAGE_ROLES` / `MANAGE_PERMISSIONS`), Registrations (`MANAGE_REGISTRATIONS`), Privileged access (platform or organization `MANAGE_PRIVILEGED_ACCESS`), Sign-in security (`MANAGE_ORGANIZATION`), Orders (`MANAGE_ORDERS`) |
+| **Organization** | People & structure (`MANAGE_ORGANIZATION`; tabs Members / Groups / Org structure), Roles & permissions (`MANAGE_ROLES` / `MANAGE_PERMISSIONS`), Organizations (`MANAGE_REGISTRATIONS`; replaces Registrations, [C83](../../01-business/roadmap/open-decisions.md#c83)), Privileged access (platform or organization `MANAGE_PRIVILEGED_ACCESS`), Sign-in security (`MANAGE_ORGANIZATION`), Orders (`MANAGE_ORDERS`) |
 | **Platform** | Products (`MANAGE_CATALOG`: *manage*), Applications (`MANAGE_CATALOG`), Integrations → Platform events, API keys (`MANAGE_INTEGRATIONS`), Search (`MANAGE_SEARCH`), Service status (platform administrators and organization administrators; once) |
 | **Operations** | Billing (`MANAGE_BILLING`, or organization `MANAGE_ORGANIZATION`) → Overview, Invoices & payments (organization) or Invoices & payments, Payment gateway, Billing settings (platform); Support (`MANAGE_SUPPORT_TICKETS` → agent queue; organization administrators → own tickets); Reviews (`MANAGE_REVIEWS`); Partners (`MANAGE_PARTNERS`); Audit log (`VIEW_AUDIT_LOG`) |
 | **Help** | Support, for members (same entry as in Operations; never both) |
 | **Billing** | Overview, Invoices & payments, for members (same entry as in Operations) |
-| **Account** | Security, Preferences (everyone) |
+| ~~Account~~ | Removed in [C83](../../01-business/roadmap/open-decisions.md#c83): Security and Preferences are in the profile menu at the top right (name, email, role, organization, Security, Preferences, Sign out) |
 
 - **Knowledge Center** is the only knowledge entry; the label opens `/knowledge`, the chevron beside it folds the children. Readers: Articles, Guides, FAQs. People holding `KNOWLEDGE_CONTRIBUTE` or `MANAGE_KNOWLEDGE_BASE`: Articles, Drafts, Manage (and Categories for `MANAGE_KNOWLEDGE_BASE`), which use the existing `/knowledge-management/*` routes. Knowledge Management is no longer a sidebar entry.
 - **Not in the sidebar:** Search (the top-bar search stays; `/search` is its "See all results" page), Become a partner (a call-to-action; `/partners/apply` stays), Settings.

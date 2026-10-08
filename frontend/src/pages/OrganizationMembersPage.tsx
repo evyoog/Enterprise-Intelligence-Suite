@@ -5,8 +5,9 @@ import { PageHeader } from '../components/layout/PageHeader'
 import { useTabParam } from '../components/layout/useTabParam'
 import { OrganizationGroupsCard } from '../components/organization/OrganizationGroupsCard'
 import { OrganizationMembersCard } from '../components/organization/OrganizationMembersCard'
+import { OrganizationStructurePanel } from '../components/organization/OrganizationStructurePanel'
 
-const TABS = ['members', 'groups'] as const
+const TABS = ['members', 'groups', 'structure'] as const
 
 /**
  * "/organization/members" — C80: members and their roles (REQ-IAM-002) and
@@ -23,8 +24,11 @@ export function OrganizationMembersPage() {
       <Tabs value={tab} onChange={(_, v) => setTab(v)} aria-label={t('orgMembers.title')} sx={{ mb: 2.5, borderBottom: '1px solid', borderColor: 'divider' }}>
         <Tab value="members" label={t('orgMembers.tabs.members')} />
         <Tab value="groups" label={t('orgMembers.tabs.groups')} />
+        <Tab value="structure" label={t('orgMembers.tabs.structure')} />
       </Tabs>
-      {tab === 'members' ? <OrganizationMembersCard /> : <OrganizationGroupsCard />}
+      {tab === 'members' && <OrganizationMembersCard />}
+      {tab === 'groups' && <OrganizationGroupsCard />}
+      {tab === 'structure' && <OrganizationStructurePanel />}
     </Box>
   )
 }
