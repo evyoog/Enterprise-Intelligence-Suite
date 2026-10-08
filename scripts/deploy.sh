@@ -12,5 +12,15 @@ case "$ENV" in
   *) echo "usage: $0 <dev|uat|prod>" >&2; exit 2 ;;
 esac
 
-echo "Deployment to '$ENV' is not configured yet. See deployment/README.md." >&2
+# ECS: set ECS_CLUSTER and ECS_SERVICE (and AWS_REGION) to deploy. The task definition is
+# registered only if it does not exist yet; an existing one is left alone.
+if [ -n "${ECS_CLUSTER:-}" ] && [ -n "${ECS_SERVICE:-}" ]; then
+  scripts/ensure-task-definition.sh
+  aws ecs update-service --cluster "$ECS_CLUSTER" --service "$ECS_SERVICE" \
+    --force-new-deployment --region "${AWS_REGION:-ap-south-1}" >/dev/null
+  echo "Deployment of '$ENV' started on $ECS_CLUSTER/$ECS_SERVICE."
+  exit 0
+fi
+
+echo "Deployment to '$ENV' is not configured yet (set ECS_CLUSTER and ECS_SERVICE). See deployment/README.md." >&2
 exit 1
