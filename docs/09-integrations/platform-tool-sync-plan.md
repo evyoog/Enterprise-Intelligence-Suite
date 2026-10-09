@@ -377,6 +377,16 @@ Order (A4): **0 contract → 1–6 Macro (tool side, against a simulator) → 7 
 **Tests.** Unit per applier; integration with the simulator for duplicate, out-of-order, parent-missing, cycle, wrong-tenant, wrong-client; row-count assertions for "no business records".
 **Rollback.** Tables are additive; disable by `platform.inbound.enabled=false`.
 
+**Built 2026-10-09** (Macro branch `platform-sync/phase-2-inbound-sync`; 603 tests green incl. the opt-in PostgreSQL ones). Deviations from the text above:
+- Migrations are **V77–V79** (V76 was taken by the Agile reliability migration) plus control **V2** (`platform_org_id`). Sync copies have **no foreign keys** (messages arrive in any order); `org_node_history.changed_by` became nullable (a platform change has no local user).
+- The tenant of a message is found **only** by `platform_tenant.platform_org_id`; a tenant reference or schema name in `tenantRef` is `UNKNOWN_TENANT`. Step 2 of "Turning it on" is therefore a one-line `UPDATE` per tenant until phase 6 provisions it.
+- `PENDING_PARENT` is stored as `org_nodes.pending_parent_ref` (the node is a temporary root until its parent arrives); a root node of the platform adopts an existing unlinked root of the same type instead of duplicating it.
+- Errors are recorded in `platform_sync_error` in a separate transaction so a rolled-back message still leaves a trace.
+- `orgRole` of a membership is accepted but unused in Macro; the organization snapshot is stored in `platform_organization` (open `attributes` JSONB) and not yet mirrored into `app_settings` (phase 3, platform-managed mode).
+- **Found by the real-database test:** `User.id` is `@GeneratedValue`, so saving a new `User` silently ignores the id set on it. People are inserted through `UserRepository.insertWithId` so the Keycloak `sub` becomes the key. `UserProvisioningFilter` (existing code) saves new users the old way — to be checked and fixed in phase 5 together with closing its "any realm user" hole.
+- `platformUserId` is unique per tenant (`users.platform_ref`); a duplicate is refused as `INVALID_PAYLOAD`.
+- `get_state_digest` / `list_aggregate_versions` are still phase 8.
+
 ---
 
 ### Phase 3 — Macro: outbound (write-through), tool-created users, platform-managed mode  (repo: Macro)
