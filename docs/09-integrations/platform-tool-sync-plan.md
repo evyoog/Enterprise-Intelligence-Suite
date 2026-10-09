@@ -1,6 +1,6 @@
 # Platform ↔ Tool synchronization — phase plan
 
-**Status:** Proposed (2026-10-09). **Phase 0 written 2026-10-09** (see section 6, Phase 0); the FRD is In Review. Nothing in this document is built.
+**Status:** Proposed (2026-10-09). **Phase 0 written and Phase 1 built on 2026-10-09** (see section 6); REQ-INT-003 is still In Review. Phases 2–9 are not built.
 **Owner:** Product owner. **Written for:** any engineer or AI agent who has not seen the conversation behind it.
 **Scope:** EIS platform (this repo, `evyoog/Enterprise-Intelligence-Suite`) and the first tool, Thittam Macro Planner (repo `evyoog/evyoog-thittam-macro`, the "Vyoog PMS" app). Valam and later tools reuse the same module and contract.
 
@@ -250,7 +250,7 @@ public interface ToolAdapter {
 platform:
   contract-version: "1"
   product-code: thittam                      # the only per-tool identity value
-  platform:
+  hub:
     mcp-url: ${EIS_PLATFORM_MCP_URL}          # e.g. https://eis.evyoog.com/api/mcp
     token-url: ${KEYCLOAK_TOKEN_URL}
     client-id: thittam-sync
@@ -260,7 +260,6 @@ platform:
     allowed-clients: eis-sync                 # azp allow-list
   tenants:
     source: db                                # db | file (file = local dev only)
-    registry-table: platform_tenant           # in the control schema
     control-schema: platform_control
     cache-seconds: 60
   entitlement:
@@ -338,6 +337,23 @@ Order (A4): **0 contract → 1–6 Macro (tool side, against a simulator) → 7 
 7. Seed `platform_tenant` from today's config: `vyoog_pms` (host `demopms.evyoog.com`) and `vyoog_pms_vyoog` (host `pms.evyoog.com`), same shared datasource, same schemas. **No data moves.**
 8. Keep the old properties as a fallback for one release, logging a deprecation warning.
 **How.** Hibernate `MultiTenantConnectionProvider` is the only seam; `datasource_ref` is a key into a `Map<String, DataSource>` built from environment-supplied connection settings (never a URL in the table, never from a request).
+**Built on 2026-10-09** in `evyoog/evyoog-thittam-macro`, branch `platform-sync/phase-1-tenant-registry` (not merged; no pull request). Started on the product owner's instruction "start phase 1"; REQ-INT-003 itself is still *In Review*.
+
+**What was built, and how it differs from the plan above**
+| Plan said | What was built | Why |
+|---|---|---|
+| Migration **V75** creates the control schema | `db/control/V1__create_platform_tenant.sql`, a **separate Flyway location** with its own history table in the control schema | The registry has to exist before anyone knows which tenant schemas to migrate (chicken-and-egg with `db/migration`). `TenantFlywayConfig` still runs it, so there is still one mechanism. |
+| One table `platform_tenant` with a `host` column | Two tables: `platform_tenant` and `platform_tenant_host` | A tenant can be reached by several hostnames (the seed already has `pms.evyoog.com` and `localhost` for one tenant). |
+| `platform.platform.*` keys for the hub | `platform.hub.*` | The doubled name was confusing. Section 5.1 is updated. |
+| "Requests cannot choose a schema through any header" | The tenant value must be the **reference of a READY registry tenant**; a schema name is accepted only if it is registered. The JWT-claim and `X-TENANT-ID` sources stay **on** (`platform.tenants.fallback.*`) and are switchable | Turning them off now would break clients that rely on them today and the plan says phase 1 changes no behaviour. Phase 5 turns them off after membership is checked. |
+| "An unknown host is refused" | A host of a non-READY tenant is refused (403). An **unknown** host still falls back to the default tenant unless `refuse-unmapped-host=true` | Same reason; the health check and unauthenticated paths use unmapped hosts. |
+| Seed the table from config once | Seed **missing** rows at every start (never changes existing rows) | Keeps the old "add to `APP_TENANTS`" workflow working while a suspension made in the table survives restarts. |
+| — | `platform.tenants.source=file` keeps the legacy lists as the whole registry | Local development and the test profile never touch the control schema. |
+
+**Verified:** 450 existing + 42 new unit tests pass (492, 6 skipped = the opt-in PostgreSQL test); `TenantRegistryPostgresTest` (6 tests, real PostgreSQL 16) passes, including a full tenant migration (≥ 74 migrations) through the registry; the whole application started on PostgreSQL with two tenants, routed requests by `Origin` to the right schema, reached a third tenant added to the table at run time within the cache time, and answered 403 for it once suspended. A real boot also found one defect the unit tests could not (a missing `@Autowired` on the registry's constructor), now fixed.
+
+**Not covered by phase 1 (still true, scheduled):** the `X-TENANT-ID` and token-claim sources only act on authenticated requests, so they could not be exercised without Keycloak (unit tests cover the logic); `@Scheduled` jobs still run in the default tenant only; `TenantFrontendUrl` is still keyed by the legacy list.
+
 **Acceptance.** The app boots with the registry and behaves exactly as before for both tenants; adding a registry row and calling `registry.refresh()` makes a third tenant resolvable without a restart; an unknown or `SUSPENDED` host is refused; requests cannot choose a schema through any header.
 **Tests.** Unit: registry cache/refresh, resolver refusal. Integration (local Postgres): two schemas isolated; pool bounded; Flyway runs per READY row. Regression: existing unit suite (`mvn test -Dtest='!VyoogPmsApplicationTests'`).
 **Rollback.** Switch `platform.tenants.source` to `file` to use the old properties; revert V75 is not needed (additive).
