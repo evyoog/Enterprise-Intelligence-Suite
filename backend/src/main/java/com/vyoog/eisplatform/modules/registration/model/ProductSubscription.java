@@ -18,10 +18,18 @@ import java.time.Instant;
  */
 @Entity
 @Table(name = "product_subscription")
-@EntityListeners(AuditingEntityListener.class)
+@EntityListeners({AuditingEntityListener.class, com.vyoog.eisplatform.modules.toolsync.tracking.ToolSyncListener.class})
 @Getter
 @Setter
-public class ProductSubscription {
+public class ProductSubscription implements com.vyoog.eisplatform.modules.toolsync.tracking.ToolSyncAggregate {
+
+    /** REQ-INT-003: per-aggregate version that only goes up (column sync_version, migration V029); see ToolSyncListener. */
+    @Column(name = "sync_version", nullable = false)
+    private long syncVersion = 1;
+
+    /** The sync_version this row had when it was loaded or last written; never saved. See ToolSyncListener. */
+    @jakarta.persistence.Transient
+    private Long loadedSyncVersion;
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

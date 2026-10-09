@@ -110,7 +110,9 @@ class RenewalAndRemindersTest {
         Long id = subscriptionService.subscribeFromCart(owner.getId(), plan.getProduct().getId(), plan.getId());
         ProductSubscription s = subscriptionRepository.findById(id).orElseThrow();
         assertThat(s.isAutoRenew()).isTrue();
-        assertThat(Duration.between(s.getStartedAt(), s.getExpiresAt())).isEqualTo(Duration.ofDays(30));
+        // BR-SUB-010: the end is 23:59:00.000 (+05:30) on the last day of the term, never the arbitrary moment 30 days after the start
+        assertThat(s.getExpiresAt()).isEqualTo(SubscriptionClock.endOfDay(s.getStartedAt().plus(Duration.ofDays(30))));
+        assertThat(SubscriptionClock.format(s.getExpiresAt())).endsWith("T23:59:00.000+05:30");
     }
 
     @Test
@@ -129,7 +131,8 @@ class RenewalAndRemindersTest {
         assertThat(renewalService.renewDue()).isGreaterThanOrEqualTo(1);
         ProductSubscription renewed = subscriptionRepository.findById(id).orElseThrow();
         assertThat(renewed.getStatus()).isEqualTo(SubscriptionStatus.ACTIVE);
-        assertThat(renewed.getExpiresAt()).isEqualTo(oldRenewal.plus(30, ChronoUnit.DAYS));
+        assertThat(renewed.getExpiresAt()).isEqualTo(SubscriptionClock.endOfDay(oldRenewal.plus(30, ChronoUnit.DAYS)));
+        assertThat(SubscriptionClock.format(renewed.getExpiresAt())).endsWith("T23:59:00.000+05:30");
         assertThat(invoiceRepository.findBySubscriptionIdOrderByIssuedAtDescIdDesc(id)).hasSize(1);
         assertThat(outboxEventRepository.findByAggregateTypeAndAggregateIdOrderByIdAsc("Subscription", id.toString()))
             .extracting(e -> e.getEventType()).contains("SubscriptionRenewed");
@@ -138,7 +141,8 @@ class RenewalAndRemindersTest {
 
         // renewed once per term: running again does nothing for it
         renewalService.renewDue();
-        assertThat(subscriptionRepository.findById(id).orElseThrow().getExpiresAt()).isEqualTo(oldRenewal.plus(30, ChronoUnit.DAYS));
+        assertThat(subscriptionRepository.findById(id).orElseThrow().getExpiresAt())
+            .isEqualTo(SubscriptionClock.endOfDay(oldRenewal.plus(30, ChronoUnit.DAYS)));
     }
 
     @Test

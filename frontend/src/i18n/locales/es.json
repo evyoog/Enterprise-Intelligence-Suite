@@ -1412,6 +1412,59 @@
       "inCatalog": "En el catálogo",
       "explore": "Gestionar aplicaciones",
       "editLabel": "Editar {{name}}"
+    },
+    "toolSync": {
+      "tabsLabel": "Integraciones",
+      "tabEvents": "Eventos de la plataforma",
+      "tabToolSync": "Sincronización con herramientas",
+      "loadError": "No se pudo cargar el estado de la sincronización.",
+      "retryLoad": "Reintentar",
+      "actionError": "No se pudo realizar la acción.",
+      "noTools": "Todavía no hay ninguna herramienta conectada.",
+      "noTenants": "Ninguna organización se ha configurado todavía en esta herramienta.",
+      "deliveries": "Mensajes a las herramientas",
+      "caption": "{{count}} mensajes",
+      "emptyDeliveries": "Ningún mensaje coincide con este filtro.",
+      "pause": "Pausar",
+      "resume": "Reanudar",
+      "pauseTool": "Pausar {{tool}}",
+      "resumeTool": "Reanudar {{tool}}",
+      "start": "Iniciar",
+      "resync": "Resincronizar",
+      "reconcile": "Conciliar",
+      "replay": "Reenviar",
+      "resyncOrg": "Iniciar o resincronizar {{org}} en {{tool}}",
+      "reconcileOrg": "Conciliar {{org}} con {{tool}}",
+      "retryDelivery": "Reintentar el mensaje {{id}}",
+      "replayDelivery": "Reenviar el mensaje {{id}}",
+      "reconcileTitle": "Conciliación con {{tool}}",
+      "inSync": "La herramienta tiene exactamente lo mismo que la plataforma.",
+      "driftResent_one": "Se encontraron diferencias; se volvió a enviar {{count}} mensaje.",
+      "driftResent_other": "Se encontraron diferencias; se volvieron a enviar {{count}} mensajes.",
+      "connector": {
+        "ACTIVE": "Activa",
+        "PAUSED": "En pausa"
+      },
+      "tenant": {
+        "PENDING": "Configurando",
+        "READY": "Lista",
+        "FAILED": "Fallida"
+      },
+      "col": {
+        "organization": "Organización",
+        "tenant": "Inquilino",
+        "schema": "Esquema",
+        "lastDelivered": "Última entrega",
+        "waiting": "En espera",
+        "failed": "Fallidos",
+        "lastError": "Último error",
+        "actions": "Acciones",
+        "created": "Creado",
+        "tool": "Herramienta",
+        "object": "Objeto",
+        "platform": "Plataforma",
+        "resent": "Reenviados"
+      }
     }
   },
   "checkout": {

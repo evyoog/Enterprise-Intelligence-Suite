@@ -40,6 +40,8 @@ public class OrgHierarchyService {
     static final List<String> DEFAULT_LEVELS = List.of(
         "ORGANIZATION", "DIVISION", "BUSINESS_UNIT", "DEPARTMENT", "LOCATION", "COST_CENTER", "TEAM");
     static final String ROOT_TYPE = "ORGANIZATION";
+    /** The message of the rule "no cycles"; the MCP server maps it to the contract's reason {@code CYCLE}. */
+    public static final String CYCLE_MESSAGE = "A node cannot be moved under itself or one of its descendants";
     static final int MAX_IMPORT_ROWS = 1000;
     static final int MAX_IMPORT_BYTES = 1_000_000;
     static final int MAX_LEVELS = 20;
@@ -131,19 +133,35 @@ public class OrgHierarchyService {
     // ----------------------------------------------------------------- write
 
     public NodeDto create(Long customerId, CreateNodeRequest request) {
-        Long orgId = organizationSelfService.requireOrganizationManagement(customerId);
+        return createIn(organizationSelfService.requireOrganizationManagement(customerId), customerId, null, request);
+    }
+
+    /** REQ-INT-003: a tool creating a node over the platform's MCP server. Same rules as {@link #create}; no person acts, the tool is the actor. */
+    public NodeDto createAsTool(Long orgId, String tool, CreateNodeRequest request) {
+        return createIn(orgId, null, tool, request);
+    }
+
+    private NodeDto createIn(Long orgId, Long customerId, String tool, CreateNodeRequest request) {
         ensureInitialised(orgId);
         if (request.parentId() == null) {
             throw new IllegalArgumentException("A node must be created under a parent; the organization already has its root");
         }
         OrgNode node = createNode(orgId, request.parentId(), request.name(), request.type(), request.code(),
             request.description(), request.sortOrder(), levelRanks(orgId), nodesById(orgId));
-        audit("ORG_NODE_CREATED", customerId, orgId, node, "Created node " + node.getName() + " (" + node.getNodeType() + ")");
+        audit("ORG_NODE_CREATED", customerId, tool, orgId, node, "Created node " + node.getName() + " (" + node.getNodeType() + ")");
         return dto(orgId, node);
     }
 
     public NodeDto update(Long customerId, Long nodeId, UpdateNodeRequest request) {
-        Long orgId = organizationSelfService.requireOrganizationManagement(customerId);
+        return updateIn(organizationSelfService.requireOrganizationManagement(customerId), customerId, null, nodeId, request);
+    }
+
+    /** REQ-INT-003: a tool updating a node. See {@link #createAsTool}. */
+    public NodeDto updateAsTool(Long orgId, String tool, Long nodeId, UpdateNodeRequest request) {
+        return updateIn(orgId, null, tool, nodeId, request);
+    }
+
+    private NodeDto updateIn(Long orgId, Long customerId, String tool, Long nodeId, UpdateNodeRequest request) {
         ensureInitialised(orgId);
         OrgNode node = requireNode(orgId, nodeId);
         Map<Long, OrgNode> byId = nodesById(orgId);
@@ -197,12 +215,20 @@ public class OrgHierarchyService {
         node = nodeRepository.save(node);
         String action = request.active() != null && request.active() != wasActive
             ? (request.active() ? "ORG_NODE_ACTIVATED" : "ORG_NODE_DEACTIVATED") : "ORG_NODE_UPDATED";
-        audit(action, customerId, orgId, node, "Updated node " + node.getName());
+        audit(action, customerId, tool, orgId, node, "Updated node " + node.getName());
         return dto(orgId, node);
     }
 
     public NodeDto move(Long customerId, Long nodeId, Long newParentId) {
-        Long orgId = organizationSelfService.requireOrganizationManagement(customerId);
+        return moveIn(organizationSelfService.requireOrganizationManagement(customerId), customerId, null, nodeId, newParentId);
+    }
+
+    /** REQ-INT-003: a tool moving a node. See {@link #createAsTool}. */
+    public NodeDto moveAsTool(Long orgId, String tool, Long nodeId, Long newParentId) {
+        return moveIn(orgId, null, tool, nodeId, newParentId);
+    }
+
+    private NodeDto moveIn(Long orgId, Long customerId, String tool, Long nodeId, Long newParentId) {
         ensureInitialised(orgId);
         OrgNode node = requireNode(orgId, nodeId);
         Map<Long, OrgNode> byId = nodesById(orgId);
@@ -221,7 +247,7 @@ public class OrgHierarchyService {
         }
         for (OrgNode n = parent; n != null; n = n.getParentId() == null ? null : byId.get(n.getParentId())) {
             if (n.getId().equals(nodeId)) {
-                throw new IllegalArgumentException("A node cannot be moved under itself or one of its descendants");
+                throw new IllegalArgumentException(CYCLE_MESSAGE);
             }
         }
         Map<String, Integer> ranks = levelRanks(orgId);
@@ -242,13 +268,21 @@ public class OrgHierarchyService {
         node.setParentId(newParentId);
         node.setUpdatedAt(Instant.now());
         node = nodeRepository.save(node);
-        audit("ORG_NODE_MOVED", customerId, orgId, node,
+        audit("ORG_NODE_MOVED", customerId, tool, orgId, node,
             "Moved node " + node.getName() + " from " + nameOf(byId, oldParent) + " to " + parent.getName());
         return dto(orgId, node);
     }
 
     public void delete(Long customerId, Long nodeId) {
-        Long orgId = organizationSelfService.requireOrganizationManagement(customerId);
+        deleteIn(organizationSelfService.requireOrganizationManagement(customerId), customerId, null, nodeId);
+    }
+
+    /** REQ-INT-003: a tool deleting a node. See {@link #createAsTool}. */
+    public void deleteAsTool(Long orgId, String tool, Long nodeId) {
+        deleteIn(orgId, null, tool, nodeId);
+    }
+
+    private void deleteIn(Long orgId, Long customerId, String tool, Long nodeId) {
         OrgNode node = requireNode(orgId, nodeId);
         if (node.getParentId() == null) {
             throw new IllegalArgumentException("The root of the organization cannot be deleted");
@@ -263,7 +297,7 @@ public class OrgHierarchyService {
         }
         historyRepository.deleteByOrgNodeId(nodeId);
         nodeRepository.delete(node);
-        audit("ORG_NODE_DELETED", customerId, orgId, node, "Deleted node " + node.getName());
+        audit("ORG_NODE_DELETED", customerId, tool, orgId, node, "Deleted node " + node.getName());
     }
 
     public NodeDetailDto placeMember(Long customerId, Long nodeId, Long memberId) {
@@ -422,6 +456,14 @@ public class OrgHierarchyService {
         node = nodeRepository.save(node);
         byId.put(node.getId(), node);
         return node;
+    }
+
+    /**
+     * REQ-INT-003: gives an organization its root node and default level types if it has never opened its hierarchy, so that a tool
+     * connected to the organization receives the root and can create nodes under it. Does nothing when they exist.
+     */
+    public void ensureInitialisedFor(Long orgId) {
+        ensureInitialised(orgId);
     }
 
     private void ensureInitialised(Long orgId) {
@@ -583,7 +625,13 @@ public class OrgHierarchyService {
     }
 
     private void audit(String action, Long customerId, Long orgId, OrgNode node, String detail) {
-        auditService.recordSuccess(action, null, customerId, null, "OrgNode", String.valueOf(node.getId()), orgId, detail);
+        audit(action, customerId, null, orgId, node, detail);
+    }
+
+    /** {@code tool} names the system actor when no person acts (a tool call over MCP); it is shown where an actor's e-mail would be. */
+    private void audit(String action, Long customerId, String tool, Long orgId, OrgNode node, String detail) {
+        auditService.recordSuccess(action, null, customerId, tool == null ? null : "system:" + tool, "OrgNode", String.valueOf(node.getId()), orgId,
+            tool == null ? detail : detail + " (requested by tool " + tool + ")");
     }
 
     /** Minimal RFC 4180 reader: quoted fields, doubled quotes, CRLF, BOM; blank lines are skipped. */

@@ -2,7 +2,7 @@ import { useCallback, useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import {
   Alert, Box, Button, Chip, Dialog, DialogActions, DialogContent, DialogTitle, MenuItem, Pagination, Paper, Skeleton,
-  Snackbar, Table, TableBody, TableCell, TableHead, TableRow, TextField, Typography,
+  Snackbar, Tab, Table, TableBody, TableCell, TableHead, TableRow, Tabs, TextField, Typography,
 } from '@mui/material'
 import { AlertTriangle, CheckCircle2, Clock, Radio, RotateCcw } from 'lucide-react'
 import { ApiError } from '../../api/client'
@@ -10,6 +10,7 @@ import { adminEventsApi, type EventStatus, type PlatformEventDetail, type Platfo
 import { PageHeader } from '../../components/layout/PageHeader'
 import { StatusTile } from '../../components/settings/SettingsSection'
 import { useLocalePreference } from '../../theming/LocalePreferenceProvider'
+import { ToolSyncPanel } from './ToolSyncPanel'
 
 const STATUS_COLOR: Record<EventStatus, 'info' | 'success' | 'error'> = { PENDING: 'info', DELIVERED: 'success', FAILED: 'error' }
 
@@ -24,7 +25,8 @@ function prettyPayload(payload: string) {
 /**
  * "/admin/integrations/events" — REQ-INT-002.6 (C62), `MANAGE_INTEGRATIONS`:
  * the platform's outbox events with filters, a detail dialog and Retry for
- * FAILED events.
+ * FAILED events; and (REQ-INT-003) the "Tool sync" tab, the monitor of what
+ * is sent to the connected tools.
  */
 export function AdminPlatformEventsPage() {
   const { t } = useTranslation()
@@ -40,6 +42,7 @@ export function AdminPlatformEventsPage() {
   const [detail, setDetail] = useState<PlatformEventDetail | null>(null)
   const [toast, setToast] = useState<string | null>(null)
   const [busy, setBusy] = useState(false)
+  const [tab, setTab] = useState<'events' | 'toolSync'>('events')
 
   const load = useCallback(() => adminEventsApi.list({ type, status, from, to, page })
     .then((r) => { setResult(r); setError(null) })
@@ -74,6 +77,13 @@ export function AdminPlatformEventsPage() {
     <>
       <PageHeader icon={Radio} accent="cyan" area="integrations" title={t('admin.events.title')} subtitle={t('admin.events.subtitle')} />
 
+      <Tabs value={tab} onChange={(_, v) => setTab(v)} aria-label={t('admin.toolSync.tabsLabel')} sx={{ mb: 3, borderBottom: 1, borderColor: 'divider' }}>
+        <Tab value="events" label={t('admin.toolSync.tabEvents')} id="events-tab" aria-controls="events-panel" />
+        <Tab value="toolSync" label={t('admin.toolSync.tabToolSync')} id="toolsync-tab" aria-controls="toolsync-panel" />
+      </Tabs>
+
+      {tab === 'toolSync' && <div role="tabpanel" id="toolsync-panel" aria-labelledby="toolsync-tab"><ToolSyncPanel /></div>}
+      {tab === 'events' && <div role="tabpanel" id="events-panel" aria-labelledby="events-tab">
       <Box sx={{ display: 'grid', gap: 2, mb: 3, gridTemplateColumns: { xs: '1fr', sm: 'repeat(3, minmax(0, 1fr))' } }}>
         {tile('PENDING', Clock, 'blue')}
         {tile('DELIVERED', CheckCircle2, 'emerald')}
@@ -195,6 +205,7 @@ export function AdminPlatformEventsPage() {
       </Dialog>
 
       <Snackbar open={Boolean(toast)} autoHideDuration={4000} onClose={() => setToast(null)} message={toast ?? ''} />
+      </div>}
     </>
   )
 }

@@ -24,9 +24,17 @@
         <lombok.version>1.18.38</lombok.version>
         <springdoc.version>2.3.0</springdoc.version>
         <archunit.version>1.2.1</archunit.version>
+        <spring-ai.version>1.1.8</spring-ai.version>
     </properties>
 
     <dependencies>
+        <!-- Platform <-> tool synchronization (REQ-INT-003): MCP server (/api/mcp) and client, and the @Tool annotations.
+             Same versions as the Macro Planner. The Spring AI Boot starters need Boot 3.4+, so the server is wired by hand. -->
+        <dependency>
+            <groupId>org.springframework.ai</groupId>
+            <artifactId>spring-ai-mcp</artifactId>
+            <version>${spring-ai.version}</version>
+        </dependency>
         <!-- Spring Boot Core -->
         <dependency>
             <groupId>org.springframework.boot</groupId>

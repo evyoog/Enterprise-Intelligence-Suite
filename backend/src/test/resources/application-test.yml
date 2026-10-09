@@ -60,6 +60,9 @@ app:
   events:
     dispatcher:
       enabled: false
+    # REQ-INT-003: tests drive ToolDeliveryService directly.
+    tool-delivery:
+      enabled: false
   # REQ-INT-001: the whole suite shares one client IP and the jwt() test
   # subject; RateLimitFilterTest sets its own small limits.
   # REQ-SUB-004: tests call RenewalService/RenewalReminderService directly.

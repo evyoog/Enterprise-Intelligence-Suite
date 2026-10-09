@@ -12,6 +12,9 @@ public interface OrganizationMemberRepository extends JpaRepository<Organization
 
     List<OrganizationMember> findByOrganizationId(Long organizationId);
 
+    /** Every membership of a person (REQ-INT-003: the organizations whose tools must hear that the person changed). */
+    List<OrganizationMember> findByCustomerId(Long customerId);
+
     long countByOrganizationIdAndStatus(Long organizationId, MembershipStatus status);
 
     /** Phase 3 (2026.3.3): used to refuse demoting the last active ORG_ADMIN

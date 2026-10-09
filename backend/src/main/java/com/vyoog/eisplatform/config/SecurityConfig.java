@@ -251,6 +251,10 @@ public class SecurityConfig {
                 .requestMatchers(HttpMethod.POST, "/invitations/*/account", "/invitations/*/decline").permitAll()
                 .requestMatchers("/me/**").authenticated()
                 .requestMatchers("/organization/me/**").authenticated()
+                // REQ-INT-003: the MCP server for connected tools. A valid bearer token of a tool's service client is required
+                // (also by the default rule); WHICH tool may do WHAT for which organization is decided per call by ToolCallGuard,
+                // never by a URL pattern.
+                .requestMatchers("/mcp", "/mcp/**").authenticated()
                 .requestMatchers("/actuator/health", "/actuator/info").permitAll()
                 .requestMatchers("/swagger-ui/**", "/v3/api-docs/**").permitAll()
                 .anyRequest().authenticated()

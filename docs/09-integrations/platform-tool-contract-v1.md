@@ -1,6 +1,6 @@
 # Platform ↔ tool contract — version 1
 
-**Status:** Approved 2026-10-09 (with [REQ-INT-003](../02-requirements/FRD/platform-tool-sync/requirement.md)). Not implemented.
+**Status:** Approved 2026-10-09 (with [REQ-INT-003](../02-requirements/FRD/platform-tool-sync/requirement.md)). Implemented by the platform (phase 7, 2026-10-09) and by the Thittam Macro Planner as a tool (phases 1–6); clarifications 4.1 and 5.2 and the two reason codes in section 6 were added in phase 7 without changing the version.
 **Audience:** engineers and agents implementing the platform side or a tool side. Copy this file unchanged into each tool repository (`docs/…/platform-tool-contract-v1.md`); a change here is a contract change.
 **Transport:** MCP (JSON-RPC 2.0 over Streamable HTTP, protocol 2025-06-18) at `/api/mcp` on both sides. MCP carries the calls; delivery guarantees come from the platform (outbox, retries, idempotency, reconcile) — see the [phase plan](platform-tool-sync-plan.md).
 
@@ -194,6 +194,11 @@ Every call: the MCP `arguments` are an object; every result is the **result obje
 | `get_state_digest` | `tenantRef`, `aggregateTypes[]` | Per type: `{count, hash}` where hash = SHA-256 over the sorted list of `id:version` lines joined by `\n`. |
 | `list_aggregate_versions` | `tenantRef`, `aggregateType`, `afterId?`, `limit?` (≤ 1000) | Pairs `{id, version}` ordered by id, for reconcile. |
 
+### 4.1 Results of the reconcile tools (clarification, additive — contract version stays 1)
+- `get_state_digest` answers `{ "status": "applied", "data": { "digests": { "<aggregateType>": { "count": 12, "hash": "<64 lower-case hex>" } } } }` for each requested type (an unknown type: count 0 and the hash of the empty string). Hash = SHA-256 of the lines `id:version`, **sorted by id as text** and joined by a line feed, no trailing line feed.
+- `list_aggregate_versions` answers `{ "status": "applied", "data": { "versions": [ { "id": "4812", "version": 17 } ] } }`, ordered by id as text, ids greater than `afterId`, at most `limit` (default and maximum 1000). A page shorter than `limit` is the last.
+- What a tool holds under each type: Organization → the organization id; OrgNode → node ids (tombstones are not listed); User and Membership → `sub`; Subscription → the subscription id; UserAccess → `<sub>:<productCode>`.
+
 ## 5. Tools a tool calls on the platform (served by the platform)
 
 Every call carries `idempotencyKey` (UUID chosen by the caller, stored by the platform with the result for at least 7 days) and `tenantRef`. The platform answers a repeat with the **first** result.
@@ -215,6 +220,12 @@ A tool-to-platform call that returns `applied` or `duplicate` carries the new st
     { "eventType": "MembershipChanged", "aggregateType": "Membership", "aggregateId": "36401029-…", "version": 2, "payload": { /* section 3.4 */ } } ] } }
 ```
 Each entry is an envelope without `contractVersion`, `eventId`, `occurredAt` and `tenantRef` (the caller knows them). The caller applies each entry exactly as it would apply the same message delivered by the platform (section 8), so the fan-out of the same change that follows is a `duplicate`. A caller ignores an `aggregateType` it does not know. For a delete the entry is `OrgNodeDeleted` with payload `{ "id": … }`. A `rejected` result carries no snapshots, except `STALE_VERSION`, which may carry the current one.
+
+### 5.2 Notes on the platform's answers (clarification, additive)
+- `get_entitlement` is answered for any tenant the platform knows, even when the tool holds no active subscription: the **answer** carries `NO_SUBSCRIPTION` or `SUBSCRIPTION_ENDED`; it is not refused with `NO_ACTIVE_SUBSCRIPTION_FOR_TENANT`. `productCode` must be the calling tool's own. `endsAt` is omitted for a subscription without an end.
+- `idempotencyKey` is required for `report_user_created`, `update_user_profile` and the four node tools; it is optional for `report_provisioning_result` (repeating it changes nothing). The platform scopes the key to the calling client.
+- Node tools act as a **system principal**: no person is the actor, and the audit entry names the tool.
+- A subscription with no end date in the platform is sent with `endsAt` = `2099-12-31T23:59:00.000+05:30` so the field is always present.
 
 ## 6. Result object (every tool)
 
@@ -239,7 +250,7 @@ Each entry is an envelope without `contractVersion`, `eventId`, `occurredAt` and
 | `retry` | Temporary problem (database busy, dependency unavailable). | Retries with backoff. |
 | `rejected` | Permanent (invalid, not allowed, unknown). | Stops and records the reason. |
 
-Reason codes: `UNSUPPORTED_CONTRACT_VERSION`, `UNKNOWN_TENANT`, `TENANT_NOT_READY`, `UNKNOWN_DATASOURCE_REF`, `NOT_ALLOWED_CLIENT`, `NO_ACTIVE_SUBSCRIPTION_FOR_TENANT`, `INVALID_PAYLOAD`, `CYCLE`, `NODE_IN_USE`, `STALE_VERSION`, `EMAIL_NOT_VERIFIED`, `INTERNAL`. An unexpected exception is `retry` with `INTERNAL` until the retry limit.
+Reason codes: `SEAT_LIMIT_EXCEEDED` (the organization has no free seat), `NOT_A_MEMBER` (the person is not a member of the organization), `UNSUPPORTED_CONTRACT_VERSION`, `UNKNOWN_TENANT`, `TENANT_NOT_READY`, `UNKNOWN_DATASOURCE_REF`, `NOT_ALLOWED_CLIENT`, `NO_ACTIVE_SUBSCRIPTION_FOR_TENANT`, `INVALID_PAYLOAD`, `CYCLE`, `NODE_IN_USE`, `STALE_VERSION`, `EMAIL_NOT_VERIFIED`, `INTERNAL`. An unexpected exception is `retry` with `INTERNAL` until the retry limit.
 
 Retry policy (set in each tool's connection file, defaults): up to 8 attempts, exponential backoff from 5 s to 15 min.
 

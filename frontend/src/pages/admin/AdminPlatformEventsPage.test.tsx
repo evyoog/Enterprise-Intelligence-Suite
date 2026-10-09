@@ -10,6 +10,8 @@ const list = vi.fn()
 const types = vi.fn()
 const get = vi.fn()
 const retry = vi.fn()
+const toolOverview = vi.fn()
+const toolDeliveries = vi.fn()
 
 vi.mock('../../api/eventsApi', () => ({
   adminEventsApi: {
@@ -25,6 +27,10 @@ const failed = {
   occurredAt: '2026-10-03T09:00:00Z', status: 'FAILED' as const, attempts: 10, nextAttemptAt: null, lastError: 'provisioning: timeout',
 }
 const delivered = { ...failed, id: 8, eventId: 'e-8', eventType: 'InvoiceGenerated', aggregateType: 'Invoice', aggregateId: '3', status: 'DELIVERED' as const, attempts: 1, lastError: null }
+
+vi.mock('../../api/toolSyncApi', () => ({
+  toolSyncApi: { overview: () => toolOverview(), deliveries: (f: unknown) => toolDeliveries(f) },
+}))
 
 describe('AdminPlatformEventsPage', () => {
   beforeEach(() => {
@@ -62,6 +68,18 @@ describe('AdminPlatformEventsPage', () => {
     expect(await screen.findByRole('dialog', { name: 'InvoiceGenerated' })).toBeInTheDocument()
     expect(screen.getByText(/"invoiceId": 3/)).toBeInTheDocument()
     expect(screen.getByText(/provisioning —/)).toBeInTheDocument()
+  })
+
+  it('has a Tool sync tab beside the events', async () => {
+    toolOverview.mockResolvedValue([])
+    toolDeliveries.mockResolvedValue({ items: [], totalElements: 0, page: 0, size: 20 })
+    renderWithProviders(<AdminPlatformEventsPage />)
+    await screen.findByText('Subscription #42')
+    await userEvent.setup().click(screen.getByRole('tab', { name: 'Tool sync' }))
+    expect(await screen.findByText('No tool is connected yet.')).toBeInTheDocument()
+    expect(screen.queryByText('Subscription #42')).not.toBeInTheDocument()
+    await userEvent.setup().click(screen.getByRole('tab', { name: 'Platform events' }))
+    expect(await screen.findByText('Subscription #42')).toBeInTheDocument()
   })
 
   it('has no detectable a11y violations', async () => {

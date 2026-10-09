@@ -75,6 +75,8 @@ public class SubscriptionService {
         payload.put("ownerOrganizationId", subscription.getOwnerOrganizationId());
         payload.put("status", subscription.getStatus() == null ? null : subscription.getStatus().name());
         payload.put("expiresAt", subscription.getExpiresAt() == null ? null : subscription.getExpiresAt().toString());
+        // REQ-INT-003 / BR-SUB-010: the end as the platform ↔ tool contract writes it (end of the last day, +05:30)
+        payload.put("endsAt", SubscriptionClock.format(subscription.getExpiresAt()));
         outboxService.publish(eventType, PlatformEventTypes.AGGREGATE_SUBSCRIPTION, subscription.getId(), payload);
     }
 
@@ -337,11 +339,12 @@ public class SubscriptionService {
     private Instant firstRenewalDate(Long planId, Instant start) {
         BillingPeriod period = planId == null ? null
             : productPlanRepository.findById(planId).map(ProductPlan::getBillingPeriod).orElse(null);
+        // BR-SUB-010: the end is the end of the last day (23:59:00.000 +05:30), see SubscriptionClock
         if (period == BillingPeriod.MONTHLY) {
-            return start.plus(30, ChronoUnit.DAYS);
+            return SubscriptionClock.endOfDay(start.plus(30, ChronoUnit.DAYS));
         }
         if (period == BillingPeriod.YEARLY) {
-            return start.plus(365, ChronoUnit.DAYS);
+            return SubscriptionClock.endOfDay(start.plus(365, ChronoUnit.DAYS));
         }
         return null;
     }
@@ -395,16 +398,17 @@ public class SubscriptionService {
     private Optional<Instant> nextExpiry(ProductSubscription subscription, Instant from) {
         BillingPeriod period = subscription.getPlanId() == null ? null
             : productPlanRepository.findById(subscription.getPlanId()).map(ProductPlan::getBillingPeriod).orElse(null);
+        // BR-SUB-010: every end is the end of its last day in India (SubscriptionClock)
         if (period == BillingPeriod.MONTHLY) {
-            return Optional.of(from.plus(30, ChronoUnit.DAYS));
+            return Optional.of(SubscriptionClock.endOfDay(from.plus(30, ChronoUnit.DAYS)));
         }
         if (period == BillingPeriod.YEARLY) {
-            return Optional.of(from.plus(365, ChronoUnit.DAYS));
+            return Optional.of(SubscriptionClock.endOfDay(from.plus(365, ChronoUnit.DAYS)));
         }
         // No plan, or a ONE_TIME plan: nothing recurring to renew, unless the
         // subscription already carries an expiry of its own (set some other
         // way) — extend that by the same 30-day default a monthly plan uses.
-        return subscription.getExpiresAt() == null ? Optional.empty() : Optional.of(from.plus(30, ChronoUnit.DAYS));
+        return subscription.getExpiresAt() == null ? Optional.empty() : Optional.of(SubscriptionClock.endOfDay(from.plus(30, ChronoUnit.DAYS)));
     }
 
     /**

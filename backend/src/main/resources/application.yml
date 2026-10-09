@@ -183,6 +183,30 @@ app:
       initial-delay-seconds: 30
       max-delay-seconds: 21600
     retention-days: 30
+    # REQ-INT-003: sending changes to the connected tools. Off = messages are still
+    # prepared and kept (nothing is lost), only the sending stops.
+    tool-delivery:
+      enabled: ${TOOL_DELIVERY_ENABLED:true}
+      interval-ms: 3000
+  # REQ-INT-003 platform <-> tool synchronization: how the platform calls tools (contract v1).
+  # The client secret has NO default: it comes from the environment (SYNC_CLIENT_SECRET),
+  # see deployment/keycloak-sync-clients.md. Without it nothing is sent (deliveries wait).
+  sync:
+    client-id: ${SYNC_CLIENT_ID:eis-sync}
+    client-secret: ${SYNC_CLIENT_SECRET:}
+    token-url: ${SYNC_TOKEN_URL:${KEYCLOAK_TOKEN_URI:https://user.evyoog.com/realms/eVyoog/protocol/openid-connect/token}}
+    timeout-seconds: 10
+    retry:                      # contract v1 defaults: 8 attempts, 5 s doubling to 15 min
+      max-attempts: 8
+      initial-delay-seconds: 5
+      max-delay-seconds: 900
+    batch-size: 100
+    default-datasource-ref: ${SYNC_DEFAULT_DATASOURCE_REF:default}
+    idempotency-retention-days: 7
+    maintenance-cron: "0 15 3 * * *"
+    reconcile:                  # off until the tools answer get_state_digest (phase 8)
+      enabled: ${SYNC_RECONCILE_ENABLED:false}
+      cron: "0 30 2 * * *"
   # REQ-INT-001 (C61): requests per minute, fixed windows, per backend
   # instance. Engineering defaults until the FRD's open question 2 is answered.
   rate-limit:

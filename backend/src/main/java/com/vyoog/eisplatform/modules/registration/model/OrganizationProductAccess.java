@@ -17,10 +17,19 @@ import java.time.Instant;
  * and driven by the backend catalog, not hardcoded here.
  */
 @Entity
+@EntityListeners(com.vyoog.eisplatform.modules.toolsync.tracking.ToolSyncListener.class)
 @Table(name = "organization_product_access")
 @Getter
 @Setter
-public class OrganizationProductAccess {
+public class OrganizationProductAccess implements com.vyoog.eisplatform.modules.toolsync.tracking.ToolSyncAggregate {
+
+    /** REQ-INT-003: per-aggregate version that only goes up (column sync_version, migration V029); see ToolSyncListener. */
+    @Column(name = "sync_version", nullable = false)
+    private long syncVersion = 1;
+
+    /** The sync_version this row had when it was loaded or last written; never saved. See ToolSyncListener. */
+    @jakarta.persistence.Transient
+    private Long loadedSyncVersion;
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

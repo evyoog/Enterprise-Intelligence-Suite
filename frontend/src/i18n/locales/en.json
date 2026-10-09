@@ -1412,6 +1412,59 @@
       "inCatalog": "In catalog",
       "explore": "Manage apps",
       "editLabel": "Edit {{name}}"
+    },
+    "toolSync": {
+      "tabsLabel": "Integrations",
+      "tabEvents": "Platform events",
+      "tabToolSync": "Tool sync",
+      "loadError": "Could not load the tool sync status.",
+      "retryLoad": "Retry",
+      "actionError": "The action could not be done.",
+      "noTools": "No tool is connected yet.",
+      "noTenants": "No organization has been set up in this tool yet.",
+      "deliveries": "Messages to tools",
+      "caption": "{{count}} messages",
+      "emptyDeliveries": "No messages match this filter.",
+      "pause": "Pause",
+      "resume": "Resume",
+      "pauseTool": "Pause {{tool}}",
+      "resumeTool": "Resume {{tool}}",
+      "start": "Start",
+      "resync": "Resync",
+      "reconcile": "Reconcile",
+      "replay": "Replay",
+      "resyncOrg": "Start or resync {{org}} in {{tool}}",
+      "reconcileOrg": "Reconcile {{org}} with {{tool}}",
+      "retryDelivery": "Retry message {{id}}",
+      "replayDelivery": "Replay message {{id}}",
+      "reconcileTitle": "Reconcile with {{tool}}",
+      "inSync": "The tool holds exactly what the platform holds.",
+      "driftResent_one": "Differences found; {{count}} message was sent again.",
+      "driftResent_other": "Differences found; {{count}} messages were sent again.",
+      "connector": {
+        "ACTIVE": "Active",
+        "PAUSED": "Paused"
+      },
+      "tenant": {
+        "PENDING": "Setting up",
+        "READY": "Ready",
+        "FAILED": "Failed"
+      },
+      "col": {
+        "organization": "Organization",
+        "tenant": "Tenant",
+        "schema": "Schema",
+        "lastDelivered": "Last delivered",
+        "waiting": "Waiting",
+        "failed": "Failed",
+        "lastError": "Last error",
+        "actions": "Actions",
+        "created": "Created",
+        "tool": "Tool",
+        "object": "Object",
+        "platform": "Platform",
+        "resent": "Sent again"
+      }
     }
   },
   "checkout": {
