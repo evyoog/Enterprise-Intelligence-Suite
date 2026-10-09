@@ -21,8 +21,8 @@ A connected organization with a root node and one member. The backend test conte
 The rules are the hierarchy service's: duplicate sibling names are rejected, a move under a descendant is `CYCLE`, deleting a node with children is `NODE_IN_USE`, an older `expectedVersion` is `STALE_VERSION` with the current snapshot and nothing changes, a node of another organization cannot be touched. A delete answers the tombstone version (the node's version plus one) with an `OrgNodeDeleted` snapshot. The audit entry names the tool as the actor (no person). Every change also becomes the usual events and reaches the other tools. A profile change bumps the person's version; a stranger is `NOT_A_MEMBER`.
 
 ## Automated coverage
-- `.../toolsync/ToolInboundTest.aToolCreatesMovesAndDeletesNodesUnderThePlatformsOwnRules`, `.aToolCannotTouchANodeOfAnotherOrganization`, `.aProfileChangeBumpsTheVersionAndAStaleVersionIsRejectedWithTheCurrentSnapshot`
-- `.../toolsync/ToolSyncPublishingTest.aStaleCopySavedAgainNeverMakesTheVersionGoBack`
+- `.../toolsync/service/ToolInboundTest.aToolCreatesMovesAndDeletesNodesUnderThePlatformsOwnRules`, `.aToolCannotTouchANodeOfAnotherOrganization`, `.aProfileChangeBumpsTheVersionAndAStaleVersionIsRejectedWithTheCurrentSnapshot`
+- `.../toolsync/service/ToolSyncPublishingTest.aStaleCopySavedAgainNeverMakesTheVersionGoBack`
 
 ## Actual Result
 The automated tests passed on 2026-10-09 (`cd backend && mvn -B test`). Against a **real** Macro Planner (not the simulator) the same behaviour is checked in phase 8.

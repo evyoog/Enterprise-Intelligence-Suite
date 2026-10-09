@@ -1,4 +1,4 @@
-package com.vyoog.eisplatform.modules.toolsync;
+package com.vyoog.eisplatform.modules.toolsync.service;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;

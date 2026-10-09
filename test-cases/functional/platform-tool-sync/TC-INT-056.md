@@ -22,8 +22,8 @@ A tool connector with client `thittam-sync`; organizations with and without a su
 The refusals are results (not protocol errors): `NOT_ALLOWED_CLIENT`, `UNKNOWN_TENANT`, `NO_ACTIVE_SUBSCRIPTION_FOR_TENANT`, `TENANT_NOT_READY`. The correct call creates the customer (e-mail lower-cased) and an ACTIVE `MEMBER` membership with **no product access**, answers `data.snapshots` User and Membership with versions, and the repeat returns the first result without creating anything. An existing person is never merged by an unverified e-mail (`EMAIL_NOT_VERIFIED`), a verified one is linked by `sub`, another person's e-mail is `INVALID_PAYLOAD`, a full organization is `SEAT_LIMIT_EXCEEDED`, and a rejected call changes nothing. Without a token the endpoint answers 401. The eight tools are listed over real MCP and results come back as results.
 
 ## Automated coverage
-- `.../toolsync/ToolInboundTest` (`onlyAnActiveToolWithAnActiveSubscriptionAndAReadyTenantMayCall`, `aPersonRegisteredInTheToolBecomesACustomerAndAMemberWithNoProductAccessAndARepeatDoesNothingMore`, `aPersonIsNeverMergedByAnUnverifiedEmailButIsLinkedWhenTheEmailIsVerified`, `aFullOrganizationRefusesANewMemberAndAnInvalidCallChangesNothing`)
-- `.../toolsync/PlatformMcpProtocolTest` (4 tests, embedded Tomcat) and `PlatformMcpSecurityTest` (2 tests)
+- `.../toolsync/service/ToolInboundTest` (`onlyAnActiveToolWithAnActiveSubscriptionAndAReadyTenantMayCall`, `aPersonRegisteredInTheToolBecomesACustomerAndAMemberWithNoProductAccessAndARepeatDoesNothingMore`, `aPersonIsNeverMergedByAnUnverifiedEmailButIsLinkedWhenTheEmailIsVerified`, `aFullOrganizationRefusesANewMemberAndAnInvalidCallChangesNothing`)
+- `.../toolsync/service/PlatformMcpProtocolTest` (4 tests, embedded Tomcat) and `PlatformMcpSecurityTest` (2 tests)
 
 ## Actual Result
 The automated tests passed on 2026-10-09 (`cd backend && mvn -B test`). Against a **real** Macro Planner (not the simulator) the same behaviour is checked in phase 8.

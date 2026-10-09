@@ -1,4 +1,4 @@
-package com.vyoog.eisplatform.modules.toolsync;
+package com.vyoog.eisplatform.modules.toolsync.service;
 
 import com.vyoog.eisplatform.modules.orghierarchy.model.OrgNode;
 import com.vyoog.eisplatform.modules.registration.model.Customer;

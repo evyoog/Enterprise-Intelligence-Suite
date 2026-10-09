@@ -145,6 +145,27 @@ public class ToolReconcileService {
         return new Report(organizationId, connector.getProductCode(), true, null, reports);
     }
 
+    /** Reconciles every READY tenant of every ACTIVE tool and repairs what differs (the nightly job). Returns the reports of tenants that were not in sync. */
+    public List<Report> reconcileAllAndRepair() {
+        List<Report> drift = new ArrayList<>();
+        for (ToolConnector connector : connectors.findByStatus(com.vyoog.eisplatform.modules.toolsync.model.ConnectorStatus.ACTIVE)) {
+            for (TenantAppSchema t : tenants.findAll()) {
+                if (!t.getProductId().equals(connector.getProductId()) || t.getStatus() != TenantSchemaStatus.READY) {
+                    continue;
+                }
+                try {
+                    Report r = reconcile(t.getOrganizationId(), connector.getId(), true);
+                    if (!r.inSync()) {
+                        drift.add(r);
+                    }
+                } catch (RuntimeException e) {
+                    drift.add(new Report(t.getOrganizationId(), connector.getProductCode(), false, e.toString(), List.of()));
+                }
+            }
+        }
+        return drift;
+    }
+
     private Map<String, Long> toolVersions(ToolConnector connector, String tenantRef, String type) {
         Map<String, Long> held = new TreeMap<>();
         String after = null;

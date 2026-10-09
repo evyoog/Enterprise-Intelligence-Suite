@@ -22,8 +22,8 @@ Three organizations: SUSPENDED, CANCELLED and no subscription; one tool ACTIVE, 
 Only the organization with an ACTIVE or SUSPENDED subscription and a READY tenant is sent; the others get nothing. While paused nothing is sent and the change is kept as a waiting message; after Resume it is sent. A person without a Keycloak id, a membership of such a person, an individual's subscription and access to a product without a tool produce no message.
 
 ## Automated coverage
-- `.../toolsync/ToolDeliveryTest.aSuspendedSubscriptionStillGetsDataButACancelledOrMissingOneDoesNot`, `.aPausedToolKeepsItsMessagesPendingAndNothingIsLost`
-- `.../toolsync/ToolSyncPublishingTest` (`aPersonWithoutAKeycloakIdOrWithoutAMembershipIsNotPublished`, `anOrganizationSubscriptionIsPublishedAndAnIndividualsIsNot`, `accessToAProductThatHasNoToolIsNotPublished`, `aPausedToolStillGetsEventsSoNothingIsLostWhileItIsPaused`)
+- `.../toolsync/service/ToolDeliveryTest.aSuspendedSubscriptionStillGetsDataButACancelledOrMissingOneDoesNot`, `.aPausedToolKeepsItsMessagesPendingAndNothingIsLost`
+- `.../toolsync/service/ToolSyncPublishingTest` (`aPersonWithoutAKeycloakIdOrWithoutAMembershipIsNotPublished`, `anOrganizationSubscriptionIsPublishedAndAnIndividualsIsNot`, `accessToAProductThatHasNoToolIsNotPublished`, `aPausedToolStillGetsEventsSoNothingIsLostWhileItIsPaused`)
 
 ## Actual Result
 The automated tests passed on 2026-10-09 (`cd backend && mvn -B test`). Against a **real** Macro Planner (not the simulator) the same behaviour is checked in phase 8.

@@ -1,4 +1,4 @@
-package com.vyoog.eisplatform.modules.toolsync;
+package com.vyoog.eisplatform.modules.toolsync.service;
 
 import com.sun.net.httpserver.HttpServer;
 import com.vyoog.eisplatform.modules.toolsync.config.PlatformMcpServerConfig;

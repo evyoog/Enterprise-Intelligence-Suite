@@ -1,9 +1,5 @@
 package com.vyoog.eisplatform.modules.toolsync.job;
 
-import com.vyoog.eisplatform.modules.toolsync.model.ConnectorStatus;
-import com.vyoog.eisplatform.modules.toolsync.model.TenantSchemaStatus;
-import com.vyoog.eisplatform.modules.toolsync.repository.TenantAppSchemaRepository;
-import com.vyoog.eisplatform.modules.toolsync.repository.ToolConnectorRepository;
 import com.vyoog.eisplatform.modules.toolsync.service.ToolReconcileService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -21,24 +17,11 @@ import org.springframework.stereotype.Component;
 @ConditionalOnProperty(name = "app.sync.reconcile.enabled", havingValue = "true")
 public class ToolReconcileJob {
 
-    private final ToolConnectorRepository connectors;
-    private final TenantAppSchemaRepository tenants;
     private final ToolReconcileService reconcile;
 
     @Scheduled(cron = "${app.sync.reconcile.cron:0 30 2 * * *}")
     public void run() {
-        connectors.findByStatus(ConnectorStatus.ACTIVE).forEach(connector -> tenants.findAll().stream()
-            .filter(t -> t.getProductId().equals(connector.getProductId()) && t.getStatus() == TenantSchemaStatus.READY)
-            .forEach(t -> {
-                try {
-                    ToolReconcileService.Report r = reconcile.reconcile(t.getOrganizationId(), connector.getId(), true);
-                    if (!r.inSync()) {
-                        log.warn("Reconcile {} / organization {}: {}, resent {}", connector.getProductCode(), t.getOrganizationId(),
-                            r.reachable() ? "drift" : r.problem(), r.resent());
-                    }
-                } catch (RuntimeException e) {
-                    log.warn("Reconcile of organization {} with {} failed: {}", t.getOrganizationId(), connector.getProductCode(), e.toString());
-                }
-            }));
+        reconcile.reconcileAllAndRepair().forEach(r -> log.warn("Reconcile {} / organization {}: {}, resent {}", r.productCode(), r.organizationId(),
+            r.reachable() ? "drift" : r.problem(), r.resent()));
     }
 }

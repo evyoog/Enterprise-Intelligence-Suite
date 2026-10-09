@@ -1,4 +1,4 @@
-package com.vyoog.eisplatform.modules.toolsync;
+package com.vyoog.eisplatform.modules.toolsync.service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.vyoog.eisplatform.modules.integration.model.OutboxEvent;

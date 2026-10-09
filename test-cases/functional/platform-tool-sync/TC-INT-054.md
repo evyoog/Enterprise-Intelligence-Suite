@@ -23,8 +23,8 @@ Two connected tools; one is stopped. The backend test context (H2, scheduled job
 The running tool receives the message at once; the stopped tool's first message is tried once (one attempt, next try scheduled), its other messages are skipped for that run, and nothing waits for it. After it starts, everything is delivered. A message that keeps failing is FAILED after the last attempt with its reason and attempts; a rejection is FAILED at once with the tool's reason. Retry puts a FAILED message back to PENDING with attempts 0; Replay queues the same object again as a new message that carries the current state, and is coalesced when one already waits.
 
 ## Automated coverage
-- `.../toolsync/ToolDeliveryTest.aStoppedToolDelaysNobodyElseAndItsMessagesWaitForTheirRetry`, `.aMessageThatKeepsFailingIsRetriedAndThenFailedWithItsReasonUntilAnAdminRetriesIt`, `.aRejectionIsFinalAtOnceAndKeepsTheToolsReason`, `.replayDeliversTheAggregateAgainAsANewMessage`
-- `.../toolsync/AdminToolSyncTest.retryAndReplayAreAuditedAndRetryOnlyAppliesToAFailedDelivery`
+- `.../toolsync/service/ToolDeliveryTest.aStoppedToolDelaysNobodyElseAndItsMessagesWaitForTheirRetry`, `.aMessageThatKeepsFailingIsRetriedAndThenFailedWithItsReasonUntilAnAdminRetriesIt`, `.aRejectionIsFinalAtOnceAndKeepsTheToolsReason`, `.replayDeliversTheAggregateAgainAsANewMessage`
+- `.../toolsync/service/AdminToolSyncTest.retryAndReplayAreAuditedAndRetryOnlyAppliesToAFailedDelivery`
 
 ## Actual Result
 The automated tests passed on 2026-10-09 (`cd backend && mvn -B test`). Against a **real** Macro Planner (not the simulator) the same behaviour is checked in phase 8.

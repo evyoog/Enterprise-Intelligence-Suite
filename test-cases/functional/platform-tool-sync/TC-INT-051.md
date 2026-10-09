@@ -24,7 +24,7 @@ A subscription whose last day is 31 Oct 2026 (also a month-end and a leap day); 
 ## Automated coverage
 - `backend/src/test/java/com/vyoog/eisplatform/modules/registration/service/SubscriptionClockTest.java` (7 tests: month ends, leap day, India date near UTC midnight, inclusive end, format)
 - `.../registration/service/RenewalAndRemindersTest.java` (renewal dates use the end of day)
-- `.../toolsync/ToolDeliveryTest.aSubscriptionEndIsSentAsEndOfDayInIndiaWhateverTimeWasStored`
+- `.../toolsync/service/ToolDeliveryTest.aSubscriptionEndIsSentAsEndOfDayInIndiaWhateverTimeWasStored`
 - V028 dry run, apply twice and reverse were run by hand on PostgreSQL 16 on 2026-10-09 (see the plan's phase 7 notes)
 
 ## Actual Result

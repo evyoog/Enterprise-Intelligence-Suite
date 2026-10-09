@@ -22,8 +22,8 @@ A platform administrator and a plain user; a tool with a READY tenant, waiting, 
 Anonymous gets 401 and a plain user 403 on every `/admin/events/tool-sync/**` call. The administrator sees each tool, each organization's tenant status, schema version, last delivered, waiting and failed counts and last error, and every message with attempts and error. Each action writes an audit entry with the administrator (`TOOL_DELIVERY_RETRIED`, `TOOL_DELIVERY_REPLAYED`, `TOOL_CONNECTOR_PAUSED/RESUMED`, `TOOL_TENANT_STARTED`, `TOOL_TENANT_RECONCILED`). Start asks for provisioning when there is no tenant (400 without an ACTIVE subscription) and resyncs otherwise. Reconcile finds only the lost node, sends only it, and a second reconcile reports in sync; an unreachable tool is reported and nothing is changed.
 
 ## Automated coverage
-- `.../toolsync/AdminToolSyncTest` (5 tests)
-- `.../toolsync/ToolDeliveryTest.reconcileFindsWhatTheToolLostAndResendsOnlyThat`, `.reconcileSaysSoWhenTheToolCannotBeReachedAndChangesNothing`
+- `.../toolsync/service/AdminToolSyncTest` (5 tests)
+- `.../toolsync/service/ToolDeliveryTest.reconcileFindsWhatTheToolLostAndResendsOnlyThat`, `.reconcileSaysSoWhenTheToolCannotBeReachedAndChangesNothing`
 - `frontend/src/pages/admin/ToolSyncPanel.test.tsx` (9 tests incl. a11y) and `AdminPlatformEventsPage.test.tsx` (tab)
 
 ## Actual Result

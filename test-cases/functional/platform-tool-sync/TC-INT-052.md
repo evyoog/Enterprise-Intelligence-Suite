@@ -22,9 +22,9 @@ A connected tool (`tool_connector` ACTIVE), an organization with a READY tenant 
 The tool receives exactly one `upsert_organization` with `contractVersion` 1, `tenantRef` = the organization id, `aggregateType` Organization, `version` = the organization's current `sync_version`, an `occurredAt` ending `+05:30`, and the latest name and city (two changes before delivery are one message). Real MCP: the envelope goes as the `envelope` argument with a bearer token fetched with client credentials, the token is reused, and the tool's result object is read back (`McpToolGatewayTest`).
 
 ## Automated coverage
-- `.../toolsync/ToolDeliveryTest.anOrganizationChangeReachesTheToolWithTheCurrentStateAndItsVersion`
-- `.../toolsync/McpToolGatewayTest` (5 tests: envelope argument and bearer, token reuse, retry answer, unreachable tool or refusing identity provider, no configuration)
-- `.../toolsync/ToolSyncPublishingTest` (18 tests: versions per aggregate, events per change, one event per aggregate per transaction, nothing on rollback, nothing without a tool)
+- `.../toolsync/service/ToolDeliveryTest.anOrganizationChangeReachesTheToolWithTheCurrentStateAndItsVersion`
+- `.../toolsync/service/McpToolGatewayTest` (5 tests: envelope argument and bearer, token reuse, retry answer, unreachable tool or refusing identity provider, no configuration)
+- `.../toolsync/service/ToolSyncPublishingTest` (18 tests: versions per aggregate, events per change, one event per aggregate per transaction, nothing on rollback, nothing without a tool)
 
 ## Actual Result
 The automated tests passed on 2026-10-09 (`cd backend && mvn -B test`). Against a **real** Macro Planner (not the simulator) the same behaviour is checked in phase 8.

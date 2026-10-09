@@ -1,4 +1,4 @@
-package com.vyoog.eisplatform.modules.toolsync;
+package com.vyoog.eisplatform.modules.toolsync.service;
 
 import com.vyoog.eisplatform.modules.audit.model.AuditLog;
 import com.vyoog.eisplatform.modules.audit.repository.AuditLogRepository;
