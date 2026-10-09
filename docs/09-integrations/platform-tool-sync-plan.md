@@ -1,6 +1,6 @@
 # Platform ↔ Tool synchronization — phase plan
 
-**Status:** Proposed (2026-10-09). **Phase 0 written, Phases 1–5 built on 2026-10-09** (see section 6). Phases 1 and 2 are merged to Macro `main` (PRs #20 and #21); phases 3, 4 and 5 are on one Macro branch (`claude/dazzling-meitner-y26nsv`), not yet merged. REQ-INT-003 **Approved 2026-10-09**. Phases 6–9 are not built.
+**Status:** Proposed (2026-10-09). **Phase 0 written, Phases 1–6 built on 2026-10-09** (see section 6). Phases 1 and 2 are merged to Macro `main` (PRs #20 and #21); phases 3 to 6 are on one Macro branch (`claude/dazzling-meitner-y26nsv`), not yet merged. REQ-INT-003 **Approved 2026-10-09**. Phases 7–9 are not built.
 **Owner:** Product owner. **Written for:** any engineer or AI agent who has not seen the conversation behind it.
 **Scope:** EIS platform (this repo, `evyoog/Enterprise-Intelligence-Suite`) and the first tool, Thittam Macro Planner (repo `evyoog/evyoog-thittam-macro`, the "Vyoog PMS" app). Valam and later tools reuse the same module and contract.
 
@@ -483,6 +483,15 @@ Order (A4): **0 contract → 1–6 Macro (tool side, against a simulator) → 7 
 **Acceptance.** Provisioning twice leaves one schema and one root; a failed migration is visible and retryable; adoption dry run lists matches/unmatched and changes nothing; tenant A cannot read tenant B.
 **Tests.** Integration on local Postgres with two databases; negative tests for client-supplied schema names.
 **Rollback.** Registry row status SUSPENDED; adoption is additive columns only.
+
+**Built 2026-10-09** (Macro branch `claude/dazzling-meitner-y26nsv`, on top of phases 3–5; 837 tests green, including two real PostgreSQL databases; not yet merged). Details: `docs/08-architecture/integrations/INT-eis-platform-sync.md` and `deployment/tenant-move-to-client-database.md` in the Macro repo. Deviations and findings:
+- **No new migration.** The registry and sync tables already had what is needed.
+- **Schema name:** `pms_<reference>`, derived on the tool (never from the message); a tenant reference that equals an existing tenant's name is refused, never taken over. The new tenant gets a host only if `platform.tenants.host-template` is set.
+- **Provisioned tenants are `platform_managed = TRUE` at once**, so (phase 5) nobody can sign in until the platform has also sent `set_subscription` and the first administrator's `set_user_access`. **Phase 7 must send them straight after `provision_tenant`.** `report_provisioning_result` is called by the tool as well as answered in the call (additive reason `PROVISIONING_UNAVAILABLE` for a tool that reads tenants from a file).
+- **Found while testing on a real database:** every migrated schema, including a brand-new customer tenant, contains the account `admin@vyoog.com` with the ADMIN role (migration V6). For provisioned tenants that account is **retired** (inactive, least-privileged role, kept), because a later verified-email link to that address would inherit ADMIN. It is not changed in today's two tenants.
+- **First administrator** becomes an administrator in the tool at provisioning (the platform's product role replaces it later); the tool does not create him in Keycloak, he must already have a `sub`.
+- **Adoption** is a command-line one-off (`--platform.adoption.*`), dry run unless `apply=true`, driven by an export file of identifiers (organization, root node, each person's `sub` and `platformUserId`). Matches people by Keycloak id only (an email match is pointed out, never linked), never overwrites a link, never deletes, and does **not** switch the tenant to managed (a separate step, after the platform has delivered access for everyone). **Phase 7/8 should provide that export** (an admin function in EIS); an illustrative SQL for EIS is in the Macro document.
+- **Not done / open:** reconciling an adopted tenant's existing hierarchy with the platform's (only the root is linked; the platform's nodes are added beside Macro's); the exit path of the adoption command (`System.exit`) was not run, only its logic; the later move to a database per client is documented, not executed (Q9).
 
 ---
 
