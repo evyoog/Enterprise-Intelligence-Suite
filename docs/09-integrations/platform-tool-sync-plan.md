@@ -1,6 +1,6 @@
 # Platform ↔ Tool synchronization — phase plan
 
-**Status:** Proposed (2026-10-09). **Phase 0 written and Phase 1 built on 2026-10-09** (see section 6); REQ-INT-003 **Approved 2026-10-09**. Phases 2–9 are not built.
+**Status:** Proposed (2026-10-09). **Phase 0 written, Phases 1–3 built on 2026-10-09** (see section 6). Phases 1 and 2 are merged to Macro `main` (PRs #20 and #21); phase 3 is on its own Macro branch, not yet merged. REQ-INT-003 **Approved 2026-10-09**. Phases 4–9 are not built.
 **Owner:** Product owner. **Written for:** any engineer or AI agent who has not seen the conversation behind it.
 **Scope:** EIS platform (this repo, `evyoog/Enterprise-Intelligence-Suite`) and the first tool, Thittam Macro Planner (repo `evyoog/evyoog-thittam-macro`, the "Vyoog PMS" app). Valam and later tools reuse the same module and contract.
 
@@ -405,6 +405,17 @@ Order (A4): **0 contract → 1–6 Macro (tool side, against a simulator) → 7 
 **Acceptance.** With the simulator: edit a user's name in Macro → simulator receives one `update_user_profile` and Macro shows the returned snapshot; simulator down → nothing changes locally; creating a user whose email exists in Keycloak reuses that `sub`; platform failure after Keycloak creation leaves the Keycloak user disabled.
 **Tests.** Unit for compensation; integration with simulator for success, timeout-then-retry (one effect), rejection; regression for non-managed tenants (behaviour unchanged).
 **Rollback.** `platform_managed=false` restores old behaviour per tenant.
+
+**Built 2026-10-09** (Macro branch `claude/dazzling-meitner-y26nsv`; 671 tests green on a real PostgreSQL 16, including 11 new whole-application tests; not yet merged). Details: `docs/08-architecture/integrations/INT-eis-platform-sync.md` in the Macro repo. Deviations from the text above:
+- **Refused, not written through:** in a managed tenant `changeUserRole`, `toggleUserStatus`, `deleteUser` and a change of email, active status, org-node placement or role in `updateUser` are **refused** ("managed by the platform"). Contract §5 has no tool for membership status, product role or placement, and Q10 puts the product role on the platform. **Open question for the product owner:** add `set_user_access` / `set_membership` / placement tools to contract §5 (then Phase 7 serves them and Macro routes these edits), or keep these changes on the platform's own screens.
+- **Organization-profile edits** are not routed: contract §5 has no `update_organization` tool, and the snapshot is not yet mirrored into `app_settings` (phase 2 note).
+- **Idempotency key:** one fresh key per user action, reused for the client's automatic repeats (`platform.retry.interactive-attempts`, default 2, new in the connection file). It is **not** stored with a pending action: nobody delivers later, the person is waiting.
+- **Contract §5.1 added (additive, version stays 1):** a result carries the new state in `data.snapshots`; the tool applies each entry through the same inbox, version guard and appliers as a delivery. Copied into both repositories. **Phase 7 must return this shape.**
+- **Tool-created users (A2):** Keycloak lookup by email (reuse only if its email is verified), real email when creating, `report_user_created`, local row from the answer, Keycloak user disabled if the report fails. The role asked for in the form is not applied (no product access until the platform grants it).
+- The Keycloak `tenant` attribute is still written (the legacy token-claim tenant source stays until phase 5).
+- No UI change: the screens show the backend's messages; a "this tenant is platform-managed" flag for labelling fields is a small follow-up. The flag is switched by SQL (`platform_managed`).
+- Failures are recorded in `platform_sync_error` with `received_from = 'to-platform'`; metric `platformsync.outbound{tool,status}`.
+- Known limit: a crash between creating the Keycloak user and reporting it leaves an enabled Keycloak user with no local row; reconcile (phase 8) compares `sub`s.
 
 ---
 

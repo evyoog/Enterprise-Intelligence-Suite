@@ -206,6 +206,16 @@ Every call carries `idempotencyKey` (UUID chosen by the caller, stored by the pl
 | `get_entitlement` | `tenantRef`, `sub`, `productCode`, `action?` | Authoritative check: `{allowed, reason, endsAt, productRole}`. Reasons: `OK`, `NOT_A_MEMBER`, `USER_INACTIVE`, `ORG_INACTIVE`, `NO_SUBSCRIPTION`, `SUBSCRIPTION_ENDED`, `NO_PRODUCT_ACCESS`, `NOT_PROVISIONED`. |
 | `report_provisioning_result` | `tenantRef`, `productCode`, `status` (`READY`/`FAILED`), `schemaVersion?`, `error?` | Update the tenant registry entry. |
 
+### 5.1 Snapshots in a result (clarification, additive — contract version stays 1)
+A tool-to-platform call that returns `applied` or `duplicate` carries the new state of everything it changed in `data.snapshots`, so the caller can store exactly what the platform stored (single writer, BR-SYN-001) without a second call:
+```json
+{ "status": "applied", "version": 5,
+  "data": { "snapshots": [
+    { "eventType": "UserUpserted", "aggregateType": "User", "aggregateId": "36401029-…", "version": 5, "payload": { /* section 3.3 */ } },
+    { "eventType": "MembershipChanged", "aggregateType": "Membership", "aggregateId": "36401029-…", "version": 2, "payload": { /* section 3.4 */ } } ] } }
+```
+Each entry is an envelope without `contractVersion`, `eventId`, `occurredAt` and `tenantRef` (the caller knows them). The caller applies each entry exactly as it would apply the same message delivered by the platform (section 8), so the fan-out of the same change that follows is a `duplicate`. A caller ignores an `aggregateType` it does not know. For a delete the entry is `OrgNodeDeleted` with payload `{ "id": … }`. A `rejected` result carries no snapshots, except `STALE_VERSION`, which may carry the current one.
+
 ## 6. Result object (every tool)
 
 ```json
