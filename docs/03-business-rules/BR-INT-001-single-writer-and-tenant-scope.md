@@ -2,7 +2,7 @@
 
 | Field | Value |
 |---|---|
-| Status | In Review (with [REQ-INT-003](../02-requirements/FRD/platform-tool-sync/requirement.md)) |
+| Status | Approved 2026-10-09 (with [REQ-INT-003](../02-requirements/FRD/platform-tool-sync/requirement.md)) |
 | Decision | [C86](../01-business/roadmap/open-decisions.md#c86) |
 | Applies to | Every product that holds a copy of platform data; every message between the platform and a product |
 

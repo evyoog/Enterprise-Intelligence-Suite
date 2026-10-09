@@ -1,6 +1,6 @@
 # Platform ↔ Tool synchronization — phase plan
 
-**Status:** Proposed (2026-10-09). **Phase 0 written and Phase 1 built on 2026-10-09** (see section 6); REQ-INT-003 is still In Review. Phases 2–9 are not built.
+**Status:** Proposed (2026-10-09). **Phase 0 written and Phase 1 built on 2026-10-09** (see section 6); REQ-INT-003 **Approved 2026-10-09**. Phases 2–9 are not built.
 **Owner:** Product owner. **Written for:** any engineer or AI agent who has not seen the conversation behind it.
 **Scope:** EIS platform (this repo, `evyoog/Enterprise-Intelligence-Suite`) and the first tool, Thittam Macro Planner (repo `evyoog/evyoog-thittam-macro`, the "Vyoog PMS" app). Valam and later tools reuse the same module and contract.
 
@@ -337,7 +337,7 @@ Order (A4): **0 contract → 1–6 Macro (tool side, against a simulator) → 7 
 7. Seed `platform_tenant` from today's config: `vyoog_pms` (host `demopms.evyoog.com`) and `vyoog_pms_vyoog` (host `pms.evyoog.com`), same shared datasource, same schemas. **No data moves.**
 8. Keep the old properties as a fallback for one release, logging a deprecation warning.
 **How.** Hibernate `MultiTenantConnectionProvider` is the only seam; `datasource_ref` is a key into a `Map<String, DataSource>` built from environment-supplied connection settings (never a URL in the table, never from a request).
-**Built on 2026-10-09** in `evyoog/evyoog-thittam-macro`, branch `platform-sync/phase-1-tenant-registry` (not merged; no pull request). Started on the product owner's instruction "start phase 1"; REQ-INT-003 itself is still *In Review*.
+**Built on 2026-10-09** in `evyoog/evyoog-thittam-macro`, branch `platform-sync/phase-1-tenant-registry` (merged to Macro `main` on 2026-10-09 at the product owner's request). Started on the product owner's instruction "start phase 1"; REQ-INT-003 was approved the same day.
 
 **What was built, and how it differs from the plan above**
 | Plan said | What was built | Why |

@@ -1,6 +1,6 @@
 # Screen: Tool sync monitor
 
-**Requirement:** [REQ-INT-003](../../02-requirements/FRD/platform-tool-sync/requirement.md) (In Review). Built with the platform-side phase of the [phase plan](../../09-integrations/platform-tool-sync-plan.md).
+**Requirement:** [REQ-INT-003](../../02-requirements/FRD/platform-tool-sync/requirement.md) (Approved 2026-10-09). Built with the platform-side phase of the [phase plan](../../09-integrations/platform-tool-sync-plan.md).
 
 1. **Location.** Platform area → Integrations → *Platform events* → tab **Tool sync**; needs `MANAGE_INTEGRATIONS`.
 2. **Table.** One row per organization and product: organization, product, tenant status (Pending, Ready, Failed, Suspended), schema version, last successful sync, last error (shortened, full text in the details), attempts, version lag (platform version minus tool version, per aggregate type in the details).

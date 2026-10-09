@@ -1,6 +1,6 @@
 # Test plan — REQ-INT-003 Platform ↔ tool synchronization
 
-Status: planned (FRD In Review; nothing built). Individual test cases `TC-INT-018` onward are written with the phase that builds each behaviour, in the repository where it is built; this plan fixes the scope and numbering.
+Status: planned (FRD Approved 2026-10-09; phase 1 built in the Macro repository, cases TC-INT-018–021 there). Individual test cases `TC-INT-018` onward are written with the phase that builds each behaviour, in the repository where it is built; this plan fixes the scope and numbering.
 
 Acceptance source: [acceptance criteria](../../../docs/02-requirements/FRD/platform-tool-sync/acceptance-criteria.md). Contract: [contract v1](../../../docs/09-integrations/platform-tool-contract-v1.md). Build order: [phase plan](../../../docs/09-integrations/platform-tool-sync-plan.md).
 

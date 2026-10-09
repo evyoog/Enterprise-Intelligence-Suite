@@ -2,7 +2,7 @@
 
 | Field | Value |
 |---|---|
-| Status | In Review (with [REQ-INT-003](../02-requirements/FRD/platform-tool-sync/requirement.md)); answer Q11 of [C86](../01-business/roadmap/open-decisions.md#c86) |
+| Status | Approved 2026-10-09 (with [REQ-INT-003](../02-requirements/FRD/platform-tool-sync/requirement.md)); answer Q11 of [C86](../01-business/roadmap/open-decisions.md#c86) |
 | Applies to | Every subscription (individual and organization), renewal, expiry job, invoices that print an end date, and every product that checks a subscription |
 
 ## Rule

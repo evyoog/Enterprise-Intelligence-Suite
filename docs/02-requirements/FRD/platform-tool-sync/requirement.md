@@ -1,9 +1,9 @@
 # REQ-INT-003 — Platform ↔ tool synchronization
 
-**Status:** In Review (written 2026-10-09; waiting for the product owner's "Approved")
+**Status:** Approved (2026-10-09, product owner; the defaults of assumptions A1–A6 and the proposed Thittam role map apply until the product owner changes them)
 **BRD:** Not specified
 **Owner:** Product owner
-**Approved by / on:** Not yet approved
+**Approved by / on:** Product owner / 2026-10-09 ("Approve" in reply to the Phase 1 report)
 **Decision:** [C86](../../../01-business/roadmap/open-decisions.md#c86) (answers Q1–Q14 of 2026-10-09)
 **Built:** Not built. Build order and technical design: [phase plan](../../../09-integrations/platform-tool-sync-plan.md). Wire contract: [contract v1](../../../09-integrations/platform-tool-contract-v1.md). Test plan: [TESTPLAN-INT-003](../../../../test-cases/functional/platform-tool-sync/TESTPLAN-INT-003.md).
 

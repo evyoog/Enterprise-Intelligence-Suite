@@ -1,6 +1,6 @@
 # Platform ↔ tool contract — version 1
 
-**Status:** In Review (with [REQ-INT-003](../02-requirements/FRD/platform-tool-sync/requirement.md)). Not implemented.
+**Status:** Approved 2026-10-09 (with [REQ-INT-003](../02-requirements/FRD/platform-tool-sync/requirement.md)). Not implemented.
 **Audience:** engineers and agents implementing the platform side or a tool side. Copy this file unchanged into each tool repository (`docs/…/platform-tool-contract-v1.md`); a change here is a contract change.
 **Transport:** MCP (JSON-RPC 2.0 over Streamable HTTP, protocol 2025-06-18) at `/api/mcp` on both sides. MCP carries the calls; delivery guarantees come from the platform (outbox, retries, idempotency, reconcile) — see the [phase plan](platform-tool-sync-plan.md).
 
