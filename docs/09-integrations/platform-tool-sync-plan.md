@@ -1,6 +1,6 @@
 # Platform ↔ Tool synchronization — phase plan
 
-**Status:** Proposed (2026-10-09). **Phase 0 written, Phases 1–3 built on 2026-10-09** (see section 6). Phases 1 and 2 are merged to Macro `main` (PRs #20 and #21); phase 3 is on its own Macro branch, not yet merged. REQ-INT-003 **Approved 2026-10-09**. Phases 4–9 are not built.
+**Status:** Proposed (2026-10-09). **Phase 0 written, Phases 1–4 built on 2026-10-09** (see section 6). Phases 1 and 2 are merged to Macro `main` (PRs #20 and #21); phases 3 and 4 are on one Macro branch (`claude/dazzling-meitner-y26nsv`), not yet merged. REQ-INT-003 **Approved 2026-10-09**. Phases 5–9 are not built.
 **Owner:** Product owner. **Written for:** any engineer or AI agent who has not seen the conversation behind it.
 **Scope:** EIS platform (this repo, `evyoog/Enterprise-Intelligence-Suite`) and the first tool, Thittam Macro Planner (repo `evyoog/evyoog-thittam-macro`, the "Vyoog PMS" app). Valam and later tools reuse the same module and contract.
 
@@ -435,6 +435,14 @@ Order (A4): **0 contract → 1–6 Macro (tool side, against a simulator) → 7 
 **Acceptance.** Sign in to EIS locally → open Macro → no login prompt; logout in either app ends the other; wrong or missing secret returns 403; a stale cookie falls back to login. Cross-tenant: the token's user must still pass Phase 5 for the tenant of the host.
 **Tests.** Unit: cookie handling, secret comparison, encryption round-trip. Integration: a fake partner (WireMock-style) for redeem/refresh/logout. Manual script in `test-cases/` for the two-app browser flow (needs both apps running).
 **Rollback.** `platform.sso.enabled=false` restores the old login page only.
+
+**Built 2026-10-09** (Macro branch `claude/dazzling-meitner-y26nsv`, on top of phase 3; 716 tests green on a real PostgreSQL 16; not yet merged). Details: `docs/08-architecture/integrations/INT-eis-platform-sync.md` in the Macro repo. Deviations and findings:
+- **Off by default.** `platform.sso.enabled=false`: the new endpoints answer 404 and the SPA falls back to signing in at Keycloak, so nothing changes until it is switched on (the plan's rollback, built as the default).
+- **Bridge store** is `platform_control.sso_bridge_session` (control migration **V3**, JDBC like the tenant registry, refresh token AES-GCM encrypted with the existing `SecretCipher`); in memory when `platform.tenants.source=file`.
+- **Added beyond the plan:** `platform.sso.allowed-target-clients` — the audiences Macro will mint a token for when EIS redeems a session (the exchange can mint for any person, so the list is explicit, default `eis-platform-ui`); an empty shared secret refuses everyone; `/internal/**` is excluded from CORS and from the host filter; the backend-held client secret means **`VITE_CLIENT_SECRET` is no longer needed in the browser bundle for password sign-in** (it is still used by the old fallback path and by the SAML/OIDC brokering sign-in, which are not part of the bridge).
+- **No polling:** a sign-out in EIS reaches Macro's backend at once but a Macro tab learns at its next token renewal (EIS polls every ~20 s). Add polling if that is too slow.
+- **Not covered:** the two-app flow against a real Keycloak and a real EIS (`test-cases/integration/platform-sync-sso-manual.md`); the Keycloak impersonation settings are outside both repositories. **Rate limiting of `/auth/login`** is Keycloak's (Macro's `RateLimitFilter` is a stub). The first-login hole (any realm user is created in any tenant) is **still open until phase 5**; the bridge neither widens nor closes it.
+- **Security finding in EIS (not changed here):** `backend/src/main/resources/application.yml` has committed defaults for `vyoog.internal.impersonation-client-secret` and `vyoog.internal.sso-shared-secret`. Rotate them and remove the defaults (BR-SEC-001); Macro's side has no committed value.
 
 ---
 
