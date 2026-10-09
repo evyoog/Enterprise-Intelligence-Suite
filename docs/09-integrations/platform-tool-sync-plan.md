@@ -1,6 +1,6 @@
 # Platform ↔ Tool synchronization — phase plan
 
-**Status:** Proposed (2026-10-09). **Phase 0 written, Phases 1–4 built on 2026-10-09** (see section 6). Phases 1 and 2 are merged to Macro `main` (PRs #20 and #21); phases 3 and 4 are on one Macro branch (`claude/dazzling-meitner-y26nsv`), not yet merged. REQ-INT-003 **Approved 2026-10-09**. Phases 5–9 are not built.
+**Status:** Proposed (2026-10-09). **Phase 0 written, Phases 1–5 built on 2026-10-09** (see section 6). Phases 1 and 2 are merged to Macro `main` (PRs #20 and #21); phases 3, 4 and 5 are on one Macro branch (`claude/dazzling-meitner-y26nsv`), not yet merged. REQ-INT-003 **Approved 2026-10-09**. Phases 6–9 are not built.
 **Owner:** Product owner. **Written for:** any engineer or AI agent who has not seen the conversation behind it.
 **Scope:** EIS platform (this repo, `evyoog/Enterprise-Intelligence-Suite`) and the first tool, Thittam Macro Planner (repo `evyoog/evyoog-thittam-macro`, the "Vyoog PMS" app). Valam and later tools reuse the same module and contract.
 
@@ -459,6 +459,16 @@ Order (A4): **0 contract → 1–6 Macro (tool side, against a simulator) → 7 
 **Acceptance (matrix).** Active subscription + access + provisioned → allowed. No subscription → denied. After `ends_at` (23:59:00.000 +05:30) → denied at the next request after cache refresh and at once for sensitive actions. No product access → denied. Suspended membership → denied. Unprovisioned tenant → denied. A realm user from another organization → `NOT_A_MEMBER`. Wrong-audience token → rejected. Spoofed `Origin` → no effect on the resolved tenant (user must belong to it). Another tool's access does not grant Macro access.
 **Tests.** Table-driven unit test of every row above; filter integration test with MockMvc and the simulator; regression of existing endpoints with an "entitled" fixture user.
 **Rollback.** `platform.entitlement.enforce=false` for non-production environments only; production keeps it on.
+
+**Built 2026-10-09** (Macro branch `claude/dazzling-meitner-y26nsv`, on top of phases 3 and 4; 778 tests green on a real PostgreSQL 16; not yet merged). Details: `docs/08-architecture/integrations/INT-eis-platform-sync.md` in the Macro repo. Deviations and findings:
+- **Applies to platform-managed tenants only.** Today's two tenants have no synchronized subscription, so checking them would deny everyone; enforcement starts per tenant when it is switched to managed (phase 6 adopts them). `platform.entitlement.enforce` defaults to `true` (the plan had `false` in the file) because nothing is managed by default.
+- **Legacy tenant sources not switched off.** The plan turned `fallback.accept-token-claim` / `accept-tenant-header` off here. Left on: clients of not-yet-managed tenants on an unmapped host would break. For a managed tenant they are harmless (the person must be a member however the tenant was chosen). **Decision for you:** switch them off when phase 6 has adopted every tenant.
+- **Not an `UserProvisioningFilter` 403:** the filter simply creates nothing in a managed tenant and `EntitlementFilter` answers `NOT_A_MEMBER` (one denial point). `UserIdentityReconciliationService` is still used by the legacy first-login path, so "only from the user applier" holds once every tenant is managed.
+- **Added:** `WRONG_AUDIENCE` (token for another application's client; local, not in the contract); membership is checked before the subscription so a stranger learns nothing; an allowed answer is never cached past the subscription's end (BR-SUB-010 exact to the millisecond even from the cache); an applied platform message drops the tenant's cache; metric `platformsync.entitlement.denied{reason}`.
+- **Sensitive-action list** (reviewed with you before production, BR-SYN-014): changes to users, role assignments, org structure (`org-nodes`, `groups`), settings, automation and notification rules; the one export (`/reports/**/export`); approval decisions; baseline changes. Reads are never sensitive. Outage while fail-closed → 503 `ENTITLEMENT_UNAVAILABLE`.
+- **Bug found and fixed (also affects today's tenants):** the first-login filter used `save()` on a `@GeneratedValue` id, so a first-time user's row got a random id, their first request answered 404 and the second "reconciled" it. Confirmed on PostgreSQL against the old code; the row is now inserted with the Keycloak id. This changes behaviour for tenants that are not managed (for the better).
+- **Not covered:** service accounts (the MCP callers) and the websocket handshake are not entitlement-checked; a granted-but-no-message change is seen within the 5-minute TTL (denials are cached too).
+- **Phase 7 must serve `get_entitlement`** with `data: {allowed, reason, endsAt, productRole}` exactly as contract §5 says; the tool treats a `rejected` answer as a "no" with the platform's reason.
 
 ---
 
