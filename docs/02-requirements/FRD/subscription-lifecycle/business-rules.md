@@ -13,3 +13,6 @@
 | BR-SUB-009 | Every successful mutation is recorded in the audit log (`SUBSCRIPTION_SUSPENDED`/`_REACTIVATED`/`_CANCELLED`/`_RENEWED`/`_PLAN_CHANGED`/`_EXPIRED`) and, when the subscription has an individual owner, triggers a notification to that customer. Organization-owned subscriptions (out of this feature's scope) are never notified by it. | backend | REQ-SUB-001.1–.6 |
 
 Rules shared with other features belong in `docs/03-business-rules/` and are referenced here by ID.
+
+## Amendment 2026-10-09 ([C86](../../../01-business/roadmap/open-decisions.md#c86))
+[BR-SUB-010](../../../03-business-rules/BR-SUB-010-subscription-end-time.md) sets the **end time** of every subscription to 23:59:00.000 +05:30 on its end date. BR-SUB-005 (renew) still adds 30 or 365 days to find the **date**, then BR-SUB-010 sets the time of day; BR-SUB-008 (expiry job) uses that instant. Not yet built: the code and a one-off correction of existing rows follow in the platform-side phase of the [phase plan](../../../09-integrations/platform-tool-sync-plan.md).

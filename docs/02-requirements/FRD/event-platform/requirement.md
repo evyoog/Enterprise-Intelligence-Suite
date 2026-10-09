@@ -75,6 +75,9 @@ The workbook's `ProvisioningStarted` belongs to [REQ-ORD-002](../provisioning-co
 | Dispatcher interval | Every 5 seconds, 100 events per run (`app.events.dispatcher.*`) | `application.yml` |
 | Permission | New platform permission `MANAGE_INTEGRATIONS` (also used by REQ-INT-001's admin usage view) | `RbacSeeder` |
 
+## Extension 2026-10-09
+[REQ-INT-003](../platform-tool-sync/requirement.md) adds events for organizations, hierarchy, users, memberships and product access, a per-aggregate `version`, and delivery of events to tools (one handler per tool). Not built yet.
+
 ## Out of scope
 - External delivery (webhooks, D19) and any message broker ([C62](../../../01-business/roadmap/open-decisions.md#c62)).
 - Replaying delivered events (13.03.01.05).

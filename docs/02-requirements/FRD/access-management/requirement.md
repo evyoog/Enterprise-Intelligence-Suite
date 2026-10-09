@@ -1,11 +1,11 @@
 # REQ-TEN-005 — Access management
 
-**Status:** Draft
+**Status:** Approved (2026-10-09, [C86](../../../01-business/roadmap/open-decisions.md#c86), answer Q11 "approve as drafted")
 **BRD:** Not specified
 **Owner:** Product owner
-**Approved by / on:** Not yet approved
+**Approved by / on:** Product owner / 2026-10-09
 **Decision:** [C65](../../../01-business/roadmap/open-decisions.md#c65) (answer to D16, options A and B combined)
-**Built:** Not built. Build waits for approval. Functional test cases: written after approval in `test-cases/functional/access-management/`; UAT: [access-management UAT scripts](../../../../test-cases/UAT/access-management/README.md).
+**Built:** Not built (approved 2026-10-09; scheduled with the sprint the product owner sets). Functional test cases: written after approval in `test-cases/functional/access-management/`; UAT: [access-management UAT scripts](../../../../test-cases/UAT/access-management/README.md).
 
 | Field | Value |
 |---|---|
@@ -140,7 +140,18 @@ REQ-IAM-002 (member role assignment), REQ-IAM-003 (role and permission administr
 | Data model | [access-management.md](../../../07-database/data-model/access-management.md) |
 | UAT scripts | [test-cases/UAT/access-management](../../../../test-cases/UAT/access-management/README.md) |
 
-## Open questions
+## Answers applied on 2026-10-09 ([C86](../../../01-business/roadmap/open-decisions.md#c86))
+The product owner approved this FRD "as drafted" (question Q11). Every open question that has a **proposed** answer below takes that proposal; the two blocking questions that had no proposal take the defaults in the table. The product owner can change any of them.
+
+| Open question | Applied answer |
+|---|---|
+| 1 Member role defaults | As proposed: all entitled products ON, no management permissions. |
+| 2 Manage billing | As proposed: a separate permission `MANAGE_ORGANIZATION_BILLING`. |
+| 3 Does product access consume a seat? | **Default (no proposal existed): no.** A seat is used by each ACTIVE member (the pool model of [REQ-SUB-003](../subscription-seats/requirement.md)); granting product access does not use a second seat. |
+| 7 Product role | **Default (no proposal existed):** each product's catalog entry lists its valid product roles (for example `PMS_ADMIN`, `PMS_MANAGER`, `PMS_USER`) with one **default role** (the least-privileged); turning a product ON grants the default role, and an administrator may choose another valid role on the screen. The platform stores the role; each tool maps it to its own roles ([REQ-INT-003](../platform-tool-sync/requirement.md).14). |
+| 4, 5, 6, 8, 9, 10 | As proposed where a proposal is written; otherwise unchanged (they did not block approval). |
+
+## Open questions (answered above where marked)
 | # | Question | Blocks approval |
 |---|---|---|
 | 1 | **Member role defaults:** what product access and feature permissions do *Members* get by default? Proposed — confirm: all entitled products ON, no management permissions. | Yes |

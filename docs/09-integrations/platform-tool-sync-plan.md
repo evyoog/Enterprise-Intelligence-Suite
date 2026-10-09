@@ -1,6 +1,6 @@
 # Platform ↔ Tool synchronization — phase plan
 
-**Status:** Proposed (2026-10-09). Not approved. Nothing in this document is built.
+**Status:** Proposed (2026-10-09). **Phase 0 written 2026-10-09** (see section 6, Phase 0); the FRD is In Review. Nothing in this document is built.
 **Owner:** Product owner. **Written for:** any engineer or AI agent who has not seen the conversation behind it.
 **Scope:** EIS platform (this repo, `evyoog/Enterprise-Intelligence-Suite`) and the first tool, Thittam Macro Planner (repo `evyoog/evyoog-thittam-macro`, the "Vyoog PMS" app). Valam and later tools reuse the same module and contract.
 
@@ -318,6 +318,7 @@ Order (A4): **0 contract → 1–6 Macro (tool side, against a simulator) → 7 
 5. `docs/09-integrations/platform-tool-contract-v1.md` (section 4 verbatim, with JSON schemas).
 6. Decision record C86 in `open-decisions.md` (Q1–Q14, assumptions A1–A6 with your confirmation), sprint page rows, test-case ids reserved.
 **How.** Markdown only. Mermaid sequence diagrams for F1–F6.
+**Done on 2026-10-09 (written, waiting for approval):** [REQ-INT-003](../02-requirements/FRD/platform-tool-sync/requirement.md) with its five companion files; [contract v1](platform-tool-contract-v1.md); [BR-INT-001](../03-business-rules/BR-INT-001-single-writer-and-tenant-scope.md) and [BR-SUB-010](../03-business-rules/BR-SUB-010-subscription-end-time.md); [REQ-TEN-005](../02-requirements/FRD/access-management/requirement.md) Approved with defaults for its questions 3 and 7; [REQ-ORD-002](../02-requirements/FRD/provisioning-contract/requirement.md) answers; subscription-lifecycle amendment; [decision C86](../01-business/roadmap/open-decisions.md#c86); [screen spec](../05-ui/screen-requirements/tool-sync-monitor.md); [test plan](../../test-cases/functional/platform-tool-sync/TESTPLAN-INT-003.md).
 **Acceptance.** FRD status Approved by the product owner; contract file reviewed; assumptions A1–A6 confirmed or changed.
 **Tests.** Link check; no code.
 **Rollback.** Revert the docs commit.

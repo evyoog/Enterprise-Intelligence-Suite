@@ -2,7 +2,7 @@
 
 | Field | Value |
 |---|---|
-| Status | Draft (with [REQ-TEN-005](../02-requirements/FRD/access-management/requirement.md)) |
+| Status | Approved 2026-10-09 (with [REQ-TEN-005](../02-requirements/FRD/access-management/requirement.md), [C86](../01-business/roadmap/open-decisions.md#c86)) |
 | Decision | [C65](../01-business/roadmap/open-decisions.md#c65) |
 | Applies to | Every organization-scope permission check and every product-access check |
 
