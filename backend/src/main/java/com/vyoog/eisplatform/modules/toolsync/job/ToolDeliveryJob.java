@@ -24,7 +24,7 @@ public class ToolDeliveryJob {
                 log.debug("Delivered {} message(s) to tools", delivered);
             }
         } catch (RuntimeException e) {
-            log.warn("Tool delivery run failed: {}", e.toString());
+            log.warn("Tool delivery run failed: {}", e.getClass().getSimpleName());
         }
     }
 }

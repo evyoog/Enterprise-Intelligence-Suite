@@ -250,7 +250,7 @@ Each entry is an envelope without `contractVersion`, `eventId`, `occurredAt` and
 | `retry` | Temporary problem (database busy, dependency unavailable). | Retries with backoff. |
 | `rejected` | Permanent (invalid, not allowed, unknown). | Stops and records the reason. |
 
-Reason codes: `SEAT_LIMIT_EXCEEDED` (the organization has no free seat), `NOT_A_MEMBER` (the person is not a member of the organization), `UNSUPPORTED_CONTRACT_VERSION`, `UNKNOWN_TENANT`, `TENANT_NOT_READY`, `UNKNOWN_DATASOURCE_REF`, `NOT_ALLOWED_CLIENT`, `NO_ACTIVE_SUBSCRIPTION_FOR_TENANT`, `INVALID_PAYLOAD`, `CYCLE`, `NODE_IN_USE`, `STALE_VERSION`, `EMAIL_NOT_VERIFIED`, `INTERNAL`. An unexpected exception is `retry` with `INTERNAL` until the retry limit.
+Reason codes: `RATE_LIMITED` (a `retry` from a tool that limits calls per client; the platform backs off), `SEAT_LIMIT_EXCEEDED` (the organization has no free seat), `NOT_A_MEMBER` (the person is not a member of the organization), `UNSUPPORTED_CONTRACT_VERSION`, `UNKNOWN_TENANT`, `TENANT_NOT_READY`, `UNKNOWN_DATASOURCE_REF`, `NOT_ALLOWED_CLIENT`, `NO_ACTIVE_SUBSCRIPTION_FOR_TENANT`, `INVALID_PAYLOAD`, `CYCLE`, `NODE_IN_USE`, `STALE_VERSION`, `EMAIL_NOT_VERIFIED`, `INTERNAL`. An unexpected exception is `retry` with `INTERNAL` until the retry limit.
 
 Retry policy (set in each tool's connection file, defaults): up to 8 attempts, exponential backoff from 5 s to 15 min.
 

@@ -71,6 +71,7 @@ public class ToolReconcileService {
     private final OrganizationProductAccessRepository accesses;
     private final ToolGateway gateway;
     private final ToolSyncService sync;
+    private final ToolSyncMetrics metrics;
 
     /** The platform's {@code id → version} for one organization and tool, per aggregate type: the same ids the tool is told in messages. */
     @Transactional(readOnly = true)
@@ -139,6 +140,8 @@ public class ToolReconcileService {
                     }
                 }
             }
+            int missing = (int) mine.entrySet().stream().filter(e -> held.get(e.getKey()) == null || held.get(e.getKey()) < e.getValue()).count();
+            metrics.drift(connector.getProductCode(), type, missing);
             int extra = (int) held.keySet().stream().filter(id -> !mine.containsKey(id)).count();
             reports.add(new TypeReport(type, mine.size(), theirCount, false, resent, extra));
         }

@@ -42,6 +42,9 @@ public interface ToolDeliveryRepository extends JpaRepository<ToolDelivery, Long
         + "where d.status = com.vyoog.eisplatform.modules.toolsync.model.DeliveryStatus.DELIVERED group by d.toolConnectorId, d.organizationId")
     List<Object[]> lastDeliveredByTenant();
 
+    @Query("select min(d.createdAt) from ToolDelivery d where d.toolConnectorId = :connector and d.status = com.vyoog.eisplatform.modules.toolsync.model.DeliveryStatus.PENDING")
+    Instant oldestPending(@Param("connector") Long toolConnectorId);
+
     Page<ToolDelivery> findByToolConnectorIdOrderByIdDesc(Long toolConnectorId, Pageable pageable);
 
     Page<ToolDelivery> findByStatusAndOrganizationIdOrderByIdDesc(DeliveryStatus status, Long organizationId, Pageable pageable);

@@ -58,10 +58,11 @@ public class ToolDeliveryService {
     private final ToolSyncProperties props;
     private final TransactionTemplate tx;
     private final TransactionTemplate readTx;
+    private final ToolSyncMetrics metrics;
 
     public ToolDeliveryService(ToolDeliveryRepository deliveries, ToolConnectorRepository connectors, TenantAppSchemaRepository tenants,
                                ToolMessageBuilder builder, ToolSyncService sync, ToolGateway gateway, ToolSyncProperties props,
-                               PlatformTransactionManager transactionManager) {
+                               ToolSyncMetrics metrics, PlatformTransactionManager transactionManager) {
         this.deliveries = deliveries;
         this.connectors = connectors;
         this.tenants = tenants;
@@ -69,6 +70,7 @@ public class ToolDeliveryService {
         this.sync = sync;
         this.gateway = gateway;
         this.props = props;
+        this.metrics = metrics;
         this.tx = new TransactionTemplate(transactionManager);
         this.tx.setPropagationBehavior(TransactionDefinition.PROPAGATION_REQUIRES_NEW);
         this.readTx = new TransactionTemplate(transactionManager);
@@ -131,7 +133,7 @@ public class ToolDeliveryService {
             fail(claimed, "UNREACHABLE", e.getMessage(), false);
             return Outcome.UNREACHABLE;
         } catch (RuntimeException e) {
-            log.warn("Delivery {} to {} failed: {}", claimed.getId(), connector.getProductCode(), e.toString());
+            log.warn("Delivery {} to {} failed: {}", claimed.getId(), connector.getProductCode(), e.getClass().getSimpleName());
             fail(claimed, "INTERNAL", e.getClass().getSimpleName(), false);
             return Outcome.WAITING;
         }
@@ -152,6 +154,7 @@ public class ToolDeliveryService {
                     t.setUpdatedAt(Instant.now());
                 });
             }));
+            metrics.delivered(connectorCode(d), d.getCreatedAt());
             return Outcome.DELIVERED;
         }
         if (result.rejectedForGood()) {
@@ -167,7 +170,10 @@ public class ToolDeliveryService {
         tx.executeWithoutResult(s -> deliveries.findById(d.getId()).ifPresent(cur -> {
             String text = reason + (message == null || message.isBlank() ? "" : ": " + message);
             cur.setLastError(text.length() > 1000 ? text.substring(0, 1000) : text);
-            if (permanent || cur.getAttempts() >= props.getMaxAttempts()) {
+            boolean failedForGood = permanent || cur.getAttempts() >= props.getMaxAttempts();
+            metrics.deliveryAttempt(connectorCode(cur), failedForGood ? "failed" : ("UNREACHABLE".equals(reason) ? "unreachable" : "retry"));
+            if (failedForGood) {
+                metrics.deliveryFailed(connectorCode(cur));
                 cur.setStatus(DeliveryStatus.FAILED);
                 cur.setNextAttemptAt(null);
                 if (PlatformEventTypes.TENANT_PROVISIONING_REQUESTED.equals(cur.getEventType())) {
@@ -213,6 +219,10 @@ public class ToolDeliveryService {
             });
         }
         return result;
+    }
+
+    private String connectorCode(ToolDelivery d) {
+        return connectors.findById(d.getToolConnectorId()).map(ToolConnector::getProductCode).orElse("unknown");
     }
 
     private Long productOf(ToolDelivery d) {

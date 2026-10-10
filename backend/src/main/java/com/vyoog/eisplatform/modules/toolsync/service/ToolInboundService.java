@@ -82,6 +82,7 @@ public class ToolInboundService {
     private final TenantAppSchemaRepository tenants;
     private final OrgNodeRepository nodes;
     private final PlatformTransactionManager transactionManager;
+    private final ToolSyncMetrics metrics;
     @PersistenceContext
     private EntityManager entityManager;
 
@@ -162,7 +163,7 @@ public class ToolInboundService {
         try {
             return readTx().execute(s -> entitlement(o.caller(), text(a, "sub"), text(a, "productCode")));
         } catch (RuntimeException e) {
-            log.warn("get_entitlement failed: {}", e.toString());
+            log.warn("get_entitlement failed: {}", describe(e));
             return ToolResult.retry("INTERNAL", "The platform could not answer.");
         }
     }
@@ -208,6 +209,15 @@ public class ToolInboundService {
         return idempotency.once(azp, key, tool, () -> work.apply(o.caller()), e -> translate(tool, e));
     }
 
+    /** A failure for the log without its message: a database error can quote the data being written (an e-mail address). */
+    private static String describe(Throwable t) {
+        Throwable root = t;
+        for (int i = 0; i < 10 && root.getCause() != null && root.getCause() != root; i++) {
+            root = root.getCause();
+        }
+        return t.getClass().getSimpleName() + (root != t ? " caused by " + root.getClass().getSimpleName() : "");
+    }
+
     /** The rules of the platform's own services, as contract results. */
     private ToolResult translate(String tool, RuntimeException e) {
         if (e instanceof IllegalArgumentException) {
@@ -223,7 +233,7 @@ public class ToolInboundService {
         if (e instanceof SeatLimitExceededException) {
             return ToolResult.rejected("SEAT_LIMIT_EXCEEDED", e.getMessage());
         }
-        log.warn("Tool call {} failed: {}", tool, e.toString());
+        log.warn("Tool call {} failed: {}", tool, describe(e));
         return ToolResult.retry("INTERNAL", "The platform could not complete the call.");
     }
 
@@ -408,7 +418,10 @@ public class ToolInboundService {
         return answer(true, "OK", endsAt, access.get().getProductRole());
     }
 
-    private static ToolResult answer(boolean allowed, String reason, String endsAt, String productRole) {
+    private ToolResult answer(boolean allowed, String reason, String endsAt, String productRole) {
+        if (!allowed) {
+            metrics.entitlementDenied(reason);
+        }
         Map<String, Object> d = new LinkedHashMap<>();
         d.put("allowed", allowed);
         d.put("reason", reason);

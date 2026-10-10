@@ -1,6 +1,6 @@
 # Test plan — REQ-INT-003 Platform ↔ tool synchronization
 
-Status: phases 1–7 built (FRD Approved 2026-10-09; phases 1–6 in the Macro repository, phase 7 here — cases TC-INT-051 to TC-INT-058 are in this folder); cases TC-INT-018–034 are written and automated there, see `test-cases/integration/platform-sync.md` in that repository). Individual test cases `TC-INT-018` onward are written with the phase that builds each behaviour, in the repository where it is built; this plan fixes the scope and numbering.
+Status: phases 1–8 built (TC-INT-059 to TC-INT-064 are in this folder, run against a real Macro Planner process; no staging pair exists yet) (FRD Approved 2026-10-09; phases 1–6 in the Macro repository, phase 7 here — cases TC-INT-051 to TC-INT-058 are in this folder); cases TC-INT-018–034 are written and automated there, see `test-cases/integration/platform-sync.md` in that repository). Individual test cases `TC-INT-018` onward are written with the phase that builds each behaviour, in the repository where it is built; this plan fixes the scope and numbering.
 
 Acceptance source: [acceptance criteria](../../../docs/02-requirements/FRD/platform-tool-sync/acceptance-criteria.md). Contract: [contract v1](../../../docs/09-integrations/platform-tool-contract-v1.md). Build order: [phase plan](../../../docs/09-integrations/platform-tool-sync-plan.md).
 
@@ -13,5 +13,5 @@ Acceptance source: [acceptance criteria](../../../docs/02-requirements/FRD/platf
 | TC-INT-039 – 046 | Entitlement matrix, subscription end at 23:59:00.000 +05:30, revocation within 5 minutes, sensitive action fail-closed, first-login closed (AC-7–AC-10) | 5 | Macro | Yes |
 | TC-INT-047 – 050 | Provisioning idempotency, failure and resume, adoption dry run, no deletion on expiry (AC-12) | 6 | Macro | Yes |
 | TC-INT-051 – 058 | Event publishing, versions, fan-out only to subscribed and ready tools, per-tool failure isolation, retry then FAILED, replay, MCP server guard, end-time storage and migration (AC-1, AC-2, AC-8) | 7 | EIS | Yes |
-| TC-INT-059 – 064 | End-to-end scenarios on a staging pair, reconcile repair, metrics, security pass (AC-14–AC-16) | 8 | Both | Partly |
+| TC-INT-059 – 064 | End-to-end scenarios (provision and full sync; hierarchy and people; single writer and denials; tool down and reconcile repair), metrics, security pass (AC-14–AC-16) | 8 | Both | Yes (end to end opt-in, on one machine; a staging pair is still to be run by hand) |
 | TC-INT-065 + | Per-tool onboarding checklist runs | 9 | Each tool | Yes |
