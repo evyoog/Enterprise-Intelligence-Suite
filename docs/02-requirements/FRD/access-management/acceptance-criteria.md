@@ -1,6 +1,6 @@
 # Acceptance criteria — Access management (REQ-TEN-005)
 
-Functional test cases are written in `test-cases/functional/access-management/` when the FRD is approved and built. UAT scripts: [test-cases/UAT/access-management](../../../../test-cases/UAT/access-management/README.md).
+Functional test cases: [`test-cases/functional/access-management/`](../../../../test-cases/functional/access-management/TESTPLAN-TEN-005.md) (TC-TEN-068 to TC-TEN-079, built 2026-10-12). UAT scripts: [test-cases/UAT/access-management](../../../../test-cases/UAT/access-management/README.md).
 
 | ID | Requirement | Criterion |
 |---|---|---|
@@ -13,7 +13,7 @@ Functional test cases are written in `test-cases/functional/access-management/` 
 | AC-7 | .4, BR-11 | **Given** default access **when** a Member tries to suspend an organization subscription **then** it is refused (403) and an Organization admin can do it. |
 | AC-8 | .4 | **Given** an admin grants *Manage subscriptions* to member M **then** M can suspend, reactivate, cancel, change plan and change seats of organization subscriptions; after the override is reset M cannot. |
 | AC-9 | .5, BR-7 | **Given** product C is not in the organization's active subscriptions **then** it is not listed in Product access and a grant through the API is refused. |
-| AC-10 | .5, BR-8 | **Given** product access consumes seats (Open question 3) and no seat is free **then** the toggle is disabled with "No free seats on {product}" and the API refuses the grant. |
+| AC-10 | .5, BR-8 | **Given** named seats per product (AM-3 B) and no free seat on the product **then** the toggle is disabled with "No free seats on {product}" and the API refuses the grant. |
 | AC-11 | .6a, BR-2 | **Given** delegated administrator D without *Approve orders* **when** D tries to grant *Approve orders* to a member **then** the toggle is disabled with the reason and the API refuses it. |
 | AC-12 | .6b, BR-4 | **Given** delegated administrator D (not an organization admin) **when** D opens an organization admin's access **then** every control is disabled with "Only organization admins can change an administrator's access" and the API refuses changes. |
 | AC-13 | .6c, BR-3 | **Given** any user **when** they open their own access **then** every control is disabled with "You cannot change your own access" and the API refuses changes to their own role or access. |

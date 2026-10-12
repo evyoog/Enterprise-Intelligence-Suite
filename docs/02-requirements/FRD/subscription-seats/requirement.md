@@ -43,7 +43,7 @@ An organization subscription has a **seat quantity**. Authorized organization us
 ## Engineering defaults (built 2026-10-03, until the open questions are answered)
 | Topic | Default | Where |
 |---|---|---|
-| Seats in use (OQ 3) | A **pool**: every ACTIVE member of the organization uses one seat (the same count the existing seat limit uses) | `SubscriptionSeatService` |
+| Seats in use (OQ 3) | **Superseded by C90 (named seats per product).** Was a **pool**: every ACTIVE member of the organization uses one seat (the same count the existing seat limit uses) | `SubscriptionSeatService` |
 | Enforcement | Adding a member is refused when the active members reach the organization's licensed seats (unchanged) **or** the seat quantity of any of its ACTIVE subscriptions. Platform-admin "allow seat overage" still bypasses both | `OrganizationMemberService.assertSeatAvailable` |
 | Organization seat limit | Increasing a subscription's seats above the organization's licensed seats raises the organization's licensed seats to match, so the purchase takes effect at once. Decreasing never lowers it (platform administrators set it) | `SubscriptionSeatService` |
 | Initial quantity | A new organization subscription starts at the organization's licensed seats (at least the active members, at least 1); existing organization subscriptions were set the same way by the migration | `SubscriptionService.subscribeOrganization`, `V018` |
@@ -71,5 +71,5 @@ Organization members and seat limit (REQ-TEN-*), subscription lifecycle (REQ-SUB
 |---|---|---|
 | 1 | **Billing of a mid-term change:** is an increase charged immediately (prorated) or from the next renewal? Is a decrease credited? Change plan has no proration today ([C38](../../../01-business/roadmap/open-decisions.md#c38)). | Yes |
 | 2 | **Who may change seats:** organization admins only, or a billing permission (D16 not decided)? | No — confirm in review |
-| 3 | **Seat assignment:** is a seat a pool used by any member, or assigned to named members? | No — confirm in review |
+| 3 | ✅ **Answered by [C90](../../../01-business/roadmap/open-decisions.md#c90) (AM-3 B): named seats per product** — a member uses a seat of a product only while it is ON for them (REQ-TEN-005). **Original question:** **Seat assignment:** is a seat a pool used by any member, or assigned to named members? | No — confirm in review |
 | 4 | Do seat changes on organization subscriptions go through **order approval** (REQ-ORD-001)? | No — confirm in review |

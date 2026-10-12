@@ -15,6 +15,10 @@ Requirement: [REQ-TEN-005](../../02-requirements/FRD/access-management/requireme
 | PUT | `/organization/me/access/roles/{role}/defaults` | Save role defaults. Body like the overrides body without `reset`. Query `preview=true` returns the impact without saving | 200 (`affectedMembers`) | 400, 403 |
 | POST | `/organization/me/access/bulk` | Grant or remove one item for several members. Body `{ "action": "GRANT", "item": "product:7", "memberIds": [..], "preview": true }` | 200 (`applied`, `skipped[{memberId, reason}]`) | 400, 403 |
 
+| GET | `/organization/me/access/activity?page=&size=` | Access changes from the organization audit log (Activity tab) | 200 | 403 |
+
+Built 2026-10-12 ([C90](../../01-business/roadmap/open-decisions.md#c90)). Differences from the draft above: the members list takes `role`, `productId`, `custom` and `q` (not `reviewedBefore` filtering by default values); a seat refusal is a 409 whose message is "No free seats on {product}" (no separate `NO_FREE_SEAT` code); an individual value equal to the role default is stored as no override; a refusal by a guard rail is a 403 whose message names the rule.
+
 Reused, unchanged: `PATCH /organization/me/members/{id}/role` (role, last-admin guard; now also BR-3/BR-4), `POST /organization/me/members/{id}/access-review` (mark reviewed), `GET /organization/me/audit-logs` (Activity tab, filtered to access actions).
 
 Organization subscription actions (D16, BR-11), new, requiring *Manage subscriptions*: `POST /organization/me/subscriptions/{id}/suspend`, `/reactivate`, `/cancel`, `PATCH /organization/me/subscriptions/{id}/plan`; the existing `PATCH /organization/me/subscriptions/{id}/seats` moves from `MANAGE_ORGANIZATION` to *Manage subscriptions*.
