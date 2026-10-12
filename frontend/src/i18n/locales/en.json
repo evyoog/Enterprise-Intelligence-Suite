@@ -1378,6 +1378,43 @@
         "lastError": "Last error",
         "payload": "Payload",
         "receipts": "Handler receipts"
+      },
+      "showFailed": "Show failed",
+      "failedBanner_one": "{{count}} event failed for good and needs attention. Retry it, or fix the receiver and replay.",
+      "failedBanner_other": "{{count}} events failed for good and need attention. Retry them, or fix the receiver and replay.",
+      "replay": {
+        "open": "Replay events",
+        "title": "Replay events",
+        "intro": "Send events that were already delivered to one receiver again, for example after a product was down. Only delivered events in the range are sent, and only to the receiver you choose. Events are available while they are kept (see Settings).",
+        "receiver": "Receiver",
+        "noReceivers": "No receivers are registered.",
+        "rangeError": "The last day must not be before the first day.",
+        "preview": "Preview",
+        "send": "Replay now",
+        "cancel": "Cancel",
+        "error": "Could not replay these events.",
+        "previewSummary_one": "{{count}} event would be sent to {{receiver}}.",
+        "previewSummary_other": "{{count}} events would be sent to {{receiver}}.",
+        "tooMany": "One replay can send at most {{limit}}. Choose a shorter range or an event type.",
+        "doneSummary": "Replay to {{receiver}}: {{replayed}} sent, {{failed}} failed.",
+        "failures": "Events that failed"
+      },
+      "settings": {
+        "open": "Settings",
+        "title": "Event platform settings",
+        "retention": "Keep delivered events for (days)",
+        "retentionHelp": "30 days by default. Replay only works for events that are still kept.",
+        "retentionRange": "Enter a whole number of days from 1 to 3650.",
+        "alerts": "When an event fails for good",
+        "alertsHelp": "The people below are told when an event has used all its attempts. Everyone with access to this screen also sees the failed count at the top.",
+        "recipients": "Email addresses to alert",
+        "recipientsHelp": "One per line, up to 20. People with an account also get the notice in the app.",
+        "inApp": "Notify in the app",
+        "email": "Notify by email",
+        "save": "Save settings",
+        "saved": "Settings saved.",
+        "saveError": "Could not save the settings.",
+        "loadError": "Could not load the settings."
       }
     },
     "apiKeys": {

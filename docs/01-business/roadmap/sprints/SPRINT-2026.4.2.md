@@ -46,7 +46,7 @@
 | [platform-administration](../../../02-requirements/FRD/platform-administration/requirement.md) | REQ-GOV-001 | 15.01.01 (currencies, feature flags, languages), 15.01.02 (regions) | Approved |
 | [tenant-lifecycle](../../../02-requirements/FRD/tenant-lifecycle/requirement.md) | REQ-TEN-004 | 05.02.01.03, 05.02.01.05 (.01/.02/.04 satisfied by existing code) | Approved |
 | [api-management](../../../02-requirements/FRD/api-management/requirement.md) | REQ-INT-001 | 13.01.01.03, 13.01.02.01–.04 (13.01.01.02 partly; .01, .04 Not specified) | Draft — built 2026-10-03 at the product owner's request |
-| [event-platform](../../../02-requirements/FRD/event-platform/requirement.md) | REQ-INT-002 | 13.03.01.01–.04 (.05 Replay Not specified) | Draft — built 2026-10-03 at the product owner's request |
+| [event-platform](../../../02-requirements/FRD/event-platform/requirement.md) | REQ-INT-002 | 13.03.01.01–.05 | Draft — built 2026-10-03 at the product owner's request |
 
 ### Progress (as of 2026-10-03)
 
@@ -56,7 +56,7 @@
 | 15.01.02 Global Settings (regions) | Partly done | Regions built; Configure defaults, Manage templates not built |
 | 15.03 Audit | Done | Already built early in 2026.3.3 (see that sprint's own audit trail work) |
 | 13a 13.01 API Management | Done (this FRD's scope) | API keys, rate limits, `/v1` alias, per-key usage ([REQ-INT-001](../../../02-requirements/FRD/api-management/requirement.md)); FRD still Draft, open questions listed there |
-| 13a 13.03 Event Platform | Done (this FRD's scope) | Outbox, dispatcher, retries, admin events view ([REQ-INT-002](../../../02-requirements/FRD/event-platform/requirement.md)); Replay not built; FRD still Draft |
+| 13a 13.03 Event Platform | Done (this FRD's scope) | Outbox, dispatcher, retries, admin events view ([REQ-INT-002](../../../02-requirements/FRD/event-platform/requirement.md)); Replay, retention setting and failure alerts built 2026-10-12 ([C91](../open-decisions.md#c91)); FRD still Draft |
 | 05.02 Tenant Lifecycle | Done (this FRD's scope) | Assign region, tenant policies built; Create/Configure tenant, Configure isolation satisfied by existing code (C37) |
 | 05.03.02 Role Assignment / 06.02.01 RBAC — Access management (REQ-TEN-005) | Built 2026-10-12 | Decisions C65 (D16) and [C90](../open-decisions.md#c90) (AM-0 to AM-10). Access management screen, role defaults, overrides, bulk, activity, named seats per product, organization subscription actions, billing permission. Migration V030 |
 | 05.03.01 Invite/Create user | Closed | Invite user was built in 2026.4.1 ([C84](../open-decisions.md#c84)); Create user was removed from the MVP ([C87](../open-decisions.md#c87)). Nothing is left to carry |
@@ -105,7 +105,7 @@ Full breakdown: [applications/13-integration-api-platform.md](../applications/13
 |---|---|---|---|---|
 | [13.01 API Management](../applications/13-integration-api-platform.md#1301-api-management) | 13.01.01 API Lifecycle | Register API; Publish API; Version API; Deprecate API | P0 | Commit — Version **Done**, Publish partly (OpenAPI), Register and Deprecate **Not specified** ([api-management](../../../02-requirements/FRD/api-management/requirement.md)) |
 | [13.01 API Management](../applications/13-integration-api-platform.md#1301-api-management) | 13.01.02 API Security | Authenticate API; Authorize API; Rate limit API; Monitor API | P0 | Commit — **Done** (Monitor partly: per-key usage) |
-| [13.03 Event Platform](../applications/13-integration-api-platform.md#1303-event-platform) | 13.03.01 Event Bus | Publish event; Subscribe to event; Route event; Retry event; Replay event | P0 | Commit — **Done** except Replay (**Not specified**) ([event-platform](../../../02-requirements/FRD/event-platform/requirement.md)) |
+| [13.03 Event Platform](../applications/13-integration-api-platform.md#1303-event-platform) | 13.03.01 Event Bus | Publish event; Subscribe to event; Route event; Retry event; Replay event | P0 | Commit — **Done** (Replay built 2026-10-12, [C91](../open-decisions.md#c91)) ([event-platform](../../../02-requirements/FRD/event-platform/requirement.md)) |
 
 ### Dependencies
 

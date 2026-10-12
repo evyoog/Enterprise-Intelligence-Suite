@@ -5,7 +5,8 @@
 **Owner:** Product owner
 **Approved by / on:** Not yet approved
 **Decision:** [C62](../../../01-business/roadmap/open-decisions.md#c62) (answer to D13, option A)
-**Built:** 2026-10-03 at the product owner's request ("build the code"), with the engineering defaults below. Test cases: [TESTPLAN-INT-002](../../../../test-cases/functional/event-platform/TESTPLAN-INT-002.md).
+**Answers EV-1 to EV-4:** recorded 2026-10-12 ([C91](../../../01-business/roadmap/open-decisions.md#c91)); replay, the retention setting and failure alerts built the same day.
+**Built:** 2026-10-03 at the product owner's request ("build the code"), with the engineering defaults below; extended 2026-10-12. Test cases: [TESTPLAN-INT-002](../../../../test-cases/functional/event-platform/TESTPLAN-INT-002.md).
 
 | Field | Value |
 |---|---|
@@ -23,7 +24,7 @@
 | 13.03.01.02 | Subscribe to event | Yes, as in-application handlers (.3, .4). External subscribers (webhooks, 13.04) are D19 — not covered |
 | 13.03.01.03 | Route event | Yes: by event type to the handlers that declare it (.3) |
 | 13.03.01.04 | Retry event | Yes: automatic retries and admin retry (.3, .6) |
-| 13.03.01.05 | Replay event | No. Replaying DELIVERED events is Not specified |
+| 13.03.01.05 | Replay event | Yes: re-send the delivered events of a time range to one receiver (.9). Answered by [C91](../../../01-business/roadmap/open-decisions.md#c91) (EV-1 B) |
 
 ## Summary
 Every business change that other features react to writes an event to an **outbox table in the same database transaction** as the change. A background dispatcher delivers pending events, in order per aggregate, to the in-application handlers registered for their type, with retries. Platform administrators can see events and retry failed ones. No external message broker is used ([C62](../../../01-business/roadmap/open-decisions.md#c62)).
@@ -44,6 +45,9 @@ Every business change that other features react to writes an event to an **outbo
 | REQ-INT-002.6 | **Admin view:** a platform administrator can list events (filter by type, status, date), open one, and **retry** a FAILED event (back to PENDING, attempts reset). | Should |
 | REQ-INT-002.7 | **Retention:** DELIVERED events older than the retention period are removed (period: Open question 2). | Should |
 | REQ-INT-002.8 | **First events published:** see the [event catalogue](#event-catalogue). | Must |
+| REQ-INT-002.9 | **Replay (C91, EV-1 B):** a platform administrator chooses one **receiver**, a first and last day (UTC, inclusive) and optionally an event type, sees how many events match (**preview**) and re-sends them, oldest first. Only DELIVERED events are replayed, only to that receiver (others are not called) and the event's own status is not changed; a receiver must be safe to run twice. One replay is limited to 1000 events (`app.events.replay.max-events`); a wider range is refused. Failures are reported per event and do not stop the replay. Every replay is audited. Events exist only while retention (.10) keeps them. | Must |
+| REQ-INT-002.10 | **Retention setting (C91, EV-3):** delivered events are kept for 30 days by default; a platform administrator can change it (1 to 3650 days) on the Platform events screen and the daily job uses the new value. Changes are audited. | Must |
+| REQ-INT-002.11 | **Failure alert (C91, EV-4 "both"):** when an event fails for good (all attempts used), the addresses on the settings screen (up to 20) are told in the app (those with an account) and by email; each channel can be switched off. The events screen shows a banner with the number of FAILED events to everyone who may open it. A failed alert never fails the dispatcher. | Must |
 
 ## Event catalogue
 Names reuse the workbook's Events column where one matches (`CheckoutCompleted`, `PaymentAuthorized`); the others are **new names** introduced here.
@@ -70,8 +74,8 @@ The workbook's `ProvisioningStarted` belongs to [REQ-ORD-002](../provisioning-co
 | Topic | Default | Where |
 |---|---|---|
 | Retries (OQ 1) | 10 attempts; delay doubles from 30 seconds (30 s, 1 min, 2 min, …), capped at 6 hours | `OutboxDispatcher` |
-| Retention (OQ 2) | DELIVERED events older than 30 days are removed by a daily job | `OutboxRetentionJob` |
-| Failure notification (OQ 3) | None; FAILED events are visible in the admin view | — |
+| Retention (OQ 2) | **Answered by C91 (EV-3):** 30 days by default, configurable on the settings screen; the daily job removes older DELIVERED events | `OutboxRetentionJob`, `EventPlatformSettingsService` |
+| Failure notification (OQ 3) | **Answered by C91 (EV-4):** in-app and email to the addresses on the settings screen, plus a banner on the events screen | `EventFailureAlertService` |
 | Dispatcher interval | Every 5 seconds, 100 events per run (`app.events.dispatcher.*`) | `application.yml` |
 | Permission | New platform permission `MANAGE_INTEGRATIONS` (also used by REQ-INT-001's admin usage view) | `RbacSeeder` |
 
@@ -80,7 +84,7 @@ The workbook's `ProvisioningStarted` belongs to [REQ-ORD-002](../provisioning-co
 
 ## Out of scope
 - External delivery (webhooks, D19) and any message broker ([C62](../../../01-business/roadmap/open-decisions.md#c62)).
-- Replaying delivered events (13.03.01.05).
+- Replay to external receivers (webhooks, D19) and replaying FAILED or PENDING events in bulk.
 - Moving existing synchronous work (invoice generation, notifications) onto handlers: those keep running inside their own transactions; the events describe what happened.
 
 ## Dependencies
@@ -99,6 +103,7 @@ The workbook's `ProvisioningStarted` belongs to [REQ-ORD-002](../provisioning-co
 ## Open questions
 | # | Question | Blocks approval |
 |---|---|---|
-| 1 | Maximum retry attempts and delay schedule (proposed default — confirm: 10 attempts, doubling from 30 seconds). | No — confirm in review |
-| 2 | Retention period for delivered events (built default: 30 days — confirm). | No — confirm in review |
-| 3 | Should failed events notify an administrator (email or in-app)? | No — confirm in review |
+| 1 | Maximum retry attempts and delay schedule. **Answered (EV-2 A):** 10 attempts, doubling from 30 seconds. | Answered |
+| 2 | Retention period for delivered events. **Answered (EV-3 A):** 30 days by default, configurable. | Answered |
+| 3 | Should failed events notify an administrator? **Answered (EV-4):** in-app and email. | Answered |
+| 4 | Replay. **Answered (EV-1 B):** all events in a time range to one receiver. | Answered |

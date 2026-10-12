@@ -1567,3 +1567,17 @@ FROM organization_product_access a
 WHERE a.source_group_id IS NULL
   AND NOT EXISTS (SELECT 1 FROM member_access_override o
                   WHERE o.organization_member_id = a.organization_member_id AND o.item_type = 'PRODUCT' AND o.product_id = a.product_id);
+
+-- REQ-INT-002 (C91): event platform settings (retention and failure alerts). Migration V031.
+
+CREATE TABLE IF NOT EXISTS event_platform_setting (
+    id BIGINT PRIMARY KEY,
+    retention_days INT NOT NULL DEFAULT 30 CHECK (retention_days BETWEEN 1 AND 3650),
+    alert_recipients VARCHAR(2000),
+    alert_in_app BOOLEAN NOT NULL DEFAULT TRUE,
+    alert_email BOOLEAN NOT NULL DEFAULT TRUE,
+    updated_by VARCHAR(255),
+    updated_at TIMESTAMP NOT NULL DEFAULT now()
+);
+
+INSERT INTO event_platform_setting (id) VALUES (1) ON CONFLICT (id) DO NOTHING;

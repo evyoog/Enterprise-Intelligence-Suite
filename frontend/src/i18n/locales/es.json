@@ -1378,6 +1378,43 @@
         "lastError": "Último error",
         "payload": "Contenido",
         "receipts": "Recibos de manejadores"
+      },
+      "showFailed": "Ver fallidos",
+      "failedBanner_one": "{{count}} evento falló definitivamente y requiere atención. Reintente o corrija el receptor y repita el envío.",
+      "failedBanner_other": "{{count}} eventos fallaron definitivamente y requieren atención. Reintente o corrija el receptor y repita el envío.",
+      "replay": {
+        "open": "Reenviar eventos",
+        "title": "Reenviar eventos",
+        "intro": "Vuelva a enviar a un receptor eventos que ya se entregaron, por ejemplo tras una caída de un producto. Solo se envían los eventos entregados del rango y solo al receptor elegido. Los eventos están disponibles mientras se conservan (vea Ajustes).",
+        "receiver": "Receptor",
+        "noReceivers": "No hay receptores registrados.",
+        "rangeError": "El último día no puede ser anterior al primero.",
+        "preview": "Vista previa",
+        "send": "Reenviar ahora",
+        "cancel": "Cancelar",
+        "error": "No se pudieron reenviar los eventos.",
+        "previewSummary_one": "Se enviaría {{count}} evento a {{receiver}}.",
+        "previewSummary_other": "Se enviarían {{count}} eventos a {{receiver}}.",
+        "tooMany": "Un reenvío puede enviar como máximo {{limit}}. Elija un rango más corto o un tipo de evento.",
+        "doneSummary": "Reenvío a {{receiver}}: {{replayed}} enviados, {{failed}} fallidos.",
+        "failures": "Eventos que fallaron"
+      },
+      "settings": {
+        "open": "Ajustes",
+        "title": "Ajustes de la plataforma de eventos",
+        "retention": "Conservar eventos entregados (días)",
+        "retentionHelp": "30 días por defecto. El reenvío solo funciona con eventos que aún se conservan.",
+        "retentionRange": "Introduzca un número entero de días de 1 a 3650.",
+        "alerts": "Cuando un evento falla definitivamente",
+        "alertsHelp": "Las personas siguientes reciben un aviso cuando un evento agota sus intentos. Quien tenga acceso a esta pantalla también ve el número de fallidos arriba.",
+        "recipients": "Correos a avisar",
+        "recipientsHelp": "Uno por línea, hasta 20. Quien tenga cuenta también recibe el aviso en la aplicación.",
+        "inApp": "Avisar en la aplicación",
+        "email": "Avisar por correo",
+        "save": "Guardar ajustes",
+        "saved": "Ajustes guardados.",
+        "saveError": "No se pudieron guardar los ajustes.",
+        "loadError": "No se pudieron cargar los ajustes."
       }
     },
     "apiKeys": {

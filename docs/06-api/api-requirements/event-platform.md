@@ -9,6 +9,12 @@ Requirement: [REQ-INT-002](../../02-requirements/FRD/event-platform/requirement.
 | GET | `/admin/events/{id}` | One event with payload and handler receipts | 200 | 403, 404 |
 | POST | `/admin/events/{id}/retry` | Retry a FAILED event (BR-7) | 200 | 403, 404, 409 (`INVALID_STATE`: not FAILED) |
 
+| GET | `/admin/events/summary` | `{pending, failed}` counts of all events (banner on the screen) | 200 | 403 |
+| GET | `/admin/events/receivers` | Names of the receivers a replay can target | 200 | 403 |
+| POST | `/admin/events/replay` | Body `{receiver, from, to, eventType?, preview}` (dates `YYYY-MM-DD`, UTC, inclusive). `preview=true` only counts. Returns `{preview, receiver, matched, replayed, failed, limit, failures[{eventId,eventType,error}]}` (BR-9) | 200 | 400 (missing field, end before start, more than the limit), 403, 404 (unknown receiver) |
+| GET | `/admin/events/settings` | `{retentionDays, alertRecipients[], alertInApp, alertEmail, updatedAt}` | 200 | 403 |
+| PUT | `/admin/events/settings` | Partial update of the same fields (BR-11, BR-12) | 200 | 400, 403 |
+
 ```json
 // GET /admin/events/{id}
 {

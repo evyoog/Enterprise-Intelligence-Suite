@@ -36,6 +36,39 @@ export interface PlatformEventFilter {
   page?: number
 }
 
+/** REQ-INT-002.9 (C91, EV-1 B): re-send the delivered events of a time range (UTC dates, inclusive) to one receiver. */
+export interface ReplayRequest {
+  receiver: string
+  from: string
+  to: string
+  eventType?: string
+  preview: boolean
+}
+
+export interface ReplayResult {
+  preview: boolean
+  receiver: string
+  matched: number
+  replayed: number
+  failed: number
+  limit: number
+  failures: { eventId: string; eventType: string; error: string }[]
+}
+
+/** REQ-INT-002 (C91, EV-3 and EV-4): how long delivered events are kept and who is told when one fails for good. */
+export interface EventPlatformSettings {
+  retentionDays: number
+  alertRecipients: string[]
+  alertInApp: boolean
+  alertEmail: boolean
+  updatedAt: string
+}
+
+export interface EventSummaryCounts {
+  pending: number
+  failed: number
+}
+
 /** REQ-INT-002.6 — AdminEventController (`MANAGE_INTEGRATIONS`). */
 export const adminEventsApi = {
   list: (filter: PlatformEventFilter = {}) => {
@@ -50,4 +83,10 @@ export const adminEventsApi = {
   types: () => apiRequest<string[]>('/admin/events/types'),
   get: (id: number) => apiRequest<PlatformEventDetail>(`/admin/events/${id}`),
   retry: (id: number) => apiRequest<PlatformEventDetail>(`/admin/events/${id}/retry`, { method: 'POST' }),
+  summary: () => apiRequest<EventSummaryCounts>('/admin/events/summary'),
+  receivers: () => apiRequest<string[]>('/admin/events/receivers'),
+  replay: (body: ReplayRequest) => apiRequest<ReplayResult>('/admin/events/replay', { method: 'POST', body: JSON.stringify(body) }),
+  settings: () => apiRequest<EventPlatformSettings>('/admin/events/settings'),
+  updateSettings: (body: { retentionDays?: number; alertRecipients?: string[]; alertInApp?: boolean; alertEmail?: boolean }) =>
+    apiRequest<EventPlatformSettings>('/admin/events/settings', { method: 'PUT', body: JSON.stringify(body) }),
 }

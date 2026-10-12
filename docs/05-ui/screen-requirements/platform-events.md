@@ -18,6 +18,13 @@ Design: C60 corporate standard (page header with icon and accent, tinted table h
 - Pagination: 20 per page.
 - Detail dialog: all fields, payload pretty-printed in a monospace block, handler receipts, last error; **Retry** for FAILED.
 
+## Added 2026-10-12 (C91)
+- **Header actions:** **Replay events** and **Settings**.
+- **Failed banner:** when events failed for good, a red banner "N events failed for good…" with **Show failed** (filters the table).
+- **Replay events dialog:** Receiver (from `/admin/events/receivers`), From, To (default today), optional Event type, **Preview** ("N events would be sent to {receiver}"; a warning when above the limit), **Replay now** (enabled only after a preview with at least one event and within the limit), then "Replay to {receiver}: X sent, Y failed" and the failed events with their errors.
+- **Settings dialog:** "Keep delivered events for (days)" (1 to 3650, 30 by default), "Email addresses to alert" (one per line), switches **Notify in the app** and **Notify by email**, **Save settings**.
+- Strings under `admin.events.replay.*` and `admin.events.settings.*`; axe tests for both dialogs.
+
 ## States
 Loading skeleton; empty "No events match these filters."; errors as-is with **Retry**; toast "Event queued for another attempt." after retry.
 

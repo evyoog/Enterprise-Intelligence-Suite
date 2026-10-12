@@ -29,3 +29,16 @@ Indexes: (status, next_attempt_at); (aggregate_type, aggregate_id, occurred_at);
 | processed_at | Yes | When the handler finished |
 
 Unique (handler_name, event_id) — BR-4.
+
+## event_platform_setting (C91, migration V031)
+One row (`id` = 1), created by the migration and on first use.
+
+| Attribute | Required | Description |
+|---|---|---|
+| id | Yes | Always 1 |
+| retention_days | Yes | How long DELIVERED events are kept; 1 to 3650; default 30 (EV-3) |
+| alert_recipients | No | Comma-separated lower-case email addresses, at most 20 (EV-4) |
+| alert_in_app, alert_email | Yes | Channels of the failure alert, both on by default |
+| updated_by, updated_at | — | Who changed it last (Keycloak subject) and when |
+
+Replay has no table of its own: each replay is one audit entry (`EVENTS_REPLAYED`).

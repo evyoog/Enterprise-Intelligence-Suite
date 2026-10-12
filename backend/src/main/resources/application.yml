@@ -182,7 +182,11 @@ app:
       max-attempts: 10
       initial-delay-seconds: 30
       max-delay-seconds: 21600
+    # Initial value only: the platform administrator changes retention on the Platform events screen (C91, EV-3).
     retention-days: 30
+    # C91 (EV-1 B): the most events one replay may re-send.
+    replay:
+      max-events: 1000
   # REQ-INT-001 (C61): requests per minute, fixed windows, per backend
   # instance. Engineering defaults until the FRD's open question 2 is answered.
   rate-limit:

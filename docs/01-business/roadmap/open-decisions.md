@@ -757,6 +757,19 @@ Screen: [business-dashboard.md](../../05-ui/screen-requirements/business-dashboa
 - **Behaviour changes to be aware of:** members of existing organizations gain access to every entitled product at first start after V030 (AM-1), within the named seats; an organization's seat changes now look at the members using that product only; members who held `MANAGE_ORGANIZATION` only by individual grant lose billing until given *Manage billing* (none exist today).
 **Still Not specified:** custom roles; groups carrying access; splitting `MANAGE_ORGANIZATION`; the member self-service "request access" flow; seat reservation or a waiting list when a product has no free seats; changing the product role per member from the screen.
 
+### C91
+**Decision (product owner, 2026-10-12) — 13.03.01.05 Event replay and event platform settings, questions EV-1 to EV-4 (sprint [2026.4.2](sprints/SPRINT-2026.4.2.md)):** answers recorded, followed by "start develop". FRD [REQ-INT-002](../../02-requirements/FRD/event-platform/requirement.md) is updated and built.
+- **EV-1 B:** replay = an administrator re-sends **all events in a time range to one receiver** (also covers one event, by choosing a short range and an event type).
+- **EV-2 A:** retries stay as built (10 attempts, 30 s doubling, capped at 6 hours).
+- **EV-3 A with a note:** 30 days by default, **and configurable**: a platform administrator changes it on the Platform events screen (1 to 3650 days). The daily job reads the setting.
+- **EV-4 (note "Both A and B"):** when an event fails for good, people are told **in the app and by email**.
+- **Defaults applied (not asked):**
+  - A "receiver" is an in-application handler; replay sends only **DELIVERED** events (a FAILED event is retried, a PENDING one is on its way), only to the chosen receiver, oldest first, and does not change the event's own status. The receiver must be safe to run twice.
+  - One replay is limited to 1000 events (`app.events.replay.max-events`); a wider range is refused so it can be split; a preview counts first. Every replay is audited (`EVENTS_REPLAYED`).
+  - The failure alert goes to a **list of email addresses** kept on the settings screen (up to 20), because platform administrators are Keycloak users and the app cannot list "everyone with Manage integrations". People on the list who have an account also get the notice in the notification center (and email unless they muted the category); the others get the email only. Everyone with access to the events screen also sees a banner with the number of failed events.
+  - Settings changes are audited (`EVENT_SETTINGS_CHANGED`). No separate replay history table: the audit log is the record.
+**Still Not specified:** replay to an external receiver (webhooks, D19); replaying FAILED or PENDING events in bulk; a per-receiver replay history; alerts by SMS or chat; per-event-type retention.
+
 ### DN-2 Sprint scope, length and dates
 **Decision:**
 - **Sprint length:** sprints are **calendar months**. Sprint `.1`, `.2` and `.3` are the first, second and third months of the PI's calendar quarter. Example: 2026.3.3 = 1–30 Sep 2026; 2026.4.1 = 1–31 Oct 2026.
@@ -875,6 +888,7 @@ These documents are **not** changed by this file. Update them to match:
 | C88 | Built 2026-10-12 (PR-1 A, PR-2 A). FRD REQ-TEN-009, migration V028. Projects = group + product access. Remaining: apply V028; confirm the defaults in C88 |
 | C89 | Built 2026-10-12 (PC-1 to PC-6 A; PC-3 with video upload to S3). FRD REQ-CAT-004.6, migration V029. Remaining: apply V029; a real-bucket check of video upload and playback (TC-CAT-032, TC-CAT-047) |
 | C90 | Built 2026-10-12 (AM-0 A, AM-1 A, AM-2 A, AM-3 B, AM-4 A, AM-5 A, AM-6 both, AM-7 A, AM-8 A, AM-9 A, AM-10 A). FRD REQ-TEN-005, migration V030. Remaining: apply V030; confirm the defaults in C90; run UAT-TEN-005-01 to -04 |
+| C91 | Built 2026-10-12 (EV-1 B, EV-2 A, EV-3 A + configurable, EV-4 both). FRD REQ-INT-002.9 to .11, migration V031. Remaining: apply V031; set the alert addresses on the Platform events screen; a replay against a real receiver once provisioning (REQ-ORD-002) or webhooks exist |
 | C54 | The wider navigation-consolidation / shared `<DataTable>`/`<FilterBar>` pass ([C44](#c44)) would make the business dashboard's new click-to-filter table and sort behavior reusable elsewhere instead of page-local — still carried, same as before. `database/seed/README.md` now points to [docs/07-database/demo-data.md](../../07-database/demo-data.md) for exactly what `DemoDataSeeder` adds |
 
 **Done (2026-09-26), no longer follow-up:** C31 (sprint pages 2026.4.1 through 2027.2.2, and the "Sprint" field on application pages 02, 03, 04, 05, 10, 11, 12, 13, 15, all updated to the corrected sequence — this superseded the older "C21: add the general policy engine to `SPRINT-2027.2.2.md`" and "C16, C17: add the deferred functions to `SPRINT-2027.1.3.md`" rows, and the "C21: add the agent controls to `SPRINT-2027.1.2.md`" row, which are now folded into C31's own sprint pages); C32–C35 (FRDs written and Approved, sprint 2026.4.1 built, carry-over recorded on `SPRINT-2026.4.2.md`).
