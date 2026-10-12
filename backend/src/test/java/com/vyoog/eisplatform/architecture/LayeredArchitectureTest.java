@@ -77,11 +77,13 @@ class LayeredArchitectureTest {
         // - ..modules.offering.. (REQ-CAT-005, 02.02 Offering management, sprint 2026.4.1,
         //   C85) groups catalog products and stores per-product rules (audience, "works
         //   with"), reusing Product.dependsOn as the prerequisite — no second catalog.
+        // - ..modules.access.. (REQ-TEN-005, 05.03.02 Access management, sprint 2026.4.2, C90) reads the catalog to
+        //   know which products are active and to name them on the screen — no second catalog.
         ArchRule rule = classes().that().resideInAPackage("..modules.product..")
             .should().onlyHaveDependentClassesThat().resideInAnyPackage(
                 "..modules.product..", "..modules.platform..", "..modules.registration..", "..modules.dashboard..",
                 "..modules.servicestatus..", "..modules.administration..", "..modules.search..", "..modules.reviews..",
-                "..modules.billing..", "..modules.cart..", "..modules.productcontent..", "..modules.orgdirectory..", "..modules.offering..", "..modules.project..",
+                "..modules.billing..", "..modules.cart..", "..modules.productcontent..", "..modules.orgdirectory..", "..modules.offering..", "..modules.project..", "..modules.access..",
                 "com.vyoog.eisplatform", "..config.."
             );
 

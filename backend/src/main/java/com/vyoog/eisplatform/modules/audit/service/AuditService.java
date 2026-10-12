@@ -96,6 +96,17 @@ public class AuditService {
             result.getTotalElements(), safePage, safeSize);
     }
 
+    /** REQ-TEN-005 Activity tab: one organization's entries for any of the given actions. */
+    public AuditLogPageDto searchActions(Long organizationId, java.util.Collection<String> actions, int page, int size) {
+        Specification<AuditLog> spec = Specification.where(AuditSpecifications.hasOrganizationId(organizationId))
+            .and(AuditSpecifications.hasActionIn(actions));
+        int safeSize = size <= 0 || size > 200 ? 50 : size;
+        int safePage = Math.max(page, 0);
+        var result = auditLogRepository.findAll(spec, PageRequest.of(safePage, safeSize, Sort.by(Sort.Direction.DESC, "timestamp")));
+        return new AuditLogPageDto(result.getContent().stream().map(this::toDto).toList(),
+            result.getTotalElements(), safePage, safeSize);
+    }
+
     private AuditLogDto toDto(AuditLog log) {
         return new AuditLogDto(log.getId(), log.getTimestamp(), log.getAction(), log.getActorCustomerId(),
             log.getActorEmail(), log.getTargetType(), log.getTargetId(), log.getOrganizationId(),

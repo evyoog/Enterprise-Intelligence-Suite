@@ -75,7 +75,9 @@ class AuthorizationServiceTest {
         assertThat(authorizationService.listOrganizationPermissions(OrgRole.ORG_ADMIN))
             .containsExactlyInAnyOrder("MANAGE_ORGANIZATION", "MANAGE_USERS", "MANAGE_PRODUCT_ACCESS", "MANAGE_PRIVILEGED_ACCESS", "MANAGE_ORDERS",
                 // REQ-TEN-008 (C84): sending invitations.
-                "INVITE_USERS");
+                "INVITE_USERS",
+                // REQ-TEN-005 (C65, C90).
+                "MANAGE_ACCESS", "MANAGE_SUBSCRIPTIONS", "MANAGE_ORGANIZATION_BILLING");
     }
 
     @Test

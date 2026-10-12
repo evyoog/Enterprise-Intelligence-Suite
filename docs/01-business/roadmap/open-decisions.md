@@ -740,6 +740,23 @@ Screen: [business-dashboard.md](../../05-ui/screen-requirements/business-dashboa
 - **Defaults applied (not asked):** MP4 and WebM only (MOV is left out because it does not play in every browser); 500 MB (one presigned upload; configurable with `EIS_PRODUCT_CONTENT_VIDEO_MAX_SIZE`); no thumbnail, captions or transcoding for a hosted video; the knowledge-base video library stays separate.
 **Still Not specified:** captions and thumbnails for hosted videos; files over 500 MB (multipart upload, as the knowledge library has); adaptive streaming; the CDN, the logo move and the other items already listed in [C81](#c81). **Limitation (unchanged):** no real S3 bucket was available, so uploads and playback are tested against an in-memory stand-in; TC-CAT-032 and the new TC-CAT-045 to TC-CAT-047 (manual part) need a test bucket.
 
+### C90
+**Decision (product owner, 2026-10-12) — 05.03.02 Access management, questions AM-0 to AM-10 (sprint [2026.4.2](sprints/SPRINT-2026.4.2.md)):** answers recorded, followed by "start develop". FRD [REQ-TEN-005](../../02-requirements/FRD/access-management/requirement.md) is updated and built.
+- **AM-0 A:** approved with these answers.
+- **AM-1 A:** every entitled (paid) product is ON for members by default; members get no management permissions.
+- **AM-2 A:** billing has its own permission `MANAGE_ORGANIZATION_BILLING` ("Manage billing"); `MANAGE_ORGANIZATION` no longer opens billing.
+- **AM-3 B (named seats per product):** a member uses one seat of product X only while X is ON for them; the seats of X are the quantity of the organization's ACTIVE subscription to X. This replaces the shared pool of REQ-SUB-003 ([C63](#c63)); the organization's licensed-seat limit on the number of members and the platform administrator's seat-overage switch stay.
+- **AM-4 A:** custom organization roles come later; role defaults plus individual overrides for now.
+- **AM-5 A:** groups carry no access or permissions.
+- **AM-6 (note "Both A and B"):** a member is told **in the app and by email** when their access changes (a user's mute of the Organization category still applies to the email). One notice per change request lists everything that changed.
+- **AM-7 A:** one default product role, `USER`; an administrator does not choose a product role on the screen. (The older assign-product-access API still accepts a role.)
+- **AM-8 A:** `MANAGE_ORGANIZATION` stays one permission.
+- **AM-9 A:** the platform's `ORG_ADMIN` and `MEMBER` role definitions are the starting defaults of every organization; each organization can change its own role defaults.
+- **AM-10 A:** *Manage access* does **not** include *Manage product access* or *Manage members*; they are granted separately.
+- **Defaults applied (not asked):** only direct product access is calculated (access that comes from a project, REQ-TEN-009, is left to the project); when no seat is free a default-ON product simply stays off for that member (shown as "No free seats") and is turned on when a seat frees up; an individual override equal to the role default is stored as no override; the platform-side Roles & permissions merge (REQ-TEN-005.11) keeps both existing pages and adds a link between them; an organization's role defaults are not copied when the platform definition changes later.
+- **Behaviour changes to be aware of:** members of existing organizations gain access to every entitled product at first start after V030 (AM-1), within the named seats; an organization's seat changes now look at the members using that product only; members who held `MANAGE_ORGANIZATION` only by individual grant lose billing until given *Manage billing* (none exist today).
+**Still Not specified:** custom roles; groups carrying access; splitting `MANAGE_ORGANIZATION`; the member self-service "request access" flow; seat reservation or a waiting list when a product has no free seats; changing the product role per member from the screen.
+
 ### DN-2 Sprint scope, length and dates
 **Decision:**
 - **Sprint length:** sprints are **calendar months**. Sprint `.1`, `.2` and `.3` are the first, second and third months of the PI's calendar quarter. Example: 2026.3.3 = 1–30 Sep 2026; 2026.4.1 = 1–31 Oct 2026.
@@ -857,6 +874,7 @@ These documents are **not** changed by this file. Update them to match:
 | C87 | Built 2026-10-12 (IN-7 A, IN-8 A, IN-9 B, IN-10 A). Create user (05.03.01.02) removed from the MVP; inviter notified on accept or decline (REQ-TEN-008.19, TC-TEN-057 to TC-TEN-059). Remaining: nothing |
 | C88 | Built 2026-10-12 (PR-1 A, PR-2 A). FRD REQ-TEN-009, migration V028. Projects = group + product access. Remaining: apply V028; confirm the defaults in C88 |
 | C89 | Built 2026-10-12 (PC-1 to PC-6 A; PC-3 with video upload to S3). FRD REQ-CAT-004.6, migration V029. Remaining: apply V029; a real-bucket check of video upload and playback (TC-CAT-032, TC-CAT-047) |
+| C90 | Built 2026-10-12 (AM-0 A, AM-1 A, AM-2 A, AM-3 B, AM-4 A, AM-5 A, AM-6 both, AM-7 A, AM-8 A, AM-9 A, AM-10 A). FRD REQ-TEN-005, migration V030. Remaining: apply V030; confirm the defaults in C90; run UAT-TEN-005-01 to -04 |
 | C54 | The wider navigation-consolidation / shared `<DataTable>`/`<FilterBar>` pass ([C44](#c44)) would make the business dashboard's new click-to-filter table and sort behavior reusable elsewhere instead of page-local — still carried, same as before. `database/seed/README.md` now points to [docs/07-database/demo-data.md](../../07-database/demo-data.md) for exactly what `DemoDataSeeder` adds |
 
 **Done (2026-09-26), no longer follow-up:** C31 (sprint pages 2026.4.1 through 2027.2.2, and the "Sprint" field on application pages 02, 03, 04, 05, 10, 11, 12, 13, 15, all updated to the corrected sequence — this superseded the older "C21: add the general policy engine to `SPRINT-2027.2.2.md`" and "C16, C17: add the deferred functions to `SPRINT-2027.1.3.md`" rows, and the "C21: add the agent controls to `SPRINT-2027.1.2.md`" row, which are now folded into C31's own sprint pages); C32–C35 (FRDs written and Approved, sprint 2026.4.1 built, carry-over recorded on `SPRINT-2026.4.2.md`).

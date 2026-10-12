@@ -7,9 +7,9 @@ import lombok.Setter;
 import java.time.Instant;
 
 /**
- * An individual grant (or removal) of one feature permission for one organization member — the
- * REQ-TEN-005 "individual override" design, built only as far as {@code INVITE_USERS} needs it
- * (REQ-TEN-008, C84): permission items only.
+ * An individual grant (or removal) of one feature permission or one product for one organization member — the
+ * REQ-TEN-005 "individual override" (C90). {@code item_type} PERMISSION uses {@code permission_code}; PRODUCT uses
+ * {@code product_id}.
  */
 @Entity
 @Table(name = "member_access_override")
@@ -27,8 +27,11 @@ public class MemberAccessOverride {
     @Column(name = "item_type", nullable = false, length = 20)
     private String itemType = "PERMISSION";
 
-    @Column(name = "permission_code", nullable = false, length = 60)
+    @Column(name = "permission_code", length = 60)
     private String permissionCode;
+
+    @Column(name = "product_id")
+    private Long productId;
 
     @Column(nullable = false)
     private boolean granted;

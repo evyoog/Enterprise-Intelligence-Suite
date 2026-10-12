@@ -58,7 +58,7 @@
 | 13a 13.01 API Management | Done (this FRD's scope) | API keys, rate limits, `/v1` alias, per-key usage ([REQ-INT-001](../../../02-requirements/FRD/api-management/requirement.md)); FRD still Draft, open questions listed there |
 | 13a 13.03 Event Platform | Done (this FRD's scope) | Outbox, dispatcher, retries, admin events view ([REQ-INT-002](../../../02-requirements/FRD/event-platform/requirement.md)); Replay not built; FRD still Draft |
 | 05.02 Tenant Lifecycle | Done (this FRD's scope) | Assign region, tenant policies built; Create/Configure tenant, Configure isolation satisfied by existing code (C37) |
-| 05.03.02 Role Assignment / 06.02.01 RBAC — Access management (REQ-TEN-005) | Specified (Draft) | Decision C65 (D16); FRD, screens, API, data model and UAT scripts written 2026-10-03; build waits for approval |
+| 05.03.02 Role Assignment / 06.02.01 RBAC — Access management (REQ-TEN-005) | Built 2026-10-12 | Decisions C65 (D16) and [C90](../open-decisions.md#c90) (AM-0 to AM-10). Access management screen, role defaults, overrides, bulk, activity, named seats per product, organization subscription actions, billing permission. Migration V030 |
 | 05.03.01 Invite/Create user | Closed | Invite user was built in 2026.4.1 ([C84](../open-decisions.md#c84)); Create user was removed from the MVP ([C87](../open-decisions.md#c87)). Nothing is left to carry |
 | 05.04.02 Projects | Closed | Built in 2026.4.1 ([C88](../open-decisions.md#c88)): a project is a group plus product access. Nothing is left to carry |
 

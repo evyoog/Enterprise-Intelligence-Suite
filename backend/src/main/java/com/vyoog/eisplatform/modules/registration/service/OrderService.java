@@ -59,6 +59,7 @@ public class OrderService {
     private final ProductRepository productRepository;
     private final ProductPlanRepository productPlanRepository;
     private final AuthorizationService authorizationService;
+    private final com.vyoog.eisplatform.modules.authorization.service.MemberAccessService memberAccessService;
     private final SubscriptionService subscriptionService;
     private final NotificationService notificationService;
     private final AuditService auditService;
@@ -85,7 +86,7 @@ public class OrderService {
 
     private OrganizationMember requireManageOrders(Long customerId) {
         OrganizationMember member = resolveMembership(customerId);
-        if (!authorizationService.hasOrganizationPermission(member.getOrgRole(), "MANAGE_ORDERS")) {
+        if (!memberAccessService.hasPermission(member, "MANAGE_ORDERS")) {
             throw new ForbiddenException("You do not have permission to do this");
         }
         return member;

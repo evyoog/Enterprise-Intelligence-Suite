@@ -1,6 +1,6 @@
 # Data model — Access management
 
-[REQ-TEN-005](../../02-requirements/FRD/access-management/requirement.md). Migration (when approved and built): `database/migrations/V020__access_management.sql`, mirrored in `backend/src/main/resources/db/schema.sql`.
+[REQ-TEN-005](../../02-requirements/FRD/access-management/requirement.md). Migration: `database/migrations/V030__access_management.sql` (built 2026-10-12, [C90](../../01-business/roadmap/open-decisions.md#c90)); the table `member_access_override` was created by V026 (invitations) with permission items only, V030 adds product items. Mirrored in `backend/src/main/resources/db/schema.sql`.
 
 ## organization_role_default
 Role defaults per organization. No row for an item = the platform role definition applies (Open question 9).
@@ -16,7 +16,7 @@ Role defaults per organization. No row for an item = the platform role definitio
 | enabled | Yes | Default ON or OFF |
 | updated_by_customer_id, updated_at | Yes | Who and when |
 
-Unique (organization_id, org_role, item_type, permission_code, product_id).
+Two partial unique indexes (permission rows and product rows). A value equal to the platform definition (permissions) or ON (products) is stored as no row.
 
 ## member_access_override
 Individual overrides.
@@ -32,13 +32,16 @@ Individual overrides.
 | set_by_customer_id | Yes | Who set it |
 | set_at | Yes | When |
 
-Unique (organization_member_id, item_type, permission_code, product_id).
+V030 adds `product_id` (FK products, on delete cascade), makes `permission_code` nullable and replaces the old unique constraints by two partial unique indexes: one per (member, permission) for `PERMISSION` rows and one per (member, product) for `PRODUCT` rows. Existing direct product access (rows without a project source) is copied as `PRODUCT` overrides (granted = row ACTIVE) so nobody loses or gains access by the default-ON rule except members who never had a row.
 
 ## Product access rows
 `organization_product_access` (existing) stays the record of a member's access to a product and its product role; an effective-access change for a product creates or deactivates that row (the product role is Open question 7).
 
 ## New permission codes
-Seeded on the `ORG_ADMIN` role and added to the protected permission list: `MANAGE_SUBSCRIPTIONS`, `MANAGE_ACCESS`, and — if confirmed — the organization billing permission (Open question 2). `MANAGE_ORDERS` is also added to the protected list (inventory finding).
+Seeded on the `ORG_ADMIN` role and added to the protected permission list: `MANAGE_SUBSCRIPTIONS`, `MANAGE_ACCESS` and `MANAGE_ORGANIZATION_BILLING`. `MANAGE_ORDERS` is also added to the protected list (inventory finding).
 
 ## Audit
-No new table: changes are written to `audit_log` with actions `ACCESS_OVERRIDE_SET`, `ACCESS_OVERRIDE_RESET`, `ACCESS_ROLE_DEFAULT_CHANGED`, `ACCESS_RECALCULATED`, `ACCESS_BULK_CHANGED`.
+No new table: changes are written to `audit_log` with actions `ACCESS_PERMISSION_CHANGED`, `ACCESS_PRODUCT_CHANGED`, `ACCESS_OVERRIDE_RESET`, `ACCESS_ROLE_DEFAULT_CHANGED`, `ACCESS_BULK_CHANGED`; recalculated product rows write the existing `PRODUCT_ACCESS_GRANTED` / `PRODUCT_ACCESS_REVOKED`.
+
+## Seats
+Named seats per product are counted, not stored: ACTIVE `organization_product_access` rows of ACTIVE members for the product, against the quantity of the organization's ACTIVE subscription to it.

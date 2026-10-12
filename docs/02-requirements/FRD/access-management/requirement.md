@@ -5,7 +5,8 @@
 **Owner:** Product owner
 **Approved by / on:** Product owner / 2026-10-09
 **Decision:** [C65](../../../01-business/roadmap/open-decisions.md#c65) (answer to D16, options A and B combined)
-**Built:** Not built (approved 2026-10-09; scheduled with the sprint the product owner sets). Functional test cases: written after approval in `test-cases/functional/access-management/`; UAT: [access-management UAT scripts](../../../../test-cases/UAT/access-management/README.md).
+**Answers AM-0 to AM-10:** recorded 2026-10-12 ([C90](../../../01-business/roadmap/open-decisions.md#c90)).
+**Built:** 2026-10-12 (migration V030). Functional test cases: `test-cases/functional/access-management/` (TC-TEN-068 onward); UAT: [access-management UAT scripts](../../../../test-cases/UAT/access-management/README.md).
 
 | Field | Value |
 |---|---|
@@ -93,7 +94,7 @@ Existing permissions keep their codes. New permissions are only the three named 
 | Members & access | **Manage access** | `MANAGE_ACCESS` | Manage other members' feature permissions, product access and role defaults (delegation) | **New** |
 | Subscriptions | **Manage subscriptions** | `MANAGE_SUBSCRIPTIONS` | Suspend, reactivate, cancel, change plan and change seats of the organization's subscriptions | **New** (D16) |
 | Orders | Approve orders | `MANAGE_ORDERS` | Approve or reject members' orders | Existing |
-| Billing | **Manage billing** | Open question 2 | The organization's billing details, invoices and payments | **New — proposed, confirm** |
+| Billing | **Manage billing** | `MANAGE_ORGANIZATION_BILLING` | The organization's billing details, invoices and payments | **New** (AM-2) |
 | Security & sign-in | Approve privileged access | `MANAGE_PRIVILEGED_ACCESS` | Approve, reject and revoke members' temporary elevated access | Existing |
 | Organization settings | Manage organization | `MANAGE_ORGANIZATION` | Two-factor policy, single sign-on providers, business dashboard, organization audit log (and, until *Manage billing* is confirmed, billing) | Existing |
 
@@ -112,18 +113,18 @@ Whether `MANAGE_ORGANIZATION` should be split into smaller permissions (sign-in,
 | REQ-TEN-005.2 | **Role defaults:** an organization admin or delegated administrator can set, for each organization role, which feature permissions and which products are on by default. *Organization admin* always has all organization feature permissions, shown locked ON. Initial role defaults: Open questions 1 and 9. | Must |
 | REQ-TEN-005.3 | **Individual overrides:** for one member, an organization admin or delegated administrator can turn any feature permission or product on or off, overriding the role default, and can **Reset to role default** for one item or all items. | Must |
 | REQ-TEN-005.4 | **D16:** organization subscription actions — suspend, reactivate, cancel, change plan, change seats — require *Manage subscriptions*. By default only organization admins hold it. Anyone holding *Manage access* can grant it to another member (within the guard rails). | Must |
-| REQ-TEN-005.5 | **Product access limits:** only products in the organization's ACTIVE subscriptions can be granted ([C52](../../../01-business/roadmap/open-decisions.md#c52)). If granting product access consumes a seat (Open question 3, [C63](../../../01-business/roadmap/open-decisions.md#c63)), a grant is refused when no seat is free, and the toggle is disabled with the reason. | Must |
+| REQ-TEN-005.5 | **Product access limits and named seats (AM-3 B):** only products in the organization's ACTIVE subscriptions can be granted ([C52](../../../01-business/roadmap/open-decisions.md#c52)). A member uses one seat of a product only while it is ON for them; the product's seats are the quantity of the subscription. A grant is refused when no seat is free (409 `No free seats on {product}`) and the toggle is disabled with the reason; a default-ON product with no free seat stays off for that member until a seat frees. | Must |
 | REQ-TEN-005.6 | **Guard rails** (each shown as a disabled toggle with the reason): (a) a delegated administrator cannot grant a feature permission they do not hold; (b) only organization admins can change another organization admin's access or role; (c) nobody can change their own permissions, product access or role; (d) the last organization admin cannot be demoted (existing rule); (e) organization admins' feature permissions are locked ON. | Must |
 | REQ-TEN-005.7 | **Review access:** a member's access can be marked as reviewed (existing REQ-TEN-002.6 stamp); the screen shows when each member was last reviewed and by whom. | Must |
 | REQ-TEN-005.8 | **Bulk changes:** select several members and grant or remove one product or one feature permission, with a preview and a summary confirmation ("Grant Product X to 8 members — 2 skipped: no seats"). Each skipped member shows the reason. | Should |
 | REQ-TEN-005.9 | **Audit:** every change records who, whom, what, from what value to what value, and why it was allowed (role default or override, and the actor's authority). Role-default changes record the role and the number of affected members. | Must |
 | REQ-TEN-005.10 | **Enforcement:** every organization permission check uses effective access (and, as today, an active privileged-access grant also satisfies it). Members with no overrides keep exactly today's behaviour while role defaults equal today's role permissions. | Must |
+| REQ-TEN-005.12 | **Notices (AM-6):** a member is told in the app and by email when their access changes (a permission or product turned on or off, a role default that changes them, a role change); one notice per change request. A failed notice never fails the change. | Must |
 | REQ-TEN-005.11 | **Platform Roles & permissions:** the platform admin's Roles and Permissions pages become one screen with the same functions and validation messages (REQ-IAM-003). | Must |
 
 ## Out of scope
 - Custom organization roles (Open question 4).
 - Access carried by groups (Open question 5; groups carry none today, [C35](../../../01-business/roadmap/open-decisions.md#c35)).
-- Notifications to members about access changes (Open question 6) — the existing role-change notification stays.
 - Product-internal permissions (what a member can do inside Valam.ai etc.); only which products they can open.
 - Invitations (05.03.01): [REQ-TEN-008](../invite-user/requirement.md) (C84) builds one slice of this FRD for `INVITE_USERS`: the table `member_access_override` with permission items only.
 
@@ -139,6 +140,21 @@ REQ-IAM-002 (member role assignment), REQ-IAM-003 (role and permission administr
 | API | [api-requirements.md](api-requirements.md) → [access-management.md](../../../06-api/api-requirements/access-management.md) |
 | Data model | [access-management.md](../../../07-database/data-model/access-management.md) |
 | UAT scripts | [test-cases/UAT/access-management](../../../../test-cases/UAT/access-management/README.md) |
+
+## Answers of 2026-10-12 ([C90](../../../01-business/roadmap/open-decisions.md#c90)) — these replace the table below where they differ
+| Question | Answer |
+|---|---|
+| AM-0 | A: approved with these answers |
+| 1 (AM-1) | A: every entitled product ON for members; no management permissions |
+| 2 (AM-2) | A: separate `MANAGE_ORGANIZATION_BILLING` |
+| 3 (AM-3) | **B: named seats per product** (replaces the pool answer below) |
+| 4 (AM-4) | A: custom roles later |
+| 5 (AM-5) | A: groups carry no access |
+| 6 (AM-6) | Both: in-app and email |
+| 7 (AM-7) | A: one default product role `USER`, not chosen on the screen |
+| 8 (AM-8) | A: `MANAGE_ORGANIZATION` stays one permission |
+| 9 (AM-9) | A: platform definitions are the starting defaults; each organization changes its own |
+| 10 (AM-10) | A: *Manage access* does not include *Manage product access* / *Manage members* |
 
 ## Answers applied on 2026-10-09 ([C86](../../../01-business/roadmap/open-decisions.md#c86))
 The product owner approved this FRD "as drafted" (question Q11). Every open question that has a **proposed** answer below takes that proposal; the two blocking questions that had no proposal take the defaults in the table. The product owner can change any of them.

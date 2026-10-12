@@ -38,7 +38,8 @@ public class PermissionAdminService {
     private static final Set<String> PROTECTED_PERMISSION_NAMES = Set.of(
         "MANAGE_CATALOG", "MANAGE_REGISTRATIONS", "MANAGE_PRIVILEGED_ACCESS", "VIEW_AUDIT_LOG",
         "MANAGE_ORGANIZATION", "MANAGE_USERS", "MANAGE_PRODUCT_ACCESS", "INVITE_USERS",
-        "MANAGE_ROLES", "MANAGE_PERMISSIONS"
+        "MANAGE_ROLES", "MANAGE_PERMISSIONS",
+        "MANAGE_ORDERS", "MANAGE_ACCESS", "MANAGE_SUBSCRIPTIONS", "MANAGE_ORGANIZATION_BILLING"
     );
 
     private final PermissionRepository permissionRepository;

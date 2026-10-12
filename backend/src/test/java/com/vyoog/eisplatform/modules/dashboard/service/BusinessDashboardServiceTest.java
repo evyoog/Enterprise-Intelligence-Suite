@@ -133,9 +133,7 @@ class BusinessDashboardServiceTest {
         var admin = organizationMemberService.addMember(org.getId(), newCustomer("admin2@bizdash.example").getId(), OrgRole.ORG_ADMIN);
         var teammate = organizationMemberService.addMember(org.getId(), newCustomer("teammate2@bizdash.example").getId(), OrgRole.MEMBER);
 
-        organizationSelfService.assignProductAccess(admin.getCustomerId(), admin.getId(), product.getId(), "ADMIN");
-        organizationSelfService.assignProductAccess(admin.getCustomerId(), teammate.getId(), product.getId(), "USER");
-
+        // REQ-TEN-005 (AM-1): both already have the subscribed product by default (nobody assigns their own access).
         dashboardService.recordLaunch(admin.getCustomerId(), product.getId());
         dashboardService.recordLaunch(admin.getCustomerId(), product.getId());
         dashboardService.recordLaunch(teammate.getCustomerId(), product.getId());

@@ -1529,3 +1529,41 @@ ALTER TABLE organization_product_access ADD COLUMN IF NOT EXISTS source_group_id
 ALTER TABLE product_content_item DROP CONSTRAINT IF EXISTS product_content_item_video_provider_check;
 ALTER TABLE product_content_item ADD CONSTRAINT product_content_item_video_provider_check
     CHECK (video_provider IN ('YOUTUBE', 'VIMEO', 'EXTERNAL', 'HOSTED'));
+
+-- REQ-TEN-005 Access management (C90). Mirrors database/migrations/V030__access_management.sql.
+-- Individual overrides now also cover product access.
+ALTER TABLE member_access_override ADD COLUMN IF NOT EXISTS product_id BIGINT REFERENCES products(id) ON DELETE CASCADE;
+ALTER TABLE member_access_override ALTER COLUMN permission_code DROP NOT NULL;
+DO $$
+DECLARE c text;
+BEGIN
+    FOR c IN SELECT conname FROM pg_constraint WHERE conrelid = 'member_access_override'::regclass AND contype = 'u' LOOP
+        EXECUTE 'ALTER TABLE member_access_override DROP CONSTRAINT ' || quote_ident(c);
+    END LOOP;
+END $$;
+CREATE UNIQUE INDEX IF NOT EXISTS ux_override_permission ON member_access_override (organization_member_id, permission_code) WHERE item_type = 'PERMISSION';
+CREATE UNIQUE INDEX IF NOT EXISTS ux_override_product ON member_access_override (organization_member_id, product_id) WHERE item_type = 'PRODUCT';
+
+-- Role defaults of one organization. No row = the platform role definition (permissions) or ON (products).
+CREATE TABLE IF NOT EXISTS organization_role_default (
+    id BIGSERIAL PRIMARY KEY,
+    organization_id BIGINT NOT NULL REFERENCES organization(id) ON DELETE CASCADE,
+    org_role VARCHAR(20) NOT NULL,
+    item_type VARCHAR(20) NOT NULL,
+    permission_code VARCHAR(60),
+    product_id BIGINT REFERENCES products(id) ON DELETE CASCADE,
+    enabled BOOLEAN NOT NULL,
+    updated_by_customer_id BIGINT REFERENCES customer(id),
+    updated_at TIMESTAMP NOT NULL DEFAULT now()
+);
+CREATE UNIQUE INDEX IF NOT EXISTS ux_role_default_permission ON organization_role_default (organization_id, org_role, permission_code) WHERE item_type = 'PERMISSION';
+CREATE UNIQUE INDEX IF NOT EXISTS ux_role_default_product ON organization_role_default (organization_id, org_role, product_id) WHERE item_type = 'PRODUCT';
+
+-- Product access that was granted or revoked directly becomes an explicit override, so it keeps its state when
+-- role defaults apply. Access that came from a project (source_group_id) is not touched.
+INSERT INTO member_access_override (organization_member_id, item_type, product_id, granted, set_at)
+SELECT a.organization_member_id, 'PRODUCT', a.product_id, (a.status = 'ACTIVE'), now()
+FROM organization_product_access a
+WHERE a.source_group_id IS NULL
+  AND NOT EXISTS (SELECT 1 FROM member_access_override o
+                  WHERE o.organization_member_id = a.organization_member_id AND o.item_type = 'PRODUCT' AND o.product_id = a.product_id);

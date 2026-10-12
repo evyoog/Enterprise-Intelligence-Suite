@@ -11,7 +11,8 @@
 2. An **Organization admin** always has every organization feature permission (locked ON).
 3. Product access exists only for products in the organization's ACTIVE subscriptions ([C52](../01-business/roadmap/open-decisions.md#c52)).
 4. An active, approved organization **privileged-access grant** (REQ-IAM-004) also satisfies a permission check for its duration, as today.
-5. Every feature that checks an organization permission uses effective access — never the role alone. Features that do so today: member administration, product access, privileged-access approval, orders, organization settings and sign-in, business dashboard, organization audit log, organization billing, organization subscriptions and seats.
+5. **Order of evaluation (C90):** locked (organization admin) → individual override → the organization's own role default → the platform role definition (permissions) or ON (products, AM-1).
+6. Every feature that checks an organization permission uses effective access — never the role alone. Features that do so today: member administration, product access, privileged-access approval, orders, organization settings and sign-in, business dashboard, organization audit log, organization billing (`MANAGE_ORGANIZATION_BILLING`), organization subscriptions and seats (`MANAGE_SUBSCRIPTIONS`).
 
 ## Why
 One definition, so that a permission granted or removed on the Access management screen means the same thing in every feature.

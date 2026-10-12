@@ -65,6 +65,7 @@ public class OrganizationSelfService {
     private final NotificationService notificationService;
     private final AuditService auditService;
     private final PlatformFeatureFlagService featureFlagService;
+    private final com.vyoog.eisplatform.modules.access.service.AccessSyncService accessSyncService;
 
     /** Phase 16: a plain, non-throwing "does this customer belong to any
      * organization at all" check — for callers like DashboardService that
@@ -117,7 +118,7 @@ public class OrganizationSelfService {
      * permanent role change. */
     private OrganizationMember requirePermission(Long customerId, String permissionName) {
         OrganizationMember member = resolveMembership(customerId);
-        boolean allowed = authorizationService.hasOrganizationPermission(member.getOrgRole(), permissionName)
+        boolean allowed = memberAccessService.hasPermission(member, permissionName)
             || privilegedAccessService.hasActiveOrganizationGrant(customerId, member.getOrganizationId(), permissionName);
         if (!allowed) {
             throw new ForbiddenException("You do not have permission to do this");
@@ -158,7 +159,7 @@ public class OrganizationSelfService {
         OrganizationMember target = memberRepository.findById(targetMemberId)
             .orElseThrow(() -> new ResourceNotFoundException("Member not found"));
         boolean sameOrganization = caller.getOrganizationId().equals(target.getOrganizationId());
-        boolean allowed = authorizationService.evaluate(caller, target, permissionName)
+        boolean allowed = (sameOrganization && memberAccessService.hasPermission(caller, permissionName))
             || (sameOrganization && privilegedAccessService.hasActiveOrganizationGrant(callerCustomerId, caller.getOrganizationId(), permissionName));
         if (!allowed) {
             throw new ForbiddenException("You do not have permission to do this");
@@ -212,6 +213,15 @@ public class OrganizationSelfService {
         MemberAccess access = requirePermissionOnMember(callerCustomerId, targetMemberId, "MANAGE_USERS");
         OrganizationMember target = access.target();
 
+        // REQ-TEN-005 BR-3: nobody changes their own role. BR-4: only an organization admin changes an admin's role
+        // (or makes someone an admin).
+        if (access.caller().getId().equals(target.getId())) {
+            throw new ForbiddenException("You cannot change your own role.");
+        }
+        if (access.caller().getOrgRole() != OrgRole.ORG_ADMIN
+            && (target.getOrgRole() == OrgRole.ORG_ADMIN || newRole == OrgRole.ORG_ADMIN)) {
+            throw new ForbiddenException("Only an organization administrator can change an administrator's role.");
+        }
         if (target.getOrgRole() == OrgRole.ORG_ADMIN && newRole != OrgRole.ORG_ADMIN) {
             long activeAdmins = memberRepository.countByOrganizationIdAndOrgRoleAndStatus(
                 access.caller().getOrganizationId(), OrgRole.ORG_ADMIN, MembershipStatus.ACTIVE);
@@ -222,6 +232,8 @@ public class OrganizationSelfService {
 
         target.setOrgRole(newRole);
         memberRepository.save(target);
+        // REQ-TEN-005.1 / BR-9: the new role's defaults apply; individual overrides are kept.
+        accessSyncService.notifyGroupedByMember(accessSyncService.recomputeMember(target, callerCustomerId));
 
         customerRepository.findById(target.getCustomerId()).ifPresent(targetCustomer ->
             notificationService.notify(targetCustomer.getId(), targetCustomer.getEmail(),
@@ -372,18 +384,13 @@ public class OrganizationSelfService {
             .orElseThrow(() -> new IllegalArgumentException(
                 "Your organization does not have an active subscription for this product."));
 
-        OrganizationProductAccess access = accessRepository
-            .findByOrganizationMemberIdAndProductId(target.getId(), productId)
-            .orElseGet(OrganizationProductAccess::new);
-        access.setOrganizationMemberId(target.getId());
-        access.setProductId(productId);
-        access.setProductRole(productRole);
-        access.setStatus(MembershipStatus.ACTIVE);
-        access.setSourceGroupId(null); // REQ-TEN-009 BR-PRJ-006: a direct assignment always wins over a project
-        if (access.getAssignedAt() == null) {
-            access.setAssignedAt(Instant.now());
+        if (caller.getId().equals(target.getId())) {
+            throw new ForbiddenException("You cannot change your own access.");
         }
-        access = accessRepository.save(access);
+        // REQ-TEN-005: one place turns a product on (individual override, named seat, direct row).
+        accessSyncService.grantProduct(target, productId, productRole, callerCustomerId);
+        OrganizationProductAccess access = accessRepository
+            .findByOrganizationMemberIdAndProductId(target.getId(), productId).orElseThrow();
 
         customerRepository.findById(target.getCustomerId()).ifPresent(targetCustomer ->
             notificationService.notify(targetCustomer.getId(), targetCustomer.getEmail(),
@@ -411,6 +418,9 @@ public class OrganizationSelfService {
     @Transactional
     public void revokeProductAccess(Long callerCustomerId, Long targetMemberId, Long productId) {
         MemberAccess memberAccess = requirePermissionOnMember(callerCustomerId, targetMemberId, "MANAGE_PRODUCT_ACCESS");
+        if (memberAccess.caller().getId().equals(memberAccess.target().getId())) {
+            throw new ForbiddenException("You cannot change your own access.");
+        }
 
         accessRepository.findByOrganizationMemberIdAndProductId(memberAccess.target().getId(), productId)
             .ifPresent(access -> {
@@ -420,8 +430,7 @@ public class OrganizationSelfService {
                     throw new InvalidStateException("This access comes from project " + project
                         + ". Remove the member from the project or the product from the project.");
                 }
-                access.setStatus(MembershipStatus.INACTIVE);
-                accessRepository.save(access);
+                accessSyncService.revokeProduct(memberAccess.target(), productId, callerCustomerId);
                 auditService.recordSuccess("PRODUCT_ACCESS_REVOKED", null, callerCustomerId, null,
                     "OrganizationProductAccess", productId + ":" + targetMemberId, memberAccess.caller().getOrganizationId(),
                     "Revoked access to product " + productId + " for member " + targetMemberId);
@@ -535,6 +544,21 @@ public class OrganizationSelfService {
      * queries, not just render one object. */
     public Long requireOrganizationManagement(Long customerId) {
         return requirePermission(customerId, "MANAGE_ORGANIZATION").getOrganizationId();
+    }
+
+    /** REQ-TEN-005: the organization id of a caller who holds the named organization permission (effective access). */
+    public Long requireOrganizationPermission(Long customerId, String permissionName) {
+        return requirePermission(customerId, permissionName).getOrganizationId();
+    }
+
+    /** Same check, returning the caller's membership (REQ-TEN-005 guard rails compare the caller with the target). */
+    public OrganizationMember requireCallerWithPermission(Long customerId, String permissionName) {
+        return requirePermission(customerId, permissionName);
+    }
+
+    /** The caller's active membership in an organization in good standing (no permission needed). */
+    public OrganizationMember requireCaller(Long customerId) {
+        return resolveMembership(customerId);
     }
 
     /** Phase 19: kept as its own name for readability at that call site —
