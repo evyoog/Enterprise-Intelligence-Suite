@@ -30,6 +30,14 @@ public class OrganizationGroup implements OrganizationOwnedResource {
     @Column(nullable = false, length = 150)
     private String name;
 
+    /** GROUP, or PROJECT (REQ-TEN-009: a group plus products). */
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false, length = 10)
+    private GroupKind kind = GroupKind.GROUP;
+
+    @Column(length = 500)
+    private String description;
+
     @Column(nullable = false)
     private Instant createdAt = Instant.now();
 

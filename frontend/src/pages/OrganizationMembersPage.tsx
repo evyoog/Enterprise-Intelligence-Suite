@@ -6,19 +6,21 @@ import { myPermissionsApi } from '../api/myPermissionsApi'
 import { PageHeader } from '../components/layout/PageHeader'
 import { useTabParam } from '../components/layout/useTabParam'
 import { OrganizationGroupsCard } from '../components/organization/OrganizationGroupsCard'
+import { OrganizationProjectsCard } from '../components/organization/OrganizationProjectsCard'
 import { OrganizationInvitationsCard } from '../components/organization/OrganizationInvitationsCard'
 import { OrganizationMembersCard } from '../components/organization/OrganizationMembersCard'
 import { OrganizationStructurePanel } from '../components/organization/OrganizationStructurePanel'
 
-const TABS = ['members', 'groups', 'invitations', 'structure'] as const
+const TABS = ['members', 'groups', 'projects', 'invitations', 'structure'] as const
 type Tab = (typeof TABS)[number]
 /** The permission each tab needs; the backend enforces it, the tab is only hidden here. */
-const NEEDS: Record<Tab, string> = {
-  members: 'MANAGE_USERS', groups: 'MANAGE_USERS', invitations: 'INVITE_USERS', structure: 'MANAGE_ORGANIZATION',
+const NEEDS: Record<Tab, string[]> = {
+  members: ['MANAGE_USERS'], groups: ['MANAGE_USERS'], projects: ['MANAGE_USERS', 'MANAGE_PRODUCT_ACCESS'],
+  invitations: ['INVITE_USERS'], structure: ['MANAGE_ORGANIZATION'],
 }
 
 /**
- * "/organization/members" — C80: members and their roles (REQ-IAM-002), groups (REQ-TEN-003), the
+ * "/organization/members" — C80: members and their roles (REQ-IAM-002), groups (REQ-TEN-003), projects (REQ-TEN-009, C88), the
  * invitations (REQ-TEN-008, C84) and the organization structure (REQ-TEN-006, C83), as tabs. Each tab is
  * shown to people who hold its permission, so a member allowed only to invite sees just Invitations.
  */
@@ -30,7 +32,7 @@ export function OrganizationMembersPage() {
     myPermissionsApi.get().then((p) => { if (alive) setPermissions(p.organization) }).catch(() => { if (alive) setPermissions([]) })
     return () => { alive = false }
   }, [])
-  const allowed = permissions === null ? TABS : TABS.filter((k) => permissions.includes(NEEDS[k]))
+  const allowed = permissions === null ? TABS : TABS.filter((k) => NEEDS[k].some((needed) => permissions.includes(needed)))
   const [wanted, setTab] = useTabParam(TABS, 'members')
   const tab: Tab = allowed.includes(wanted) ? wanted : (allowed[0] ?? 'members')
   return (
@@ -41,6 +43,9 @@ export function OrganizationMembersPage() {
       </Tabs>
       {tab === 'members' && <OrganizationMembersCard />}
       {tab === 'groups' && <OrganizationGroupsCard />}
+      {tab === 'projects' && (
+        <OrganizationProjectsCard canManageUsers={permissions?.includes('MANAGE_USERS') ?? true} canManageProducts={permissions?.includes('MANAGE_PRODUCT_ACCESS') ?? true} />
+      )}
       {tab === 'invitations' && <OrganizationInvitationsCard canInviteAdmin={permissions?.includes('MANAGE_USERS') ?? false} />}
       {tab === 'structure' && <OrganizationStructurePanel />}
     </Box>

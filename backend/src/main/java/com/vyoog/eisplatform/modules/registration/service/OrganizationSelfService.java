@@ -1,6 +1,7 @@
 package com.vyoog.eisplatform.modules.registration.service;
 
 import com.vyoog.eisplatform.common.exception.ForbiddenException;
+import com.vyoog.eisplatform.common.exception.InvalidStateException;
 import com.vyoog.eisplatform.common.exception.ResourceNotFoundException;
 import com.vyoog.eisplatform.modules.administration.service.PlatformFeatureFlagService;
 import com.vyoog.eisplatform.modules.authorization.dto.PrivilegedAccessRequestDto;
@@ -378,6 +379,7 @@ public class OrganizationSelfService {
         access.setProductId(productId);
         access.setProductRole(productRole);
         access.setStatus(MembershipStatus.ACTIVE);
+        access.setSourceGroupId(null); // REQ-TEN-009 BR-PRJ-006: a direct assignment always wins over a project
         if (access.getAssignedAt() == null) {
             access.setAssignedAt(Instant.now());
         }
@@ -412,6 +414,12 @@ public class OrganizationSelfService {
 
         accessRepository.findByOrganizationMemberIdAndProductId(memberAccess.target().getId(), productId)
             .ifPresent(access -> {
+                if (access.getStatus() == MembershipStatus.ACTIVE && access.getSourceGroupId() != null) {
+                    // REQ-TEN-009 BR-PRJ-006: the project would grant it again at the next change.
+                    String project = groupRepository.findById(access.getSourceGroupId()).map(OrganizationGroup::getName).orElse("a project");
+                    throw new InvalidStateException("This access comes from project " + project
+                        + ". Remove the member from the project or the product from the project.");
+                }
                 access.setStatus(MembershipStatus.INACTIVE);
                 accessRepository.save(access);
                 auditService.recordSuccess("PRODUCT_ACCESS_REVOKED", null, callerCustomerId, null,
@@ -562,7 +570,7 @@ public class OrganizationSelfService {
     public List<GroupDto> listMyOrgGroups(Long customerId) {
         requireGroupsEnabled();
         OrganizationMember caller = requirePermission(customerId, "MANAGE_USERS");
-        return groupRepository.findByOrganizationId(caller.getOrganizationId()).stream()
+        return groupRepository.findByOrganizationIdAndKind(caller.getOrganizationId(), GroupKind.GROUP).stream()
             .map(this::toGroupDto)
             .toList();
     }
@@ -584,7 +592,8 @@ public class OrganizationSelfService {
         OrganizationMember caller = resolveMembership(callerCustomerId);
         OrganizationGroup group = groupRepository.findById(groupId)
             .orElseThrow(() -> new ResourceNotFoundException("Group not found"));
-        if (!group.organizationId().equals(caller.getOrganizationId())) {
+        if (!group.organizationId().equals(caller.getOrganizationId()) || group.getKind() != GroupKind.GROUP) {
+            // A project (REQ-TEN-009) is managed only through Projects, so it is "not found" here too.
             // Same reasoning as requirePermissionOnMember: one generic
             // "not found", not a distinct "wrong organization" message.
             throw new ResourceNotFoundException("Group not found");

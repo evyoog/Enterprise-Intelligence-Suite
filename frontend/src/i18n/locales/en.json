@@ -270,6 +270,36 @@
     "removeMemberError": "Could not remove this member.",
     "loadError": "Could not load this section."
   },
+  "projects": {
+    "title": "Projects",
+    "intro": "A project is a group of members that shares access to products. Everyone in a project can use the project's products with the role you set.",
+    "newName": "Project name",
+    "description": "Description (optional)",
+    "create": "Create project",
+    "createError": "Could not create this project.",
+    "updateError": "Could not save this project.",
+    "edit": "Edit",
+    "save": "Save",
+    "cancel": "Cancel",
+    "delete": "Delete",
+    "deleteError": "Could not delete this project.",
+    "noProjects": "No projects yet. Create one to give a team access to products.",
+    "members": "Members",
+    "noMembers": "No members yet.",
+    "addMember": "Add member",
+    "addMemberError": "Could not add this member.",
+    "removeMember": "Remove",
+    "removeMemberError": "Could not remove this member.",
+    "products": "Products",
+    "noProducts": "No products yet.",
+    "addProduct": "Add product",
+    "role": "Role",
+    "add": "Add",
+    "addProductError": "Could not add this product.",
+    "removeProduct": "Remove",
+    "removeProductError": "Could not remove this product.",
+    "loadError": "Could not load this section."
+  },
   "privilegedAccess": {
     "title": "Elevated access",
     "subtitle": "Request temporary access to a permission you don't normally have. An administrator must approve it, and it ends automatically.",
@@ -2939,6 +2969,7 @@
     "tabs": {
       "members": "Members",
       "groups": "Groups",
+      "projects": "Projects",
       "structure": "Org structure",
       "invitations": "Invitations"
     }

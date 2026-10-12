@@ -9,6 +9,7 @@ const getPermissions = vi.fn()
 vi.mock('../api/myPermissionsApi', () => ({ myPermissionsApi: { get: () => getPermissions() } }))
 vi.mock('../components/organization/OrganizationMembersCard', () => ({ OrganizationMembersCard: () => <p>members card</p> }))
 vi.mock('../components/organization/OrganizationGroupsCard', () => ({ OrganizationGroupsCard: () => <p>groups card</p> }))
+vi.mock('../components/organization/OrganizationProjectsCard', () => ({ OrganizationProjectsCard: (p: { canManageUsers: boolean; canManageProducts: boolean }) => <p>projects card {String(p.canManageUsers)} {String(p.canManageProducts)}</p> }))
 vi.mock('../components/organization/OrganizationInvitationsCard', () => ({ OrganizationInvitationsCard: () => <p>invitations card</p> }))
 vi.mock('../components/organization/OrganizationStructurePanel', () => ({ OrganizationStructurePanel: () => <p>structure panel</p> }))
 
@@ -16,10 +17,10 @@ vi.mock('../components/organization/OrganizationStructurePanel', () => ({ Organi
 describe('OrganizationMembersPage', () => {
   beforeEach(() => getPermissions.mockReset())
 
-  it('gives an administrator Members, Groups, Invitations and Org structure and opens a tab from the address', async () => {
+  it('gives an administrator Members, Groups, Projects, Invitations and Org structure and opens a tab from the address', async () => {
     getPermissions.mockResolvedValue({ platform: [], organization: ['MANAGE_ORGANIZATION', 'MANAGE_USERS', 'INVITE_USERS'] })
     renderWithProviders(<OrganizationMembersPage />, { route: '/organization/members?tab=structure' })
-    await waitFor(() => expect(screen.getAllByRole('tab').map((t) => t.textContent)).toEqual(['Members', 'Groups', 'Invitations', 'Org structure']))
+    await waitFor(() => expect(screen.getAllByRole('tab').map((t) => t.textContent)).toEqual(['Members', 'Groups', 'Projects', 'Invitations', 'Org structure']))
     expect(screen.getByText('structure panel')).toBeInTheDocument()
     await userEvent.setup().click(screen.getByRole('tab', { name: 'Invitations' }))
     expect(screen.getByText('invitations card')).toBeInTheDocument()
@@ -31,5 +32,13 @@ describe('OrganizationMembersPage', () => {
     await waitFor(() => expect(screen.getAllByRole('tab').map((t) => t.textContent)).toEqual(['Invitations']))
     expect(screen.getByText('invitations card')).toBeInTheDocument()
     expect(screen.queryByText('members card')).not.toBeInTheDocument()
+  })
+
+  // C88: Projects needs people (MANAGE_USERS) or product access (MANAGE_PRODUCT_ACCESS) and passes each on.
+  it('shows Projects to a member who may only manage product access, read-only for people', async () => {
+    getPermissions.mockResolvedValue({ platform: [], organization: ['MANAGE_PRODUCT_ACCESS'] })
+    renderWithProviders(<OrganizationMembersPage />)
+    await waitFor(() => expect(screen.getAllByRole('tab').map((t) => t.textContent)).toEqual(['Projects']))
+    expect(screen.getByText('projects card false true')).toBeInTheDocument()
   })
 })

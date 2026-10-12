@@ -15,4 +15,6 @@ public interface OrganizationGroupMemberRepository extends JpaRepository<Organiz
     void deleteByGroupId(Long groupId);
 
     long countByGroupId(Long groupId);
+
+    List<OrganizationGroupMember> findByOrganizationMemberId(Long organizationMemberId);
 }

@@ -1490,21 +1490,37 @@ CREATE UNIQUE INDEX IF NOT EXISTS ux_offering_name ON offering (lower(name));
 CREATE TABLE IF NOT EXISTS offering_product (
     offering_id BIGINT NOT NULL REFERENCES offering(id) ON DELETE CASCADE,
     sort_order INTEGER NOT NULL,
-    product_id BIGINT NOT NULL REFERENCES product(id),
+    product_id BIGINT NOT NULL REFERENCES products(id),
     PRIMARY KEY (offering_id, sort_order)
 );
 CREATE INDEX IF NOT EXISTS idx_offering_product_product ON offering_product (product_id);
 
 -- No row = the product is open to both individuals and organizations (no behaviour change).
 CREATE TABLE IF NOT EXISTS product_eligibility (
-    product_id BIGINT PRIMARY KEY REFERENCES product(id) ON DELETE CASCADE,
+    product_id BIGINT PRIMARY KEY REFERENCES products(id) ON DELETE CASCADE,
     audience VARCHAR(20) NOT NULL DEFAULT 'BOTH' CHECK (audience IN ('BOTH', 'INDIVIDUAL', 'ORGANIZATION'))
 );
 
 CREATE TABLE IF NOT EXISTS product_compatibility (
     id BIGSERIAL PRIMARY KEY,
-    product_id BIGINT NOT NULL REFERENCES product(id) ON DELETE CASCADE,
-    works_with_product_id BIGINT NOT NULL REFERENCES product(id) ON DELETE CASCADE,
+    product_id BIGINT NOT NULL REFERENCES products(id) ON DELETE CASCADE,
+    works_with_product_id BIGINT NOT NULL REFERENCES products(id) ON DELETE CASCADE,
     UNIQUE (product_id, works_with_product_id),
     CHECK (product_id <> works_with_product_id)
 );
+
+-- REQ-TEN-009 Projects (C88). Additive; mirrors database/migrations/V028__projects.sql.
+ALTER TABLE organization_group ADD COLUMN IF NOT EXISTS kind VARCHAR(10) NOT NULL DEFAULT 'GROUP' CHECK (kind IN ('GROUP', 'PROJECT'));
+ALTER TABLE organization_group ADD COLUMN IF NOT EXISTS description VARCHAR(500);
+
+CREATE TABLE IF NOT EXISTS organization_group_product (
+    id BIGSERIAL PRIMARY KEY,
+    group_id BIGINT NOT NULL REFERENCES organization_group(id) ON DELETE CASCADE,
+    product_id BIGINT NOT NULL REFERENCES products(id),
+    product_role VARCHAR(50) NOT NULL,
+    added_at TIMESTAMP NOT NULL DEFAULT now(),
+    UNIQUE (group_id, product_id)
+);
+
+-- Empty = direct assignment; set = the access comes from that project.
+ALTER TABLE organization_product_access ADD COLUMN IF NOT EXISTS source_group_id BIGINT REFERENCES organization_group(id);

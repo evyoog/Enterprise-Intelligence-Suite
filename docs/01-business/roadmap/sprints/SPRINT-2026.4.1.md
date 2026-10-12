@@ -27,6 +27,7 @@
 | Sequence correction | [C31](../open-decisions.md#c31) Adopts the corrected sprint sequence: 05 Tenant pulled into this sprint (from 2026.4.2) | - | - |
 | Decided | [C32](../open-decisions.md#c32) Product Lifecycle & Structure: version counter, Publish/Retire actions and the new RETIRED status, hierarchy/variant/dependency fields | [product-lifecycle](../../../02-requirements/FRD/product-lifecycle/requirement.md) | REQ-CAT-001 |
 | Decided | [C33](../open-decisions.md#c33) Plan Management: currency, usage limit, included features, usage price, overage charge, tier-pricing text — data fields only, no billing engine | [plan-management](../../../02-requirements/FRD/plan-management/requirement.md) | REQ-CAT-002 |
+| Decided | [C88](../open-decisions.md#c88) Projects (05.04.02): a project is a group plus product access (PR-1 A, PR-2 A); built, pulled back from 2026.4.2 | [projects](../../../02-requirements/FRD/projects/requirement.md) | REQ-TEN-009 |
 | Decided | [C87](../open-decisions.md#c87) Invite user follow-up (IN-7 to IN-10): Create user (05.03.01.02) removed from the MVP; inviter notified on accept or decline; one organization per person; pending invitations kept when `INVITE_USERS` is removed | [invite-user](../../../02-requirements/FRD/invite-user/requirement.md) | REQ-TEN-008.19 |
 | Decided | [C84](../open-decisions.md#c84) Invite user (05.03.01.01) by email, with `INVITE_USERS` delegation | [invite-user](../../../02-requirements/FRD/invite-user/requirement.md) | REQ-TEN-008 |
 | Decided | [C34](../open-decisions.md#c34) Member Lifecycle: Suspend/Reactivate/Remove and Review access; Invite/Create user carried to 2026.4.2 | [member-lifecycle](../../../02-requirements/FRD/member-lifecycle/requirement.md) | REQ-TEN-002 |
@@ -45,6 +46,7 @@
 | [plan-management](../../../02-requirements/FRD/plan-management/requirement.md) | REQ-CAT-002 | 02.03.01.03–.04, 02.03.02.02–.04 | Approved |
 | [member-lifecycle](../../../02-requirements/FRD/member-lifecycle/requirement.md) | REQ-TEN-002 | 05.03.01.03–.05, 05.03.02.03 | Approved |
 | [invite-user](../../../02-requirements/FRD/invite-user/requirement.md) | REQ-TEN-008 | 05.03.01.01 | Approved |
+| [projects](../../../02-requirements/FRD/projects/requirement.md) | REQ-TEN-009 | 05.04.02.01–.03 | Approved |
 | [group-management](../../../02-requirements/FRD/group-management/requirement.md) | REQ-TEN-003 | 05.04.01 | Approved |
 | [catalog-showcase](../../../02-requirements/FRD/catalog-showcase/requirement.md) | REQ-CAT-003 | No function ID (restyles 02.01/02.03 screens; links touch 02.04.01.02) | Approved |
 
@@ -62,7 +64,7 @@
 | 05.03.01 User Lifecycle | Partly done | Suspend/Reactivate/Remove built; **Invite user built 2026-10-08** ([C84](../open-decisions.md#c84), [REQ-TEN-008](../../../02-requirements/FRD/invite-user/requirement.md)); Create user (05.03.01.02) **removed from the MVP** ([C87](../open-decisions.md#c87)); inviter notified on accept or decline (2026-10-12) |
 | 05.03.02 Role Assignment | Done | Assign role and Assign group were already built/built this sprint; Review access built this sprint |
 | 05.04.01 Groups | Done | Create/add/remove member built |
-| 05.04.02 Projects | Not started | Carried to 2026.4.2 (C35) |
+| 05.04.02 Projects | Built 2026-10-12 | [C88](../open-decisions.md#c88), [REQ-TEN-009](../../../02-requirements/FRD/projects/requirement.md): a project is a group plus product access; pulled back from 2026.4.2 |
 
 ### Catalog showcase and UI redesign (C66, 2026-10-03)
 
@@ -148,7 +150,7 @@ Full breakdown: [applications/05-customer-tenant-management.md](../applications/
 | [05.03 User Management](../applications/05-customer-tenant-management.md#0503-user-management) | 05.03.01 User Lifecycle | Invite user; ~~Create user~~ (removed, C87); Activate user; Suspend user; Remove user | P0 | Partly (Activate/Suspend/Remove and Invite user built; Create user removed from the MVP, [C84](../open-decisions.md#c84), [C87](../open-decisions.md#c87)) |
 | [05.03 User Management](../applications/05-customer-tenant-management.md#0503-user-management) | 05.03.02 Role Assignment | Assign role; Assign group; Review access | P0 | Commit (built) |
 | [05.04 Group & Project Management](../applications/05-customer-tenant-management.md#0504-group--project-management) | 05.04.01 Groups | Create group; Add member; Remove member | P0 | Commit (built) |
-| [05.04 Group & Project Management](../applications/05-customer-tenant-management.md#0504-group--project-management) | 05.04.02 Projects | Create project; Assign users; Assign resources | P0 | Carried to 2026.4.2 ([C35](../open-decisions.md#c35)) |
+| [05.04 Group & Project Management](../applications/05-customer-tenant-management.md#0504-group--project-management) | 05.04.02 Projects | Create project; Assign users; Assign resources | P0 | Built 2026-10-12 ([C88](../open-decisions.md#c88)) |
 
 ### Dependencies
 

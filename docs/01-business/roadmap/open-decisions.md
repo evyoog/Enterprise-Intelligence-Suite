@@ -725,6 +725,14 @@ Screen: [business-dashboard.md](../../05-ui/screen-requirements/business-dashboa
 - **IN-10 A:** keep one organization per person (REQ-TEN-008.11). Several organizations per person stay out of scope.
 **Still Not specified:** invitation reminders; product access in an invitation; privileged-access grants for `INVITE_USERS`; multi-organization membership; bulk CSV invitations; a notice when an invitation expires.
 
+### C88
+**Decision (product owner, 2026-10-12) — 05.04.02 Projects, questions PR-1 and PR-2 (sprint [2026.4.1](sprints/SPRINT-2026.4.1.md)):** answers **PR-1 A** and **PR-2 A**, followed by "start develop". Written as [REQ-TEN-009](../../02-requirements/FRD/projects/requirement.md) (**Approved 2026-10-12**) and built.
+- **PR-1 A:** the only resource a project can own is **product access**: a project gets products the organization already subscribes to, and its members can use them with the project's role. Files, data and workspaces are not resources (yet).
+- **PR-2 A:** a project **is a group plus products**. It is stored as an organization group of kind `PROJECT` with a product list, so members are managed like group members. The Groups card lists plain groups only.
+- **Pulled back** from 2026.4.2 into 2026.4.1 (C35 had carried it because "resource" was undefined; PR-1 defines it).
+- **Defaults applied (not asked):** managing members needs `MANAGE_USERS`, managing products needs `MANAGE_PRODUCT_ACCESS`; an administrator's direct assignment always wins over a project; a direct revoke of project access is refused until the member leaves the project; a member newly gaining a product is notified; deleting a project takes back the access it granted.
+**Still Not specified:** other resource types; project-specific permissions or owners; nested projects; a member-facing "My projects" screen; project billing or cost centres; whether access from a project should end automatically when the organization's subscription ends (today it follows the direct-access rules).
+
 ### DN-2 Sprint scope, length and dates
 **Decision:**
 - **Sprint length:** sprints are **calendar months**. Sprint `.1`, `.2` and `.3` are the first, second and third months of the PI's calendar quarter. Example: 2026.3.3 = 1–30 Sep 2026; 2026.4.1 = 1–31 Oct 2026.
@@ -840,6 +848,7 @@ These documents are **not** changed by this file. Update them to match:
 | C85 | Built 2026-10-08. FRD REQ-CAT-005, migration V027. Remaining: apply V027; decide bundle pricing (OF-2) and then buying an offering as a whole; resolve the regions conflict (OF-3 vs OF-5); confirm the Not-specified items |
 | C86 | Written 2026-10-09 (Phase 0): FRD REQ-INT-003 **Approved 2026-10-09**, contract v1, BR-INT-001, BR-SUB-010; REQ-TEN-005 Approved. Phase 1 (Macro tenant registry) built and merged to Macro `main` 2026-10-09. Remaining: confirm A1–A6 and the Thittam role map (defaults apply meanwhile), choose the sprint; phases 2–6 (Macro), 7 (platform), 8–9 |
 | C87 | Built 2026-10-12 (IN-7 A, IN-8 A, IN-9 B, IN-10 A). Create user (05.03.01.02) removed from the MVP; inviter notified on accept or decline (REQ-TEN-008.19, TC-TEN-057 to TC-TEN-059). Remaining: nothing |
+| C88 | Built 2026-10-12 (PR-1 A, PR-2 A). FRD REQ-TEN-009, migration V028. Projects = group + product access. Remaining: apply V028; confirm the defaults in C88 |
 | C54 | The wider navigation-consolidation / shared `<DataTable>`/`<FilterBar>` pass ([C44](#c44)) would make the business dashboard's new click-to-filter table and sort behavior reusable elsewhere instead of page-local — still carried, same as before. `database/seed/README.md` now points to [docs/07-database/demo-data.md](../../07-database/demo-data.md) for exactly what `DemoDataSeeder` adds |
 
 **Done (2026-09-26), no longer follow-up:** C31 (sprint pages 2026.4.1 through 2027.2.2, and the "Sprint" field on application pages 02, 03, 04, 05, 10, 11, 12, 13, 15, all updated to the corrected sequence — this superseded the older "C21: add the general policy engine to `SPRINT-2027.2.2.md`" and "C16, C17: add the deferred functions to `SPRINT-2027.1.3.md`" rows, and the "C21: add the agent controls to `SPRINT-2027.1.2.md`" row, which are now folded into C31's own sprint pages); C32–C35 (FRDs written and Approved, sprint 2026.4.1 built, carry-over recorded on `SPRINT-2026.4.2.md`).

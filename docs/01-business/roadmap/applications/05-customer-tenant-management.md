@@ -103,6 +103,8 @@ AI required: decided in the feature FRD ([C12](../open-decisions.md#c12)). [WB:F
 
 ### Feature 05.04.02 Projects
 
+> **Built 2026-10-12** ([C88](../open-decisions.md#c88), [REQ-TEN-009](../../../02-requirements/FRD/projects/requirement.md)): a project is a group plus product access (PR-1 A, PR-2 A).
+
 AI required: decided in the feature FRD ([C12](../open-decisions.md#c12)). [WB:Features] flag, informational only: No.
 
 | Function ID | Function (requirement candidate) | MVP | Priority | Phase | AI ([WB], info) | Actor | Suggested API | Primary API | Microservice | Entity | Event | Journey |

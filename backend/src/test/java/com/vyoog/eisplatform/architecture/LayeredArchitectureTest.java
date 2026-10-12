@@ -81,7 +81,7 @@ class LayeredArchitectureTest {
             .should().onlyHaveDependentClassesThat().resideInAnyPackage(
                 "..modules.product..", "..modules.platform..", "..modules.registration..", "..modules.dashboard..",
                 "..modules.servicestatus..", "..modules.administration..", "..modules.search..", "..modules.reviews..",
-                "..modules.billing..", "..modules.cart..", "..modules.productcontent..", "..modules.orgdirectory..", "..modules.offering..",
+                "..modules.billing..", "..modules.cart..", "..modules.productcontent..", "..modules.orgdirectory..", "..modules.offering..", "..modules.project..",
                 "com.vyoog.eisplatform", "..config.."
             );
 

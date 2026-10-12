@@ -270,6 +270,36 @@
     "removeMemberError": "No se pudo quitar a este miembro.",
     "loadError": "No se pudo cargar esta sección."
   },
+  "projects": {
+    "title": "Proyectos",
+    "intro": "Un proyecto es un grupo de miembros que comparte acceso a productos. Todos los miembros de un proyecto pueden usar sus productos con el rol que definas.",
+    "newName": "Nombre del proyecto",
+    "description": "Descripción (opcional)",
+    "create": "Crear proyecto",
+    "createError": "No se pudo crear este proyecto.",
+    "updateError": "No se pudo guardar este proyecto.",
+    "edit": "Editar",
+    "save": "Guardar",
+    "cancel": "Cancelar",
+    "delete": "Eliminar",
+    "deleteError": "No se pudo eliminar este proyecto.",
+    "noProjects": "Aún no hay proyectos. Crea uno para dar a un equipo acceso a productos.",
+    "members": "Miembros",
+    "noMembers": "Aún no hay miembros.",
+    "addMember": "Añadir miembro",
+    "addMemberError": "No se pudo añadir a este miembro.",
+    "removeMember": "Quitar",
+    "removeMemberError": "No se pudo quitar a este miembro.",
+    "products": "Productos",
+    "noProducts": "Aún no hay productos.",
+    "addProduct": "Añadir producto",
+    "role": "Rol",
+    "add": "Añadir",
+    "addProductError": "No se pudo añadir este producto.",
+    "removeProduct": "Quitar",
+    "removeProductError": "No se pudo quitar este producto.",
+    "loadError": "No se pudo cargar esta sección."
+  },
   "privilegedAccess": {
     "title": "Acceso elevado",
     "subtitle": "Solicita acceso temporal a un permiso que normalmente no tienes. Un administrador debe aprobarlo y termina automáticamente.",
@@ -2939,6 +2969,7 @@
     "tabs": {
       "members": "Miembros",
       "groups": "Grupos",
+      "projects": "Proyectos",
       "structure": "Estructura",
       "invitations": "Invitaciones"
     }
