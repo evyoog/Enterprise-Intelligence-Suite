@@ -21,11 +21,11 @@ public final class ProductContentDtos {
                             Instant publishedAt, FileInfo file, String fileUrl, String altText, FileInfo logo,
                             String logoUrl, String videoProvider, String videoUrl, String embedUrl,
                             String thumbnailUrl, String customerName, String problem, String result,
-                            Long articleId, String articleTitle, boolean articleAvailable) {
+                            Long articleId, String articleTitle, boolean articleAvailable, String playUrl) {
     }
 
-    public record StorageInfo(boolean configured, long imageMaxSize, long documentMaxSize,
-                              List<String> imageTypes, List<String> documentTypes) {
+    public record StorageInfo(boolean configured, long imageMaxSize, long documentMaxSize, long videoMaxSize,
+                              List<String> imageTypes, List<String> documentTypes, List<String> videoTypes) {
     }
 
     public record AdminContent(List<AdminItem> items, StorageInfo storage) {
@@ -62,7 +62,7 @@ public final class ProductContentDtos {
                              Instant updatedAt, FileInfo file, String imageUrl, String altText, String logoUrl,
                              String videoProvider, String videoUrl, String embedUrl, String thumbnailUrl,
                              String customerName, String problem, String result, String articleRef,
-                             String articleType) {
+                             String articleType, String playUrl) {
     }
 
     public record PublicContent(List<PublicItem> datasheets, List<PublicItem> documentation, List<PublicItem> images,

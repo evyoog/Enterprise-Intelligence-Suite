@@ -95,6 +95,10 @@ class ProductContentServiceTest {
         return new ItemRequest(ProductContentKind.VIDEO, title, null, null, url, null, null, null, null, null, null);
     }
 
+    private ItemRequest hostedVideo(String title, UploadedFile file) {
+        return new ItemRequest(ProductContentKind.VIDEO, title, null, null, null, null, null, null, null, file, null);
+    }
+
     private ItemRequest caseStudy(String customer, UploadedFile pdf, UploadedFile logo) {
         return new ItemRequest(ProductContentKind.CASE_STUDY, "How " + customer + " saved time", null, null, null, customer,
             "Slow month-end", "Closed 3 days faster", null, pdf, logo);
@@ -122,7 +126,7 @@ class ProductContentServiceTest {
         assertCode(() -> service.uploadUrl(productId, new UploadUrlRequest(ProductContentKind.IMAGE, null, "a.pdf", "application/pdf", 100L)), "INVALID_FILE_TYPE");
         assertCode(() -> service.uploadUrl(productId, new UploadUrlRequest(ProductContentKind.IMAGE, null, "big.png", "image/png", 5L * 1024 * 1024 + 1)), "FILE_TOO_LARGE");
         assertCode(() -> service.uploadUrl(productId, new UploadUrlRequest(ProductContentKind.DATASHEET, null, "big.pdf", "application/pdf", 20L * 1024 * 1024 + 1)), "FILE_TOO_LARGE");
-        assertCode(() -> service.uploadUrl(productId, new UploadUrlRequest(ProductContentKind.VIDEO, null, "v.mp4", "video/mp4", 100L)), "INVALID_CONTENT");
+        assertCode(() -> service.uploadUrl(productId, new UploadUrlRequest(ProductContentKind.DOCUMENTATION, null, "d.pdf", "application/pdf", 100L)), "INVALID_CONTENT");
         assertCode(() -> service.uploadUrl(productId, new UploadUrlRequest(ProductContentKind.IMAGE, "logo", "l.png", "image/png", 100L)), "INVALID_CONTENT");
         assertThatThrownBy(() -> service.uploadUrl(-5L, new UploadUrlRequest(ProductContentKind.IMAGE, null, "a.png", "image/png", 1L)))
             .isInstanceOf(ResourceNotFoundException.class);
@@ -276,6 +280,86 @@ class ProductContentServiceTest {
         assertThat(storage.issuedExpiries).containsOnly(Duration.ofHours(1));
         String everything = content.toString() + service.adminContent(productId);
         assertThat(everything).doesNotContain("AKIA").doesNotContain("secret").doesNotContain("eis-knowledge-test");
+    }
+
+    // ---- hosted videos (PC-3, C89): a link or a file in the product storage, never both ----
+
+    @Test
+    void aHostedVideoHasItsOwnTypesAndSizeLimit() {
+        UploadUrl mp4 = service.uploadUrl(productId, new UploadUrlRequest(ProductContentKind.VIDEO, null, "Demo reel.MP4", "video/mp4", 50L * 1024 * 1024));
+        assertThat(mp4.uploadKey()).startsWith("product-content/" + productId + "/video/").endsWith(".mp4").doesNotContain("Demo");
+        assertThat(mp4.maxSize()).isEqualTo(500L * 1024 * 1024);
+        assertThat(service.uploadUrl(productId, new UploadUrlRequest(ProductContentKind.VIDEO, null, "a.webm", "video/webm", 10L)).uploadKey()).endsWith(".webm");
+        assertCode(() -> service.uploadUrl(productId, new UploadUrlRequest(ProductContentKind.VIDEO, null, "a.mov", "video/quicktime", 10L)), "INVALID_FILE_TYPE");
+        assertCode(() -> service.uploadUrl(productId, new UploadUrlRequest(ProductContentKind.VIDEO, null, "a.mp4", "application/pdf", 10L)), "INVALID_FILE_TYPE");
+        assertCode(() -> service.uploadUrl(productId, new UploadUrlRequest(ProductContentKind.VIDEO, null, "big.mp4", "video/mp4", 500L * 1024 * 1024 + 1)), "FILE_TOO_LARGE");
+        assertThat(service.adminContent(productId).storage().videoTypes()).containsExactly("mp4", "webm");
+        assertThat(service.adminContent(productId).storage().videoMaxSize()).isEqualTo(500L * 1024 * 1024);
+    }
+
+    @Test
+    void anUploadedVideoIsStoredAsAFileAndPlayedFromAShortLivedLink() {
+        UploadedFile file = upload(productId, ProductContentKind.VIDEO, null, "tour.mp4", "video/mp4", 8_000_000);
+        AdminItem item = service.create(ADMIN, productId, hostedVideo("Product tour", file));
+        assertThat(item.videoProvider()).isEqualTo("HOSTED");
+        assertThat(item.videoUrl()).isNull();
+        assertThat(item.embedUrl()).isNull();
+        assertThat(item.file().fileName()).isEqualTo("tour.mp4");
+        assertThat(item.playUrl()).isNotBlank();
+        assertThat(item.status()).isEqualTo(ProductContentStatus.DRAFT);
+
+        assertThat(service.publicContent(productId).videos()).isEmpty();
+        service.setStatus(ADMIN, productId, item.id(), ProductContentStatus.PUBLISHED);
+        storage.issuedExpiries.clear();
+        PublicItem visible = service.publicContent(productId).videos().get(0);
+        assertThat(visible.playUrl()).isNotBlank();
+        assertThat(visible.videoProvider()).isEqualTo("HOSTED");
+        assertThat(storage.issuedExpiries).containsOnly(Duration.ofHours(2));
+        assertThat(service.publicContent(productId).toString()).doesNotContain("AKIA").doesNotContain("secret").doesNotContain("eis-knowledge-test");
+        assertThatThrownBy(() -> service.download(productId, item.id())).isInstanceOf(ResourceNotFoundException.class);
+    }
+
+    @Test
+    void aVideoIsAFileOrALinkNeverBothAndNeverNeither() {
+        UploadedFile file = upload(productId, ProductContentKind.VIDEO, null, "tour.mp4", "video/mp4", 1000);
+        ItemRequest both = new ItemRequest(ProductContentKind.VIDEO, "Both", null, null, "https://youtu.be/dQw4w9WgXcQ", null, null, null, null, file, null);
+        assertCode(() -> service.create(ADMIN, productId, both), "INVALID_VIDEO_URL");
+        assertCode(() -> service.create(ADMIN, productId, hostedVideo("Neither", null)), "INVALID_VIDEO_URL");
+        assertThat(service.adminContent(productId).items()).isEmpty();
+    }
+
+    @Test
+    void switchingAVideoBetweenALinkAndAFileDropsTheOldOneAndRaisesTheVersion() {
+        UploadedFile first = upload(productId, ProductContentKind.VIDEO, null, "one.mp4", "video/mp4", 1000);
+        AdminItem item = service.create(ADMIN, productId, hostedVideo("Tour", first));
+
+        // an edit that changes only the title keeps the stored file
+        AdminItem renamed = service.update(ADMIN, productId, item.id(), hostedVideo("Tour 2", null));
+        assertThat(renamed.file().fileName()).isEqualTo("one.mp4");
+        assertThat(renamed.videoProvider()).isEqualTo("HOSTED");
+        assertThat(renamed.version()).isEqualTo(2);
+
+        // file -> link: the file is deleted and the player becomes the YouTube embed
+        AdminItem link = service.update(ADMIN, productId, item.id(), video("Tour 2", "https://youtu.be/dQw4w9WgXcQ"));
+        assertThat(link.videoProvider()).isEqualTo("YOUTUBE");
+        assertThat(link.file()).isNull();
+        assertThat(link.playUrl()).isNull();
+        assertThat(storage.deleted).contains(first.uploadKey());
+        assertThat(link.version()).isEqualTo(3);
+
+        // link -> file: the link fields are cleared
+        UploadedFile second = upload(productId, ProductContentKind.VIDEO, null, "two.webm", "video/webm", 2000);
+        AdminItem hosted = service.update(ADMIN, productId, item.id(), hostedVideo("Tour 2", second));
+        assertThat(hosted.videoProvider()).isEqualTo("HOSTED");
+        assertThat(hosted.videoUrl()).isNull();
+        assertThat(hosted.embedUrl()).isNull();
+        assertThat(hosted.thumbnailUrl()).isNull();
+        assertThat(hosted.file().fileName()).isEqualTo("two.webm");
+        assertThat(hosted.version()).isEqualTo(4);
+
+        // deleting the item deletes the stored video
+        service.delete(ADMIN, productId, item.id());
+        assertThat(storage.deleted).contains(second.uploadKey());
     }
 
     // ---- versions (REQ-CAT-004.4, BR-PCON-008) ----

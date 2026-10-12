@@ -254,6 +254,8 @@ eis:
   product-content:
     image-max-size: ${EIS_PRODUCT_CONTENT_IMAGE_MAX_SIZE:5242880}
     document-max-size: ${EIS_PRODUCT_CONTENT_DOCUMENT_MAX_SIZE:20971520}
+    video-max-size: ${EIS_PRODUCT_CONTENT_VIDEO_MAX_SIZE:524288000}
+    playback-url-expiry: ${EIS_PRODUCT_CONTENT_PLAYBACK_URL_EXPIRY:PT2H}
     upload-url-expiry: ${EIS_PRODUCT_CONTENT_UPLOAD_URL_EXPIRY:PT15M}
     download-url-expiry: ${EIS_PRODUCT_CONTENT_DOWNLOAD_URL_EXPIRY:PT5M}
     view-url-expiry: ${EIS_PRODUCT_CONTENT_VIEW_URL_EXPIRY:PT1H}

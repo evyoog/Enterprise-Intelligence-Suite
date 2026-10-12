@@ -12,7 +12,7 @@ Content tab: an intro, a notice when file storage is not configured, then five s
 | Datasheet | Title, description, PDF (up to 20 MB) |
 | Documentation | Title, description, knowledge article (live, public; this application's first) |
 | Images | Title, description, alt text (required), PNG/JPG/WebP (up to 5 MB) |
-| Videos | Title, description, video link (https; YouTube and Vimeo recognised) |
+| Videos | Title, description, and one of: a video link (https; YouTube and Vimeo recognised) or an uploaded video file (MP4 or WebM, up to 500 MB), chosen with two radio buttons ("A link" / "Upload a video file"; the file option is off when storage is not configured) |
 | Case studies | Customer name (required), title, problem, result, optional customer logo (image), optional PDF |
 
 A file is uploaded as soon as it is chosen (progress, speed, remaining size and Cancel, the same card as the knowledge media library) and attached when the dialog is saved. A wrong type or an oversized file is refused before anything is uploaded.

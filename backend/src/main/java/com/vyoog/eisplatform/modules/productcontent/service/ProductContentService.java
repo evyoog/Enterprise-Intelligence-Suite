@@ -75,7 +75,8 @@ public class ProductContentService implements ProductDeleteListener {
 
     private StorageInfo storageInfo() {
         return new StorageInfo(storage.configured(), settings.getImageMaxSize(), settings.getDocumentMaxSize(),
-            ProductContentRules.IMAGE.keySet().stream().sorted().toList(), ProductContentRules.PDF.keySet().stream().sorted().toList());
+            settings.getVideoMaxSize(), ProductContentRules.IMAGE.keySet().stream().sorted().toList(),
+            ProductContentRules.PDF.keySet().stream().sorted().toList(), ProductContentRules.VIDEO.keySet().stream().sorted().toList());
     }
 
     public UploadUrl uploadUrl(Long productId, UploadUrlRequest request) {
@@ -229,7 +230,7 @@ public class ProductContentService implements ProductDeleteListener {
         requireActiveProduct(productId);
         ProductContentItem item = find(productId, itemId);
         if (item.getStatus() != ProductContentStatus.PUBLISHED || item.getObjectKey() == null
-            || item.getKind() == ProductContentKind.IMAGE) {
+            || item.getKind() == ProductContentKind.IMAGE || item.getKind() == ProductContentKind.VIDEO) {
             throw new ResourceNotFoundException("File not found");
         }
         return temporaryUrl(item, false, true);
@@ -248,7 +249,7 @@ public class ProductContentService implements ProductDeleteListener {
 
     // ---------------------------------------------------------------- internals
 
-    private enum FileKind { IMAGE, PDF }
+    private enum FileKind { IMAGE, PDF, VIDEO }
 
     private static FileKind fileKindFor(ProductContentKind kind, boolean logo) {
         if (logo) {
@@ -260,17 +261,26 @@ public class ProductContentService implements ProductDeleteListener {
         return switch (kind) {
             case IMAGE -> FileKind.IMAGE;
             case DATASHEET, CASE_STUDY -> FileKind.PDF;
+            case VIDEO -> FileKind.VIDEO;
             default -> throw KnowledgeException.badRequest("INVALID_CONTENT", "This kind of content has no file.");
         };
     }
 
     private long maxSize(FileKind fileKind) {
-        return fileKind == FileKind.IMAGE ? settings.getImageMaxSize() : settings.getDocumentMaxSize();
+        return switch (fileKind) {
+            case IMAGE -> settings.getImageMaxSize();
+            case VIDEO -> settings.getVideoMaxSize();
+            case PDF -> settings.getDocumentMaxSize();
+        };
     }
 
     /** BR-PCON-002: type by extension and declared content type, size from configuration. Returns the extension. */
     private String checkFile(FileKind fileKind, String fileName, String contentType, long size) {
-        Map<String, Set<String>> allowed = fileKind == FileKind.IMAGE ? ProductContentRules.IMAGE : ProductContentRules.PDF;
+        Map<String, Set<String>> allowed = switch (fileKind) {
+            case IMAGE -> ProductContentRules.IMAGE;
+            case VIDEO -> ProductContentRules.VIDEO;
+            case PDF -> ProductContentRules.PDF;
+        };
         String extension = ProductContentRules.extension(fileName);
         String type = ProductContentRules.baseContentType(contentType);
         if (!allowed.containsKey(extension) || !allowed.get(extension).contains(type)) {
@@ -324,19 +334,7 @@ public class ProductContentService implements ProductDeleteListener {
                 item.setAltText(alt);
                 changed |= applyFile(item, request.file(), creating, true, replacedKeys);
             }
-            case VIDEO -> {
-                ProductVideoLink link;
-                try {
-                    link = ProductVideoLink.parse(request.videoUrl());
-                } catch (IllegalArgumentException e) {
-                    throw KnowledgeException.badRequest("INVALID_VIDEO_URL", e.getMessage());
-                }
-                changed |= !Objects.equals(item.getVideoUrl(), link.url());
-                item.setVideoProvider(link.provider());
-                item.setVideoRef(link.ref());
-                item.setVideoUrl(link.url());
-                item.setThumbnailUrl(link.thumbnailUrl());
-            }
+            case VIDEO -> changed |= applyVideo(item, request, creating, replacedKeys);
             case CASE_STUDY -> {
                 String customer = trimmed(request.customerName());
                 String problem = trimmed(request.problem());
@@ -366,6 +364,55 @@ public class ProductContentService implements ProductDeleteListener {
             }
         }
         return changed;
+    }
+
+    /**
+     * A video is either a link (YouTube, Vimeo or any https link) or a file uploaded to the product storage and
+     * played from there (PC-3, C89). Never both; switching from one to the other drops the old one.
+     */
+    private boolean applyVideo(ProductContentItem item, ItemRequest request, boolean creating, List<String> replacedKeys) {
+        boolean hasLink = trimmed(request.videoUrl()) != null;
+        boolean hasFile = request.file() != null;
+        boolean wasHosted = item.getObjectKey() != null;
+        boolean wasLink = item.getVideoUrl() != null;
+        if (hasLink && hasFile) {
+            throw KnowledgeException.badRequest("INVALID_VIDEO_URL", "Add a video link or upload a video file, not both.");
+        }
+        if (hasLink) {
+            ProductVideoLink link;
+            try {
+                link = ProductVideoLink.parse(request.videoUrl());
+            } catch (IllegalArgumentException e) {
+                throw KnowledgeException.badRequest("INVALID_VIDEO_URL", e.getMessage());
+            }
+            boolean changed = wasHosted || !Objects.equals(item.getVideoUrl(), link.url());
+            if (wasHosted) {
+                replacedKeys.add(item.getObjectKey());
+                item.setObjectKey(null);
+                item.setFileName(null);
+                item.setFileSize(null);
+                item.setMimeType(null);
+            }
+            item.setVideoProvider(link.provider());
+            item.setVideoRef(link.ref());
+            item.setVideoUrl(link.url());
+            item.setThumbnailUrl(link.thumbnailUrl());
+            return changed;
+        }
+        if (hasFile) {
+            if (wasLink) {
+                item.setVideoUrl(null);
+                item.setVideoRef(null);
+                item.setThumbnailUrl(null);
+            }
+            boolean changed = applyFile(item, request.file(), creating, true, replacedKeys);
+            item.setVideoProvider(ProductContentRules.HOSTED);
+            return changed || wasLink;
+        }
+        if (!wasHosted && !wasLink) {
+            throw KnowledgeException.badRequest("INVALID_VIDEO_URL", "Add a video link or upload a video file.");
+        }
+        return false; // an edit that leaves the video as it is
     }
 
     /** The item's main file: required on create when {@code required}; replaced when a new upload is attached. */
@@ -456,6 +503,14 @@ public class ProductContentService implements ProductDeleteListener {
         return storage.getTemporaryUrl(key, null, settings.getViewUrlExpiry()).url();
     }
 
+    /** A playback link for a video that is a file in the product storage; empty for links. */
+    private String playUrl(ProductContentItem i) {
+        if (i.getKind() != ProductContentKind.VIDEO || i.getObjectKey() == null || !storage.configured()) {
+            return null;
+        }
+        return storage.getTemporaryUrl(i.getObjectKey(), null, settings.getPlaybackUrlExpiry()).url();
+    }
+
     private AdminItem toAdmin(ProductContentItem i, KnowledgeArticle article) {
         boolean available = i.getKind() == ProductContentKind.DOCUMENTATION && article != null
             && liveDoc(article.getId()).isPresent();
@@ -465,7 +520,7 @@ public class ProductContentService implements ProductDeleteListener {
             fileInfo(i.getLogoFileName(), i.getLogoFileSize(), i.getLogoMimeType()), viewUrl(i.getLogoObjectKey()),
             i.getVideoProvider(), i.getVideoUrl(), ProductVideoLink.embedUrl(i.getVideoProvider(), i.getVideoRef()),
             i.getThumbnailUrl(), i.getCustomerName(), i.getProblem(), i.getResult(), i.getKnowledgeContentId(),
-            article == null ? null : article.getTitle(), available);
+            article == null ? null : article.getTitle(), available, playUrl(i));
     }
 
     private PublicItem toPublic(ProductContentItem i, KnowledgeViewService.Live doc) {
@@ -474,7 +529,7 @@ public class ProductContentService implements ProductDeleteListener {
             fileInfo(i.getFileName(), i.getFileSize(), i.getMimeType()),
             i.getKind() == ProductContentKind.IMAGE ? viewUrl(i.getObjectKey()) : null, i.getAltText(), viewUrl(i.getLogoObjectKey()),
             i.getVideoProvider(), i.getVideoUrl(), ProductVideoLink.embedUrl(i.getVideoProvider(), i.getVideoRef()), i.getThumbnailUrl(),
-            i.getCustomerName(), i.getProblem(), i.getResult(), ref, doc == null ? null : doc.item().getContentType().name());
+            i.getCustomerName(), i.getProblem(), i.getResult(), ref, doc == null ? null : doc.item().getContentType().name(), playUrl(i));
     }
 
     private static FileInfo fileInfo(String name, Long size, String type) {

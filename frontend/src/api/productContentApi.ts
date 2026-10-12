@@ -5,19 +5,25 @@ import { uploadToStorage, type UploadHandle, type UploadProgress, type UploadTic
 export type ContentKind = 'DATASHEET' | 'DOCUMENTATION' | 'IMAGE' | 'VIDEO' | 'CASE_STUDY'
 export type ContentStatus = 'DRAFT' | 'PUBLISHED'
 
+/** HOSTED = a video file uploaded to the product storage (PC-3, C89); the others are links. */
+export type VideoProvider = 'YOUTUBE' | 'VIMEO' | 'EXTERNAL' | 'HOSTED'
+
 export interface FileInfo { fileName: string; size: number; mimeType: string }
 
 export interface AdminItem {
   id: number; kind: ContentKind; title: string; description: string | null; status: ContentStatus
   displayOrder: number; version: number; updatedAt: string; publishedAt: string | null
   file: FileInfo | null; fileUrl: string | null; altText: string | null; logo: FileInfo | null; logoUrl: string | null
-  videoProvider: 'YOUTUBE' | 'VIMEO' | 'EXTERNAL' | null; videoUrl: string | null; embedUrl: string | null; thumbnailUrl: string | null
+  videoProvider: VideoProvider | null; videoUrl: string | null; embedUrl: string | null; thumbnailUrl: string | null
   customerName: string | null; problem: string | null; result: string | null
   articleId: number | null; articleTitle: string | null; articleAvailable: boolean
+  /** A hosted video (a file in the product storage): a short-lived playback link. */
+  playUrl: string | null
 }
 
 export interface StorageInfo {
-  configured: boolean; imageMaxSize: number; documentMaxSize: number; imageTypes: string[]; documentTypes: string[]
+  configured: boolean; imageMaxSize: number; documentMaxSize: number; videoMaxSize: number
+  imageTypes: string[]; documentTypes: string[]; videoTypes: string[]
 }
 export interface AdminContent { items: AdminItem[]; storage: StorageInfo }
 
@@ -36,8 +42,9 @@ export interface DocumentationOption { id: number; title: string; type: string; 
 export interface PublicItem {
   id: number; kind: ContentKind; title: string; description: string | null; version: number; updatedAt: string
   file: FileInfo | null; imageUrl: string | null; altText: string | null; logoUrl: string | null
-  videoProvider: 'YOUTUBE' | 'VIMEO' | 'EXTERNAL' | null; videoUrl: string | null; embedUrl: string | null; thumbnailUrl: string | null
+  videoProvider: VideoProvider | null; videoUrl: string | null; embedUrl: string | null; thumbnailUrl: string | null
   customerName: string | null; problem: string | null; result: string | null; articleRef: string | null; articleType: string | null
+  playUrl: string | null
 }
 export interface PublicContent {
   datasheets: PublicItem[]; documentation: PublicItem[]; images: PublicItem[]; videos: PublicItem[]; caseStudies: PublicItem[]

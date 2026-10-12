@@ -13,7 +13,7 @@ Files never pass through these endpoints: the browser uploads to the private S3 
 ## Administrator (`MANAGE_CATALOG`)
 | Method | Path | Purpose |
 |---|---|---|
-| GET | `/admin/products/{id}/content` | `{ items[], storage{configured, imageMaxSize, documentMaxSize, imageTypes, documentTypes} }`: every item (drafts included), in display order, with previews for images and logos |
+| GET | `/admin/products/{id}/content` | `{ items[], storage{configured, imageMaxSize, documentMaxSize, videoMaxSize, imageTypes, documentTypes, videoTypes} }`: every item (drafts included), in display order, with previews for images and logos and a `playUrl` for a hosted video |
 | POST | `/admin/products/{id}/content/upload-url` | Body `{ kind, purpose?: "file"\|"logo", fileName, contentType, size }`. Checks the type and size and returns `{ uploadKey, uploadUrl, expiresAt, maxSize }`: a presigned PUT for a new key `product-content/{id}/{kind}/{uuid}.{ext}`. 400 `INVALID_FILE_TYPE` / `FILE_TOO_LARGE`; 503 `STORAGE_NOT_CONFIGURED` |
 | POST | `/admin/products/{id}/content` | Add an item (starts as a Draft, version 1). Body below. 201 |
 | PUT | `/admin/products/{id}/content/{itemId}` | Edit an item. A new `file` or `logo` replaces the old one (the old object is deleted). The version rises by one when anything changed. The kind cannot change |
@@ -30,7 +30,7 @@ Files never pass through these endpoints: the browser uploads to the private S3 
   "title": "Platform datasheet",
   "description": "optional",
   "altText": "IMAGE only, required",
-  "videoUrl": "VIDEO only: https link (YouTube and Vimeo recognised)",
+  "videoUrl": "VIDEO only: https link (YouTube and Vimeo recognised); omit it when a file is attached",
   "customerName": "CASE_STUDY only, required", "problem": "…", "result": "…",
   "articleId": 40,
   "file": { "uploadKey": "product-content/7/datasheet/….pdf", "fileName": "sheet.pdf", "contentType": "application/pdf", "size": 2048 },
@@ -40,7 +40,9 @@ Files never pass through these endpoints: the browser uploads to the private S3 
 On save the backend checks that the key belongs to this application and kind, that the object exists in storage, and that its size and content type match `file` (otherwise the object is deleted and `UPLOAD_MISMATCH` is returned).
 
 ## Settings
-`eis.product-content.image-max-size` (5 MB), `document-max-size` (20 MB), `upload-url-expiry` (15 min), `download-url-expiry` (5 min), `view-url-expiry` (1 h); environment overrides `EIS_PRODUCT_CONTENT_*`.
+`eis.product-content.image-max-size` (5 MB), `document-max-size` (20 MB), `video-max-size` (500 MB), `playback-url-expiry` (2 h, hosted video), `upload-url-expiry` (15 min), `download-url-expiry` (5 min), `view-url-expiry` (1 h); environment overrides `EIS_PRODUCT_CONTENT_*`.
 
 ## Audit actions
 `PRODUCT_CONTENT_ADDED`, `_UPDATED`, `_PUBLISHED`, `_UNPUBLISHED`, `_DELETED`, `_REORDERED`.
+
+**Hosted video (C89).** For `kind` VIDEO the `file` is an MP4 or WebM (`upload-url` accepts `kind: "VIDEO"`, up to 500 MB). Send `videoUrl` **or** `file`, not both; an update with neither keeps the stored video. A hosted video has `videoProvider: "HOSTED"`, no `videoUrl`, a `file` and a `playUrl` (admin and public) that is a 2-hour presigned GET link; it has no download endpoint (`/download` answers 404 for a video).

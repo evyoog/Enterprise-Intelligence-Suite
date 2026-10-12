@@ -3036,7 +3036,7 @@
       },
       "VIDEO": {
         "title": "Vídeos",
-        "help": "Un enlace de YouTube, Vimeo u otra web. Los vídeos no se suben aquí.",
+        "help": "Un enlace de YouTube, Vimeo u otra web, o un archivo de vídeo (MP4 o WebM, hasta {{size}}) que se reproduce en la página de producto.",
         "empty": "Aún no hay vídeos.",
         "add": "Añadir vídeo"
       },
@@ -3101,6 +3101,9 @@
       "altText": "Texto alternativo (describe la imagen)",
       "videoUrl": "Enlace del vídeo",
       "videoHelp": "Un enlace de YouTube o Vimeo se reproduce en la página de producto; cualquier otro enlace https se abre en una pestaña nueva.",
+        "videoMode": "Cómo se añade el vídeo",
+        "videoModeLink": "Un enlace (YouTube, Vimeo o web)",
+        "videoModeFile": "Subir un archivo de vídeo",
       "customerName": "Nombre del cliente",
       "problem": "El problema",
       "result": "El resultado",

@@ -19,7 +19,7 @@ One row per piece of content of one catalog product (application). One table wit
 | file_name, file_size, mime_type | VARCHAR(255), BIGINT, VARCHAR(100) | As declared and verified |
 | alt_text | VARCHAR(250) | Required for images |
 | logo_object_key (UNIQUE), logo_file_name, logo_file_size, logo_mime_type | | Case-study customer logo |
-| video_provider | VARCHAR(20) | `YOUTUBE`, `VIMEO`, `EXTERNAL` (CHECK) |
+| video_provider | VARCHAR(20) | `YOUTUBE`, `VIMEO`, `EXTERNAL`, `HOSTED` (CHECK; `HOSTED` added by migration V029, [C89](../../01-business/roadmap/open-decisions.md#c89)). `HOSTED` = a video file: `object_key` and the file columns hold it and the link columns are empty |
 | video_url, video_ref, thumbnail_url | VARCHAR(1000), VARCHAR(50), VARCHAR(1000) | `video_ref` = the provider's video id; the YouTube thumbnail is derived from it |
 | customer_name | VARCHAR(200) | Case study |
 | problem, result_text | TEXT | Case study (`result_text`: `result` is a reserved word in some databases) |

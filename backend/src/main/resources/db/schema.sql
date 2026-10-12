@@ -1379,7 +1379,7 @@ CREATE TABLE IF NOT EXISTS product_content_item (
     logo_file_name VARCHAR(255),
     logo_file_size BIGINT,
     logo_mime_type VARCHAR(100),
-    video_provider VARCHAR(20) CHECK (video_provider IN ('YOUTUBE', 'VIMEO', 'EXTERNAL')),
+    video_provider VARCHAR(20) CHECK (video_provider IN ('YOUTUBE', 'VIMEO', 'EXTERNAL', 'HOSTED')),
     video_url VARCHAR(1000),
     video_ref VARCHAR(50),
     thumbnail_url VARCHAR(1000),
@@ -1524,3 +1524,8 @@ CREATE TABLE IF NOT EXISTS organization_group_product (
 
 -- Empty = direct assignment; set = the access comes from that project.
 ALTER TABLE organization_product_access ADD COLUMN IF NOT EXISTS source_group_id BIGINT REFERENCES organization_group(id);
+
+-- REQ-CAT-004.6 (C89): a product video can be a file in the product storage. Additive; mirrors database/migrations/V029__product_content_hosted_video.sql.
+ALTER TABLE product_content_item DROP CONSTRAINT IF EXISTS product_content_item_video_provider_check;
+ALTER TABLE product_content_item ADD CONSTRAINT product_content_item_video_provider_check
+    CHECK (video_provider IN ('YOUTUBE', 'VIMEO', 'EXTERNAL', 'HOSTED'));
