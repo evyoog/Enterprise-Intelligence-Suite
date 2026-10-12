@@ -695,7 +695,7 @@ Screen: [business-dashboard.md](../../05-ui/screen-requirements/business-dashboa
 - **Roles:** only an organization administrator invites as `ORG_ADMIN`; a delegated inviter sees and manages only their own invitations.
 - **One organization per person** this sprint; **pending invitations hold no seat**; seats are checked on send and on accept; names are collected as first and last name; paths follow `/organization/me/...`.
 - **05.03.01.02 Create user stays out** (and stays carried); so do bulk CSV invitations and multi-organization membership.
-**Still Not specified:** direct Create user; multi-organization membership; invitation reminders; notifying the inviter on accept or decline; product access in an invitation; whether removing `INVITE_USERS` should revoke the member's pending invitations (today it does not); privileged-access grants for `INVITE_USERS`.
+**Still Not specified:** invitation reminders; product access in an invitation; privileged-access grants for `INVITE_USERS`. Direct Create user, multi-organization membership, inviter notifications and the revoke-on-removal question were answered by [C87](#c87).
 
 ### C85
 **Decision (product owner, 2026-10-08) — 02.02 Offering management (OF-1 to OF-7):** [REQ-CAT-005](../../02-requirements/FRD/offering-management/requirement.md) is **Approved** and built in sprint [2026.4.1](sprints/SPRINT-2026.4.1.md).
@@ -716,6 +716,14 @@ Screen: [business-dashboard.md](../../05-ui/screen-requirements/business-dashboa
 - **Process and order:** FRDs first, then build per repo; the tool side (Thittam Macro Planner) is built and tested against a platform simulator before the platform side; every tool uses the same module and one connection file; Macro has no bridge code today, so it is added.
 **Applied by default until confirmed (assumptions A1–A6 of the plan):** open organization snapshot with `attributes`; tool-created-user guard rails; end time stored as an instant equal to 23:59:00.000 +05:30; Macro first; "connection metrics" = one connection-settings file plus one metrics class; single writer.
 **Still Not specified:** hosting of client databases and pooling limits; retention of a tenant schema after a subscription ends; several organizations per person; notifications on access changes; the Thittam role map (proposed `PMS_ADMIN→ADMIN`, `PMS_MANAGER→PROJECT_OWNER`, `PMS_USER→TASK_USER`); the sprint for REQ-INT-003.
+
+### C87
+**Decision (product owner, 2026-10-12) — 05.03.01 Invite user, follow-up questions IN-7 to IN-10 (sprint [2026.4.1](sprints/SPRINT-2026.4.1.md)):**
+- **IN-7 A:** **05.03.01.02 Create user is removed from the MVP.** Invite user ([C84](#c84)) covers how a person joins; an administrator never creates the account directly. The function leaves sprint [2026.4.2](sprints/SPRINT-2026.4.2.md) too. It is not deleted from the planning documents: it is marked removed by this decision.
+- **IN-8 A:** keep as built. Removing `INVITE_USERS` from a member does **not** revoke that member's pending invitations (BR-INV-016); an administrator can revoke them.
+- **IN-9 B:** **the inviter is notified when the person accepts or declines.** Built: an in-app notification in category ORGANIZATION ("Invitation accepted" or "Invitation declined"), plus an email unless the inviter muted that category in their preferences. Only the inviter is told. Nothing is sent when an acceptance is refused. A failed notice never fails the acceptance or the decline. FRD [REQ-TEN-008.19](../../02-requirements/FRD/invite-user/requirement.md), rule BR-INV-018, tests TC-TEN-057 to TC-TEN-059.
+- **IN-10 A:** keep one organization per person (REQ-TEN-008.11). Several organizations per person stay out of scope.
+**Still Not specified:** invitation reminders; product access in an invitation; privileged-access grants for `INVITE_USERS`; multi-organization membership; bulk CSV invitations; a notice when an invitation expires.
 
 ### DN-2 Sprint scope, length and dates
 **Decision:**
@@ -831,6 +839,7 @@ These documents are **not** changed by this file. Update them to match:
 | C84 | Built 2026-10-08 (recommended answers). FRD REQ-TEN-008, migration V026. Remaining: apply V026; confirm the Not-specified items; Create user (05.03.01.02) is still carried |
 | C85 | Built 2026-10-08. FRD REQ-CAT-005, migration V027. Remaining: apply V027; decide bundle pricing (OF-2) and then buying an offering as a whole; resolve the regions conflict (OF-3 vs OF-5); confirm the Not-specified items |
 | C86 | Written 2026-10-09 (Phase 0): FRD REQ-INT-003 **Approved 2026-10-09**, contract v1, BR-INT-001, BR-SUB-010; REQ-TEN-005 Approved. Phase 1 (Macro tenant registry) built and merged to Macro `main` 2026-10-09. Remaining: confirm A1–A6 and the Thittam role map (defaults apply meanwhile), choose the sprint; phases 2–6 (Macro), 7 (platform), 8–9 |
+| C87 | Built 2026-10-12 (IN-7 A, IN-8 A, IN-9 B, IN-10 A). Create user (05.03.01.02) removed from the MVP; inviter notified on accept or decline (REQ-TEN-008.19, TC-TEN-057 to TC-TEN-059). Remaining: nothing |
 | C54 | The wider navigation-consolidation / shared `<DataTable>`/`<FilterBar>` pass ([C44](#c44)) would make the business dashboard's new click-to-filter table and sort behavior reusable elsewhere instead of page-local — still carried, same as before. `database/seed/README.md` now points to [docs/07-database/demo-data.md](../../07-database/demo-data.md) for exactly what `DemoDataSeeder` adds |
 
 **Done (2026-09-26), no longer follow-up:** C31 (sprint pages 2026.4.1 through 2027.2.2, and the "Sprint" field on application pages 02, 03, 04, 05, 10, 11, 12, 13, 15, all updated to the corrected sequence — this superseded the older "C21: add the general policy engine to `SPRINT-2027.2.2.md`" and "C16, C17: add the deferred functions to `SPRINT-2027.1.3.md`" rows, and the "C21: add the agent controls to `SPRINT-2027.1.2.md`" row, which are now folded into C31's own sprint pages); C32–C35 (FRDs written and Approved, sprint 2026.4.1 built, carry-over recorded on `SPRINT-2026.4.2.md`).

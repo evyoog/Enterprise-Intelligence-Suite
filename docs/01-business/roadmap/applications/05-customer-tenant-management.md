@@ -68,7 +68,7 @@ AI required: decided in the feature FRD ([C12](../open-decisions.md#c12)). [WB:F
 | Function ID | Function (requirement candidate) | MVP | Priority | Phase | AI ([WB], info) | Actor | Suggested API | Primary API | Microservice | Entity | Event | Journey |
 |---|---|---|---|---|---|---|---|---|---|---|---|---|
 | 05.03.01.01 | Invite user | Yes | Phase 1 / MVP | P0 | No | Platform Service | `/user-management/invite-user` | - | Tenant Service | Organization | - | UJ-005 Provision Service |
-| 05.03.01.02 | Create user | Yes | Phase 1 / MVP | P0 | No | Platform Service | `/user-management/create-user` | - | Tenant Service | Organization | - | UJ-005 Provision Service |
+| 05.03.01.02 | Create user | **No (removed from the MVP, [C87](../open-decisions.md#c87))** | Removed | - | No | Platform Service | `/user-management/create-user` | - | Tenant Service | Organization | - | UJ-005 Provision Service |
 | 05.03.01.03 | Activate user | Yes | Phase 1 / MVP | P0 | No | Platform Service | `/user-management/activate-user` | - | Tenant Service | Organization | - | UJ-005 Provision Service |
 | 05.03.01.04 | Suspend user | Yes | Phase 1 / MVP | P0 | No | Platform Service | `/user-management/suspend-user` | - | Tenant Service | Organization | - | UJ-005 Provision Service |
 | 05.03.01.05 | Remove user | Yes | Phase 1 / MVP | P0 | No | Platform Service | `/user-management/remove-user` | - | Tenant Service | Organization | - | UJ-005 Provision Service |
@@ -83,7 +83,7 @@ AI required: decided in the feature FRD ([C12](../open-decisions.md#c12)). [WB:F
 | 05.03.02.02 | Assign group | Yes | Phase 1 / MVP | P0 | No | Platform Service | `/user-management/assign-group` | - | Tenant Service | Organization | - | UJ-005 Provision Service |
 | 05.03.02.03 | Review access | Yes | Phase 1 / MVP | P0 | No | Platform Service | `/user-management/review-access` | - | Tenant Service | Organization | - | UJ-005 Provision Service |
 
-> **05.03.01.01 Invite user** is built ([C84](../open-decisions.md#c84), [REQ-TEN-008](../../../02-requirements/FRD/invite-user/requirement.md)). 05.03.01.02 Create user stays carried.
+> **05.03.01.01 Invite user** is built ([C84](../open-decisions.md#c84), [REQ-TEN-008](../../../02-requirements/FRD/invite-user/requirement.md)). 05.03.01.02 Create user is removed from the MVP ([C87](../open-decisions.md#c87), IN-7). The inviter is notified when an invitation is accepted or declined (C87, IN-9).
 
 ### Added by decision: Organization hierarchy (C82)
 

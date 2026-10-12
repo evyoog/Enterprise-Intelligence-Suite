@@ -12,6 +12,9 @@ import com.vyoog.eisplatform.modules.invitation.dto.InvitationDtos.*;
 import com.vyoog.eisplatform.modules.invitation.model.InvitationStatus;
 import com.vyoog.eisplatform.modules.invitation.model.OrganizationInvitation;
 import com.vyoog.eisplatform.modules.invitation.repository.InvitationRepository;
+import com.vyoog.eisplatform.modules.notification.model.NotificationCategory;
+import com.vyoog.eisplatform.modules.notification.model.NotificationSeverity;
+import com.vyoog.eisplatform.modules.notification.service.NotificationService;
 import com.vyoog.eisplatform.modules.orghierarchy.model.OrgNode;
 import com.vyoog.eisplatform.modules.orghierarchy.repository.OrgNodeRepository;
 import com.vyoog.eisplatform.modules.registration.model.*;
@@ -22,6 +25,8 @@ import com.vyoog.eisplatform.modules.registration.service.EmailService;
 import com.vyoog.eisplatform.modules.registration.service.OrganizationMemberService;
 import com.vyoog.eisplatform.modules.registration.service.PasswordPolicy;
 import lombok.RequiredArgsConstructor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -39,13 +44,15 @@ import java.util.stream.Collectors;
 /**
  * REQ-TEN-008 Invite user. Who may invite is {@code INVITE_USERS} (an organization administrator
  * always; another member only through an individual grant). Everything is enforced here, never only
- * in the screens. Seats are not reserved by a pending invitation (BR-INV-010).
+ * in the screens. Seats are not reserved by a pending invitation (BR-INV-010). The inviter is told
+ * when the person accepts or declines (IN-9, REQ-TEN-008.19).
  */
 @Service
 @RequiredArgsConstructor
 @Transactional
 public class InvitationService {
 
+    private static final Logger log = LoggerFactory.getLogger(InvitationService.class);
     static final Duration LIFETIME = Duration.ofDays(7);
     public static final String PERMISSION = "INVITE_USERS";
     private static final Pattern EMAIL = Pattern.compile("^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$");
@@ -66,6 +73,7 @@ public class InvitationService {
     private final InvitationAuditor auditor;
     private final EmailService emailService;
     private final KeycloakAdminClient keycloakAdminClient;
+    private final NotificationService notificationService;
 
     @Value("${app.frontend-url:http://localhost:5173}")
     private String frontendUrl;
@@ -267,6 +275,8 @@ public class InvitationService {
         inv.setUpdatedAt(Instant.now());
         invitationRepository.save(inv);
         auditor.success("INVITATION_DECLINED", null, inv.getEmail(), inv.getId(), inv.getOrganizationId(), "Invitation declined by " + inv.getEmail());
+        notifyInviter(inv, "Invitation declined", inv.getEmail() + " declined your invitation to join "
+            + organizationName(inv.getOrganizationId()) + ".");
     }
 
     /** Hourly job (REQ-TEN-008.5): persists EXPIRED for overdue PENDING invitations. */
@@ -319,6 +329,26 @@ public class InvitationService {
         inv.setAcceptedByCustomerId(customer.getId());
         invitationRepository.save(inv);
         auditor.success("INVITATION_ACCEPTED", customer.getId(), customer.getEmail(), inv.getId(), orgId, "Joined as " + inv.getOrgRole());
+        notifyInviter(inv, "Invitation accepted", inv.getEmail() + " accepted your invitation and joined " + org.getName()
+            + " as " + (inv.getOrgRole() == OrgRole.ORG_ADMIN ? "an organization administrator" : "a member") + ".");
+    }
+
+    /**
+     * IN-9: tell the inviter (in the notification center and by email unless muted) that the invitation was
+     * accepted or declined. Never fails the acceptance or decline: a problem here is only logged.
+     */
+    private void notifyInviter(OrganizationInvitation inv, String title, String message) {
+        try {
+            customerRepository.findById(inv.getInvitedByCustomerId()).ifPresent(inviter ->
+                notificationService.notify(inviter.getId(), inviter.getEmail(), NotificationCategory.ORGANIZATION,
+                    NotificationSeverity.INFO, title, message));
+        } catch (RuntimeException e) {
+            log.warn("Could not notify inviter of invitation {}: {}", inv.getId(), e.getMessage());
+        }
+    }
+
+    private String organizationName(Long orgId) {
+        return organizationRepository.findById(orgId).map(Organization::getName).orElse("the organization");
     }
 
     /** The seat check for a brand-new account, done before anything is created. */

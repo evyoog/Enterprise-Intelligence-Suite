@@ -15,7 +15,7 @@
 
 | Application ID | Code | Application | Roadmap item | Source |
 |---|---|---|---|---|
-| 05 | `APP-TEN` | [Customer / Tenant Management](../applications/05-customer-tenant-management.md) | Carry-over only: 05.02 Tenant Lifecycle, 05.03.01 Invite/Create user, 05.04.02 Projects (see [C31](../open-decisions.md#c31)) | [PO] "eVyoog EIS - Roadmap Initiatives" |
+| 05 | `APP-TEN` | [Customer / Tenant Management](../applications/05-customer-tenant-management.md) | Carry-over only: 05.02 Tenant Lifecycle, 05.03.01 Invite/Create user (Create user removed from the MVP, [C87](../open-decisions.md#c87)), 05.04.02 Projects (see [C31](../open-decisions.md#c31)) | [PO] "eVyoog EIS - Roadmap Initiatives" |
 | 13a | `APP-INT` (part) | Gateway & Events (API Management 13.01, Event Platform 13.03) | [C31](../open-decisions.md#c31): pulled forward from 2027.1.1 |
 | 15a | `APP-GOV` (part) | Audit & Platform Administration (15.01 Platform Administration, 15.03 Audit) | [C31](../open-decisions.md#c31): pulled forward from 2027.2.2 |
 
@@ -59,7 +59,7 @@
 | 13a 13.03 Event Platform | Done (this FRD's scope) | Outbox, dispatcher, retries, admin events view ([REQ-INT-002](../../../02-requirements/FRD/event-platform/requirement.md)); Replay not built; FRD still Draft |
 | 05.02 Tenant Lifecycle | Done (this FRD's scope) | Assign region, tenant policies built; Create/Configure tenant, Configure isolation satisfied by existing code (C37) |
 | 05.03.02 Role Assignment / 06.02.01 RBAC — Access management (REQ-TEN-005) | Specified (Draft) | Decision C65 (D16); FRD, screens, API, data model and UAT scripts written 2026-10-03; build waits for approval |
-| 05.03.01 Invite/Create user | Not started | Carried again — needs a decision on the identity-creation flow ([C34](../open-decisions.md#c34)) |
+| 05.03.01 Invite/Create user | Closed | Invite user was built in 2026.4.1 ([C84](../open-decisions.md#c84)); Create user was removed from the MVP ([C87](../open-decisions.md#c87)). Nothing is left to carry |
 | 05.04.02 Projects | Not started | Carried again — needs a decision on the Project resource model ([C35](../open-decisions.md#c35)) |
 
 The remaining 15.01.02 items remain open for this sprint; 13a's FRDs need approval of their open questions. Test plans: [TESTPLAN-INT-001](../../../../test-cases/functional/api-management/TESTPLAN-INT-001.md), [TESTPLAN-INT-002](../../../../test-cases/functional/event-platform/TESTPLAN-INT-002.md).
@@ -75,7 +75,7 @@ Full breakdown with APIs, services, entities and events: [applications/05-custom
 | Capability | Feature | Functions (requirement candidates from [WB:Functions]) | Priority | Commitment |
 |---|---|---|---|---|
 | [05.02 Tenant Management](../applications/05-customer-tenant-management.md#0502-tenant-management) | 05.02.01 Tenant Lifecycle | Create tenant; Configure tenant; Assign region; Configure isolation; Configure tenant policies | P0 | Commit — **Done** ([tenant-lifecycle](../../../02-requirements/FRD/tenant-lifecycle/requirement.md)) |
-| [05.03 User Management](../applications/05-customer-tenant-management.md#0503-user-management) | 05.03.01 User Lifecycle | Invite user; Create user | P0 | Commit — **Not started** |
+| [05.03 User Management](../applications/05-customer-tenant-management.md#0503-user-management) | 05.03.01 User Lifecycle | Invite user (built in 2026.4.1); ~~Create user~~ (removed, [C87](../open-decisions.md#c87)) | P0 | Closed |
 | [05.04 Group & Project Management](../applications/05-customer-tenant-management.md#0504-group--project-management) | 05.04.02 Projects | Create project; Assign users; Assign resources | P0 | Commit — **Not started** |
 
 ### Dependencies

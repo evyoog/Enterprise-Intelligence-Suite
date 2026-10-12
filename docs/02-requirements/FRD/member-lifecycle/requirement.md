@@ -22,7 +22,7 @@
 | 05.03.01.05 | Remove user | same |
 | 05.03.02.03 | Review access | [same page](../../../01-business/roadmap/applications/05-customer-tenant-management.md#feature-050302-role-assignment) |
 
-05.03.01.01 Invite user is now [REQ-TEN-008](../invite-user/requirement.md) (C84). 05.03.01.02 Create user is **not** in this FRD — carried (originally to sprint 2026.4.2 ([C34](../../../01-business/roadmap/open-decisions.md#c34); needs a new identity-creation flow)). 05.03.02.01 Assign role and 05.03.02.02 Assign group were already built (member-role-assignment FRD; `group-management` FRD respectively).
+05.03.01.01 Invite user is now [REQ-TEN-008](../invite-user/requirement.md) (C84). 05.03.01.02 Create user is **not** in this FRD and was **removed from the MVP** ([C87](../../../01-business/roadmap/open-decisions.md#c87)); it was carried (originally to sprint 2026.4.2 ([C34](../../../01-business/roadmap/open-decisions.md#c34); needs a new identity-creation flow)). 05.03.02.01 Assign role and 05.03.02.02 Assign group were already built (member-role-assignment FRD; `group-management` FRD respectively).
 
 ## Summary
 An organization admin (or platform admin) can suspend a member (frees their seat, blocks sign-in, reversible), reactivate a suspended member (subject to the seat limit), and remove a member (the existing one-way action, now with its own endpoint and UI). They can also record that they have reviewed a member's current role and access, stamped with who and when.
@@ -43,7 +43,7 @@ An organization admin (or platform admin) can suspend a member (frees their seat
 | REQ-TEN-002.7 | Every status change and access review is audited and the affected member is notified (status changes only — reviews are silent). | P0 |
 
 ## Out of scope
-- Invite user / Create user (identity creation) — carried to 2026.4.2 (C34)
+- Invite user is [REQ-TEN-008](../invite-user/requirement.md); Create user (identity creation) was removed from the MVP (C87)
 - A scheduled or forced periodic access-review workflow — this is a manual, on-demand stamp only (C34)
 - Assign group — see the separate `group-management` FRD
 

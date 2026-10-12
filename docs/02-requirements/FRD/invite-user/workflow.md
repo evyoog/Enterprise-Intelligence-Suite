@@ -14,4 +14,6 @@ flowchart TD
   H --> I{Still PENDING, org eligible, one organization, seat free?}
   I -- no --> Y[Refuse, audit]
   I -- yes --> J[Create or re-admit membership with role and node, ACCEPTED]
+  J --> K[Notify the inviter: in-app and email unless muted]
+  D --> L[Person declines: DECLINED, notify the inviter]
 ```
