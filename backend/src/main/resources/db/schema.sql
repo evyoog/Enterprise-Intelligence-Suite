@@ -1634,3 +1634,6 @@ CREATE TABLE IF NOT EXISTS wishlist_item (
     CONSTRAINT uq_wishlist_customer_product UNIQUE (customer_id, product_id)
 );
 CREATE INDEX IF NOT EXISTS idx_wishlist_customer ON wishlist_item (customer_id, created_at DESC);
+
+-- C95 Banner image for the catalog card. Additive; mirrors database/migrations/V035__product_banner_image.sql.
+ALTER TABLE products ADD COLUMN IF NOT EXISTS banner_image_url VARCHAR(500);

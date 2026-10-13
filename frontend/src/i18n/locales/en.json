@@ -2091,7 +2091,15 @@
       "urlError": "Enter a URL starting with http:// or https://.",
       "previewName": "App name",
       "previewDescription": "The app description appears here.",
-      "tagDuplicate": "This feature is already added."
+      "tagDuplicate": "This feature is already added.",
+      "icon": "App icon",
+      "iconHint": "Square image, at least 128 × 128 px. PNG, JPG, GIF or WebP.",
+      "uploadIcon": "Upload app icon",
+      "iconAlt": "App icon",
+      "banner": "Banner image",
+      "bannerHint": "Wide image, about 1200 × 300 px (4:1). Shown behind the card in the catalog. PNG, JPG, GIF or WebP.",
+      "uploadBanner": "Upload banner image",
+      "bannerAlt": "Banner image"
     }
   },
   "bizDash": {

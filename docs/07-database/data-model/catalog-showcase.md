@@ -19,3 +19,6 @@ Migration: [V019__catalog_showcase.sql](../../../database/migrations/V019__catal
 | `support_url` | VARCHAR(500) | Yes | — | http/https |
 
 Not stored: catalog counts, categories and tag unions (derived, BR-CAT-302); release versions (no data — `products.version` stays an edit counter).
+
+## C95: banner image
+Migration `database/migrations/V035__product_banner_image.sql`. `products.banner_image_url VARCHAR(500)`, optional: the wide image behind the card in the catalog. `products.image_url` stays the app icon.

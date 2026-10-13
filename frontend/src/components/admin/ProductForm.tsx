@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, type FormEvent, type KeyboardEvent } from 'react'
+import { useEffect, useState, type FormEvent, type KeyboardEvent } from 'react'
 import { useTranslation } from 'react-i18next'
 import {
   Alert,
@@ -22,16 +22,16 @@ import {
   TextField,
   Typography,
 } from '@mui/material'
-import { ImageUp, Plus, Save, Trash2 } from 'lucide-react'
+import { Plus, Save, Trash2 } from 'lucide-react'
 import { Link as RouterLink } from 'react-router-dom'
-import { ApiError, resolveAssetUrl } from '../../api/client'
+import { ApiError } from '../../api/client'
 import { platformsApi, type Platform } from '../../api/platformsApi'
 import { productsApi, type BillingPeriod, type Currency, type Product, type ProductCreateRequest } from '../../api/productsApi'
 import { appColor, isHexColor } from '../../utils/showcaseColor'
-import { formatPlanPrice } from '../../utils/productPricing'
 import { ColorPicker } from '../ui/ColorPicker'
 import { FormSection } from '../ui/FormSection'
-import { ShowcaseCard } from '../ui/ShowcaseCard'
+import { CatalogProductCard } from '../catalog/CatalogProductCard'
+import { ImageUploadField } from './ImageUploadField'
 
 const BILLING_PERIODS: BillingPeriod[] = ['MONTHLY', 'YEARLY', 'ONE_TIME']
 
@@ -104,6 +104,8 @@ export function ProductForm({
   const [description, setDescription] = useState(initialProduct?.description ?? '')
   const [price, setPrice] = useState(initialProduct ? String(initialProduct.price) : '')
   const [imageUrl, setImageUrl] = useState(initialProduct?.imageUrl ?? '')
+  const [bannerImageUrl, setBannerImageUrl] = useState(initialProduct?.bannerImageUrl ?? '')
+  const [uploadingBanner, setUploadingBanner] = useState(false)
   const [launchUrl, setLaunchUrl] = useState(initialProduct?.launchUrl ?? '')
   const [category, setCategory] = useState(initialProduct?.category ?? '')
   const [active, setActive] = useState(initialProduct ? initialProduct.status === 'ACTIVE' : true)
@@ -135,7 +137,6 @@ export function ProductForm({
   const [error, setError] = useState<string | null>(null)
   const [success, setSuccess] = useState(false)
   const [touched, setTouched] = useState(false)
-  const fileInputRef = useRef<HTMLInputElement>(null)
 
   const priceValue = Number(price)
   const errors = {
@@ -193,23 +194,10 @@ export function ProductForm({
     if (e.key === 'Enter') { e.preventDefault(); addTag() }
   }
 
-  const handleImageSelected = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0]
-    if (!file) return
-
-    setIsUploadingImage(true)
-    setError(null)
-
-    productsApi.uploadImage(file)
-      .then((result) => setImageUrl(result.url))
-      .catch((err) => setError(err instanceof ApiError ? err.message : t('forms.uploadError')))
-      .finally(() => setIsUploadingImage(false))
-  }
-
   const handleSubmit = (e: FormEvent) => {
     e.preventDefault()
     setTouched(true)
-    if (!valid || isSubmitting || isUploadingImage) return
+    if (!valid || isSubmitting || isUploadingImage || uploadingBanner) return
 
     setIsSubmitting(true)
     setError(null)
@@ -220,6 +208,7 @@ export function ProductForm({
       description: description.trim() || undefined,
       price: priceValue,
       imageUrl: imageUrl || undefined,
+      bannerImageUrl: bannerImageUrl || undefined,
       launchUrl: launchUrl.trim() || undefined,
       category: category.trim() || undefined,
       status: wasRetired ? 'RETIRED' : (active ? 'ACTIVE' : 'INACTIVE'),
@@ -256,24 +245,28 @@ export function ProductForm({
       .finally(() => setIsSubmitting(false))
   }
 
-  const sortedPreviewPlans = tiers.filter((tier) => tier.name.trim() && Number(tier.price) > 0)
-  const previewExtra = (
-    <Box sx={{ mt: 1.5, display: 'flex', flexDirection: 'column', gap: 0.25 }}>
-      {sortedPreviewPlans.length > 0
-        ? sortedPreviewPlans.map((tier, i) => (
-          <Box key={i} sx={{ display: 'flex', justifyContent: 'space-between', gap: 1 }}>
-            <Typography variant="body2" sx={{ color: 'text.secondary' }}>{tier.name}</Typography>
-            <Typography variant="body2" sx={{ fontWeight: 700 }}>{formatPlanPrice(Number(tier.price), tier.currency, tier.billingPeriod)}</Typography>
-          </Box>
-        ))
-        : priceValue > 0 && <Typography variant="body2" sx={{ fontWeight: 700 }}>{formatPlanPrice(priceValue, 'USD', 'ONE_TIME')}</Typography>}
-    </Box>
-  )
-  const previewStatus = wasRetired
-    ? { label: t('catalog.app.retired'), tone: 'neutral' as const }
-    : active
-      ? { label: t('catalog.status.available'), tone: 'success' as const }
-      : { label: t('catalog.app.inactive'), tone: 'neutral' as const }
+  // The live preview is the catalog's own card, built from what the form holds (C95).
+  const previewProduct: Product = {
+    id: 0,
+    name: name.trim() || t('forms.app.previewName'),
+    description: description.trim() || t('forms.app.previewDescription'),
+    price: priceValue > 0 ? priceValue : 0,
+    imageUrl: imageUrl || undefined,
+    bannerImageUrl: bannerImageUrl || undefined,
+    launchUrl: launchUrl.trim() || undefined,
+    category: category.trim() || undefined,
+    status: wasRetired ? 'RETIRED' : active ? 'ACTIVE' : 'INACTIVE',
+    ssoConnected,
+    featured,
+    platforms: selectedPlatforms.map((p) => ({ id: p.id, name: p.name, primaryColor: p.primaryColor })),
+    plans: tiers.filter((tier) => tier.name.trim() && Number(tier.price) > 0)
+      .map((tier, i) => ({ id: i + 1, name: tier.name.trim(), price: Number(tier.price), billingPeriod: tier.billingPeriod, currency: tier.currency })),
+    version: 1,
+    dependsOnProductIds: [],
+    accentColor: isHexColor(previewColor) ? previewColor : null,
+    featureTags,
+    createdAt: initialProduct?.createdAt ?? new Date().toISOString(),
+  }
 
   return (
     <Box component="form" noValidate onSubmit={handleSubmit}
@@ -289,25 +282,12 @@ export function ProductForm({
             onChange={(e) => setDescription(e.target.value)} helperText={t('forms.app.descriptionHint')} />
           <TextField label={t('forms.app.category')} fullWidth placeholder={t('forms.app.categoryPlaceholder')}
             value={category} onChange={(e) => setCategory(e.target.value)} helperText={t('forms.app.categoryHint')} />
-          <Box>
-            <Typography variant="body2" sx={{ fontWeight: 600, mb: 1 }}>{t('forms.app.logo')}</Typography>
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, flexWrap: 'wrap' }}>
-              <Box sx={{ width: 56, height: 56, borderRadius: 2.5, border: '1px dashed', borderColor: 'divider', overflow: 'hidden', display: 'grid', placeItems: 'center', bgcolor: 'action.hover' }}>
-                {imageUrl
-                  ? <Box component="img" src={resolveAssetUrl(imageUrl)} alt={t('forms.app.logoAlt')} sx={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                  : <ImageUp size={20} aria-hidden />}
-              </Box>
-              <Button variant="outlined" disabled={isUploadingImage} onClick={() => fileInputRef.current?.click()}
-                startIcon={isUploadingImage ? <CircularProgress size={16} /> : <ImageUp size={16} />}>
-                {isUploadingImage ? t('forms.uploading') : t('forms.app.uploadLogo')}
-              </Button>
-              <input ref={fileInputRef} type="file" accept="image/png,image/jpeg,image/gif,image/webp" hidden tabIndex={-1} aria-hidden onChange={handleImageSelected} />
-              {imageUrl && (
-                <Button color="inherit" startIcon={<Trash2 size={16} />} onClick={() => setImageUrl('')}>{t('forms.removeImage')}</Button>
-              )}
-            </Box>
-            <Typography variant="caption" sx={{ color: 'text.secondary', display: 'block', mt: 1 }}>{t('forms.imageHint')}</Typography>
-          </Box>
+          <ImageUploadField id="app-icon" shape="square" label={t('forms.app.icon')} hint={t('forms.app.iconHint')}
+            uploadLabel={t('forms.app.uploadIcon')} previewAlt={t('forms.app.iconAlt')} value={imageUrl} onChange={setImageUrl}
+            onBusyChange={setIsUploadingImage} onError={setError} />
+          <ImageUploadField id="app-banner" shape="wide" label={t('forms.app.banner')} hint={t('forms.app.bannerHint')}
+            uploadLabel={t('forms.app.uploadBanner')} previewAlt={t('forms.app.bannerAlt')} value={bannerImageUrl} onChange={setBannerImageUrl}
+            onBusyChange={setUploadingBanner} onError={setError} />
         </FormSection>
 
         <FormSection id="app-appearance" title={t('forms.sections.appearance')} description={t('forms.app.appearanceHint')}>
@@ -464,7 +444,7 @@ export function ProductForm({
         <Paper variant="outlined" sx={{ p: 2, borderRadius: 3, display: 'flex', justifyContent: 'flex-end', alignItems: 'center', gap: 1.5, position: 'sticky', bottom: 16, zIndex: 2 }}>
           {touched && !valid && <Typography variant="body2" color="error" sx={{ mr: 'auto' }}>{t('forms.fixErrors')}</Typography>}
           {cancelTo && <Button component={RouterLink} to={cancelTo}>{t('forms.cancel')}</Button>}
-          <Button type="submit" variant="contained" disabled={isSubmitting || isUploadingImage}
+          <Button type="submit" variant="contained" disabled={isSubmitting || isUploadingImage || uploadingBanner}
             startIcon={isSubmitting ? <CircularProgress size={16} color="inherit" /> : <Save size={16} />}>
             {isSubmitting ? submittingLabel : submitLabel}
           </Button>
@@ -474,19 +454,8 @@ export function ProductForm({
       <Box component="aside" aria-labelledby="app-preview-title" sx={{ position: { lg: 'sticky' }, top: { lg: 88 } }}>
         <Typography id="app-preview-title" component="h2" sx={{ fontWeight: 700, fontSize: 16, mb: 0.5 }}>{t('forms.preview.title')}</Typography>
         <Typography variant="body2" sx={{ color: 'text.secondary', mb: 1.5 }}>{t('forms.preview.hint')}</Typography>
-        <ShowcaseCard
-          name={name.trim() || t('forms.app.previewName')}
-          typeLabel={category.trim() || t('catalog.app.type')}
-          logoUrl={imageUrl || null}
-          color={isHexColor(previewColor) ? previewColor : inheritedColor}
-          meta={[variantLabel.trim(), selectedPlatforms[0]?.name].filter(Boolean).join(' · ') || undefined}
-          description={description.trim() || t('forms.app.previewDescription')}
-          features={featureTags}
-          status={previewStatus}
-          actionLabel={t('catalog.viewDetails')}
-          extra={previewExtra}
-          headingLevel="h3"
-        />
+        <CatalogProductCard product={previewProduct} variant="grid" saved={false} preview onToggleSaved={() => {}} onSubscribe={() => {}}
+          onAddToCart={() => {}} addToCartUnavailable={previewProduct.plans.length === 0} addingToCart={false} />
       </Box>
     </Box>
   )

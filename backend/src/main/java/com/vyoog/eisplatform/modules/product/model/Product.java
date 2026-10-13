@@ -44,6 +44,10 @@ public class Product {
 
     private String imageUrl;
 
+    /** C95: the wide image behind the product's catalog card (the app icon is {@link #imageUrl}). */
+    @Column(name = "banner_image_url")
+    private String bannerImageUrl;
+
     /** Where the "Launch" button on this product's card should open. */
     private String launchUrl;
 
