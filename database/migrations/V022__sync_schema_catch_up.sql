@@ -1007,6 +1007,73 @@ CREATE TABLE IF NOT EXISTS knowledge_lesson (
     title VARCHAR(200) NOT NULL
 );
 
+CREATE TABLE IF NOT EXISTS product_content_item (
+    id BIGSERIAL PRIMARY KEY,
+    product_id BIGINT NOT NULL REFERENCES products(id) ON DELETE CASCADE,
+    kind VARCHAR(20) NOT NULL CHECK (kind IN ('DATASHEET', 'DOCUMENTATION', 'IMAGE', 'VIDEO', 'CASE_STUDY')),
+    title VARCHAR(200) NOT NULL,
+    description VARCHAR(1000),
+    status VARCHAR(20) NOT NULL DEFAULT 'DRAFT' CHECK (status IN ('DRAFT', 'PUBLISHED')),
+    display_order INT NOT NULL DEFAULT 0,
+    content_version INT NOT NULL DEFAULT 1,
+    object_key VARCHAR(500) UNIQUE,
+    file_name VARCHAR(255),
+    file_size BIGINT,
+    mime_type VARCHAR(100),
+    alt_text VARCHAR(250),
+    logo_object_key VARCHAR(500) UNIQUE,
+    logo_file_name VARCHAR(255),
+    logo_file_size BIGINT,
+    logo_mime_type VARCHAR(100),
+    video_provider VARCHAR(20) CHECK (video_provider IN ('YOUTUBE', 'VIMEO', 'EXTERNAL')),
+    video_url VARCHAR(1000),
+    video_ref VARCHAR(50),
+    thumbnail_url VARCHAR(1000),
+    customer_name VARCHAR(200),
+    problem TEXT,
+    result_text TEXT,
+    knowledge_content_id BIGINT REFERENCES knowledge_article(id) ON DELETE SET NULL,
+    published_at TIMESTAMP,
+    created_by_sub VARCHAR(100),
+    updated_by_sub VARCHAR(100),
+    created_at TIMESTAMP NOT NULL DEFAULT now(),
+    updated_at TIMESTAMP NOT NULL DEFAULT now()
+);
+
+CREATE TABLE IF NOT EXISTS org_node (
+    id BIGSERIAL PRIMARY KEY,
+    organization_id BIGINT NOT NULL REFERENCES organization(id) ON DELETE CASCADE,
+    parent_id BIGINT REFERENCES org_node(id) ON DELETE RESTRICT,
+    name VARCHAR(150) NOT NULL,
+    node_type VARCHAR(50) NOT NULL,
+    code VARCHAR(50),
+    description VARCHAR(1000),
+    sort_order INTEGER NOT NULL DEFAULT 0,
+    active BOOLEAN NOT NULL DEFAULT TRUE,
+    created_at TIMESTAMP NOT NULL DEFAULT now(),
+    updated_at TIMESTAMP NOT NULL DEFAULT now()
+);
+
+CREATE TABLE IF NOT EXISTS org_level (
+    id BIGSERIAL PRIMARY KEY,
+    organization_id BIGINT NOT NULL REFERENCES organization(id) ON DELETE CASCADE,
+    node_type VARCHAR(50) NOT NULL,
+    label VARCHAR(100) NOT NULL,
+    level_rank INTEGER NOT NULL,
+    UNIQUE (organization_id, node_type),
+    UNIQUE (organization_id, level_rank) DEFERRABLE INITIALLY DEFERRED
+);
+
+CREATE TABLE IF NOT EXISTS org_node_history (
+    id BIGSERIAL PRIMARY KEY,
+    organization_id BIGINT NOT NULL REFERENCES organization(id) ON DELETE CASCADE,
+    org_node_id BIGINT NOT NULL REFERENCES org_node(id) ON DELETE CASCADE,
+    previous_parent_id BIGINT,
+    new_parent_id BIGINT,
+    changed_by_customer_id BIGINT,
+    effective_at TIMESTAMP NOT NULL DEFAULT now()
+);
+
 -- 2. Missing columns on existing tables
 ALTER TABLE products ADD COLUMN IF NOT EXISTS id BIGSERIAL PRIMARY KEY;
 ALTER TABLE products ADD COLUMN IF NOT EXISTS name VARCHAR(255) NOT NULL;
@@ -1716,6 +1783,59 @@ ALTER TABLE knowledge_lesson ADD COLUMN IF NOT EXISTS course_id BIGINT NOT NULL 
 ALTER TABLE knowledge_lesson ADD COLUMN IF NOT EXISTS lesson_order INT NOT NULL;
 ALTER TABLE knowledge_lesson ADD COLUMN IF NOT EXISTS content_id BIGINT REFERENCES knowledge_article(id);
 ALTER TABLE knowledge_lesson ADD COLUMN IF NOT EXISTS title VARCHAR(200) NOT NULL;
+ALTER TABLE product_content_item ADD COLUMN IF NOT EXISTS id BIGSERIAL PRIMARY KEY;
+ALTER TABLE product_content_item ADD COLUMN IF NOT EXISTS product_id BIGINT NOT NULL REFERENCES products(id) ON DELETE CASCADE;
+ALTER TABLE product_content_item ADD COLUMN IF NOT EXISTS kind VARCHAR(20) NOT NULL CHECK (kind IN ('DATASHEET', 'DOCUMENTATION', 'IMAGE', 'VIDEO', 'CASE_STUDY'));
+ALTER TABLE product_content_item ADD COLUMN IF NOT EXISTS title VARCHAR(200) NOT NULL;
+ALTER TABLE product_content_item ADD COLUMN IF NOT EXISTS description VARCHAR(1000);
+ALTER TABLE product_content_item ADD COLUMN IF NOT EXISTS status VARCHAR(20) NOT NULL DEFAULT 'DRAFT' CHECK (status IN ('DRAFT', 'PUBLISHED'));
+ALTER TABLE product_content_item ADD COLUMN IF NOT EXISTS display_order INT NOT NULL DEFAULT 0;
+ALTER TABLE product_content_item ADD COLUMN IF NOT EXISTS content_version INT NOT NULL DEFAULT 1;
+ALTER TABLE product_content_item ADD COLUMN IF NOT EXISTS object_key VARCHAR(500) UNIQUE;
+ALTER TABLE product_content_item ADD COLUMN IF NOT EXISTS file_name VARCHAR(255);
+ALTER TABLE product_content_item ADD COLUMN IF NOT EXISTS file_size BIGINT;
+ALTER TABLE product_content_item ADD COLUMN IF NOT EXISTS mime_type VARCHAR(100);
+ALTER TABLE product_content_item ADD COLUMN IF NOT EXISTS alt_text VARCHAR(250);
+ALTER TABLE product_content_item ADD COLUMN IF NOT EXISTS logo_object_key VARCHAR(500) UNIQUE;
+ALTER TABLE product_content_item ADD COLUMN IF NOT EXISTS logo_file_name VARCHAR(255);
+ALTER TABLE product_content_item ADD COLUMN IF NOT EXISTS logo_file_size BIGINT;
+ALTER TABLE product_content_item ADD COLUMN IF NOT EXISTS logo_mime_type VARCHAR(100);
+ALTER TABLE product_content_item ADD COLUMN IF NOT EXISTS video_provider VARCHAR(20) CHECK (video_provider IN ('YOUTUBE', 'VIMEO', 'EXTERNAL'));
+ALTER TABLE product_content_item ADD COLUMN IF NOT EXISTS video_url VARCHAR(1000);
+ALTER TABLE product_content_item ADD COLUMN IF NOT EXISTS video_ref VARCHAR(50);
+ALTER TABLE product_content_item ADD COLUMN IF NOT EXISTS thumbnail_url VARCHAR(1000);
+ALTER TABLE product_content_item ADD COLUMN IF NOT EXISTS customer_name VARCHAR(200);
+ALTER TABLE product_content_item ADD COLUMN IF NOT EXISTS problem TEXT;
+ALTER TABLE product_content_item ADD COLUMN IF NOT EXISTS result_text TEXT;
+ALTER TABLE product_content_item ADD COLUMN IF NOT EXISTS knowledge_content_id BIGINT REFERENCES knowledge_article(id) ON DELETE SET NULL;
+ALTER TABLE product_content_item ADD COLUMN IF NOT EXISTS published_at TIMESTAMP;
+ALTER TABLE product_content_item ADD COLUMN IF NOT EXISTS created_by_sub VARCHAR(100);
+ALTER TABLE product_content_item ADD COLUMN IF NOT EXISTS updated_by_sub VARCHAR(100);
+ALTER TABLE product_content_item ADD COLUMN IF NOT EXISTS created_at TIMESTAMP NOT NULL DEFAULT now();
+ALTER TABLE product_content_item ADD COLUMN IF NOT EXISTS updated_at TIMESTAMP NOT NULL DEFAULT now();
+ALTER TABLE org_node ADD COLUMN IF NOT EXISTS id BIGSERIAL PRIMARY KEY;
+ALTER TABLE org_node ADD COLUMN IF NOT EXISTS organization_id BIGINT NOT NULL REFERENCES organization(id) ON DELETE CASCADE;
+ALTER TABLE org_node ADD COLUMN IF NOT EXISTS parent_id BIGINT REFERENCES org_node(id) ON DELETE RESTRICT;
+ALTER TABLE org_node ADD COLUMN IF NOT EXISTS name VARCHAR(150) NOT NULL;
+ALTER TABLE org_node ADD COLUMN IF NOT EXISTS node_type VARCHAR(50) NOT NULL;
+ALTER TABLE org_node ADD COLUMN IF NOT EXISTS code VARCHAR(50);
+ALTER TABLE org_node ADD COLUMN IF NOT EXISTS description VARCHAR(1000);
+ALTER TABLE org_node ADD COLUMN IF NOT EXISTS sort_order INTEGER NOT NULL DEFAULT 0;
+ALTER TABLE org_node ADD COLUMN IF NOT EXISTS active BOOLEAN NOT NULL DEFAULT TRUE;
+ALTER TABLE org_node ADD COLUMN IF NOT EXISTS created_at TIMESTAMP NOT NULL DEFAULT now();
+ALTER TABLE org_node ADD COLUMN IF NOT EXISTS updated_at TIMESTAMP NOT NULL DEFAULT now();
+ALTER TABLE org_level ADD COLUMN IF NOT EXISTS id BIGSERIAL PRIMARY KEY;
+ALTER TABLE org_level ADD COLUMN IF NOT EXISTS organization_id BIGINT NOT NULL REFERENCES organization(id) ON DELETE CASCADE;
+ALTER TABLE org_level ADD COLUMN IF NOT EXISTS node_type VARCHAR(50) NOT NULL;
+ALTER TABLE org_level ADD COLUMN IF NOT EXISTS label VARCHAR(100) NOT NULL;
+ALTER TABLE org_level ADD COLUMN IF NOT EXISTS level_rank INTEGER NOT NULL;
+ALTER TABLE org_node_history ADD COLUMN IF NOT EXISTS id BIGSERIAL PRIMARY KEY;
+ALTER TABLE org_node_history ADD COLUMN IF NOT EXISTS organization_id BIGINT NOT NULL REFERENCES organization(id) ON DELETE CASCADE;
+ALTER TABLE org_node_history ADD COLUMN IF NOT EXISTS org_node_id BIGINT NOT NULL REFERENCES org_node(id) ON DELETE CASCADE;
+ALTER TABLE org_node_history ADD COLUMN IF NOT EXISTS previous_parent_id BIGINT;
+ALTER TABLE org_node_history ADD COLUMN IF NOT EXISTS new_parent_id BIGINT;
+ALTER TABLE org_node_history ADD COLUMN IF NOT EXISTS changed_by_customer_id BIGINT;
+ALTER TABLE org_node_history ADD COLUMN IF NOT EXISTS effective_at TIMESTAMP NOT NULL DEFAULT now();
 
 -- 3. Indexes and remaining alterations
 CREATE INDEX IF NOT EXISTS idx_product_plans_product_id ON product_plans (product_id);
@@ -1834,5 +1954,12 @@ CREATE INDEX IF NOT EXISTS idx_knowledge_event_content ON knowledge_event (conte
 CREATE INDEX IF NOT EXISTS idx_knowledge_event_type ON knowledge_event (event_type, created_at);
 ALTER TABLE search_query_log ADD COLUMN IF NOT EXISTS scope VARCHAR(20);
 CREATE INDEX IF NOT EXISTS idx_search_query_log_scope ON search_query_log (scope, searched_at);
+CREATE INDEX IF NOT EXISTS idx_product_content_product ON product_content_item (product_id, status, display_order);
+CREATE INDEX IF NOT EXISTS idx_org_node_parent ON org_node (organization_id, parent_id);
+CREATE UNIQUE INDEX IF NOT EXISTS ux_org_node_root ON org_node (organization_id) WHERE parent_id IS NULL;
+CREATE UNIQUE INDEX IF NOT EXISTS ux_org_node_sibling_name ON org_node (organization_id, parent_id, lower(name)) WHERE parent_id IS NOT NULL;
+CREATE INDEX IF NOT EXISTS idx_org_node_history_node ON org_node_history (org_node_id, effective_at DESC);
+ALTER TABLE organization_member ADD COLUMN IF NOT EXISTS org_node_id BIGINT REFERENCES org_node(id) ON DELETE SET NULL;
+CREATE INDEX IF NOT EXISTS idx_org_member_node ON organization_member (org_node_id);
 
 COMMIT;
