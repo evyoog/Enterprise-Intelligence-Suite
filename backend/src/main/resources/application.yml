@@ -109,6 +109,14 @@ vyoog:
       key-secret: ${RAZORPAY_KEY_SECRET:}
       webhook-secret: ${RAZORPAY_WEBHOOK_SECRET:}
 
+  # C96 (REQ-BIL-002.32, BR-30): external tax provider credentials, from the common secrets file. Empty = not configured.
+  tax:
+    provider:
+      base-url: ${TAX_PROVIDER_BASE_URL:}
+      api-key: ${TAX_PROVIDER_API_KEY:}
+      api-secret: ${TAX_PROVIDER_API_SECRET:}
+      allow-insecure-http: false
+
 server:
   port: ${SERVER_PORT:8081}
   servlet:

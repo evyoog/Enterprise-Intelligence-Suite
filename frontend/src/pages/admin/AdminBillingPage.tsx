@@ -7,6 +7,7 @@ import {
 } from '@mui/material'
 import { adminBillingApi, type Invoice, type OfflinePaymentMethod, type Payment } from '../../api/billingApi'
 import { ApiError } from '../../api/client'
+import { Link as RouterLink } from 'react-router-dom'
 import { PageHeader } from '../../components/layout/PageHeader'
 
 function money(minorUnits: number, currency: string) {
@@ -16,7 +17,7 @@ function money(minorUnits: number, currency: string) {
 function statusColor(status: string): 'success' | 'warning' | 'error' | 'default' {
   if (status === 'PAID' || status === 'CAPTURED') return 'success'
   if (status === 'OPEN' || status === 'CREATED') return 'warning'
-  if (status === 'FAILED') return 'error'
+  if (status === 'FAILED' || status === 'DRAFT') return 'error'
   return 'default'
 }
 
@@ -72,13 +73,17 @@ function InvoicesTab() {
             {invoices?.length === 0 && <TableRow><TableCell colSpan={7} sx={{ color: 'text.secondary' }}>{t('billing.invoices.empty')}</TableCell></TableRow>}
             {invoices?.map((inv) => (
               <TableRow key={inv.id}>
-                <TableCell>{inv.invoiceNumber}</TableCell>
+                <TableCell>{inv.invoiceNumber ?? t('admin.tax.blocked.draftNumber', { id: inv.id })}</TableCell>
                 <TableCell>{inv.ownerLabel}</TableCell>
                 <TableCell>{new Date(inv.issuedAt).toLocaleDateString()}</TableCell>
                 <TableCell><Chip size="small" label={inv.status} color={statusColor(inv.status)} /></TableCell>
                 <TableCell>{inv.paymentRoute ? t(`admin.billing.routes.${inv.paymentRoute}`) : '—'}</TableCell>
                 <TableCell align="right">{money(inv.total, inv.currency)}</TableCell>
                 <TableCell align="right">
+                  {/* C96: a Draft is waiting for tax; it is resolved on Tax configuration. */}
+                  {inv.status === 'DRAFT' && (
+                    <Button size="small" component={RouterLink} to="/admin/billing/tax?tab=blocked">{t('admin.billing.resolveTax')}</Button>
+                  )}
                   {/* C55: only an OPEN invoice the customer chose to pay by invoice. */}
                   {inv.status === 'OPEN' && inv.paymentRoute === 'OFFLINE' && (
                     <Button size="small" onClick={() => setRecordTarget(inv)}>{t('admin.billing.offline.action')}</Button>

@@ -29,6 +29,9 @@ public record CheckoutSummaryDto(
     /** C60: Razorpay Checkout appearance, from Billing settings; null = defaults. */
     String checkoutName,
     String checkoutDescription,
-    String checkoutThemeColor
+    String checkoutThemeColor,
+    /** C96: true when the invoice is a Draft because its tax could not be determined yet. Nothing can be paid until it is issued. */
+    boolean taxPending,
+    String placeOfSupply
 ) {
 }

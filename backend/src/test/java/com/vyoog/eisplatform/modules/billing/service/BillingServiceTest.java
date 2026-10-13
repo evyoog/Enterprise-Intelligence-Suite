@@ -21,10 +21,12 @@ import com.vyoog.eisplatform.modules.registration.model.RegistrationOwnerType;
 import com.vyoog.eisplatform.modules.registration.model.SubscriptionStatus;
 import com.vyoog.eisplatform.modules.registration.repository.CustomerRepository;
 import com.vyoog.eisplatform.modules.registration.repository.ProductSubscriptionRepository;
+import com.vyoog.eisplatform.modules.billing.tax.service.TaxTestSupport;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.context.annotation.Import;
 import org.springframework.test.context.ActiveProfiles;
 
 import java.math.BigDecimal;
@@ -42,7 +44,10 @@ import static org.mockito.Mockito.when;
  * idempotency) is real. */
 @SpringBootTest
 @ActiveProfiles("test")
+@Import(TaxTestSupport.class)
 class BillingServiceTest {
+
+    @Autowired private TaxTestSupport tax;
 
     @Autowired private BillingDetailsService billingDetailsService;
     @Autowired private InvoiceService invoiceService;
@@ -62,7 +67,9 @@ class BillingServiceTest {
         customer.setEmail("billing-" + System.nanoTime() + "@example.com");
         customer.setFirstName("Bill");
         customer.setLastName("Payer");
-        return customerRepository.save(customer);
+        customer = customerRepository.save(customer);
+        tax.readyToInvoiceInIndia(customer);   // an issued invoice needs a supplier, a rule and billing details
+        return customer;
     }
 
     private Product newPaidProduct() {
@@ -107,7 +114,7 @@ class BillingServiceTest {
         assertThat(invoice.getStatus()).isEqualTo(InvoiceStatus.OPEN);
         assertThat(invoice.getTotal()).isEqualTo(1999L);
         assertThat(invoice.getCurrency()).isEqualTo(Currency.USD);
-        assertThat(invoice.getInvoiceNumber()).startsWith("INV-");
+        assertThat(invoice.getInvoiceNumber()).startsWith("EIS/");
         assertThat(invoiceService.resolveOwn(customer.getId(), null, invoice.getId()).getId()).isEqualTo(invoice.getId());
     }
 
@@ -224,17 +231,22 @@ class BillingServiceTest {
 
     @Test
     void billingDetailsCanBeSavedAndReadBack() {
-        Customer customer = newCustomer();
+        Customer customer = new Customer();
+        customer.setEmail("billing-details-" + System.nanoTime() + "@example.com");
+        customer.setFirstName("Bill");
+        customer.setLastName("Payer");
+        customer = customerRepository.save(customer);
+        final Long customerId = customer.getId();
         // 404, not a null 200 body — see BillingDetailsService's own javadoc
         // on why a null return would break a JSON client.
-        assertThatThrownBy(() -> billingDetailsService.getForCustomer(customer.getId()))
+        assertThatThrownBy(() -> billingDetailsService.getForCustomer(customerId))
             .isInstanceOf(ResourceNotFoundException.class);
 
-        BillingDetailsDto saved = billingDetailsService.saveForCustomer(customer.getId(), new SaveBillingDetailsRequest(
-            "Bill Payer", "billing@example.com", "1 Main St", null, "Chennai", "TN", "600001", "India", "GSTIN123"));
+        BillingDetailsDto saved = billingDetailsService.saveForCustomer(customerId, new SaveBillingDetailsRequest(
+            "Bill Payer", "billing@example.com", "1 Main St", null, "Chennai", "TN", "600001", "India", "33ABCDE1234F1Z5"));
 
         assertThat(saved.billingName()).isEqualTo("Bill Payer");
-        assertThat(billingDetailsService.getForCustomer(customer.getId()).billingEmail()).isEqualTo("billing@example.com");
+        assertThat(billingDetailsService.getForCustomer(customerId).billingEmail()).isEqualTo("billing@example.com");
     }
 
     @Test

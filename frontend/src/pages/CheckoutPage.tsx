@@ -33,6 +33,8 @@ type Result =
   | { kind: 'offline'; offline: OfflineInvoiceResult }
   | { kind: 'free' }
   | { kind: 'orders'; orderIds: number[] }
+  /** C96: the invoice is a Draft because its tax could not be determined yet. */
+  | { kind: 'taxPending' }
 
 interface Details {
   billingName: string; billingEmail: string; addressLine1: string; addressLine2: string
@@ -197,6 +199,7 @@ export function CheckoutPage() {
   // A paid invoice reached directly shows its result instead of a second payment (FRD BR-4).
   const settledResult = useMemo<Result | null>(() => {
     if (!summary?.invoiceStatus || summary.invoiceStatus === 'OPEN') return null
+    if (summary.taxPending || summary.invoiceStatus === 'DRAFT') return { kind: 'taxPending' }
     return summary.invoiceStatus === 'PAID'
       ? { kind: 'success', payment: { amount: summary.total, currency: summary.currency } as Payment }
       : { kind: 'failed', reason: summary.invoiceStatus, cancelled: false }
@@ -377,7 +380,7 @@ export function CheckoutPage() {
 
   const showSummary = shownResult?.kind !== 'orders' && items.length > 0
   const cartSummary = showSummary ? (
-    <CartSummary items={items} subtotal={subtotal} total={total} taxLines={summary?.taxLines ?? []} money={money}
+    <CartSummary items={items} subtotal={subtotal} total={total} taxLines={summary?.taxLines ?? []} taxPending={Boolean(summary?.taxPending)} placeOfSupply={summary?.placeOfSupply} money={money}
       editCart={fromCart && shownStep !== 'complete'} />
   ) : null
 
@@ -536,9 +539,10 @@ function Breadcrumb({ step, fromCart, onDetails }: { step: Step; fromCart: boole
   )
 }
 
-function CartSummary({ items, subtotal, total, taxLines, money, editCart }: {
+function CartSummary({ items, subtotal, total, taxLines, taxPending = false, placeOfSupply, money, editCart }: {
   items: { productName: string; imageUrl?: string; planName?: string; billingPeriod?: string; amount: number; quantity?: number }[]
   subtotal: number; total: number; taxLines: { name: string; ratePercent?: number; amount: number }[]; money: (v: number) => string
+  taxPending?: boolean; placeOfSupply?: string
   editCart: boolean
 }) {
   const { t } = useTranslation()
@@ -551,10 +555,11 @@ function CartSummary({ items, subtotal, total, taxLines, money, editCart }: {
       <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
         <SummaryRow label={t('checkout.summary.subtotal')} value={money(subtotal)} />
         {taxLines.length === 0
-          ? <Typography variant="body2" sx={{ color: 'text.secondary' }}>{t('checkout.summary.noTax')}</Typography>
+          ? <Typography variant="body2" sx={{ color: 'text.secondary' }}>{t(taxPending ? 'checkout.summary.taxPending' : 'checkout.summary.noTax')}</Typography>
           : taxLines.map((line) => (
-            <SummaryRow key={line.name} label={line.ratePercent != null ? `${line.name} (${line.ratePercent} %)` : line.name} value={money(line.amount)} />
+            <SummaryRow key={`${line.name}-${line.ratePercent}`} label={line.ratePercent != null ? `${line.name} (${Number(line.ratePercent)} %)` : line.name} value={money(line.amount)} />
           ))}
+        {placeOfSupply && <Typography variant="caption" sx={{ color: 'text.secondary' }}>{t('checkout.summary.placeOfSupply', { place: placeOfSupply })}</Typography>}
         <Divider sx={{ my: 1 }} />
         <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline' }}>
           <Typography sx={{ fontWeight: 600 }}>{t('checkout.summary.total')}</Typography>
@@ -1016,6 +1021,15 @@ function ResultStep({ result, headingRef, money, summary, isOrganization, api, o
             <Button variant="contained" onClick={onTryAgain}>{t('checkout.result.tryAgain')}</Button>
             <Button variant="outlined" onClick={onChooseAnother}>{t('checkout.result.chooseAnother')}</Button>
           </Box>
+        </>
+      )}
+
+      {result.kind === 'taxPending' && (
+        <>
+          <Box sx={{ color: 'warning.main' }}><Lock size={56} aria-hidden /></Box>
+          {heading(t('checkout.result.taxPending.title'))}
+          <Typography sx={{ color: 'text.secondary', mt: 1, mb: 2, maxWidth: 480, mx: 'auto' }}>{t('checkout.result.taxPending.body')}</Typography>
+          <Button variant="contained" component={RouterLink} to={billingPath}>{t('checkout.actions.viewBilling')}</Button>
         </>
       )}
 

@@ -22,10 +22,12 @@ import com.vyoog.eisplatform.modules.registration.repository.ProductSubscription
 import jakarta.validation.Validation;
 import jakarta.validation.Validator;
 import org.junit.jupiter.api.AfterEach;
+import com.vyoog.eisplatform.modules.billing.tax.service.TaxTestSupport;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.context.annotation.Import;
 import org.springframework.test.context.ActiveProfiles;
 
 import java.math.BigDecimal;
@@ -40,7 +42,10 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
  * the whole test context, so every test here deletes it afterwards. */
 @SpringBootTest
 @ActiveProfiles("test")
+@Import(TaxTestSupport.class)
 class BillingSettingsServiceTest {
+
+    @Autowired private TaxTestSupport tax;
 
     @Autowired private BillingSettingsService billingSettingsService;
     @Autowired private OfflinePaymentService offlinePaymentService;
@@ -65,7 +70,9 @@ class BillingSettingsServiceTest {
         customer.setEmail("settings-" + System.nanoTime() + "@example.com");
         customer.setFirstName("Set");
         customer.setLastName("Tings");
-        return customerRepository.save(customer);
+        customer = customerRepository.save(customer);
+        tax.readyToInvoiceInIndia(customer);   // an issued invoice needs a supplier, a rule and billing details
+        return customer;
     }
 
     private Invoice newInvoice(Customer customer) {
@@ -90,8 +97,8 @@ class BillingSettingsServiceTest {
 
     @Test
     void defaultsKeepTheBehaviourBeforeC60() {
-        assertThat(billingSettingsService.businessProfile().invoicePrefix()).isEqualTo("INV");
-        assertThat(billingSettingsService.businessProfile().paymentTermsDays()).isZero();
+        assertThat(billingSettingsService.businessProfile().invoicePrefix()).isEqualTo("EIS");
+        assertThat(billingSettingsService.businessProfile().paymentTermsDays()).isEqualTo(15);
         assertThat(billingSettingsService.enabledOnlineMethods()).containsExactly("card", "upi", "netbanking", "wallet");
         assertThat(billingSettingsService.payByInvoiceEnabled()).isTrue();
         assertThat(offlinePaymentService.bankDetails().chequeEnabled()).isTrue();
@@ -107,7 +114,7 @@ class BillingSettingsServiceTest {
         assertThat(saved.invoicePrefix()).isEqualTo("EVY");
 
         Invoice invoice = newInvoice(newCustomer());
-        assertThat(invoice.getInvoiceNumber()).startsWith("EVY-");
+        assertThat(invoice.getInvoiceNumber()).startsWith("EVY/");
         assertThat(Duration.between(invoice.getIssuedAt(), invoice.getDueAt()).toDays()).isEqualTo(15);
     }
 

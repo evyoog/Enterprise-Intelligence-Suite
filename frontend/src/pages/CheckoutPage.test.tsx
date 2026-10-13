@@ -153,6 +153,32 @@ describe('CheckoutPage (C55, C59 redesign)', () => {
     expect(await screen.findByRole('textbox', { name: /Billing email/ })).toHaveValue('jane@example.com')
   })
 
+  it('shows the real tax components, rates and the place of supply from the invoice (C96)', async () => {
+    getDetails.mockResolvedValue(savedDetails)
+    checkout.mockResolvedValue(summary({
+      subtotal: 100000, total: 118000, taxLines: [{ name: 'Central GST', ratePercent: 9, amount: 9000 }, { name: 'State GST', ratePercent: 9, amount: 9000 }],
+      placeOfSupply: 'Tamil Nadu, India',
+    }))
+    renderAt('/checkout?invoiceId=9&from=cart&step=payment')
+    await screen.findByRole('radiogroup', { name: 'Payment' })
+    const aside = screen.getByRole('complementary', { name: /Order summary/ })
+    expect(within(aside).getByText('Central GST (9 %)')).toBeInTheDocument()
+    expect(within(aside).getByText('State GST (9 %)')).toBeInTheDocument()
+    expect(within(aside).getByText('Place of supply: Tamil Nadu, India')).toBeInTheDocument()
+    expect(within(aside).queryByText('Tax: none for this region')).not.toBeInTheDocument()
+  })
+
+  it('does not offer payment for a Draft invoice whose tax could not be determined (C96)', async () => {
+    getDetails.mockResolvedValue(savedDetails)
+    checkout.mockResolvedValue(summary({ invoiceStatus: 'DRAFT', invoiceNumber: null, taxPending: true }))
+    renderAt('/checkout?invoiceId=9&from=cart')
+    expect(await screen.findByRole('heading', { name: 'We are preparing your invoice' })).toBeInTheDocument()
+    expect(screen.getByText(/nothing can be paid right now/)).toBeInTheDocument()
+    expect(screen.queryByRole('radiogroup', { name: 'Payment' })).not.toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: /Pay \| / })).not.toBeInTheDocument()
+    expect(createPayment).not.toHaveBeenCalled()
+  })
+
   it('shows five method tiles and keeps Pay disabled until a tile and the terms are chosen', async () => {
     getDetails.mockResolvedValue(savedDetails)
     checkout.mockResolvedValue(summary())

@@ -40,6 +40,7 @@ public class OrganizationBillingController {
     private final BillingOwnerResolver ownerResolver;
     private final BillingDetailsService billingDetailsService;
     private final InvoiceService invoiceService;
+    private final com.vyoog.eisplatform.modules.billing.service.CreditNoteService creditNoteService;
     private final PaymentService paymentService;
     private final PaymentMethodService paymentMethodService;
     private final RazorpayProperties razorpayProperties;
@@ -120,7 +121,20 @@ public class OrganizationBillingController {
             @AuthenticationPrincipal Jwt jwt, @PathVariable Long invoiceId, @RequestParam String type) {
         Long orgId = ownerResolver.resolveMembership(currentCustomerResolver.resolve(jwt).getId()).getOrganizationId();
         var invoice = invoiceService.resolveOwn(null, orgId, invoiceId);
-        return InvoiceDocuments.render(invoice, type, billingSettingsService.businessProfile(), offlinePaymentService.bankDetails());
+        return InvoiceDocuments.render(invoice, type, billingSettingsService.businessProfile(), offlinePaymentService.bankDetails(), invoiceService.taxLinesOf(invoice.getId()));
+    }
+
+    @GetMapping("/invoices/{invoiceId}/credit-notes")
+    public java.util.List<com.vyoog.eisplatform.modules.billing.tax.dto.CreditNoteDto> creditNotes(@AuthenticationPrincipal Jwt jwt, @PathVariable Long invoiceId) {
+        Long orgId = ownerResolver.resolveMembership(currentCustomerResolver.resolve(jwt).getId()).getOrganizationId();
+        return creditNoteService.listForInvoice(invoiceService.resolveOwn(null, orgId, invoiceId));
+    }
+
+    @GetMapping("/invoices/{invoiceId}/credit-notes/{creditNoteId}/document")
+    public org.springframework.http.ResponseEntity<byte[]> creditNoteDocument(@AuthenticationPrincipal Jwt jwt, @PathVariable Long invoiceId, @PathVariable Long creditNoteId) {
+        Long orgId = ownerResolver.resolveMembership(currentCustomerResolver.resolve(jwt).getId()).getOrganizationId();
+        var invoice = invoiceService.resolveOwn(null, orgId, invoiceId);
+        return CreditNoteDocuments.render(creditNoteService.get(invoice, creditNoteId), invoice.getIssuerSnapshot(), billingSettingsService.businessProfile(), invoice.getBillToSnapshot());
     }
 
     @PostMapping("/invoices/{invoiceId}/payments")

@@ -19,10 +19,12 @@ import com.vyoog.eisplatform.modules.registration.model.RegistrationOwnerType;
 import com.vyoog.eisplatform.modules.registration.model.SubscriptionStatus;
 import com.vyoog.eisplatform.modules.registration.repository.CustomerRepository;
 import com.vyoog.eisplatform.modules.registration.repository.ProductSubscriptionRepository;
+import com.vyoog.eisplatform.modules.billing.tax.service.TaxTestSupport;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.context.annotation.Import;
 import org.springframework.test.context.ActiveProfiles;
 
 import java.math.BigDecimal;
@@ -37,7 +39,10 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
  * the network. */
 @SpringBootTest
 @ActiveProfiles("test")
+@Import(TaxTestSupport.class)
 class CheckoutOfflinePaymentTest {
+
+    @Autowired private TaxTestSupport tax;
 
     @Autowired private CheckoutService checkoutService;
     @Autowired private OfflinePaymentService offlinePaymentService;
@@ -55,7 +60,9 @@ class CheckoutOfflinePaymentTest {
         customer.setEmail("checkout-" + System.nanoTime() + "@example.com");
         customer.setFirstName("Check");
         customer.setLastName("Out");
-        return customerRepository.save(customer);
+        customer = customerRepository.save(customer);
+        tax.readyToInvoiceInIndia(customer);   // an issued invoice needs a supplier, a rule and billing details
+        return customer;
     }
 
     private ProductSubscription newSubscription(Customer customer, BigDecimal price) {
@@ -88,7 +95,8 @@ class CheckoutOfflinePaymentTest {
         assertThat(summary.total()).isEqualTo(1999L);
         assertThat(summary.items()).hasSize(1);
         assertThat(summary.items().get(0).quantity()).isNull();
-        assertThat(summary.taxLines()).isEmpty();
+        // C96: the zero-rate rule set up for this test is shown as an explicit 0% line, never as a missing tax.
+        assertThat(summary.taxLines()).singleElement().satisfies(t -> assertThat(t.amount()).isZero());
         assertThat(summary.billingEmail()).isEqualTo(customer.getEmail());
         assertThat(summary.payByInvoiceAllowed()).isTrue();
     }

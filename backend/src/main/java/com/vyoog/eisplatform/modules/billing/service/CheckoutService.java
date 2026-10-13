@@ -163,9 +163,13 @@ public class CheckoutService {
             items = List.of();
         }
 
-        List<TaxLineDto> taxLines = invoice != null && invoice.getTaxAmount() > 0
-            ? List.of(new TaxLineDto("Tax", null, invoice.getTaxAmount()))
-            : List.of();
+        // C96: the components copied onto the invoice, summed over its lines per component and rate.
+        List<TaxLineDto> taxLines = invoice == null ? List.of()
+            : invoiceService.taxLinesOf(invoice.getId()).stream()
+                .filter(t -> t.taxAmount() > 0 || t.rate() != null)
+                .collect(java.util.stream.Collectors.groupingBy(t -> t.code() + "|" + t.rate(), java.util.LinkedHashMap::new, java.util.stream.Collectors.toList()))
+                .values().stream().map(group -> new TaxLineDto(group.get(0).name(), group.get(0).rate(),
+                    group.stream().mapToLong(t -> t.taxAmount()).sum())).toList();
         String currency = invoice != null ? invoice.getCurrency().name()
             : plan != null ? plan.getCurrency().name() : "USD";
 
@@ -187,7 +191,9 @@ public class CheckoutService {
             billingSettingsService.enabledOnlineMethods(),
             settings.getCheckoutDisplayName(),
             settings.getCheckoutDescription(),
-            settings.getCheckoutThemeColor());
+            settings.getCheckoutThemeColor(),
+            invoice != null && invoice.getStatus() == InvoiceStatus.DRAFT,
+            invoice != null ? invoice.getPlaceOfSupply() : null);
     }
 
     private String billingEmail(Long customerId, Long organizationId, Long fallbackCustomerId) {

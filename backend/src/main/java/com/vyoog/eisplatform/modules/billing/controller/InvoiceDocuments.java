@@ -28,13 +28,24 @@ final class InvoiceDocuments {
     /** C60: {@code issuer} (Billing settings → Business profile) is printed at
      * the top, and the footer note at the end. An OPEN invoice to be paid by
      * invoice also carries the offline payment instructions. */
-    static ResponseEntity<byte[]> render(Invoice invoice, String type, BusinessProfileDto issuer, OfflineBankDetailsDto bank) {
+    static ResponseEntity<byte[]> render(Invoice invoice, String type, BusinessProfileDto issuer, OfflineBankDetailsDto bank,
+                                         java.util.List<com.vyoog.eisplatform.modules.billing.tax.dto.TaxComponentDto> taxLines) {
+        if (invoice.getStatus() == InvoiceStatus.DRAFT || invoice.getInvoiceNumber() == null) {
+            // C96: a Draft (tax not determined) is not an invoice yet.
+            throw new ResourceNotFoundException("This invoice is not issued yet.");
+        }
         if ("receipt".equals(type) && invoice.getStatus() != InvoiceStatus.PAID
                 && invoice.getStatus() != InvoiceStatus.PARTIALLY_REFUNDED && invoice.getStatus() != InvoiceStatus.REFUNDED) {
             throw new ResourceNotFoundException("A receipt is only available for a paid invoice.");
         }
         StringBuilder body = new StringBuilder();
-        if (issuer != null && issuer.legalName() != null) {
+        if (invoice.getIssuerSnapshot() != null && !invoice.getIssuerSnapshot().isBlank()) {
+            // BI-3: the legal name, address, GSTIN and PAN as they were when the invoice was issued.
+            body.append(invoice.getIssuerSnapshot()).append("\n");
+            String contact = issuer == null ? "" : join(" | ", issuer.email(), issuer.phone(), issuer.website());
+            if (!contact.isEmpty()) body.append(contact).append("\n");
+            body.append("\n");
+        } else if (issuer != null && issuer.legalName() != null) {
             body.append(issuer.legalName()).append("\n");
             if (issuer.tradeName() != null) body.append(issuer.tradeName()).append("\n");
             body.append(join(", ", issuer.addressLine1(), issuer.addressLine2(), issuer.city(), issuer.state(), issuer.postalCode(), issuer.country())).append("\n");
@@ -50,12 +61,30 @@ final class InvoiceDocuments {
         body.append("Status: ").append(invoice.getStatus()).append("\n");
         body.append("Issued: ").append(invoice.getIssuedAt()).append("\n");
         if (invoice.getDueAt() != null && !"receipt".equals(type)) body.append("Due: ").append(invoice.getDueAt()).append("\n");
-        body.append("Bill to:\n").append(invoice.getBillToSnapshot()).append("\n\n");
+        body.append("Bill to:\n").append(invoice.getBillToSnapshot()).append("\n");
+        if (invoice.getCustomerTaxId() != null) body.append("GSTIN / Tax ID: ").append(invoice.getCustomerTaxId()).append("\n");
+        if (invoice.getPlaceOfSupply() != null) body.append("Place of supply: ").append(invoice.getPlaceOfSupply()).append("\n");
+        body.append("\n");
         for (var line : invoice.getLines()) {
             body.append(String.format("%-40s x%-3d %10.2f%n", line.getDescription(), line.getQuantity(), line.getAmount() / 100.0));
+            if (line.getHsnSacCode() != null) body.append("    SAC/HSN: ").append(line.getHsnSacCode()).append("\n");
         }
         body.append("\nSubtotal: ").append(invoice.getSubtotal() / 100.0).append(" ").append(invoice.getCurrency()).append("\n");
-        body.append("Tax: ").append(invoice.getTaxAmount() / 100.0).append(" ").append(invoice.getCurrency()).append("\n");
+        // C96: every tax component with its rate, summed over the lines; "Tax" alone only for invoices issued before tax was calculated.
+        if (taxLines == null || taxLines.isEmpty()) {
+            body.append("Tax: ").append(invoice.getTaxAmount() / 100.0).append(" ").append(invoice.getCurrency()).append("\n");
+        } else {
+            var grouped = new java.util.LinkedHashMap<String, long[]>();
+            var names = new java.util.LinkedHashMap<String, String>();
+            for (var t : taxLines) {
+                String key = t.code() + "|" + (t.rate() == null ? "" : t.rate().stripTrailingZeros().toPlainString());
+                grouped.computeIfAbsent(key, k -> new long[1])[0] += t.taxAmount();
+                names.putIfAbsent(key, t.name() + (t.rate() == null || t.rate().signum() == 0 && t.treatment() != null && !"TAXABLE".equals(t.treatment())
+                    ? "" : " @ " + t.rate().stripTrailingZeros().toPlainString() + "%"));
+            }
+            grouped.forEach((key, amount) -> body.append(names.get(key)).append(": ").append(amount[0] / 100.0).append(" ").append(invoice.getCurrency()).append("\n"));
+            body.append("Total tax: ").append(invoice.getTaxAmount() / 100.0).append(" ").append(invoice.getCurrency()).append("\n");
+        }
         body.append("Total: ").append(invoice.getTotal() / 100.0).append(" ").append(invoice.getCurrency()).append("\n");
         if (!"receipt".equals(type) && invoice.getStatus() == InvoiceStatus.OPEN
                 && invoice.getPaymentRoute() == PaymentRoute.OFFLINE && bank != null && bank.isComplete()) {

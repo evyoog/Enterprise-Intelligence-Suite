@@ -89,7 +89,7 @@ describe('platform administrator (C80 §2)', () => {
     expect(t.organization).toEqual(['rolesPermissions', 'registrations', 'privilegedAccess'])
     expect(t.platform).toEqual(['products', 'applications', 'offerings', 'integrations', 'integrations>platformEvents', 'integrations>apiKeys', 'searchAdmin', 'serviceStatus'])
     expect(t.operations).toEqual([
-      'billing', 'billing>adminBillingInvoices', 'billing>adminPaymentGateway', 'billing>adminBillingSettings',
+      'billing', 'billing>adminBillingInvoices', 'billing>adminPaymentGateway', 'billing>adminBillingSettings', 'billing>adminTaxConfiguration',
       'support', 'reviews', 'partners', 'auditLog',
     ])
   })
@@ -121,7 +121,7 @@ describe('intermediate roles get exactly what their permissions allow', () => {
     const t = tree(nav(true, ['MANAGE_BILLING']))
     expect(t.workspace).toEqual(['catalog', 'knowledgeCenter', 'knowledgeCenter>knowledgeArticles', 'knowledgeCenter>knowledgeGuides', 'knowledgeCenter>knowledgeFaqs'])
     expect(t.platform).toEqual(['serviceStatus'])
-    expect(t.operations).toEqual(['billing', 'billing>adminBillingInvoices', 'billing>adminPaymentGateway', 'billing>adminBillingSettings'])
+    expect(t.operations).toEqual(['billing', 'billing>adminBillingInvoices', 'billing>adminPaymentGateway', 'billing>adminBillingSettings', 'billing>adminTaxConfiguration'])
     expect(t.organization).toBeUndefined()
   })
 

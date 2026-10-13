@@ -1,7 +1,8 @@
 import { apiDownload, apiRequest } from './client'
 import type { Currency } from './productsApi'
 
-export type InvoiceStatus = 'OPEN' | 'PAID' | 'PARTIALLY_REFUNDED' | 'REFUNDED' | 'VOID'
+/** C96: DRAFT = tax could not be determined yet; it is not an invoice for the customer. */
+export type InvoiceStatus = 'DRAFT' | 'OPEN' | 'PAID' | 'PARTIALLY_REFUNDED' | 'REFUNDED' | 'VOID'
 export type PaymentStatus = 'CREATED' | 'CAPTURED' | 'FAILED' | 'PARTIALLY_REFUNDED' | 'REFUNDED'
 export type PaymentMethodType = 'CARD' | 'UPI'
 export type PaymentRoute = 'ONLINE' | 'OFFLINE'
@@ -29,6 +30,33 @@ export interface TaxLine {
   amount: number
 }
 
+/** C96: one tax component printed on an invoice or credit note. */
+export interface TaxComponent {
+  code: string
+  name: string
+  taxType?: string
+  jurisdiction?: string
+  treatment: string
+  rate?: number
+  taxableAmount: number
+  taxAmount: number
+  note?: string
+}
+
+export interface CreditNote {
+  id: number
+  creditNoteNumber: string
+  invoiceId: number
+  invoiceNumber?: string
+  currency: string
+  subtotal: number
+  taxAmount: number
+  total: number
+  reason?: string
+  issuedAt: string
+  taxLines: TaxComponent[]
+}
+
 export interface CheckoutSummary {
   /** Absent when the subscription produced no invoice (a $0 plan). */
   invoiceId?: number
@@ -52,6 +80,9 @@ export interface CheckoutSummary {
   checkoutName?: string
   checkoutDescription?: string
   checkoutThemeColor?: string
+  /** C96: the invoice is a Draft because its tax could not be determined yet; nothing can be paid until it is issued. */
+  taxPending?: boolean
+  placeOfSupply?: string
 }
 
 export type BankAccountType = 'CURRENT' | 'SAVINGS'
@@ -156,6 +187,10 @@ export interface InvoiceLine {
   quantity: number
   unitAmount: number
   amount: number
+  /** C96: this line's tax, the class it was taxed as and its SAC/HSN code. */
+  taxAmount?: number
+  taxClassCode?: string
+  hsnSacCode?: string
 }
 
 export interface Payment {
@@ -198,6 +233,16 @@ export interface Invoice {
   ownerLabel?: string
   lines?: InvoiceLine[]
   payments?: Payment[]
+  /** C96: LEGACY (issued before tax), CALCULATED or BLOCKED (a Draft). */
+  taxStatus?: 'LEGACY' | 'CALCULATED' | 'BLOCKED'
+  taxEngine?: 'INTERNAL' | 'EXTERNAL'
+  placeOfSupply?: string
+  customerTaxId?: string
+  issuerSnapshot?: string
+  taxLines?: TaxComponent[]
+  /** Admin views only. */
+  taxBlockCode?: string
+  taxBlockReason?: string
 }
 
 export interface PaymentMethod {
@@ -276,6 +321,10 @@ function scopedApi(base: string) {
     invoiceDetail: (invoiceId: number) => apiRequest<Invoice>(`${base}/invoices/${invoiceId}`),
     downloadDocument: (invoiceId: number, type: 'invoice' | 'receipt') =>
       apiDownload(`${base}/invoices/${invoiceId}/document?type=${type}`),
+    /** C97 TX-6: the credit notes issued against an invoice, and a download of one. */
+    creditNotes: (invoiceId: number) => apiRequest<CreditNote[]>(`${base}/invoices/${invoiceId}/credit-notes`),
+    downloadCreditNote: (invoiceId: number, creditNoteId: number) =>
+      apiDownload(`${base}/invoices/${invoiceId}/credit-notes/${creditNoteId}/document`),
     /** C59 (REQ-BIL-001.22): optionally the saved method chosen at checkout and
      * the tile used for Razorpay's preselection. Never card data (BR-BIL-001). */
     createPayment: (invoiceId: number, body?: { paymentMethodId?: number; method?: CheckoutMethod }) =>
@@ -309,6 +358,7 @@ export const organizationBillingApi = scopedApi('/organization/me/billing')
 export const adminBillingApi = {
   invoices: (page = 0) => apiRequest<Page<Invoice>>(`/admin/billing/invoices?page=${page}`),
   invoiceDetail: (invoiceId: number) => apiRequest<Invoice>(`/admin/billing/invoices/${invoiceId}`),
+  creditNotes: (invoiceId: number) => apiRequest<CreditNote[]>(`/admin/billing/invoices/${invoiceId}/credit-notes`),
   payments: (page = 0) => apiRequest<Page<Payment>>(`/admin/billing/payments?page=${page}`),
   paymentDetail: (paymentId: number) => apiRequest<Payment>(`/admin/billing/payments/${paymentId}`),
   refund: (paymentId: number, amount: number, reason: string) =>

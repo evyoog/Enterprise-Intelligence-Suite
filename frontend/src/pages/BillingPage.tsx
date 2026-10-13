@@ -9,7 +9,7 @@ import {
 } from '@mui/material'
 import {
   myBillingApi, organizationBillingApi,
-  type BillingOverview, type Invoice, type PaymentMethod, type PaymentMethodType,
+  type BillingOverview, type CreditNote, type Invoice, type PaymentMethod, type PaymentMethodType,
 } from '../api/billingApi'
 import { ApiError } from '../api/client'
 import { PageHeader } from '../components/layout/PageHeader'
@@ -17,6 +17,8 @@ import { useTabParam } from '../components/layout/useTabParam'
 import { openRazorpayCheckout } from '../utils/razorpayCheckout'
 
 type BillingScope = typeof myBillingApi
+
+const GSTIN_PATTERN = /^[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z][1-9A-Z]Z[0-9A-Z]$/
 
 function money(minorUnits: number, currency: string) {
   return `${(minorUnits / 100).toFixed(2)} ${currency}`
@@ -141,10 +143,46 @@ function OverviewTab({ overview, onGoToInvoices, onGoToMethods }: {
   )
 }
 
+/** C97 TX-6: the credit notes issued against one invoice, each with its tax and a download. */
+function CreditNotesDialog({ api, invoice, onClose }: { api: BillingScope; invoice: Invoice; onClose: () => void }) {
+  const { t } = useTranslation()
+  const [notes, setNotes] = useState<CreditNote[] | null>(null)
+  useEffect(() => {
+    let active = true
+    api.creditNotes(invoice.id).then((n) => { if (active) setNotes(n) }).catch(() => { if (active) setNotes([]) })
+    return () => { active = false }
+  }, [api, invoice.id])
+  return (
+    <Dialog open onClose={onClose} maxWidth="sm" fullWidth aria-labelledby="credit-notes-title">
+      <DialogTitle id="credit-notes-title">{t('billing.creditNotes.title', { number: invoice.invoiceNumber })}</DialogTitle>
+      <DialogContent>
+        {notes === null && <CircularProgress size={20} />}
+        {notes?.length === 0 && <Typography sx={{ color: 'text.secondary' }}>{t('billing.creditNotes.empty')}</Typography>}
+        {notes?.map((n) => (
+          <Paper key={n.id} variant="outlined" sx={{ p: 2, mb: 1.5 }}>
+            <Box sx={{ display: 'flex', justifyContent: 'space-between', gap: 2, flexWrap: 'wrap' }}>
+              <Typography sx={{ fontWeight: 600 }}>{n.creditNoteNumber}</Typography>
+              <Typography sx={{ fontWeight: 600 }}>{money(n.total, n.currency)}</Typography>
+            </Box>
+            <Typography variant="body2" sx={{ color: 'text.secondary' }}>{new Date(n.issuedAt).toLocaleDateString()}{n.reason ? ` · ${n.reason}` : ''}</Typography>
+            <Typography variant="body2" sx={{ mt: 0.5 }}>{t('billing.creditNotes.subtotal')}: {money(n.subtotal, n.currency)}</Typography>
+            {n.taxLines.map((line) => (
+              <Typography key={`${line.code}-${line.rate}`} variant="body2">{line.name}{line.rate != null ? ` (${Number(line.rate)} %)` : ''}: {money(line.taxAmount, n.currency)}</Typography>
+            ))}
+            <Button size="small" sx={{ mt: 1 }} onClick={() => api.downloadCreditNote(invoice.id, n.id)}>{t('billing.creditNotes.download')}</Button>
+          </Paper>
+        ))}
+      </DialogContent>
+      <DialogActions><Button onClick={onClose}>{t('billing.creditNotes.close')}</Button></DialogActions>
+    </Dialog>
+  )
+}
+
 function InvoicesTab({ api }: { api: BillingScope }) {
   const { t } = useTranslation()
   const navigate = useNavigate()
   const [invoices, setInvoices] = useState<Invoice[] | null>(null)
+  const [creditNotesFor, setCreditNotesFor] = useState<Invoice | null>(null)
   // C55: Pay opens the checkout screen, which offers every payment option
   // (online options are disabled there when the gateway is not configured).
   const payInvoice = (inv: Invoice) => navigate(
@@ -163,24 +201,29 @@ function InvoicesTab({ api }: { api: BillingScope }) {
               <TableCell>{t('billing.invoices.number')}</TableCell>
               <TableCell>{t('billing.invoices.issued')}</TableCell>
               <TableCell>{t('billing.invoices.status')}</TableCell>
+              <TableCell align="right">{t('billing.invoices.tax')}</TableCell>
               <TableCell align="right">{t('billing.invoices.total')}</TableCell>
               <TableCell align="right">{t('billing.invoices.actions')}</TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
             {invoices === null && (
-              <TableRow><TableCell colSpan={5}><CircularProgress size={20} /></TableCell></TableRow>
+              <TableRow><TableCell colSpan={6}><CircularProgress size={20} /></TableCell></TableRow>
             )}
             {invoices?.length === 0 && (
-              <TableRow><TableCell colSpan={5} sx={{ color: 'text.secondary' }}>{t('billing.invoices.empty')}</TableCell></TableRow>
+              <TableRow><TableCell colSpan={6} sx={{ color: 'text.secondary' }}>{t('billing.invoices.empty')}</TableCell></TableRow>
             )}
             {invoices?.map((inv) => (
               <TableRow key={inv.id}>
                 <TableCell>{inv.invoiceNumber}</TableCell>
                 <TableCell>{new Date(inv.issuedAt).toLocaleDateString()}</TableCell>
                 <TableCell><Chip size="small" label={inv.status} color={statusColor(inv.status)} /></TableCell>
+                <TableCell align="right">{money(inv.taxAmount, inv.currency)}</TableCell>
                 <TableCell align="right">{money(inv.total, inv.currency)}</TableCell>
                 <TableCell align="right">
+                  {(inv.status === 'PARTIALLY_REFUNDED' || inv.status === 'REFUNDED') && (
+                    <Button size="small" onClick={() => setCreditNotesFor(inv)}>{t('billing.invoices.creditNotes')}</Button>
+                  )}
                   {inv.status === 'OPEN' && (
                     <Button size="small" onClick={() => payInvoice(inv)}>{t('billing.invoices.pay')}</Button>
                   )}
@@ -194,6 +237,7 @@ function InvoicesTab({ api }: { api: BillingScope }) {
           </TableBody>
         </Table>
       </Paper>
+      {creditNotesFor && <CreditNotesDialog api={api} invoice={creditNotesFor} onClose={() => setCreditNotesFor(null)} />}
     </>
   )
 }
@@ -372,7 +416,12 @@ function BillingDetailsTab({ api }: { api: BillingScope }) {
     setSaved(false)
   }
 
+  // C97 TX-4: for an Indian customer the tax ID is a 15-character GSTIN. The server checks it too.
+  const isIndia = /^(india|in|ind|bharat)$/i.test(form.country.trim())
+  const taxIdInvalid = isIndia && form.taxId.trim() !== '' && !GSTIN_PATTERN.test(form.taxId.trim().toUpperCase())
+
   const save = () => {
+    if (taxIdInvalid) return
     setError(null)
     api.saveDetails(form).then(() => setSaved(true)).catch((e) => setError(e instanceof ApiError ? e.message : 'Could not save.'))
   }
@@ -394,9 +443,10 @@ function BillingDetailsTab({ api }: { api: BillingScope }) {
           <TextField label={t('billing.details.postalCode')} value={form.postalCode} onChange={set('postalCode')} required fullWidth />
           <TextField label={t('billing.details.country')} value={form.country} onChange={set('country')} required fullWidth />
         </Box>
-        <TextField label={t('billing.details.taxId')} value={form.taxId} onChange={set('taxId')} />
+        <TextField label={t('billing.details.taxId')} value={form.taxId} onChange={set('taxId')} error={taxIdInvalid}
+          helperText={taxIdInvalid ? t('billing.details.taxIdInvalid') : isIndia ? t('billing.details.taxIdHelpIndia') : undefined} />
         <Box>
-          <Button variant="contained" onClick={save}>{t('common.save')}</Button>
+          <Button variant="contained" onClick={save} disabled={taxIdInvalid}>{t('common.save')}</Button>
         </Box>
       </Box>
     </Paper>

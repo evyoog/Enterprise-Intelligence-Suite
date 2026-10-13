@@ -84,13 +84,13 @@ public class BillingSettings {
     private String businessWebsite;
 
     // ---- C60: invoicing ----
-    /** Prefix of new invoice numbers ({@code <prefix>-<year>-<id>}); existing numbers never change (BR-3). */
+    /** Prefix of new invoice numbers ({@code <prefix>/<financial year>/<number>}, for example EIS/26-27/000123); existing numbers never change (BR-3). C97 BI-2: default EIS. */
     @Column(name = "invoice_prefix", nullable = false, length = 10)
-    private String invoicePrefix = "INV";
+    private String invoicePrefix = "EIS";
 
-    /** Days from issue to due date for new invoices. 0 = due on issue (the C47 default). */
+    /** Days from issue to due date for new invoices. C97 BI-2: default 15 (0 = due on issue, the earlier C47 default). */
     @Column(name = "payment_terms_days", nullable = false)
-    private int paymentTermsDays = 0;
+    private int paymentTermsDays = 15;
 
     @Column(name = "invoice_footer_note", length = 500)
     private String invoiceFooterNote;

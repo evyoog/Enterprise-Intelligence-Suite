@@ -40,4 +40,15 @@ public class InvoiceLine {
      * can pay a cart of several products, so each line carries its own. */
     @Column(name = "subscription_id")
     private Long subscriptionId;
+
+    /** C96: the product's tax class and its HSN/SAC code when the line was taxed (BI-3 prints the SAC code). */
+    @Column(name = "tax_class_code", length = 40)
+    private String taxClassCode;
+
+    @Column(name = "hsn_sac_code", length = 20)
+    private String hsnSacCode;
+
+    /** C96: the sum of this line's tax components. */
+    @Column(name = "tax_amount", nullable = false)
+    private long taxAmount = 0;
 }

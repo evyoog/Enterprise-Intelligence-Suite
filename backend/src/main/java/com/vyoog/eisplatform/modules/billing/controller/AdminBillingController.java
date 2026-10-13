@@ -36,6 +36,7 @@ public class AdminBillingController {
 
     private final CurrentCustomerResolver currentCustomerResolver;
     private final InvoiceService invoiceService;
+    private final com.vyoog.eisplatform.modules.billing.service.CreditNoteService creditNoteService;
     private final PaymentService paymentService;
     private final GatewayStatusService gatewayStatusService;
     private final OfflinePaymentService offlinePaymentService;
@@ -49,6 +50,11 @@ public class AdminBillingController {
     @GetMapping("/invoices/{invoiceId}")
     public InvoiceDto invoiceDetail(@PathVariable Long invoiceId) {
         return invoiceService.getAdminInvoiceDetail(invoiceId);
+    }
+
+    @GetMapping("/invoices/{invoiceId}/credit-notes")
+    public java.util.List<com.vyoog.eisplatform.modules.billing.tax.dto.CreditNoteDto> creditNotes(@PathVariable Long invoiceId) {
+        return creditNoteService.listForInvoice(invoiceService.getById(invoiceId));
     }
 
     /** C55 (REQ-BIL-001.20). */

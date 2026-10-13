@@ -43,6 +43,7 @@ public class PaymentService {
     private final PaymentRefundRepository refundRepository;
     private final PaymentWebhookEventRepository webhookEventRepository;
     private final InvoiceService invoiceService;
+    private final CreditNoteService creditNoteService;
     private final RazorpayClient razorpayClient;
     private final RazorpayProperties razorpayProperties;
     private final ObjectMapper objectMapper;
@@ -229,6 +230,8 @@ public class PaymentService {
 
         Invoice invoice = invoiceService.getById(payment.getInvoiceId());
         invoiceService.markRefundStatus(invoice, fullyRefunded);
+        // C97 TX-6: a refund issues a credit note that reverses the invoice's tax in proportion.
+        creditNoteService.issueForRefund(invoice, request.amount(), request.reason(), adminCustomerId == null ? null : adminCustomerId.toString(), refund.getId());
         notify(invoice, "Refund processed", "A refund of " + request.amount() + " was processed for invoice " + invoice.getInvoiceNumber() + ".");
         auditService.recordSuccess("PAYMENT_REFUNDED", null, adminCustomerId, null,
             "Payment", payment.getId().toString(), invoice.getOwnerOrganizationId(),

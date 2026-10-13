@@ -72,6 +72,7 @@ import { CartPage } from './pages/CartPage'
 import { AdminBillingPage } from './pages/admin/AdminBillingPage'
 import { AdminPaymentGatewayPage } from './pages/admin/AdminPaymentGatewayPage'
 import { AdminBillingSettingsPage } from './pages/admin/AdminBillingSettingsPage'
+import { AdminTaxConfigurationPage } from './pages/admin/AdminTaxConfigurationPage'
 import { AdminPartnerDetailPage } from './pages/admin/AdminPartnerDetailPage'
 import { RequireAdmin } from './components/routing/RequireAdmin'
 import { RequireAuth } from './components/routing/RequireAuth'
@@ -251,6 +252,7 @@ function MainApp() {
             <Route path="billing" element={<AdminBillingPage />} />
             <Route path="billing/payment-gateway" element={<AdminPaymentGatewayPage />} />
             <Route path="billing/settings" element={<AdminBillingSettingsPage />} />
+            <Route path="billing/tax" element={<AdminTaxConfigurationPage />} />
             <Route path="integrations/events" element={<AdminPlatformEventsPage />} />
             <Route path="integrations/api-keys" element={<AdminApiKeysPage />} />
             <Route path="search" element={<AdminSearchPage />} />

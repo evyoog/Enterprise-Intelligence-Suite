@@ -14,7 +14,8 @@
     "viewAllProducts": "View all products →",
     "openMenu": "Open menu",
     "closeMenu": "Close menu",
-    "skipToContent": "Skip to content"
+    "skipToContent": "Skip to content",
+    "taxConfiguration": "Tax configuration"
   },
   "auth": {
     "signIn": "Sign in",
@@ -1008,7 +1009,9 @@
       "pay": "Pay",
       "downloadInvoice": "Download invoice",
       "downloadReceipt": "Download receipt",
-      "empty": "No invoices yet."
+      "empty": "No invoices yet.",
+      "tax": "Tax",
+      "creditNotes": "Credit notes"
     },
     "pay": {
       "title": "Pay invoice",
@@ -1055,7 +1058,16 @@
       "postalCode": "Postal code",
       "country": "Country",
       "taxId": "Tax ID",
-      "saved": "Billing details saved."
+      "saved": "Billing details saved.",
+      "taxIdHelpIndia": "For an Indian customer, a 15-character GSTIN, for example 33ABCDE1234F1Z5.",
+      "taxIdInvalid": "Enter a valid 15-character GSTIN, for example 33ABCDE1234F1Z5."
+    },
+    "creditNotes": {
+      "title": "Credit notes for {{number}}",
+      "empty": "No credit notes for this invoice.",
+      "subtotal": "Subtotal credited",
+      "download": "Download credit note",
+      "close": "Close"
     }
   },
   "admin": {
@@ -1099,7 +1111,8 @@
       "routes": {
         "ONLINE": "Online",
         "OFFLINE": "Offline"
-      }
+      },
+      "resolveTax": "Resolve tax"
     },
     "paymentGateway": {
       "title": "Payment gateway",
@@ -1482,6 +1495,358 @@
       "inCatalog": "In catalog",
       "explore": "Manage apps",
       "editLabel": "Edit {{name}}"
+    },
+    "tax": {
+      "eyebrow": "Billing",
+      "title": "Tax configuration",
+      "subtitle": "Choose how tax is calculated on invoices, and manage the rules, classes and provider behind it.",
+      "loadError": "Tax configuration could not be loaded.",
+      "retry": "Try again",
+      "saved": "Saved.",
+      "engine": {
+        "title": "External Tax Engine",
+        "description": "Enable or disable external tax calculation for billing transactions.",
+        "switch": "External Tax Engine",
+        "on": "On",
+        "off": "Off",
+        "helperOn": "New invoices are taxed by the external tax provider. EIS never falls back to its own rules if the provider fails.",
+        "helperOff": "New invoices are taxed by the EIS internal engine, using the rules approved below.",
+        "activeMode": "Active calculation mode",
+        "internal": "EIS internal tax engine",
+        "external": "External tax provider",
+        "statusLabel": "Status",
+        "status": {
+          "READY": "Ready",
+          "ATTENTION": "Needs attention",
+          "BLOCKING": "Blocking invoices"
+        },
+        "version": "Configuration version {{version}}",
+        "changed": "Changed {{when}} by {{who}}",
+        "neverChanged": "Not changed yet: this is the default.",
+        "waiting": "{{count}} invoice(s) are waiting for tax",
+        "rulesInForce": "{{count}} approved rule(s) in force",
+        "confirmOnTitle": "Switch to the external tax provider?",
+        "confirmOnBody": "EIS tests the provider first. New invoices are then taxed by the provider. Invoices already issued do not change. If the provider fails, invoices wait as Draft; EIS does not use its own rules instead.",
+        "confirmOffTitle": "Switch to the EIS internal tax engine?",
+        "confirmOffBody": "New invoices are taxed by the approved rules in EIS. Invoices already issued do not change.",
+        "confirm": "Switch",
+        "switchedOn": "The external tax provider is now used for new invoices.",
+        "switchedOff": "The EIS internal engine is now used for new invoices.",
+        "refusedTitle": "The external engine was not switched on",
+        "refusedBody": "Nothing was changed. Fix these checks, then try again.",
+        "switchError": "The setting could not be changed."
+      },
+      "tabs": {
+        "label": "Tax configuration sections",
+        "rules": "Rules",
+        "classification": "Classification",
+        "exemptions": "Exemptions",
+        "registrations": "Registrations",
+        "provider": "External provider",
+        "blocked": "Draft invoices"
+      },
+      "rules": {
+        "title": "Tax rules",
+        "description": "Used when the External Tax Engine is off. Only rules that are approved, active and in force on the invoice date are used. No rate is built into EIS.",
+        "new": "New rule",
+        "empty": "No tax rules yet. Create one for each country, state and condition you charge tax in. Until a rule is approved, invoices wait as Draft.",
+        "selfApproval": "Allow the same administrator to approve",
+        "selfApprovalHelp": "Off by default: a rule must be approved by a different administrator than the one who edited it.",
+        "columns": {
+          "rule": "Rule",
+          "where": "Where",
+          "conditions": "Conditions",
+          "components": "Components",
+          "dates": "Effective",
+          "status": "Status",
+          "actions": "Actions"
+        },
+        "anywhere": "Whole country",
+        "any": "Any",
+        "version": "Version {{version}}",
+        "active": "Active",
+        "inactive": "Inactive",
+        "notYetInForce": "Not in force today",
+        "inForce": "In force today",
+        "from": "From {{date}}",
+        "until": "until {{date}}",
+        "noEnd": "no end date",
+        "rejectedBecause": "Rejected: {{reason}}",
+        "status": {
+          "DRAFT": "Draft",
+          "PENDING_APPROVAL": "Pending approval",
+          "APPROVED": "Approved",
+          "REJECTED": "Rejected"
+        },
+        "action": {
+          "edit": "Edit",
+          "submit": "Submit for approval",
+          "approve": "Approve",
+          "reject": "Reject",
+          "activate": "Activate",
+          "deactivate": "Deactivate",
+          "newVersion": "New version",
+          "delete": "Delete"
+        },
+        "done": {
+          "submit": "Submitted for approval.",
+          "approve": "Approved and active.",
+          "reject": "Rejected.",
+          "activate": "Activated.",
+          "deactivate": "Deactivated.",
+          "newVersion": "A draft of the next version was created.",
+          "delete": "Deleted."
+        },
+        "rejectTitle": "Reject this rule",
+        "rejectReason": "Reason",
+        "rejectConfirm": "Reject rule",
+        "deleteTitle": "Delete this rule?",
+        "deleteBody": "A draft or rejected rule can be deleted. This cannot be undone.",
+        "deleteConfirm": "Delete rule",
+        "actionError": "The action could not be completed."
+      },
+      "ruleForm": {
+        "createTitle": "New tax rule",
+        "editTitle": "Edit tax rule",
+        "name": "Rule name",
+        "country": "Country",
+        "state": "State or province (optional)",
+        "stateHelp": "Leave empty for the whole country.",
+        "jurisdiction": "Jurisdiction (optional)",
+        "taxType": "Tax type",
+        "taxClass": "Tax class (optional)",
+        "anyClass": "Any class",
+        "customerType": "Customer type",
+        "supplyType": "Supply",
+        "taxIdCondition": "Customer tax ID",
+        "treatment": "Treatment",
+        "effectiveFrom": "Effective from",
+        "effectiveTo": "Effective to (optional)",
+        "notes": "Notes (optional)",
+        "components": "Tax components",
+        "componentsHelp": "One component per tax, for example CGST and SGST together, or IGST alone.",
+        "componentCode": "Code",
+        "componentName": "Name",
+        "componentRate": "Rate (%)",
+        "compound": "Charged on the base plus the components before it",
+        "addComponent": "Add component",
+        "removeComponent": "Remove component {{n}}",
+        "noComponents": "A {{treatment}} rule has no components.",
+        "save": "Save as draft",
+        "totalRate": "Total rate: {{rate}}%",
+        "errors": {
+          "name": "Enter a rule name.",
+          "country": "Choose a country.",
+          "from": "Choose the start date.",
+          "to": "The end date cannot be before the start date.",
+          "components": "Add at least one component.",
+          "code": "Each component needs a code (letters and digits).",
+          "componentName": "Each component needs a name.",
+          "rate": "A rate is 0 to 100 with up to 4 decimals.",
+          "duplicate": "Component codes must be different."
+        }
+      },
+      "taxType": {
+        "GST": "GST",
+        "VAT": "VAT",
+        "SALES_TAX": "Sales tax",
+        "OTHER": "Other"
+      },
+      "treatment": {
+        "TAXABLE": "Taxable",
+        "EXEMPT": "Exempt",
+        "ZERO_RATED": "Zero-rated",
+        "NIL_RATED": "Nil-rated",
+        "REVERSE_CHARGE": "Reverse charge",
+        "OUT_OF_SCOPE": "Out of scope"
+      },
+      "customerType": {
+        "ANY": "Any customer",
+        "INDIVIDUAL": "Individual",
+        "BUSINESS": "Business"
+      },
+      "supplyType": {
+        "ANY": "Any supply",
+        "INTRA_STATE": "Within the seller's state",
+        "INTER_STATE": "Between states",
+        "CROSS_BORDER": "Cross-border"
+      },
+      "taxIdCondition": {
+        "ANY": "Any",
+        "PROVIDED": "Tax ID provided",
+        "NOT_PROVIDED": "No tax ID"
+      },
+      "preview": {
+        "title": "Try a calculation",
+        "description": "Applies the internal rules to a made-up transaction. Nothing is created.",
+        "amount": "Amount (without tax)",
+        "currency": "Currency",
+        "country": "Customer country",
+        "state": "Customer state",
+        "taxClass": "Tax class",
+        "customerType": "Customer type",
+        "taxId": "Customer tax ID",
+        "run": "Calculate",
+        "placeOfSupply": "Place of supply: {{place}}",
+        "total": "Total with tax",
+        "totalTax": "Total tax",
+        "blocked": "Blocked: {{message}}",
+        "error": "The calculation could not be run."
+      },
+      "classes": {
+        "title": "Tax classes",
+        "description": "A class (for example a SAC code) groups products that are taxed the same way. Rules can be limited to a class, and an external provider needs one for every product.",
+        "new": "New class",
+        "empty": "No tax classes yet.",
+        "code": "Code",
+        "name": "Name",
+        "sac": "SAC / HSN code",
+        "descriptionField": "Description",
+        "enabled": "Enabled",
+        "products": "{{count}} product(s)",
+        "save": "Save class",
+        "edit": "Edit",
+        "codeLocked": "The code cannot be changed.",
+        "productsTitle": "Product classification",
+        "productsDescription": "Choose the tax class of each product. A product without a class only matches rules that are not limited to a class, and the external provider will not tax it.",
+        "product": "Product",
+        "classFor": "Tax class of {{name}}",
+        "none": "No class",
+        "errors": {
+          "code": "Enter a code (letters, digits, - and _).",
+          "name": "Enter a name."
+        },
+        "productsColumn": "Products"
+      },
+      "exemptions": {
+        "title": "Tax exemptions",
+        "description": "An approved exemption certificate makes a customer's invoices Exempt in that country, with the reason printed. A different administrator approves it.",
+        "new": "New exemption",
+        "empty": "No exemptions.",
+        "columns": {
+          "owner": "Customer or organization",
+          "country": "Country",
+          "reason": "Reason",
+          "dates": "Effective",
+          "status": "Status",
+          "actions": "Actions"
+        },
+        "ownerType": "Applies to",
+        "customer": "Customer",
+        "organization": "Organization",
+        "ownerId": "Customer or organization ID",
+        "countryField": "Country",
+        "reason": "Reason (for example SEZ unit)",
+        "certificate": "Certificate number (optional)",
+        "from": "Effective from",
+        "to": "Effective to (optional)",
+        "save": "Save exemption",
+        "status": {
+          "PENDING_APPROVAL": "Pending approval",
+          "APPROVED": "Approved",
+          "REVOKED": "Revoked"
+        },
+        "approve": "Approve",
+        "revoke": "Revoke",
+        "errors": {
+          "ownerId": "Enter the numeric ID.",
+          "country": "Choose a country.",
+          "reason": "Enter the reason.",
+          "from": "Choose the start date."
+        }
+      },
+      "registrations": {
+        "title": "Supplier tax registrations",
+        "description": "Your tax registrations, sent to an external provider with each invoice. The GSTIN in Billing settings is listed automatically.",
+        "new": "Add registration",
+        "empty": "No registrations. The GSTIN in Billing settings is used when present.",
+        "country": "Country",
+        "state": "State (optional)",
+        "taxType": "Tax type",
+        "number": "Registration number",
+        "from": "Effective from (optional)",
+        "to": "Effective to (optional)",
+        "enabled": "Enabled",
+        "save": "Save registration",
+        "delete": "Delete",
+        "fromProfile": "From Billing settings",
+        "deleteTitle": "Delete this registration?",
+        "deleteBody": "It will no longer be sent to the provider.",
+        "deleteConfirm": "Delete",
+        "errors": {
+          "country": "Choose a country.",
+          "number": "Enter the registration number."
+        }
+      },
+      "provider": {
+        "title": "External tax provider",
+        "description": "Used when the External Tax Engine is on. The provider's address and credentials are set on the server, never here.",
+        "select": "Provider",
+        "none": "Choose a provider",
+        "company": "Company code (optional)",
+        "environment": "Environment",
+        "sandbox": "Sandbox",
+        "production": "Production",
+        "timeout": "Timeout (seconds)",
+        "attempts": "Attempts per calculation",
+        "attemptsHelp": "Only temporary failures are retried, with the same idempotency key.",
+        "save": "Save settings",
+        "credentialsTitle": "Credentials on the server",
+        "credentialsBody": "EIS reads these values from its environment (config/secrets.env). They are never shown or sent to this screen: only whether each is set.",
+        "set": "Set",
+        "notSet": "Not set",
+        "host": "Provider host",
+        "test": "Test connection and validate capabilities",
+        "testing": "Testing…",
+        "validationTitle": "Last validation",
+        "validationNone": "The provider has not been validated yet.",
+        "validated": "Validated {{when}}",
+        "status": {
+          "NOT_VALIDATED": "Not validated",
+          "PASSED": "Passed",
+          "FAILED": "Failed"
+        },
+        "countries": "Supported countries",
+        "currencies": "Supported currencies",
+        "types": "Transaction types",
+        "passed": "Passed",
+        "failed": "Failed",
+        "rulesNote": "While External Tax Engine is on, new settings are saved only if the provider still passes validation.",
+        "error": "The provider settings could not be saved."
+      },
+      "blocked": {
+        "title": "Draft invoices",
+        "description": "An invoice whose tax could not be determined safely stays a Draft: it has no number, cannot be paid and is not shown to the customer. Fix the cause, then retry.",
+        "empty": "No invoices are waiting for tax.",
+        "columns": {
+          "invoice": "Invoice",
+          "owner": "Customer",
+          "amount": "Amount",
+          "reason": "Reason",
+          "engine": "Engine",
+          "actions": "Actions"
+        },
+        "retry": "Retry tax",
+        "retrying": "Retrying…",
+        "issued": "Invoice {{number}} was issued.",
+        "stillBlocked": "Still blocked: {{reason}}",
+        "draftNumber": "Draft #{{id}}",
+        "codes": {
+          "NO_MATCHING_RULE": "No matching rule",
+          "AMBIGUOUS_RULES": "Ambiguous rules",
+          "MISSING_CUSTOMER_COUNTRY": "Customer country missing",
+          "MISSING_SUPPLIER_PROFILE": "Business profile incomplete",
+          "MISSING_TAX_CLASS": "Product has no tax class",
+          "PROVIDER_NOT_CONFIGURED": "Provider not configured",
+          "PROVIDER_NOT_VALIDATED": "Provider not validated",
+          "PROVIDER_UNSUPPORTED": "Not supported by the provider",
+          "PROVIDER_UNAVAILABLE": "Provider unavailable",
+          "PROVIDER_REJECTED": "Provider rejected the request",
+          "PROVIDER_INVALID_RESPONSE": "Invalid provider answer",
+          "ENGINE_ERROR": "Calculation error"
+        }
+      },
+      "close": "Close"
     }
   },
   "checkout": {
@@ -1573,7 +1938,9 @@
       "trust": "Payments are processed securely by Razorpay.",
       "qty": "Qty {{qty}}",
       "toggle": "Total {{total}} · {{count}} items",
-      "editCart": "Edit cart"
+      "editCart": "Edit cart",
+      "taxPending": "Tax: being calculated",
+      "placeOfSupply": "Place of supply: {{place}}"
     },
     "period": {
       "MONTHLY": "Monthly",
@@ -1617,6 +1984,10 @@
         "body": "Your organization admin approves orders before payment. You'll be able to pay once it's approved.",
         "viewOrders": "View my orders",
         "browse": "Browse products"
+      },
+      "taxPending": {
+        "title": "We are preparing your invoice",
+        "body": "We could not finish the tax calculation for this order yet, so nothing can be paid right now. Your order is saved. We will email you as soon as the invoice is ready, and you can also find it under Billing."
       }
     },
     "bank": {
