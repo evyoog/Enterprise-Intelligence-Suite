@@ -42,7 +42,8 @@ describe('Product Catalog (C66)', () => {
     renderWithProviders(<ProductsPage />)
     expect(await screen.findByRole('heading', { name: 'Thiran' })).toBeInTheDocument()
     expect(screen.getByText('1 app')).toBeInTheDocument()
-    expect(screen.getByText('Across 2 categories')).toBeInTheDocument()
+    // C94: the summary cards became category tiles with counts.
+    expect(screen.getByRole('button', { name: /^Analytics 1 product/ })).toBeInTheDocument()
     const products = screen.getByRole('region', { name: /Products/ })
     expect(within(products).getByRole('link', { name: 'View details: Thiran' })).toHaveAttribute('href', '/catalog/platforms/1')
     expect(screen.getByRole('heading', { name: 'Insights' })).toBeInTheDocument()
@@ -55,7 +56,7 @@ describe('Product Catalog (C66)', () => {
     isAdmin = true
     renderWithProviders(<ProductsPage />)
     expect(await screen.findByRole('link', { name: 'Add Product' })).toHaveAttribute('href', '/admin/platforms/new')
-    await userEvent.setup().click(screen.getByRole('button', { name: 'Planning (1)' }))
+    await userEvent.setup().click(screen.getByRole('button', { name: /^Planning 1 product/ }))
     expect(search).toHaveBeenLastCalledWith(expect.objectContaining({ category: 'Planning' }))
     // Thiran has no Planning apps, so its card is filtered out.
     expect(screen.queryByRole('heading', { name: 'Thiran' })).not.toBeInTheDocument()

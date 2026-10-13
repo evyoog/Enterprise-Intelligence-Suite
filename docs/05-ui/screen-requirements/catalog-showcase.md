@@ -2,14 +2,16 @@
 
 FRD: [REQ-CAT-003](../../02-requirements/FRD/catalog-showcase/requirement.md). Design: [design-system.md](design-system.md). All data comes from existing APIs plus `/catalog/platforms`; nothing is hard-coded.
 
-## 1. Product Catalog — `/products` (public)
-- Header: label "Product Catalog", title, description; **Add Product** (→ `/admin/settings/platform`) for administrators only.
-- Summary cards: Products (= visible platforms), Applications (with category count), Categories, Featured — all counted.
-- Filter bar: category chips from the search facets (with counts, `aria-pressed`), Sort (name, price), search with recent searches.
-- **Products** section: one `ShowcaseCard` per visible platform → `/catalog/platforms/:id`. Type "Platform", "N apps", top features, "Available".
-- **Applications** section: app cards (`ProductTile`) with category badge, features, plan prices (or flat price when there are no tiers), Launch (new tab), Subscribe, View details.
+## 1. Product Catalog — `/products` (public) — redesigned by [C94](../../01-business/roadmap/open-decisions.md#c94)
+- **Banner:** label "Product Catalog", title "Discover the right software for your business", subtitle, three trust points (Trusted software, Secure payments, Instant access), a simple decorative graphic, **View offerings**, **Wishlist (n)** (signed-in, → `/my/wishlist`) and **Add Product** (administrators only, → `/admin/platforms/new`).
+- **Category tiles:** one tile per category with its count (from the search facets) and an **All** tile with the total; one selected at a time (`aria-pressed`); the row scrolls sideways on a phone.
+- **Products** section: one `ShowcaseCard` per visible platform → `/catalog/platforms/:id` (unchanged).
+- **Applications** section, two columns: the **filter panel** (Platform, Pricing model, Features with Show more, and Saved products only for signed-in users; each option with its count; Clear all; collapsible groups; on a phone behind a **Filters** button) and the results.
+- **Toolbar:** "Showing N products", search with recent searches, **Sort by** (Name, Price, Newest, Highest rated) and a **Grid / List** switch (remembered in the browser).
+- **Product card** (`CatalogProductCard`, grid or list): tinted banner with logo or initials, badges **Featured** and **New**, **Launch** icon link (opens the app in a new tab, only when the app has a launch URL), wishlist heart (`aria-pressed`, "Save {name} to wishlist" / "Remove {name} from wishlist"); name (link to `/products/:id`), category · platform, description (two lines), up to three feature tags, **rating** with review count (only when there are approved reviews), **From** price or Free, **Subscribe** and **Add to cart** ([cart.md](cart.md); disabled with a hint when there is no paid plan).
 - States: skeletons; empty with Clear filters; error with Retry. `SupportCTA` at the bottom.
-- Not shown: versions, ratings (no data).
+- Not shown: versions, device platforms, deployment, integrations, a Popular badge (no data).
+- Built in `frontend/src/pages/ProductsPage.tsx` and `frontend/src/components/catalog/`; strings under `catalog.hero.*`, `catalog.tiles.*`, `catalog.filters.*`, `catalog.card.*`, `catalog.toolbar.*`, `catalog.pricingModel.*`.
 
 ## 2. Platform details — `/catalog/platforms/:id` (public)
 Breadcrumbs, logo, name, Available badge, Overview, Applications grid, Features (all tags), Product information (type, status, apps, categories), `SupportCTA`. Hidden/inactive → error state "not found".

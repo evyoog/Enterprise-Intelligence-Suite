@@ -28,3 +28,11 @@ Same fields with **all** feature tags plus `apps` (ACTIVE `ProductDto`s). 404 wh
 
 ## Security
 `SecurityConfig` permits anonymous `GET /catalog/platforms` and `GET /catalog/platforms/*`; everything else is unchanged.
+
+## C94 additions (public catalog redesign)
+| Method | Path | Purpose | Success | Errors |
+|---|---|---|---|---|
+| GET | `/products/ratings` | The rating of every product that has an APPROVED review: `[{ productId, averageRating (one decimal), reviewCount }]`. Products without an approved review are left out. Public, like the product list | 200 | |
+
+The product response gains `createdAt` (ISO time the product was added), used for the New badge and the Newest sort. Nothing else changes.
+

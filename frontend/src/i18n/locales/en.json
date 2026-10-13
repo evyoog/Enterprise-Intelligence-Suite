@@ -1832,7 +1832,9 @@
     "sortBy": "Sort by",
     "sort": {
       "name": "Name (A–Z)",
-      "price": "Price"
+      "price": "Price",
+      "newest": "Newest",
+      "rating": "Highest rated"
     },
     "searchPlaceholder": "Search products…",
     "recentSearches": "Recent searches",
@@ -1887,7 +1889,51 @@
       "helpTitle": "Need help?",
       "helpBody": "Our support team can help you choose, set up and use this product."
     },
-    "viewOfferings": "View offerings"
+    "viewOfferings": "View offerings",
+    "hero": {
+      "title": "Discover the right software for your business",
+      "subtitle": "Explore our curated collection of applications. Compare features, check pricing and find the right solution for your needs.",
+      "trust1Title": "Trusted software",
+      "trust1Text": "and verified vendors",
+      "trust2Title": "Secure payments",
+      "trust2Text": "and subscriptions",
+      "trust3Title": "Instant access",
+      "trust3Text": "and easy setup"
+    },
+    "tiles": {
+      "products_one": "{{count}} product",
+      "products_other": "{{count}} products"
+    },
+    "filters": {
+      "title": "Filters",
+      "clearAll": "Clear all",
+      "savedOnly": "Saved products only",
+      "platform": "Platform",
+      "pricingModel": "Pricing model",
+      "features": "Features",
+      "showMore": "Show more",
+      "showLess": "Show less"
+    },
+    "pricingModel": {
+      "SUBSCRIPTION": "Subscription",
+      "ONE_TIME": "One-time",
+      "FREE": "Free"
+    },
+    "card": {
+      "from": "From {{price}}",
+      "featured": "Featured",
+      "new": "New",
+      "ratingLabel": "Rated {{rating}} out of 5 from {{count}} reviews",
+      "reviews_one": "({{count}} review)",
+      "reviews_other": "({{count}} reviews)"
+    },
+    "toolbar": {
+      "showing_one": "Showing {{count}} product",
+      "showing_other": "Showing {{count}} products",
+      "view": "View",
+      "grid": "Grid view",
+      "list": "List view"
+    }
   },
   "forms": {
     "required": "This field is required.",
@@ -3822,5 +3868,19 @@
     "close": "Close",
     "loadError": "Could not load the templates.",
     "saveError": "Could not save the template."
+  },
+  "wishlist": {
+    "add": "Save to wishlist",
+    "remove": "Remove from wishlist",
+    "addNamed": "Save {{name}} to wishlist",
+    "removeNamed": "Remove {{name}} from wishlist",
+    "error": "Could not update your wishlist.",
+    "title": "Wishlist",
+    "subtitle": "Products you saved. Subscribe or add them to your cart when you are ready.",
+    "emptyTitle": "Your wishlist is empty",
+    "emptyBody": "Tap the heart on a product to save it here.",
+    "browse": "Browse products",
+    "open": "Wishlist",
+    "openCount": "Wishlist ({{count}})"
   }
 }

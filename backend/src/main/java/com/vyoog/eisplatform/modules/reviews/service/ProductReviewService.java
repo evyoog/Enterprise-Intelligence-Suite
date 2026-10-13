@@ -67,6 +67,14 @@ public class ProductReviewService {
         return new ProductRatingSummaryDto(average, approved.size(), dtos);
     }
 
+    /** C94: the rating of every product that has an APPROVED review (products without one are left out). */
+    public List<com.vyoog.eisplatform.modules.reviews.dto.ProductRatingBriefDto> listRatings() {
+        return reviewRepository.summarizeByStatus(ReviewStatus.APPROVED).stream()
+            .map(row -> new com.vyoog.eisplatform.modules.reviews.dto.ProductRatingBriefDto(
+                ((Number) row[0]).longValue(), Math.round(((Number) row[1]).doubleValue() * 10.0) / 10.0, ((Number) row[2]).intValue()))
+            .toList();
+    }
+
     /** The caller's own review for this product, if any (to prefill an edit form). */
     public ProductReviewDto getMyReview(Long customerId, Long productId) {
         ProductReview review = reviewRepository.findByProductIdAndCustomerId(productId, customerId)

@@ -14,6 +14,12 @@ public class ProductReviewController {
 
     private final ProductReviewService reviewService;
 
+    /** C94: ratings of all products in one call, for the catalog cards (public, like the product list). */
+    @GetMapping("/products/ratings")
+    public java.util.List<com.vyoog.eisplatform.modules.reviews.dto.ProductRatingBriefDto> listRatings() {
+        return reviewService.listRatings();
+    }
+
     @GetMapping("/products/{productId}/reviews")
     public ProductRatingSummaryDto getRatings(@PathVariable("productId") Long productId) {
         return reviewService.getRatings(productId);
