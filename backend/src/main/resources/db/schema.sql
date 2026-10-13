@@ -1534,13 +1534,10 @@ ALTER TABLE product_content_item ADD CONSTRAINT product_content_item_video_provi
 -- Individual overrides now also cover product access.
 ALTER TABLE member_access_override ADD COLUMN IF NOT EXISTS product_id BIGINT REFERENCES products(id) ON DELETE CASCADE;
 ALTER TABLE member_access_override ALTER COLUMN permission_code DROP NOT NULL;
-DO $$
-DECLARE c text;
-BEGIN
-    FOR c IN SELECT conname FROM pg_constraint WHERE conrelid = 'member_access_override'::regclass AND contype = 'u' LOOP
-        EXECUTE 'ALTER TABLE member_access_override DROP CONSTRAINT ' || quote_ident(c);
-    END LOOP;
-END $$;
+-- The old unique constraint, by its generated name (no DO block here: the test script runner splits on semicolons;
+-- database/migrations/V030 drops whatever unique constraint the table has).
+ALTER TABLE member_access_override DROP CONSTRAINT IF EXISTS member_access_override_organization_member_id_item_type_per_key;
+ALTER TABLE member_access_override DROP CONSTRAINT IF EXISTS member_access_override_organization_member_id_permission_code_key;
 CREATE UNIQUE INDEX IF NOT EXISTS ux_override_permission ON member_access_override (organization_member_id, permission_code) WHERE item_type = 'PERMISSION';
 CREATE UNIQUE INDEX IF NOT EXISTS ux_override_product ON member_access_override (organization_member_id, product_id) WHERE item_type = 'PRODUCT';
 
