@@ -25,26 +25,28 @@ const card = (over: Partial<Parameters<typeof CatalogProductCard>[0]> = {}) => (
 
 // TC-CAT-052 (C94, REQ-CAT-003.13)
 describe('CatalogProductCard', () => {
-  it('shows the badges, rating, category and the cheapest paid plan as the From price, without feature tags', () => {
+  it('shows the badges, rating, feature tags, category and the cheapest paid plan as the From price', () => {
     renderWithProviders(card())
     expect(screen.getByText('Featured')).toBeInTheDocument()
     expect(screen.getByText('New')).toBeInTheDocument()
     expect(screen.getByLabelText('Rated 4.8 out of 5 from 120 reviews')).toBeInTheDocument()
     expect(screen.getByText('ERP · Valam')).toBeInTheDocument()
-    expect(screen.queryByText('HRM')).not.toBeInTheDocument()
+    expect(screen.getByText('HRM')).toBeInTheDocument()
+    expect(screen.getByText('+1')).toBeInTheDocument()
     expect(screen.getByText(/^From .*29\.00\/mo/)).toBeInTheDocument()
     expect(screen.getByRole('link', { name: 'Valam.ai' })).toHaveAttribute('href', '/products/1')
   })
 
-  it('shows the banner image behind the card and the app icon over its lower edge, and falls back to initials', () => {
+  it('shows the banner image behind the card and the app icon on it, and falls back to initials', () => {
     const { container } = renderWithProviders(card({ product: product({ bannerImageUrl: '/products/images/banner.png', imageUrl: '/products/images/icon.png' }) }))
     const srcs = [...container.querySelectorAll('img')].map((i) => i.getAttribute('src'))
     expect(srcs).toEqual([expect.stringContaining('/products/images/banner.png'), expect.stringContaining('/products/images/icon.png')])
   })
 
-  it('shows the initials when there is no icon and nothing clickable in the form preview', () => {
+  it('shows the initials when there is no icon, and nothing is clickable in the form preview', () => {
     renderWithProviders(card({ preview: true }))
     expect(screen.getByText('VA')).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Add to cart' })).toBeDisabled()
     expect(screen.getByRole('button', { name: 'Subscribe' })).toBeDisabled()
     expect(screen.queryByRole('link', { name: 'Valam.ai' })).not.toBeInTheDocument()
     expect(screen.getByRole('button', { name: 'Save to wishlist' })).toBeDisabled()

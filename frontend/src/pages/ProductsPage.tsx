@@ -14,6 +14,7 @@ import { useAuth } from '../auth/AuthProvider'
 import { useBuy } from '../components/cart/useBuy'
 import { canAddToCart, useAddToCart } from '../components/cart/useAddToCart'
 import { CatalogFilterPanel } from '../components/catalog/CatalogFilterPanel'
+import { CatalogGrid } from '../components/catalog/CatalogGrid'
 import { CatalogHero } from '../components/catalog/CatalogHero'
 import { CatalogProductCard } from '../components/catalog/CatalogProductCard'
 import { CategoryTiles } from '../components/catalog/CategoryTiles'
@@ -235,32 +236,31 @@ export function ProductsPage() {
             </Paper>
 
             {!error && apps === null && (
-              <Grid container spacing={2.5}>
-                {[0, 1, 2, 3].map((i) => <Grid key={i} size={{ xs: 12, sm: 6, lg: 4 }}><Skeleton variant="rounded" height={320} /></Grid>)}
-              </Grid>
+              <CatalogGrid>
+                {[0, 1, 2, 3, 4, 5].map((i) => <Skeleton key={i} variant="rounded" height={320} />)}
+              </CatalogGrid>
             )}
             {apps && apps.length === 0 && (
               <EmptyState title={t('catalog.emptyTitle')} description={t('catalog.emptyBody')}
                 action={filtersActive ? <Button onClick={clearFilters}>{t('catalog.clearFilters')}</Button> : undefined} />
             )}
             {apps && apps.length > 0 && (
-              <Grid container spacing={2.5}>
+              <CatalogGrid list={view === 'list'}>
                 {apps.map((product) => (
-                  <Grid key={product.id} size={view === 'list' ? 12 : { xs: 12, sm: 6, lg: 4 }}>
-                    <CatalogProductCard
-                      product={product}
-                      variant={view}
-                      rating={ratings.get(product.id)}
-                      saved={wishlist.has(product.id)}
-                      onToggleSaved={() => toggleSaved(product.id)}
-                      onSubscribe={() => handleSubscribeClick(product.id)}
-                      onAddToCart={() => addToCart(product)}
-                      addToCartUnavailable={!canAddToCart(product)}
-                      addingToCart={busyId === product.id}
-                    />
-                  </Grid>
+                  <CatalogProductCard
+                    key={product.id}
+                    product={product}
+                    variant={view}
+                    rating={ratings.get(product.id)}
+                    saved={wishlist.has(product.id)}
+                    onToggleSaved={() => toggleSaved(product.id)}
+                    onSubscribe={() => handleSubscribeClick(product.id)}
+                    onAddToCart={() => addToCart(product)}
+                    addToCartUnavailable={!canAddToCart(product)}
+                    addingToCart={busyId === product.id}
+                  />
                 ))}
-              </Grid>
+              </CatalogGrid>
             )}
           </Grid>
         </Grid>

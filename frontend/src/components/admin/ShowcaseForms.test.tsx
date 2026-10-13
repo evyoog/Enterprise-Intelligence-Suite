@@ -87,7 +87,7 @@ describe('ProductForm (C66)', () => {
 
     const preview = screen.getByRole('complementary', { name: 'Showcase Preview' })
     expect(within(preview).getByRole('heading', { name: 'Insights' })).toBeInTheDocument()
-    // C95: the preview is the compact catalog card (no feature tags); it shows the From price of the flat price.
+    // C95: the preview is the catalog's own card; it shows the From price of the flat price.
     expect(within(preview).getByText(/^From .*49\.00/)).toBeInTheDocument()
 
     await user.type(screen.getByLabelText('Documentation URL'), 'docs.example.com')

@@ -37,7 +37,7 @@ TC-CAT-048 to TC-CAT-058 cover REQ-CAT-003.11 to .14 (acceptance criteria AC-9 t
 | [TC-CAT-057](TC-CAT-057.md) | AC-5 (REQ-MKT-004), AC-10 | The heart saves a product, the Wishlist button counts, Saved only filters; a signed-out visitor signs in first | Passed (automated, 2026-10-13) |
 | [TC-CAT-058](TC-CAT-058.md) | AC-14 | The empty state offers Clear filters and the catalog is accessible | Passed (automated, 2026-10-13) |
 
-## C95: banner image and compact card
+## C95: banner image and narrower cards
 TC-CAT-059 to TC-CAT-062 cover REQ-CAT-003.15 and the changed .13 (AC-15, AC-16).
 
 | Test case | Criterion | Title | Status |
@@ -45,4 +45,4 @@ TC-CAT-059 to TC-CAT-062 cover REQ-CAT-003.15 and the changed .13 (AC-15, AC-16)
 | [TC-CAT-059](TC-CAT-059.md) | AC-15 | The banner image is stored and returned separately from the app icon and can be cleared | Passed (automated, 2026-10-13) |
 | [TC-CAT-060](TC-CAT-060.md) | AC-15 | The image upload control has an upload button, a preview, Remove and error reporting | Passed (automated, 2026-10-13) |
 | [TC-CAT-061](TC-CAT-061.md) | AC-15 | The app form sends both images with the app and previews them | Passed (automated, 2026-10-13) |
-| [TC-CAT-062](TC-CAT-062.md) | AC-16 | The compact card shows the banner and icon, falls back, and is not clickable in the form preview | Passed (automated, 2026-10-13) |
+| [TC-CAT-062](TC-CAT-062.md) | AC-16 | The card shows the banner and icon, falls back, and is not clickable in the form preview | Passed (automated, 2026-10-13) |
