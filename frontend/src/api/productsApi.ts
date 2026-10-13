@@ -72,6 +72,8 @@ export interface Product {
   supportUrl?: string | null
   /** C94: when the product was added — the catalog's New badge and Newest sort. */
   createdAt?: string
+  /** C95: the wide banner image of the catalog card; `imageUrl` is the app icon. */
+  bannerImageUrl?: string | null
 }
 
 export interface ProductCreateRequest {
@@ -93,6 +95,7 @@ export interface ProductCreateRequest {
   featureTags?: string[]
   documentationUrl?: string | null
   supportUrl?: string | null
+  bannerImageUrl?: string | null
 }
 
 export interface CategoryFacet {

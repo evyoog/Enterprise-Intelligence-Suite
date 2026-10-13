@@ -323,6 +323,24 @@ class ProductServiceTest {
         assertThat(productService.listAllProducts()).extracting(ProductDto::getId).contains(created.getId());
     }
 
+    // TC-CAT-059 (C95): the app icon and the banner image are two separate fields.
+    @Test
+    void theBannerImageIsSavedAndReturnedSeparatelyFromTheAppIconAndCanBeCleared() {
+        ProductDto created = productService.createProduct(new ProductCreateRequest(
+            "With banner", null, new BigDecimal("1.00"), "/products/images/icon.png", null, null, null, null, null, null,
+            null, null, null, null, null, null, null, null, "/products/images/banner.png"));
+
+        assertThat(created.getImageUrl()).isEqualTo("/products/images/icon.png");
+        assertThat(created.getBannerImageUrl()).isEqualTo("/products/images/banner.png");
+
+        ProductDto cleared = productService.updateProduct(created.getId(), new ProductCreateRequest(
+            "With banner", null, new BigDecimal("1.00"), "/products/images/icon.png", null, null, null, null, null, null,
+            null, null, null, null, null, null, null, null, "  "));
+
+        assertThat(cleared.getImageUrl()).isEqualTo("/products/images/icon.png");
+        assertThat(cleared.getBannerImageUrl()).isNull();
+    }
+
     @Test
     void dependenciesAreSavedAndReturned() {
         ProductDto dependency = productService.createProduct(

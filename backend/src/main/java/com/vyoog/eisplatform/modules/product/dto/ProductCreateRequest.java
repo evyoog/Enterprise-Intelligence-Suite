@@ -47,8 +47,20 @@ public record ProductCreateRequest(
     @Pattern(regexp = "#[0-9A-Fa-f]{6}", message = "must be a colour like #6366F1") String accentColor,
     @Size(max = 12) List<@NotBlank @Size(max = 40) String> featureTags,
     @Size(max = 500) @Pattern(regexp = "https?://.+", message = "must start with http:// or https://") String documentationUrl,
-    @Size(max = 500) @Pattern(regexp = "https?://.+", message = "must start with http:// or https://") String supportUrl
+    @Size(max = 500) @Pattern(regexp = "https?://.+", message = "must start with http:// or https://") String supportUrl,
+    // C95: the banner image of the catalog card (uploaded through POST /products/images); null = none.
+    @Size(max = 500) String bannerImageUrl
 ) {
+
+    /** The pre-C95 shape: no banner image. */
+    public ProductCreateRequest(String name, String description, BigDecimal price, String imageUrl, String launchUrl,
+                                String category, ProductStatus status, Boolean ssoConnected, List<Long> platformIds,
+                                List<ProductPlanCreateRequest> plans, Long parentProductId, String variantLabel,
+                                List<Long> dependsOnProductIds, Boolean featured, String accentColor, List<String> featureTags,
+                                String documentationUrl, String supportUrl) {
+        this(name, description, price, imageUrl, launchUrl, category, status, ssoConnected, platformIds, plans,
+            parentProductId, variantLabel, dependsOnProductIds, featured, accentColor, featureTags, documentationUrl, supportUrl, null);
+    }
 
     /** The pre-C66 shape — showcase fields default (no colour, tags or links). */
     public ProductCreateRequest(String name, String description, BigDecimal price, String imageUrl, String launchUrl,
@@ -56,6 +68,6 @@ public record ProductCreateRequest(
                                 List<ProductPlanCreateRequest> plans, Long parentProductId, String variantLabel,
                                 List<Long> dependsOnProductIds, Boolean featured) {
         this(name, description, price, imageUrl, launchUrl, category, status, ssoConnected, platformIds, plans,
-            parentProductId, variantLabel, dependsOnProductIds, featured, null, null, null, null);
+            parentProductId, variantLabel, dependsOnProductIds, featured, null, null, null, null, null);
     }
 }

@@ -1,5 +1,5 @@
 import '../../i18n'
-import { screen, waitFor, within } from '@testing-library/react'
+import { fireEvent, screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { axe } from 'jest-axe'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
@@ -10,7 +10,8 @@ import { ProductForm } from './ProductForm'
 const listPlatforms = vi.fn()
 const listAdmin = vi.fn()
 vi.mock('../../api/platformsApi', () => ({ platformsApi: { list: () => listPlatforms(), uploadImage: vi.fn() } }))
-vi.mock('../../api/productsApi', () => ({ productsApi: { listAdmin: () => listAdmin(), uploadImage: vi.fn() } }))
+const uploadImage = vi.fn()
+vi.mock('../../api/productsApi', () => ({ productsApi: { listAdmin: () => listAdmin(), uploadImage: (f: File) => uploadImage(f) } }))
 
 const thiran = { id: 1, name: 'Thiran', primaryColor: '#7C3AED', status: 'ACTIVE', showInCatalog: true, displayOrder: 0 }
 
@@ -86,7 +87,8 @@ describe('ProductForm (C66)', () => {
 
     const preview = screen.getByRole('complementary', { name: 'Showcase Preview' })
     expect(within(preview).getByRole('heading', { name: 'Insights' })).toBeInTheDocument()
-    expect(within(preview).getByText('Reports')).toBeInTheDocument()
+    // C95: the preview is the compact catalog card (no feature tags); it shows the From price of the flat price.
+    expect(within(preview).getByText(/^From .*49\.00/)).toBeInTheDocument()
 
     await user.type(screen.getByLabelText('Documentation URL'), 'docs.example.com')
     await user.click(screen.getByRole('button', { name: 'Create App' }))
@@ -99,6 +101,30 @@ describe('ProductForm (C66)', () => {
     await waitFor(() => expect(onSubmit).toHaveBeenCalledWith(expect.objectContaining({
       name: 'Insights', price: 49, status: 'ACTIVE', ssoConnected: false, featured: false, platformIds: [],
       accentColor: null, featureTags: ['Reports', 'Dashboard'], documentationUrl: 'https://docs.example.com', supportUrl: null,
+    })))
+  })
+
+  // TC-CAT-061 (C95): two image uploads, the app icon and the banner image, both sent with the app.
+  it('uploads an app icon and a banner image and sends both with the app', { timeout: 30000 }, async () => {
+    uploadImage.mockReset().mockResolvedValueOnce({ url: '/products/images/icon.png' }).mockResolvedValueOnce({ url: '/products/images/banner.png' })
+    const onSubmit = vi.fn().mockResolvedValue({})
+    const user = userEvent.setup()
+    renderWithProviders(<ProductForm onSubmit={onSubmit} submitLabel="Create App" submittingLabel="Creating…" successMessage="App created." />)
+
+    await user.type(screen.getByLabelText(/App name/), 'Insights')
+    await user.type(screen.getByRole('spinbutton', { name: /Price/ }), '49')
+    fireEvent.change(screen.getByTestId('app-icon'), { target: { files: [new File(['x'], 'icon.png', { type: 'image/png' })] } })
+    await screen.findByAltText('App icon')
+    fireEvent.change(screen.getByTestId('app-banner'), { target: { files: [new File(['x'], 'banner.png', { type: 'image/png' })] } })
+    await screen.findByAltText('Banner image')
+    const preview = screen.getByRole('complementary', { name: 'Showcase Preview' })
+    expect([...preview.querySelectorAll('img')].map((i) => i.getAttribute('src'))).toEqual([
+      expect.stringContaining('/products/images/banner.png'), expect.stringContaining('/products/images/icon.png'),
+    ])
+
+    await user.click(screen.getByRole('button', { name: 'Create App' }))
+    await waitFor(() => expect(onSubmit).toHaveBeenCalledWith(expect.objectContaining({
+      name: 'Insights', imageUrl: '/products/images/icon.png', bannerImageUrl: '/products/images/banner.png',
     })))
   })
 

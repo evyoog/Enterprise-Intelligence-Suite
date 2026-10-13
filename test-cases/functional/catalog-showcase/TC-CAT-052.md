@@ -17,7 +17,7 @@ A featured product added recently with reviews; one without reviews and with a f
 1. Render both cards. 2. Click the heart and Subscribe; check Add to cart without a paid plan. 3. Run the accessibility check, in grid and list view.
 
 ## Expected Result
-Featured and New badges, rating with count, three tags and +1, From price; no rating, no New and Free for the second; the heart announces saved or not; Add to cart disabled without a paid plan; no axe violations.
+Featured and New badges, rating with count, category and platform, From price (no feature tags); no rating, no New and Free for the second; the heart announces saved or not; Add to cart disabled without a paid plan; no axe violations.
 
 ## Automated coverage
 - `frontend/src/components/catalog/CatalogComponents.test.tsx` — `CatalogProductCard` tests

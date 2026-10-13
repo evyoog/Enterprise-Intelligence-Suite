@@ -2091,7 +2091,15 @@
       "urlError": "Introduzca una URL que empiece por http:// o https://.",
       "previewName": "Nombre de la aplicación",
       "previewDescription": "Aquí aparece la descripción de la aplicación.",
-      "tagDuplicate": "Esta función ya está añadida."
+      "tagDuplicate": "Esta función ya está añadida.",
+      "icon": "Icono de la app",
+      "iconHint": "Imagen cuadrada, de al menos 128 × 128 px. PNG, JPG, GIF o WebP.",
+      "uploadIcon": "Subir icono de la app",
+      "iconAlt": "Icono de la app",
+      "banner": "Imagen de banner",
+      "bannerHint": "Imagen ancha, de unos 1200 × 300 px (4:1). Se muestra detrás de la tarjeta en el catálogo. PNG, JPG, GIF o WebP.",
+      "uploadBanner": "Subir imagen de banner",
+      "bannerAlt": "Imagen de banner"
     }
   },
   "bizDash": {

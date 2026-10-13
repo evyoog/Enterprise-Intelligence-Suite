@@ -8,7 +8,7 @@ FRD: [REQ-CAT-003](../../02-requirements/FRD/catalog-showcase/requirement.md). D
 - **Products** section: one `ShowcaseCard` per visible platform → `/catalog/platforms/:id` (unchanged).
 - **Applications** section, two columns: the **filter panel** (Platform, Pricing model, Features with Show more, and Saved products only for signed-in users; each option with its count; Clear all; collapsible groups; on a phone behind a **Filters** button) and the results.
 - **Toolbar:** "Showing N products", search with recent searches, **Sort by** (Name, Price, Newest, Highest rated) and a **Grid / List** switch (remembered in the browser).
-- **Product card** (`CatalogProductCard`, grid or list): tinted banner with logo or initials, badges **Featured** and **New**, **Launch** icon link (opens the app in a new tab, only when the app has a launch URL), wishlist heart (`aria-pressed`, "Save {name} to wishlist" / "Remove {name} from wishlist"); name (link to `/products/:id`), category · platform, description (two lines), up to three feature tags, **rating** with review count (only when there are approved reviews), **From** price or Free, **Subscribe** and **Add to cart** ([cart.md](cart.md); disabled with a hint when there is no paid plan).
+- **Product card** (`CatalogProductCard`, grid or list), compact since [C95](../../01-business/roadmap/open-decisions.md#c95) (about 220 px tall): banner strip (the banner image, else a tint) with the badges **Featured** and **New**, the app icon (or initials) over the strip's lower edge, **Launch** icon link (opens the app in a new tab, only when the app has a launch URL), wishlist heart (`aria-pressed`, "Save {name} to wishlist" / "Remove {name} from wishlist"); name (link to `/products/:id`) with the **From** price or Free, category · platform with the **rating** and review count (only when there are approved reviews), description (two small lines), **Subscribe** and **Add to cart** side by side; no feature tags ([cart.md](cart.md); disabled with a hint when there is no paid plan).
 - States: skeletons; empty with Clear filters; error with Retry. `SupportCTA` at the bottom.
 - Not shown: versions, device platforms, deployment, integrations, a Popular badge (no data).
 - Built in `frontend/src/pages/ProductsPage.tsx` and `frontend/src/components/catalog/`; strings under `catalog.hero.*`, `catalog.tiles.*`, `catalog.filters.*`, `catalog.card.*`, `catalog.toolbar.*`, `catalog.pricingModel.*`.
@@ -30,7 +30,7 @@ Summary cards (total, SSO connected, standalone, featured). Filter bar: All / Ac
 
 ## 7. Create / Edit App — `/admin/settings/product`, `/admin/products/:id/edit`
 Sections, in order:
-1. **Basic information** — name, description, category, logo.
+1. **Basic information** — name, description, category, **App icon** and **Banner image** (two upload buttons, each with a preview and Remove; icon square, banner about 1200 × 300 px; [C95](../../01-business/roadmap/open-decisions.md#c95)).
 2. **Appearance** — inherit platform colour (default) or custom.
 3. **Launch & availability** — launch URL, Active switch (retired apps show a note instead), Featured.
 4. **Integration** — "Connected via Vyoog SSO" with the unchanged hint: *Turn this on once the app's own backend has the SSO bridge wired up — it just controls the badge shown on this app's card, it doesn't configure anything itself.*

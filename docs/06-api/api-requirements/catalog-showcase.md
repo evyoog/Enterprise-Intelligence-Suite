@@ -34,5 +34,5 @@ Same fields with **all** feature tags plus `apps` (ACTIVE `ProductDto`s). 404 wh
 |---|---|---|---|---|
 | GET | `/products/ratings` | The rating of every product that has an APPROVED review: `[{ productId, averageRating (one decimal), reviewCount }]`. Products without an approved review are left out. Public, like the product list | 200 | |
 
-The product response gains `createdAt` (ISO time the product was added), used for the New badge and the Newest sort. Nothing else changes.
+The product create and update request and the product response gain `bannerImageUrl` (C95; the URL returned by `POST /products/images`, up to 500 characters; blank = none). `imageUrl` stays the app icon. The product response also gains `createdAt` (ISO time the product was added), used for the New badge and the Newest sort. Nothing else changes.
 

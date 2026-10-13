@@ -17,6 +17,8 @@ public class ProductDto {
     private String description;
     private BigDecimal price;
     private String imageUrl;
+    /** C95: the wide banner image of the catalog card; {@code imageUrl} is the app icon. */
+    private String bannerImageUrl;
     private String launchUrl;
     private String category;
     private ProductStatus status;
