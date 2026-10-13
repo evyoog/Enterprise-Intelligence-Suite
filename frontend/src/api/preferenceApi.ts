@@ -1,4 +1,5 @@
 import { apiRequest } from './client'
+import type { PlatformDefaults } from './messageTemplatesApi'
 
 export interface CustomerPreference {
   language: string | null
@@ -6,6 +7,8 @@ export interface CustomerPreference {
   timeZone: string | null
   themeMode: string | null
   reducedMotion: boolean
+  /** C92: what new users start with (null fields = no platform default). Read-only; sent back as-is and ignored. */
+  defaults?: PlatformDefaults
 }
 
 // Phase 6 (2026.3.3): account-level personalization — see the backend's own

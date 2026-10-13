@@ -3,7 +3,6 @@ package com.vyoog.eisplatform.modules.integration.controller;
 import com.vyoog.eisplatform.modules.integration.dto.ApiKeyDto;
 import com.vyoog.eisplatform.modules.integration.dto.CreateApiKeyRequest;
 import com.vyoog.eisplatform.modules.integration.service.ApiKeyService;
-import com.vyoog.eisplatform.modules.registration.model.Customer;
 import com.vyoog.eisplatform.modules.registration.service.CurrentCustomerResolver;
 import com.vyoog.eisplatform.common.exception.ForbiddenException;
 import jakarta.validation.Valid;
@@ -16,8 +15,8 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
-/** REQ-INT-001.1 (C61): a signed-in user's own API keys (covered by the
- * {@code /me/**} authenticated rule). */
+/** REQ-INT-001.1 (C61, C92): a signed-in user's legacy personal API keys, listed and revoked here; new keys are
+ * created by organization administrators ({@link OrganizationApiKeyController}). */
 @RestController
 @RequestMapping("/me/api-keys")
 @RequiredArgsConstructor
@@ -34,17 +33,11 @@ public class ApiKeyController {
         return apiKeyService.listOwn(currentCustomerResolver.resolve(jwt(authentication)).getId());
     }
 
+    /** C92 (API-1 B): keys belong to the organization, so a person no longer creates their own. */
     @PostMapping
-    @ResponseStatus(HttpStatus.CREATED)
     public ApiKeyDto create(@Valid @RequestBody CreateApiKeyRequest request, Authentication authentication) {
-        Jwt jwt = jwt(authentication);
-        if (jwt.hasClaim(API_KEY_CLAIM)) {
-            // C61 default: a key cannot mint further keys; sign in to create one.
-            throw new ForbiddenException("API keys can only be created when signed in, not with another API key.");
-        }
-        Customer owner = currentCustomerResolver.resolve(jwt);
-        List<String> authorities = authentication.getAuthorities().stream().map(GrantedAuthority::getAuthority).toList();
-        return apiKeyService.create(owner, jwt.getSubject(), authorities, request);
+        throw new ForbiddenException("API keys belong to your organization. An organization administrator creates them under "
+            + "Organization → API keys.");
     }
 
     @PostMapping("/{id}/revoke")

@@ -19,75 +19,65 @@ public class SmtpEmailService implements EmailService {
 
     private final JavaMailSender mailSender;
     private final String fromAddress;
+    private final com.vyoog.eisplatform.modules.template.service.MessageTemplateService templateService;
+    private final com.vyoog.eisplatform.modules.template.service.MessageLanguageResolver languageResolver;
 
-    public SmtpEmailService(JavaMailSender mailSender, @Value("${vyoog.mail.from}") String fromAddress) {
+    public SmtpEmailService(JavaMailSender mailSender, @Value("${vyoog.mail.from}") String fromAddress,
+                            com.vyoog.eisplatform.modules.template.service.MessageTemplateService templateService,
+                            com.vyoog.eisplatform.modules.template.service.MessageLanguageResolver languageResolver) {
         this.mailSender = mailSender;
         this.fromAddress = fromAddress;
+        this.templateService = templateService;
+        this.languageResolver = languageResolver;
+    }
+
+    /** C92 (TM-1 A): the administrator-editable text of a message type, in the recipient's language. */
+    private com.vyoog.eisplatform.modules.template.service.MessageTemplateService.Rendered text(
+            String code, String toEmail, java.util.Map<String, String> values) {
+        return templateService.render(code, languageResolver.forEmail(toEmail), values);
     }
 
     @Override
     public void sendVerificationEmail(String toEmail, String recipientName, String verificationLink) {
+        var text = text("EMAIL_VERIFY", toEmail, java.util.Map.of("name", String.valueOf(recipientName), "link", verificationLink));
         SimpleMailMessage message = new SimpleMailMessage();
         message.setFrom(fromAddress);
         message.setTo(toEmail);
-        message.setSubject("Verify your Vyoog account");
-        message.setText(
-            "Hi " + recipientName + ",\n\n"
-                + "Thanks for registering with Vyoog. Verify your email address to continue:\n\n"
-                + verificationLink + "\n\n"
-                + "This link expires soon and can only be used once. If you didn't request this, you can ignore this email.\n\n"
-                + "— Vyoog"
-        );
+        message.setSubject(text.subject());
+        message.setText(text.body());
         send(message);
     }
 
     @Override
     public void sendDuplicateRegistrationNotice(String toEmail, String recipientName) {
+        var text = text("EMAIL_DUPLICATE_REGISTRATION", toEmail, java.util.Map.of("name", String.valueOf(recipientName)));
         SimpleMailMessage message = new SimpleMailMessage();
         message.setFrom(fromAddress);
         message.setTo(toEmail);
-        message.setSubject("Someone tried to register with your Vyoog email");
-        message.setText(
-            "Hi " + recipientName + ",\n\n"
-                + "Someone just tried to register a new Vyoog account using this email address, "
-                + "which already has an account. If this was you, please sign in instead.\n\n"
-                + "If you didn't try to register, no action is needed — your account is unaffected.\n\n"
-                + "— Vyoog"
-        );
+        message.setSubject(text.subject());
+        message.setText(text.body());
         send(message);
     }
 
     @Override
     public void sendPasswordResetEmail(String toEmail, String resetLink) {
+        var text = text("EMAIL_PASSWORD_RESET", toEmail, java.util.Map.of("link", resetLink));
         SimpleMailMessage message = new SimpleMailMessage();
         message.setFrom(fromAddress);
         message.setTo(toEmail);
-        message.setSubject("Reset your Vyoog password");
-        message.setText(
-            "Hi,\n\n"
-                + "We received a request to reset the password for this Vyoog account. "
-                + "If this was you, set a new password here:\n\n"
-                + resetLink + "\n\n"
-                + "This link expires soon and can only be used once. If you didn't request this, "
-                + "you can safely ignore this email — your password will not be changed.\n\n"
-                + "— Vyoog"
-        );
+        message.setSubject(text.subject());
+        message.setText(text.body());
         send(message);
     }
 
     @Override
     public void sendPasswordChangedNotice(String toEmail) {
+        var text = text("EMAIL_PASSWORD_CHANGED", toEmail, java.util.Map.of());
         SimpleMailMessage message = new SimpleMailMessage();
         message.setFrom(fromAddress);
         message.setTo(toEmail);
-        message.setSubject("Your Vyoog password was changed");
-        message.setText(
-            "Hi,\n\n"
-                + "This is a confirmation that the password for this Vyoog account was just changed, "
-                + "and you've been signed out everywhere as a precaution.\n\n"
-                + "If you didn't make this change, contact your administrator immediately.\n\n"
-                + "— Vyoog"
-        );
+        message.setSubject(text.subject());
+        message.setText(text.body());
         send(message);
     }
 
@@ -104,21 +94,20 @@ public class SmtpEmailService implements EmailService {
     @Override
     public boolean sendInvitationEmail(String toEmail, String organizationName, String inviterName, String roleLabel,
                                        String structurePlacement, java.time.Instant expiresAt, String invitationLink) {
+        String expires = java.time.format.DateTimeFormatter.ofPattern("d MMM yyyy").withZone(java.time.ZoneOffset.UTC).format(expiresAt);
+        String details = "Role: " + roleLabel + "\n" + (structurePlacement == null ? "" : "Placement: " + structurePlacement + "\n");
+        java.util.Map<String, String> values = new java.util.HashMap<>();
+        values.put("organization", organizationName);
+        values.put("inviter", inviterName);
+        values.put("details", details);
+        values.put("expires", expires);
+        values.put("link", invitationLink);
+        var text = text("EMAIL_INVITATION", toEmail, values);
         SimpleMailMessage message = new SimpleMailMessage();
         message.setFrom(fromAddress);
         message.setTo(toEmail);
-        message.setSubject("You have been invited to join " + organizationName);
-        message.setText(
-            "You have been invited to join " + organizationName + " on Vyoog.\n\n"
-                + "Invited by: " + inviterName + "\n"
-                + "Role: " + roleLabel + "\n"
-                + (structurePlacement == null ? "" : "Placement: " + structurePlacement + "\n")
-                + "\nThis invitation expires on " + java.time.format.DateTimeFormatter.ofPattern("d MMM yyyy")
-                    .withZone(java.time.ZoneOffset.UTC).format(expiresAt) + " (UTC).\n\n"
-                + "Accept the invitation:\n" + invitationLink + "\n\n"
-                + "If you were not expecting this, you can ignore this email.\n\n"
-                + "— Vyoog"
-        );
+        message.setSubject(text.subject());
+        message.setText(text.body());
         try {
             mailSender.send(message);
             return true;

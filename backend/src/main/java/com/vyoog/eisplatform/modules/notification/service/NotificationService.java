@@ -42,7 +42,20 @@ public class NotificationService {
     private final NotificationRepository notificationRepository;
     private final NotificationPreferenceRepository preferenceRepository;
     private final EmailService emailService;
+    private final com.vyoog.eisplatform.modules.template.service.MessageTemplateService templateService;
+    private final com.vyoog.eisplatform.modules.template.service.MessageLanguageResolver languageResolver;
     private final ObjectMapper objectMapper;
+
+    /**
+     * C92 (TM-1 A): like {@link #notify} but the title and message come from the administrator-editable template of
+     * {@code templateCode}, in the recipient's language, with the placeholders filled from {@code values}.
+     */
+    @Transactional
+    public void notifyTemplated(Long customerId, String customerEmail, NotificationCategory category,
+                                NotificationSeverity severity, String templateCode, java.util.Map<String, String> values) {
+        var text = templateService.render(templateCode, languageResolver.forCustomer(customerId), values);
+        notify(customerId, customerEmail, category, severity, text.subject(), text.body());
+    }
 
     /**
      * Always records the in-app notification (the notification center is the

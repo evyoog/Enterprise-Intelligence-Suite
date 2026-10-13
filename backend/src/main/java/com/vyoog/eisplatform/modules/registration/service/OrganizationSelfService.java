@@ -236,10 +236,9 @@ public class OrganizationSelfService {
         accessSyncService.notifyGroupedByMember(accessSyncService.recomputeMember(target, callerCustomerId));
 
         customerRepository.findById(target.getCustomerId()).ifPresent(targetCustomer ->
-            notificationService.notify(targetCustomer.getId(), targetCustomer.getEmail(),
+            notificationService.notifyTemplated(targetCustomer.getId(), targetCustomer.getEmail(),
                 NotificationCategory.ORGANIZATION, NotificationSeverity.INFO,
-                "Your organization role changed",
-                "Your role in your organization is now " + newRole + "."));
+                "NOTIF_ORG_ROLE_CHANGED", Map.of("role", newRole.name())));
         auditService.recordSuccess("MEMBER_ROLE_CHANGED", null, callerCustomerId, null,
             "OrganizationMember", String.valueOf(target.getId()), access.caller().getOrganizationId(),
             "Changed member " + target.getId() + "'s role to " + newRole);
@@ -276,10 +275,9 @@ public class OrganizationSelfService {
         };
 
         customerRepository.findById(updated.getCustomerId()).ifPresent(targetCustomer ->
-            notificationService.notify(targetCustomer.getId(), targetCustomer.getEmail(),
+            notificationService.notifyTemplated(targetCustomer.getId(), targetCustomer.getEmail(),
                 NotificationCategory.ORGANIZATION, NotificationSeverity.INFO,
-                "Your organization membership changed",
-                "Your membership status is now " + updated.getStatus() + "."));
+                "NOTIF_MEMBERSHIP_CHANGED", Map.of("status", updated.getStatus().name())));
         auditService.recordSuccess("MEMBER_STATUS_CHANGED", null, callerCustomerId, null,
             "OrganizationMember", String.valueOf(updated.getId()), access.caller().getOrganizationId(),
             "Set member " + updated.getId() + "'s status to " + updated.getStatus() + " (" + action + ")");
@@ -393,10 +391,9 @@ public class OrganizationSelfService {
             .findByOrganizationMemberIdAndProductId(target.getId(), productId).orElseThrow();
 
         customerRepository.findById(target.getCustomerId()).ifPresent(targetCustomer ->
-            notificationService.notify(targetCustomer.getId(), targetCustomer.getEmail(),
+            notificationService.notifyTemplated(targetCustomer.getId(), targetCustomer.getEmail(),
                 NotificationCategory.ORGANIZATION, NotificationSeverity.INFO,
-                "Access granted: " + product.getName(),
-                "You've been given " + productRole + " access to " + product.getName() + "."));
+                "NOTIF_PRODUCT_ACCESS_GRANTED", Map.of("product", product.getName(), "role", String.valueOf(productRole))));
         auditService.recordSuccess("PRODUCT_ACCESS_GRANTED", null, callerCustomerId, null,
             "OrganizationProductAccess", productId + ":" + target.getId(), caller.getOrganizationId(),
             "Granted " + productRole + " access to product " + productId + " for member " + target.getId());

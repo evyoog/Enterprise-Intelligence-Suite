@@ -17,6 +17,9 @@ import java.time.Instant;
 @Setter
 public class ApiKey {
 
+    public static final String SCOPE_READ = "READ";
+    public static final String SCOPE_READ_WRITE = "READ_WRITE";
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -30,6 +33,18 @@ public class ApiKey {
     /** Keycloak roles copied at creation, without ROLE_ADMIN (C61 default). */
     @Column(name = "owner_authorities", length = 1000)
     private String ownerAuthorities;
+
+    /** C92 (API-1 B): the organization the key belongs to; empty only for a legacy personal key. */
+    @Column(name = "organization_id")
+    private Long organizationId;
+
+    /** C92 (API-4 B): READ (read-only) or READ_WRITE. */
+    @Column(nullable = false, length = 20)
+    private String scope = SCOPE_READ_WRITE;
+
+    /** The administrator who created the key (it keeps working if they leave). */
+    @Column(name = "created_by_customer_id")
+    private Long createdByCustomerId;
 
     @Column(nullable = false, length = 100)
     private String name;

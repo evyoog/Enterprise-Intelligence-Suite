@@ -215,8 +215,8 @@ public class AccessSyncService {
         }
         try {
             customerRepository.findById(member.getCustomerId()).ifPresent(c ->
-                notificationService.notify(c.getId(), c.getEmail(), NotificationCategory.ORGANIZATION, NotificationSeverity.INFO,
-                    "Your access changed", String.join(" ", lines)));
+                notificationService.notifyTemplated(c.getId(), c.getEmail(), NotificationCategory.ORGANIZATION, NotificationSeverity.INFO,
+                    "NOTIF_ACCESS_CHANGED", java.util.Map.of("changes", String.join(" ", lines))));
         } catch (RuntimeException e) {
             log.warn("Could not notify member {} of an access change: {}", member.getId(), e.getMessage());
         }

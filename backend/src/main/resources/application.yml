@@ -187,6 +187,15 @@ app:
     # C91 (EV-1 B): the most events one replay may re-send.
     replay:
       max-events: 1000
+  # REQ-INT-001 (C92, API-5 B): endpoints or versions to mark deprecated. Each entry adds the headers Deprecation: true,
+  # Sunset: <date> and, with a successor, Link: <successor>; rel="successor-version". Empty until /v2 exists. Example:
+  #   api:
+  #     deprecations:
+  #       - path-prefix: /v1/
+  #         sunset: 2027-12-31
+  #         successor: /v2/
+  api:
+    deprecations: []
   # REQ-INT-001 (C61): requests per minute, fixed windows, per backend
   # instance. Engineering defaults until the FRD's open question 2 is answered.
   rate-limit:

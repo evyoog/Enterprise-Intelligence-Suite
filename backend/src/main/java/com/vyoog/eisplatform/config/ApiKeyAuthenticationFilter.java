@@ -24,7 +24,8 @@ import java.util.Optional;
  * an {@code Authorization} header is present). A valid key acts as its owner:
  * the principal is a {@link Jwt} carrying the owner's subject (so every
  * {@code @AuthenticationPrincipal Jwt} controller works unchanged) and the
- * key's copied authorities, never ROLE_ADMIN. Platform administration
+ * key's copied authorities, never ROLE_ADMIN. A READ key may only use GET, HEAD and OPTIONS (403
+ * {@code API_KEY_READ_ONLY}, C92). Platform administration
  * ({@code /admin/**}) is refused with 403 (BR-3). An unknown, revoked or
  * expired key gets 401 (BR-2).
  *
@@ -39,6 +40,10 @@ public class ApiKeyAuthenticationFilter extends OncePerRequestFilter {
 
     public ApiKeyAuthenticationFilter(ApiKeyService apiKeyService) {
         this.apiKeyService = apiKeyService;
+    }
+
+    private static boolean isSafeMethod(String method) {
+        return "GET".equalsIgnoreCase(method) || "HEAD".equalsIgnoreCase(method) || "OPTIONS".equalsIgnoreCase(method);
     }
 
     @Override
@@ -60,6 +65,12 @@ public class ApiKeyAuthenticationFilter extends OncePerRequestFilter {
             return;
         }
         ApiKeyPrincipal p = principal.get();
+        // REQ-INT-001 (C92, API-4 B): a read-only key may only read.
+        if (p.readOnly() && !isSafeMethod(request.getMethod())) {
+            ErrorResponses.write(response, 403, "Forbidden", "API_KEY_READ_ONLY",
+                "This API key is read-only. Use a read-write key to change data.");
+            return;
+        }
         Instant now = Instant.now();
         Jwt.Builder jwt = Jwt.withTokenValue("api-key:" + p.keyPrefix())
             .header("alg", "none")

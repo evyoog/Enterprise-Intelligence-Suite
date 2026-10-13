@@ -262,10 +262,9 @@ public class ProjectService {
             Optional<Product> product = productRepository.findById(productId);
             String project = groupRepository.findById(projectId).map(OrganizationGroup::getName).orElse("a project");
             customerRepository.findById(member.getCustomerId()).ifPresent(c ->
-                notificationService.notify(c.getId(), c.getEmail(), NotificationCategory.ORGANIZATION, NotificationSeverity.INFO,
-                    "Access granted: " + product.map(Product::getName).orElse("product " + productId),
-                    "You have " + role + " access to " + product.map(Product::getName).orElse("a product")
-                        + " through the project " + project + "."));
+                notificationService.notifyTemplated(c.getId(), c.getEmail(), NotificationCategory.ORGANIZATION, NotificationSeverity.INFO,
+                    "NOTIF_PROJECT_ACCESS_GRANTED", Map.of("product", product.map(Product::getName).orElse("product " + productId),
+                        "role", String.valueOf(role), "project", project)));
         } catch (RuntimeException e) {
             log.warn("Could not notify member {} of project access: {}", member.getId(), e.getMessage());
         }

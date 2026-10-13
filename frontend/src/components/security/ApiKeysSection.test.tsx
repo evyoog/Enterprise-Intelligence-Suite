@@ -7,23 +7,22 @@ import { renderWithProviders } from '../../test/renderWithProviders'
 import { ApiKeysSection } from './ApiKeysSection'
 
 const list = vi.fn()
-const create = vi.fn()
 const revoke = vi.fn()
 
 vi.mock('../../api/apiKeysApi', () => ({
   API_KEY_STATUS_COLOR: { ACTIVE: 'success', REVOKED: 'default', EXPIRED: 'warning' },
-  apiKeysApi: { list: () => list(), create: (b: unknown) => create(b), revoke: (id: number) => revoke(id) },
+  apiKeysApi: { list: () => list(), revoke: (id: number) => revoke(id) },
   adminApiKeysApi: { list: vi.fn() },
 }))
 
 const active = {
-  id: 3, name: 'CRM sync', prefix: 'eis_ab12cd34', status: 'ACTIVE' as const, createdAt: '2026-10-03T09:00:00Z',
+  id: 3, name: 'CRM sync', prefix: 'eis_ab12cd34', status: 'ACTIVE' as const, scope: 'READ_WRITE' as const, personal: true, createdAt: '2026-10-03T09:00:00Z',
   expiresAt: null, lastUsedAt: null, requestCount: 0,
 }
 
 describe('ApiKeysSection', () => {
   beforeEach(() => {
-    for (const m of [list, create, revoke]) m.mockReset()
+    for (const m of [list, revoke]) m.mockReset()
     list.mockResolvedValue([active])
   })
 
@@ -33,18 +32,18 @@ describe('ApiKeysSection', () => {
     expect(screen.getByText('Active')).toBeInTheDocument()
   })
 
-  it('creates a key and shows the full key once', async () => {
-    const user = userEvent.setup()
-    create.mockResolvedValue({ ...active, id: 4, name: 'Reports', key: 'eis_ab12cd34_' + 'Q'.repeat(40) })
+  it('shows the legacy scope and no create button', async () => {
     renderWithProviders(<ApiKeysSection />)
-    await user.click(await screen.findByRole('button', { name: 'Create key' }))
-    await user.click(screen.getByRole('button', { name: 'Create' }))
-    expect(screen.getByText('Enter a name for the key.')).toBeInTheDocument()
-    await user.type(screen.getByLabelText(/Name/), 'Reports')
-    await user.click(screen.getByRole('button', { name: 'Create' }))
-    await waitFor(() => expect(create).toHaveBeenCalledWith({ name: 'Reports', expiresAt: null }))
-    expect(await screen.findByDisplayValue('eis_ab12cd34_' + 'Q'.repeat(40))).toBeInTheDocument()
-    expect(screen.getByText("Copy this key now. You won't be able to see it again.")).toBeInTheDocument()
+    await screen.findByText('eis_ab12cd34_…')
+    expect(screen.getByText('Read-write')).toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: 'Create key' })).not.toBeInTheDocument()
+  })
+
+  it('renders nothing when there are no personal keys', async () => {
+    list.mockResolvedValue([])
+    const { container } = renderWithProviders(<ApiKeysSection />)
+    await waitFor(() => expect(list).toHaveBeenCalled())
+    expect(container.querySelector('section')).toBeNull()
   })
 
   it('revokes a key after confirmation', async () => {

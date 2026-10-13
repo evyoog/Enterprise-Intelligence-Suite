@@ -275,8 +275,8 @@ public class InvitationService {
         inv.setUpdatedAt(Instant.now());
         invitationRepository.save(inv);
         auditor.success("INVITATION_DECLINED", null, inv.getEmail(), inv.getId(), inv.getOrganizationId(), "Invitation declined by " + inv.getEmail());
-        notifyInviter(inv, "Invitation declined", inv.getEmail() + " declined your invitation to join "
-            + organizationName(inv.getOrganizationId()) + ".");
+        notifyInviter(inv, "NOTIF_INVITATION_DECLINED", java.util.Map.of("email", inv.getEmail(),
+            "organization", organizationName(inv.getOrganizationId())));
     }
 
     /** Hourly job (REQ-TEN-008.5): persists EXPIRED for overdue PENDING invitations. */
@@ -329,19 +329,19 @@ public class InvitationService {
         inv.setAcceptedByCustomerId(customer.getId());
         invitationRepository.save(inv);
         auditor.success("INVITATION_ACCEPTED", customer.getId(), customer.getEmail(), inv.getId(), orgId, "Joined as " + inv.getOrgRole());
-        notifyInviter(inv, "Invitation accepted", inv.getEmail() + " accepted your invitation and joined " + org.getName()
-            + " as " + (inv.getOrgRole() == OrgRole.ORG_ADMIN ? "an organization administrator" : "a member") + ".");
+        notifyInviter(inv, "NOTIF_INVITATION_ACCEPTED", java.util.Map.of("email", inv.getEmail(), "organization", org.getName(),
+            "role", inv.getOrgRole() == OrgRole.ORG_ADMIN ? "an organization administrator" : "a member"));
     }
 
     /**
      * IN-9: tell the inviter (in the notification center and by email unless muted) that the invitation was
      * accepted or declined. Never fails the acceptance or decline: a problem here is only logged.
      */
-    private void notifyInviter(OrganizationInvitation inv, String title, String message) {
+    private void notifyInviter(OrganizationInvitation inv, String templateCode, java.util.Map<String, String> values) {
         try {
             customerRepository.findById(inv.getInvitedByCustomerId()).ifPresent(inviter ->
-                notificationService.notify(inviter.getId(), inviter.getEmail(), NotificationCategory.ORGANIZATION,
-                    NotificationSeverity.INFO, title, message));
+                notificationService.notifyTemplated(inviter.getId(), inviter.getEmail(), NotificationCategory.ORGANIZATION,
+                    NotificationSeverity.INFO, templateCode, values));
         } catch (RuntimeException e) {
             log.warn("Could not notify inviter of invitation {}: {}", inv.getId(), e.getMessage());
         }

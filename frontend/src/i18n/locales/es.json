@@ -1423,7 +1423,9 @@
       "caption": "{{count}} claves de API",
       "owner": "Propietario",
       "requests": "Solicitudes",
-      "empty": "No se ha creado ninguna clave de API."
+      "empty": "No se ha creado ninguna clave de API.",
+      "organization": "Organización",
+      "personal": "Personal (heredada)"
     },
     "apps": {
       "title": "Todas las aplicaciones",
@@ -1762,7 +1764,18 @@
       "created": "Creada",
       "expires": "Caduca",
       "lastUsed": "Último uso",
-      "actions": "Acciones"
+      "actions": "Acciones",
+      "scope": "Alcance"
+    },
+    "legacyTitle": "Claves de API personales (heredadas)",
+    "legacyDescription": "Estas claves se crearon antes de que las claves pasaran a la organización. Siguen funcionando con acceso de lectura y escritura. Revócalas cuando la integración use una clave de la organización.",
+    "scope": {
+      "READ": "Solo lectura",
+      "READ_WRITE": "Lectura y escritura"
+    },
+    "scopeHelp": {
+      "READ": "Solo puede leer datos. Cualquier petición de cambio se rechaza.",
+      "READ_WRITE": "Puede leer y cambiar datos, con los permisos de un administrador de la organización."
     }
   },
   "ui": {
@@ -3020,7 +3033,8 @@
     "title": "Seguridad de acceso",
     "tabs": {
       "federation": "Federación de identidad",
-      "mfa": "Política multifactor"
+      "mfa": "Política multifactor",
+      "apiKeys": "Claves de API"
     },
     "mfaTitle": "Política multifactor",
     "mfaSubtitle": "Exige un código de autenticador cuando los miembros inician sesión."
@@ -3751,5 +3765,58 @@
       "previewSummary": "{{action}} {{item}}: cambiarían {{applied}} miembros, {{skipped}} omitidos.",
       "done": "{{action}} {{item}}: {{applied}} miembros cambiados, {{skipped}} omitidos."
     }
+  },
+  "orgApiKeys": {
+    "title": "Claves de API de la organización",
+    "description": "Las claves pertenecen a tu organización, no a quien las crea, así que una integración sigue funcionando cuando esa persona se va. Una clave actúa como administrador de la organización, salvo la administración de la plataforma.",
+    "empty": "Tu organización aún no tiene claves de API.",
+    "pageTitle": "Claves de API",
+    "pageSubtitle": "Permite que tus propias integraciones llamen a la API de EIS. Las claves son de solo lectura o de lectura y escritura.",
+    "col": {
+      "createdBy": "Creada por"
+    }
+  },
+  "platformDefaults": {
+    "title": "Valores predeterminados para usuarios nuevos",
+    "description": "Con qué empieza un usuario nuevo hasta que elige por sí mismo. La elección del usuario siempre prevalece. Deja un campo vacío para no tener valor predeterminado.",
+    "language": "Idioma",
+    "region": "Región",
+    "currency": "Moneda",
+    "timeZone": "Zona horaria",
+    "dateFormat": "Formato de fecha",
+    "reminderDays": "Días de aviso de renovación",
+    "regionHelp": "Por ejemplo en-IN o es-ES.",
+    "timeZoneHelp": "Por ejemplo Asia/Kolkata o Europe/Madrid.",
+    "reminderDaysHelp": "De 1 a 30 días antes de la renovación.",
+    "none": "Sin valor predeterminado",
+    "save": "Guardar valores",
+    "saved": "Valores guardados.",
+    "loadError": "No se pudieron cargar los valores predeterminados.",
+    "saveError": "No se pudieron guardar los valores predeterminados."
+  },
+  "messageTemplates": {
+    "title": "Plantillas de mensajes",
+    "description": "Los correos y notificaciones que envía EIS, uno por tipo de mensaje e idioma. Usa {marcadores} como {name}. Restablece un idioma para volver al texto original.",
+    "channel": {
+      "EMAIL": "Correo",
+      "NOTIFICATION": "Notificación"
+    },
+    "customized": "Personalizada",
+    "edit": "Editar",
+    "editNamed": "Editar {{name}}",
+    "language": "Idioma",
+    "subject": "Asunto",
+    "titleHelp": "Se muestra como título de la notificación.",
+    "body": "Mensaje",
+    "placeholders": "Marcadores",
+    "example": "ejemplo",
+    "requiredHelp": "* debe aparecer en el texto. Los marcadores desconocidos se rechazan.",
+    "preview": "Vista previa",
+    "previewButton": "Vista previa",
+    "save": "Guardar",
+    "reset": "Restablecer al original",
+    "close": "Cerrar",
+    "loadError": "No se pudieron cargar las plantillas.",
+    "saveError": "No se pudo guardar la plantilla."
   }
 }

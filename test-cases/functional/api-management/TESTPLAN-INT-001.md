@@ -4,15 +4,15 @@
 |---|---|
 | Feature ID (required) | FTR-INT-001 |
 | Requirement(s) covered | [REQ-INT-001](../../../docs/02-requirements/FRD/api-management/requirement.md) |
-| Decision | [C61](../../../docs/01-business/roadmap/open-decisions.md#c61) |
+| Decision | [C61](../../../docs/01-business/roadmap/open-decisions.md#c61), [C92](../../../docs/01-business/roadmap/open-decisions.md#c92) |
 | Author | Not specified |
 | Status | Draft (the FRD is Draft; built 2026-10-03 at the product owner's request with the engineering defaults recorded in the FRD) |
 
 ## Scope
-Every acceptance criterion in [`acceptance-criteria.md`](../../../docs/02-requirements/FRD/api-management/acceptance-criteria.md): TC-INT-001 to TC-INT-007.
+Every acceptance criterion in [`acceptance-criteria.md`](../../../docs/02-requirements/FRD/api-management/acceptance-criteria.md): TC-INT-001 to TC-INT-007 and, for C92, TC-INT-030 to TC-INT-035.
 
 ## Approach
-Backend: `ApiKeyAuthenticationTest` (MockMvc through the real security chain), `ApiKeyAuthenticationFilterTest`, `RateLimitFilterTest` (fixed clock, small limits). Frontend: `ApiKeysSection.test.tsx`, `AdminApiKeysPage.test.tsx` with jest-axe.
+Backend: `ApiKeyAuthenticationTest` (MockMvc through the real security chain), `ApiKeyAuthenticationFilterTest`, `RateLimitFilterTest` (fixed clock, small limits). Frontend: `OrganizationApiKeysSection.test.tsx`, `ApiKeysSection.test.tsx`, `AdminApiKeysPage.test.tsx` with jest-axe; backend `ApiDeprecationFilterTest` (C92).
 
 ## Test cases
 | Test case | Title | Acceptance criteria | Automated |
@@ -24,6 +24,12 @@ Backend: `ApiKeyAuthenticationTest` (MockMvc through the real security chain), `
 | [TC-INT-005](TC-INT-005.md) | Every endpoint is also served under /v1 | AC-6 | Yes |
 | [TC-INT-006](TC-INT-006.md) | Administrators see key usage; keys never reach platform administration | AC-7 | Yes |
 | [TC-INT-007](TC-INT-007.md) | API key screens are accessible | AC-9 | Yes |
+| [TC-INT-030](TC-INT-030.md) | Only organization administrators create keys; keys belong to the organization | AC-10 | Yes |
+| [TC-INT-031](TC-INT-031.md) | Read-only and read-write scopes | AC-11 | Yes |
+| [TC-INT-032](TC-INT-032.md) | An organization key outlives its creator | AC-12 | Yes |
+| [TC-INT-033](TC-INT-033.md) | Legacy personal keys keep working | AC-13 | Yes |
+| [TC-INT-034](TC-INT-034.md) | Deprecation headers | AC-14 | Yes |
+| [TC-INT-035](TC-INT-035.md) | Organization API key screens | AC-15 | Yes |
 
 ## Blocked or partial
 - Rate limits are counted per backend instance (engineering default); a multi-instance check is not possible here.

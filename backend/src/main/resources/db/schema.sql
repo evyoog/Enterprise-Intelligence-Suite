@@ -1581,3 +1581,49 @@ CREATE TABLE IF NOT EXISTS event_platform_setting (
 );
 
 INSERT INTO event_platform_setting (id) VALUES (1) ON CONFLICT (id) DO NOTHING;
+
+-- REQ-INT-001 (C92): API keys belong to an organization and have a scope. Migration V032.
+ALTER TABLE api_key ADD COLUMN IF NOT EXISTS organization_id BIGINT REFERENCES organization(id);
+ALTER TABLE api_key ADD COLUMN IF NOT EXISTS scope VARCHAR(20) NOT NULL DEFAULT 'READ_WRITE';
+ALTER TABLE api_key ADD COLUMN IF NOT EXISTS created_by_customer_id BIGINT;
+ALTER TABLE api_key DROP CONSTRAINT IF EXISTS api_key_scope_check;
+ALTER TABLE api_key ADD CONSTRAINT api_key_scope_check CHECK (scope IN ('READ', 'READ_WRITE'));
+
+UPDATE api_key SET created_by_customer_id = owner_customer_id WHERE created_by_customer_id IS NULL;
+
+UPDATE api_key k
+   SET organization_id = m.organization_id
+  FROM organization_member m
+ WHERE k.organization_id IS NULL
+   AND m.customer_id = k.owner_customer_id
+   AND m.status = 'ACTIVE'
+   AND m.org_role = 'ORG_ADMIN';
+
+CREATE INDEX IF NOT EXISTS idx_api_key_organization ON api_key (organization_id);
+
+-- REQ-GOV-002 (C92): message templates and platform defaults. Migration V033.
+CREATE TABLE IF NOT EXISTS message_template (
+    id BIGSERIAL PRIMARY KEY,
+    code VARCHAR(60) NOT NULL,
+    language VARCHAR(10) NOT NULL,
+    subject VARCHAR(200) NOT NULL,
+    body TEXT NOT NULL,
+    updated_by VARCHAR(255),
+    updated_at TIMESTAMP NOT NULL DEFAULT now(),
+    CONSTRAINT uq_message_template UNIQUE (code, language)
+);
+
+-- One row (id = 1). Every value may be empty: empty means "no platform default" (the browser decides), so nothing
+-- changes for anyone until an administrator sets a default. Reminder days stay in billing_settings (REQ-SUB-004).
+CREATE TABLE IF NOT EXISTS platform_default (
+    id BIGINT PRIMARY KEY,
+    language VARCHAR(10),
+    region VARCHAR(20),
+    currency VARCHAR(10),
+    time_zone VARCHAR(64),
+    date_format VARCHAR(20),
+    updated_by VARCHAR(255),
+    updated_at TIMESTAMP NOT NULL DEFAULT now()
+);
+
+INSERT INTO platform_default (id) VALUES (1) ON CONFLICT (id) DO NOTHING;

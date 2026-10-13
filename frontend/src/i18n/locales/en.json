@@ -1423,7 +1423,9 @@
       "caption": "{{count}} API keys",
       "owner": "Owner",
       "requests": "Requests",
-      "empty": "No API keys have been created."
+      "empty": "No API keys have been created.",
+      "organization": "Organization",
+      "personal": "Personal (legacy)"
     },
     "apps": {
       "title": "All Apps",
@@ -1762,7 +1764,18 @@
       "created": "Created",
       "expires": "Expires",
       "lastUsed": "Last used",
-      "actions": "Actions"
+      "actions": "Actions",
+      "scope": "Scope"
+    },
+    "legacyTitle": "Personal API keys (legacy)",
+    "legacyDescription": "These keys were created before keys moved to the organization. They keep working with read-write access. Revoke them once the integration uses an organization key.",
+    "scope": {
+      "READ": "Read-only",
+      "READ_WRITE": "Read-write"
+    },
+    "scopeHelp": {
+      "READ": "Can read data only. Any change request is refused.",
+      "READ_WRITE": "Can read and change data, within the permissions of an organization administrator."
     }
   },
   "ui": {
@@ -3020,7 +3033,8 @@
     "title": "Sign-in security",
     "tabs": {
       "federation": "Identity federation",
-      "mfa": "Multi-factor policy"
+      "mfa": "Multi-factor policy",
+      "apiKeys": "API keys"
     },
     "mfaTitle": "Multi-factor policy",
     "mfaSubtitle": "Require an authenticator code when members sign in."
@@ -3751,5 +3765,58 @@
       "previewSummary": "{{action}} {{item}}: {{applied}} members would change, {{skipped}} skipped.",
       "done": "{{action}} {{item}}: {{applied}} members changed, {{skipped}} skipped."
     }
+  },
+  "orgApiKeys": {
+    "title": "Organization API keys",
+    "description": "Keys belong to your organization, not to the person who creates them, so an integration keeps working when that person leaves. A key acts as an administrator of the organization, except platform administration.",
+    "empty": "No API keys for your organization yet.",
+    "pageTitle": "API keys",
+    "pageSubtitle": "Let your own integrations call the EIS API. Keys are read-only or read-write.",
+    "col": {
+      "createdBy": "Created by"
+    }
+  },
+  "platformDefaults": {
+    "title": "Defaults for new users",
+    "description": "What a new user starts with until they choose for themselves. A user's own choice always wins. Leave a field empty for no platform default.",
+    "language": "Language",
+    "region": "Region",
+    "currency": "Currency",
+    "timeZone": "Time zone",
+    "dateFormat": "Date format",
+    "reminderDays": "Renewal reminder days",
+    "regionHelp": "For example en-IN or es-ES.",
+    "timeZoneHelp": "For example Asia/Kolkata or Europe/Madrid.",
+    "reminderDaysHelp": "1 to 30 days before renewal.",
+    "none": "No default",
+    "save": "Save defaults",
+    "saved": "Defaults saved.",
+    "loadError": "Could not load the defaults.",
+    "saveError": "Could not save the defaults."
+  },
+  "messageTemplates": {
+    "title": "Message templates",
+    "description": "The emails and notifications EIS sends, one per message type and language. Use {placeholders} such as {name}. Reset a language to go back to the built-in text.",
+    "channel": {
+      "EMAIL": "Email",
+      "NOTIFICATION": "Notification"
+    },
+    "customized": "Customized",
+    "edit": "Edit",
+    "editNamed": "Edit {{name}}",
+    "language": "Language",
+    "subject": "Subject",
+    "titleHelp": "Shown as the notification title.",
+    "body": "Message",
+    "placeholders": "Placeholders",
+    "example": "example",
+    "requiredHelp": "* must appear in the text. Unknown placeholders are rejected.",
+    "preview": "Preview",
+    "previewButton": "Preview",
+    "save": "Save",
+    "reset": "Reset to built-in",
+    "close": "Close",
+    "loadError": "Could not load the templates.",
+    "saveError": "Could not save the template."
   }
 }

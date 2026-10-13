@@ -6,6 +6,8 @@ import {
 } from '@mui/material'
 import { Plus, Trash2 } from 'lucide-react'
 import { ApiError } from '../../../api/client'
+import { PlatformDefaultsSection } from '../../../components/admin/PlatformDefaultsSection'
+import { MessageTemplatesSection } from '../../../components/admin/MessageTemplatesSection'
 import {
   platformAdministrationApi,
   type PlatformCurrency,
@@ -18,8 +20,8 @@ import {
  * "Configuration" tab of Platform → Products (C80; was "/admin/settings/common") — 15.01 Platform Administration (sprint 2026.4.2):
  * currencies, regions and feature flags an admin can manage; languages shown
  * read-only (see SupportedLanguageDto's own backend javadoc for why).
- * "Configure defaults" and "Manage templates" (15.01.02) are not built this
- * sprint — see SPRINT-2026.4.2.md.
+ * "Configure defaults" and "Manage templates" (15.01.02) are built in C92
+ * (REQ-GOV-002): the defaults new users start with and the editable message templates.
  */
 export function CommonSettingsPage({ embedded = false }: { embedded?: boolean }) {
   return (
@@ -29,6 +31,8 @@ export function CommonSettingsPage({ embedded = false }: { embedded?: boolean })
       <CurrenciesSection />
       <RegionsSection />
       <FeatureFlagsSection />
+      <PlatformDefaultsSection />
+      <MessageTemplatesSection />
     </Box>
   )
 }

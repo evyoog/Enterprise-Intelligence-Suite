@@ -12,6 +12,8 @@ public record CustomerPreferenceDto(
     String region,
     String timeZone,
     String themeMode,
-    boolean reducedMotion
+    boolean reducedMotion,
+    /** C92 (TM-2 A): what the platform gives a user who has not chosen yet; the frontend uses it for every null above. */
+    com.vyoog.eisplatform.modules.administration.dto.PlatformDefaultsDto defaults
 ) {
 }

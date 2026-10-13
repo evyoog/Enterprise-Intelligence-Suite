@@ -13,6 +13,12 @@
 | PATCH | `/admin/platform-settings/feature-flags/{flagKey}` | Update (body `{"enabled","description"}`) | `MANAGE_PLATFORM_SETTINGS` | 200 | 400, 403, 404 |
 | DELETE | `/admin/platform-settings/feature-flags/{flagKey}` | Delete | `MANAGE_PLATFORM_SETTINGS` | 204 | 403, 404 |
 | GET | `/admin/platform-settings/languages` | Read-only list | `MANAGE_PLATFORM_SETTINGS` | 200 | 403 |
+| GET/PUT | `/admin/platform-settings/defaults` | Read / save the defaults for new users (C92) | `MANAGE_PLATFORM_SETTINGS` | 200 | 400, 403 |
+| GET | `/admin/platform-settings/message-templates[/{code}]` | List message types with their languages (C92) | `MANAGE_PLATFORM_SETTINGS` | 200 | 403, 404 |
+| PUT/DELETE | `/admin/platform-settings/message-templates/{code}/{language}` | Save / reset one language | `MANAGE_PLATFORM_SETTINGS` | 200 | 400, 403, 404 |
+| POST | `/admin/platform-settings/message-templates/{code}/{language}/preview` | Preview unsaved text | `MANAGE_PLATFORM_SETTINGS` | 200 | 400, 403 |
+
+Details of the C92 endpoints: [platform-defaults-templates](../../../06-api/api-requirements/platform-defaults-templates.md).
 
 ## Request / response
 ```json
