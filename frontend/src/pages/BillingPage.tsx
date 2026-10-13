@@ -39,9 +39,13 @@ function BillingScreen({ api }: { api: BillingScope }) {
   const [tab, setTab] = useTabParam(BILLING_TABS, 'overview')
   const [overview, setOverview] = useState<BillingOverview | null>(null)
   const [reloadToken, setReloadToken] = useState(0)
+  const [noPermission, setNoPermission] = useState(false)
 
   useEffect(() => {
-    api.overview().then(setOverview).catch(() => {})
+    api.overview().then(setOverview).catch((e) => {
+      // C97 BI-5: an organization's billing needs the separate "Manage billing" permission.
+      if (e instanceof ApiError && e.status === 403) setNoPermission(true)
+    })
   }, [api, reloadToken])
 
   const reload = () => setReloadToken((n) => n + 1)
@@ -49,6 +53,8 @@ function BillingScreen({ api }: { api: BillingScope }) {
   return (
     <>
       <PageHeader icon={PHWallet} accent="blue" title={t('billing.title')} subtitle={t('billing.subtitle')} />
+      {noPermission && <Alert severity="warning" sx={{ mb: 2 }}>{t('billing.noPermission')}</Alert>}
+      {noPermission ? null : <>
       {overview && !overview.gatewayConfigured && (
         <Alert severity="info" sx={{ mb: 2 }}>{t('billing.gateway.notConfigured')}</Alert>
       )}
@@ -65,6 +71,7 @@ function BillingScreen({ api }: { api: BillingScope }) {
       {tab === 'methods' && <PaymentMethodsTab api={api} gatewayConfigured={overview?.gatewayConfigured ?? false} onChanged={reload} />}
       {tab === 'history' && <PaymentHistoryTab api={api} />}
       {tab === 'details' && <BillingDetailsTab api={api} />}
+      </>}
     </>
   )
 }

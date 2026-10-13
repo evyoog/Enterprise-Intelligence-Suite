@@ -29,6 +29,7 @@ const confirmPayment = vi.fn()
 const invoiceDetail = vi.fn()
 const paymentMethods = vi.fn()
 const removePaymentMethod = vi.fn()
+const setPurchaseOrder = vi.fn()
 vi.mock('../api/billingApi', async () => {
   const actual = await vi.importActual<typeof import('../api/billingApi')>('../api/billingApi')
   return {
@@ -42,6 +43,7 @@ vi.mock('../api/billingApi', async () => {
       createPayment: (id: number, body: unknown) => createPayment(id, body),
       confirmPayment: (id: number, body: unknown) => confirmPayment(id, body),
       invoiceDetail: (id: number) => invoiceDetail(id),
+      setPurchaseOrder: (id: number, po: string) => setPurchaseOrder(id, po),
       paymentMethods: () => paymentMethods(),
       removePaymentMethod: (id: number) => removePaymentMethod(id),
     },
@@ -97,7 +99,7 @@ const payButton = () => screen.getByRole('button', { name: /Pay \| \$19\.99|Gene
 
 describe('CheckoutPage (C55, C59 redesign)', () => {
   beforeEach(() => {
-    for (const m of [getProduct, subscribe, getDetails, saveDetails, checkout, payByInvoice, createPayment, confirmPayment, invoiceDetail, paymentMethods, removePaymentMethod]) m.mockReset()
+    for (const m of [getProduct, subscribe, getDetails, saveDetails, checkout, payByInvoice, createPayment, confirmPayment, invoiceDetail, paymentMethods, removePaymentMethod, setPurchaseOrder]) m.mockReset()
     vi.mocked(openRazorpayCheckout).mockClear()
     getProduct.mockResolvedValue(freeProduct)
     getDetails.mockRejectedValue(new ApiError(404, 'No billing details saved yet'))
@@ -246,8 +248,10 @@ describe('CheckoutPage (C55, C59 redesign)', () => {
     await screen.findByRole('radiogroup', { name: 'Payment' })
     await userEvent.setup().click(tiles()[0])
     expect(screen.getByText(/never stored by eVyoog/)).toBeInTheDocument()
-    expect(container.querySelectorAll('input:not([type="checkbox"])')).toHaveLength(0)
-    expect(screen.queryByRole('textbox')).not.toBeInTheDocument()
+    // The only text box is the optional purchase-order number (C97 BI-9); there is never a card field.
+    expect(container.querySelectorAll('input:not([type="checkbox"])')).toHaveLength(1)
+    expect(screen.getAllByRole('textbox')).toHaveLength(1)
+    expect(screen.getByRole('textbox', { name: /Purchase order number/ })).toBeInTheDocument()
   })
 
   it('removes a saved card from its menu after confirmation', async () => {
@@ -275,7 +279,7 @@ describe('CheckoutPage (C55, C59 redesign)', () => {
     await screen.findByRole('radiogroup', { name: 'Payment' })
     const user = userEvent.setup()
     await user.click(tiles()[2])
-    expect(screen.getByText(/choose your bank in Razorpay/)).toBeInTheDocument()
+    expect(screen.getByText(/choose your bank in the payment provider/)).toBeInTheDocument()
     await user.click(screen.getByRole('checkbox', { name: /I agree/ }))
     await user.click(payButton())
     await waitFor(() => expect(createPayment).toHaveBeenCalledWith(9, { method: 'netbanking' }))
@@ -358,5 +362,57 @@ describe('CheckoutPage (C55, C59 redesign)', () => {
     const { container } = renderAt('/checkout?productId=7')
     await screen.findByRole('heading', { name: 'Billing details' })
     expect(await axe(container)).toHaveNoViolations()
+  })
+
+  it('links the consent sentence to the Terms, Refund and Privacy pages set in Billing settings (C97 BI-7)', async () => {
+    getDetails.mockResolvedValue(savedDetails)
+    checkout.mockResolvedValue(summary({
+      termsUrl: 'https://www.evyoog.com/terms', privacyUrl: 'https://www.evyoog.com/privacy', refundPolicyUrl: 'https://www.evyoog.com/refunds',
+    }))
+    renderAt('/checkout?invoiceId=9&step=payment')
+    await screen.findByRole('radiogroup', { name: 'Payment' })
+
+    expect(screen.getByRole('link', { name: 'Terms & Conditions' })).toHaveAttribute('href', 'https://www.evyoog.com/terms')
+    expect(screen.getByRole('link', { name: 'Refund policy' })).toHaveAttribute('href', 'https://www.evyoog.com/refunds')
+    expect(screen.getByRole('link', { name: 'Privacy policy' })).toHaveAttribute('href', 'https://www.evyoog.com/privacy')
+  })
+
+  it('shows the consent sentence without links when no page is set', async () => {
+    getDetails.mockResolvedValue(savedDetails)
+    checkout.mockResolvedValue(summary())
+    renderAt('/checkout?invoiceId=9&step=payment')
+    await screen.findByRole('radiogroup', { name: 'Payment' })
+
+    expect(screen.queryByRole('link', { name: 'Terms & Conditions' })).not.toBeInTheDocument()
+    expect(screen.getByRole('checkbox', { name: /I agree to the Terms & Conditions, Refund policy and Privacy policy/ })).toBeInTheDocument()
+  })
+
+  it('saves an optional purchase-order number when the field loses focus, and refuses a bad one (C97 BI-9)', async () => {
+    getDetails.mockResolvedValue(savedDetails)
+    checkout.mockResolvedValue(summary())
+    setPurchaseOrder.mockResolvedValue({})
+    renderAt('/checkout?invoiceId=9&step=payment')
+    await screen.findByRole('radiogroup', { name: 'Payment' })
+    const user = userEvent.setup()
+    const field = screen.getByRole('textbox', { name: /Purchase order number/ })
+
+    await user.type(field, 'PO-2026/17')
+    await user.tab()
+    await waitFor(() => expect(setPurchaseOrder).toHaveBeenCalledWith(9, 'PO-2026/17'))
+
+    await user.clear(field)
+    await user.type(field, '#bad!')
+    await user.tab()
+    expect(screen.getByText(/Use up to 50 letters, digits/)).toBeInTheDocument()
+    expect(setPurchaseOrder).toHaveBeenCalledTimes(1)
+  })
+
+  it('names the active gateway in the footer when it is not Razorpay (C97 BI-8)', async () => {
+    getDetails.mockResolvedValue(savedDetails)
+    checkout.mockResolvedValue(summary({ gatewayCode: 'STRIPE', gatewayName: 'Stripe' }))
+    renderAt('/checkout?invoiceId=9&step=payment')
+    await screen.findByRole('radiogroup', { name: 'Payment' })
+
+    expect(screen.getByText('Stripe')).toBeInTheDocument()
   })
 })

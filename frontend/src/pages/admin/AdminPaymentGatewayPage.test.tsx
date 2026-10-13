@@ -8,16 +8,19 @@ import { AdminPaymentGatewayPage } from './AdminPaymentGatewayPage'
 
 const gatewayStatus = vi.fn()
 const testGateway = vi.fn()
+const gateways = vi.fn()
 
 vi.mock('../../api/billingApi', async () => {
   const actual = await vi.importActual<typeof import('../../api/billingApi')>('../../api/billingApi')
-  return { ...actual, adminBillingApi: { ...actual.adminBillingApi, gatewayStatus: () => gatewayStatus(), testGateway: () => testGateway() } }
+  return { ...actual, adminBillingApi: { ...actual.adminBillingApi, gatewayStatus: () => gatewayStatus(), testGateway: () => testGateway(), gateways: () => gateways(), testGatewayByCode: () => testGateway() } }
 })
 
 describe('AdminPaymentGatewayPage', () => {
   beforeEach(() => {
     gatewayStatus.mockReset()
     testGateway.mockReset()
+    gateways.mockReset()
+    gateways.mockResolvedValue([])
   })
 
   it('shows Not configured guidance and never a secret value when not configured', async () => {

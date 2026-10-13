@@ -83,6 +83,15 @@ export interface CheckoutSummary {
   /** C96: the invoice is a Draft because its tax could not be determined yet; nothing can be paid until it is issued. */
   taxPending?: boolean
   placeOfSupply?: string
+  /** C97 BI-7: links to the Terms, Privacy and Refund pages on evyoog.com (Billing settings). */
+  termsUrl?: string
+  privacyUrl?: string
+  refundPolicyUrl?: string
+  /** C97 BI-9: the optional purchase-order number for this invoice. */
+  purchaseOrderNumber?: string
+  /** C97 BI-8: the active payment gateway, so screens never name one themselves. */
+  gatewayCode?: string
+  gatewayName?: string
 }
 
 export type BankAccountType = 'CURRENT' | 'SAVINGS'
@@ -127,7 +136,24 @@ export interface BusinessProfile {
   invoicePrefix: string
   paymentTermsDays: number
   invoiceFooterNote?: string
+  /** C97 BI-7: pages on the evyoog.com website that EIS links to. */
+  termsUrl?: string
+  privacyUrl?: string
+  refundPolicyUrl?: string
   updatedAt?: string
+}
+
+/** C97 BI-4: an organization and whether pay by invoice is enabled for it. */
+export interface PayByInvoiceOrganization { id: number; name: string; code: string; enabled: boolean }
+
+/** C97 BI-8: one payment gateway the platform can offer. Never carries a secret. */
+export interface PaymentGatewayInfo {
+  code: string
+  name: string
+  configured: boolean
+  active: boolean
+  methods: CheckoutMethod[]
+  status: GatewayStatus
 }
 
 /** C60: payment methods offered at checkout and Razorpay Checkout appearance. */
@@ -243,6 +269,8 @@ export interface Invoice {
   /** Admin views only. */
   taxBlockCode?: string
   taxBlockReason?: string
+  /** C97 BI-9 */
+  purchaseOrderNumber?: string
 }
 
 export interface PaymentMethod {
@@ -319,6 +347,9 @@ function scopedApi(base: string) {
       apiRequest<BillingDetails>(`${base}/details`, { method: 'PUT', body: JSON.stringify(input) }),
     invoices: (page = 0) => apiRequest<Page<Invoice>>(`${base}/invoices?page=${page}`),
     invoiceDetail: (invoiceId: number) => apiRequest<Invoice>(`${base}/invoices/${invoiceId}`),
+    /** C97 BI-9: add or clear the optional purchase-order number before the invoice is paid. */
+    setPurchaseOrder: (invoiceId: number, purchaseOrderNumber: string) =>
+      apiRequest<Invoice>(`${base}/invoices/${invoiceId}/purchase-order`, { method: 'PUT', body: JSON.stringify({ purchaseOrderNumber }) }),
     downloadDocument: (invoiceId: number, type: 'invoice' | 'receipt') =>
       apiDownload(`${base}/invoices/${invoiceId}/document?type=${type}`),
     /** C97 TX-6: the credit notes issued against an invoice, and a download of one. */
@@ -378,4 +409,14 @@ export const adminBillingApi = {
   reconcile: (paymentId: number) => apiRequest<Payment>(`/admin/billing/payments/${paymentId}/reconcile`, { method: 'POST' }),
   gatewayStatus: () => apiRequest<GatewayStatus>('/admin/billing/gateway'),
   testGateway: () => apiRequest<void>('/admin/billing/gateway/test', { method: 'POST' }),
+  /** C97 BI-8: every payment gateway, which one is active, and a test per gateway. */
+  gateways: () => apiRequest<PaymentGatewayInfo[]>('/admin/billing/gateways'),
+  setActiveGateway: (code: string) =>
+    apiRequest<PaymentGatewayInfo[]>('/admin/billing/gateways/active', { method: 'PUT', body: JSON.stringify({ code }) }),
+  testGatewayByCode: (code: string) => apiRequest<void>(`/admin/billing/gateways/${code}/test`, { method: 'POST' }),
+  /** C97 BI-4: organizations allowed to pay by invoice (no search) or a name search. */
+  payByInvoiceOrganizations: (search?: string) =>
+    apiRequest<PayByInvoiceOrganization[]>(`/admin/billing/settings/pay-by-invoice/organizations${search ? `?search=${encodeURIComponent(search)}` : ''}`),
+  setPayByInvoice: (organizationId: number, enabled: boolean) =>
+    apiRequest<PayByInvoiceOrganization>(`/admin/billing/settings/pay-by-invoice/organizations/${organizationId}`, { method: 'PUT', body: JSON.stringify({ enabled }) }),
 }

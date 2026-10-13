@@ -510,7 +510,8 @@
       "peopleStructure": "Personas y estructura",
       "organizationsDirectory": "Organizaciones",
       "offerings": "Ofertas",
-      "accessManagement": "Gestión de accesos"
+      "accessManagement": "Gestión de accesos",
+      "entitlementsLookup": "Consulta de derechos de uso"
     },
     "catalogTitle": "Catálogo de productos",
     "catalogSubtitle": "Busque y filtre los productos disponibles en la plataforma.",
@@ -704,7 +705,8 @@
     "changePlanDialog": {
       "title": "Cambiar plan de {{product}}",
       "planLabel": "Plan",
-      "save": "Guardar"
+      "save": "Guardar",
+      "rule": "Una mejora de plan se aplica ahora. Una rebaja se aplica en tu próxima renovación."
     },
     "confirmCancel": "Esto cancela permanentemente tu suscripción a {{product}}. ¿Continuar?",
     "seats": {
@@ -731,6 +733,11 @@
       "changeReminders": "Cambiar la configuración de recordatorios",
       "nextReminder": "Próximo recordatorio: {{date}}",
       "noReminderLeft": "No hay recordatorio antes de esta renovación."
+    },
+    "scheduledChange": {
+      "notice": "Tu plan cambiará a {{plan}} el {{date}}, en tu próxima renovación. Conservas tu plan actual hasta entonces.",
+      "keep": "Mantener el plan actual",
+      "nextRenewal": "tu próxima renovación"
     }
   },
   "orders": {
@@ -1037,7 +1044,7 @@
       "title": "Agregar método de pago",
       "card": "Tarjeta",
       "upi": "UPI",
-      "consent": "Acepto guardar esta tarjeta de forma segura con Razorpay para futuros pagos",
+      "consent": "Acepto guardar esta tarjeta de forma segura con nuestro proveedor de pagos para futuros pagos",
       "makeDefault": "Establecer como predeterminado",
       "continue": "Continuar a entrada segura",
       "saved": "Método de pago guardado.",
@@ -1068,7 +1075,8 @@
       "subtotal": "Subtotal abonado",
       "download": "Descargar nota de crédito",
       "close": "Cerrar"
-    }
+    },
+    "noPermission": "Solo los miembros con el permiso Gestionar facturación pueden ver la facturación de tu organización. Pide a un administrador de la organización que te lo conceda."
   },
   "admin": {
     "billing": {
@@ -1116,7 +1124,7 @@
     },
     "paymentGateway": {
       "title": "Pasarela de pago",
-      "subtitle": "Estado de la conexión con Razorpay — solo lectura.",
+      "subtitle": "Pasarelas de pago y estado de su conexión — solo lectura.",
       "provider": "Proveedor",
       "status": "Estado",
       "configured": "Configurado",
@@ -1147,7 +1155,7 @@
         "business": "Empresa y facturas",
         "offline": "Pagos sin conexión",
         "methods": "Métodos de pago",
-        "gateway": "Pasarela Razorpay",
+        "gateway": "Pasarelas de pago",
         "reminders": "Recordatorios de renovación"
       },
       "overview": {
@@ -1228,7 +1236,10 @@
         "payByInvoiceEnabled": "Pagar con factura",
         "checkoutDisplayName": "Nombre en Razorpay Checkout",
         "checkoutDescription": "Descripción en Razorpay Checkout",
-        "checkoutThemeColor": "Color del pago"
+        "checkoutThemeColor": "Color del pago",
+        "termsUrl": "Página de Términos y condiciones",
+        "privacyUrl": "Página de Política de privacidad",
+        "refundPolicyUrl": "Página de Política de reembolsos"
       },
       "h": {
         "prefix": "Las facturas nuevas se numeran PREFIJO-AÑO-NÚMERO. Los números emitidos no cambian.",
@@ -1276,7 +1287,9 @@
         "offlineMethod": "Pago sin conexión",
         "offlineMethodBody": "Permite pagar contra una factura en lugar de en línea.",
         "appearance": "Apariencia de Razorpay Checkout",
-        "appearanceBody": "Cómo aparece tu empresa en la ventana de pago de Razorpay. No son secretos."
+        "appearanceBody": "Cómo aparece tu empresa en la ventana de pago de Razorpay. No son secretos.",
+        "policies": "Páginas de políticas",
+        "policiesBody": "Enlaces a las páginas de Términos, Privacidad y Reembolsos del sitio evyoog.com. El pago los enlaza y las facturas los imprimen."
       },
       "preview": {
         "invoiceTitle": "Vista previa de la factura",
@@ -1344,6 +1357,18 @@
         "daysLeft_other": "{{count}} días antes",
         "renewalDay": "Renovación",
         "saveError": "No se pudieron guardar los valores predeterminados."
+      },
+      "loading": "Cargando…",
+      "payByInvoiceOrgs": {
+        "title": "Organizaciones que pueden pagar con factura",
+        "subtitle": "Pagar con factura es solo para las organizaciones que actives aquí. Los clientes individuales siempre pagan en línea.",
+        "body": "Una organización ve la opción de pagar con factura solo cuando el interruptor de arriba está activo y la organización está habilitada abajo.",
+        "enabledTitle": "Organizaciones habilitadas",
+        "none": "Aún no hay organizaciones habilitadas.",
+        "search": "Buscar una organización",
+        "searchHelp": "Escribe al menos 2 letras de su nombre.",
+        "noMatch": "Ninguna organización coincide.",
+        "switchLabel": "Pagar con factura para {{name}}"
       }
     },
     "events": {
@@ -1847,6 +1872,16 @@
         }
       },
       "close": "Cerrar"
+    },
+    "gateways": {
+      "title": "Pasarelas de pago",
+      "body": "Las pasarelas con las que la plataforma puede cobrar. El pago usa la activa y nunca muestra sus claves.",
+      "active": "Activa",
+      "methods": "Métodos",
+      "makeActive": "Activar",
+      "makeActiveNamed": "Activar {{name}} como pasarela",
+      "testNamed": "Probar la conexión de {{name}}",
+      "addNote": "Se puede enlazar otra pasarela añadiéndola al backend de la plataforma, con sus credenciales en el archivo común de secretos; después aparece en esta lista. Cambiar la pasarela activa solo afecta a los pagos nuevos."
     }
   },
   "checkout": {
@@ -1906,7 +1941,7 @@
       }
     },
     "card": {
-      "lead": "Introducirás los datos de tu tarjeta en la ventana segura de Razorpay después de pulsar Pagar.",
+      "lead": "Introducirás los datos de tu tarjeta en la ventana segura del proveedor de pagos después de pulsar Pagar.",
       "number": "Número de tarjeta",
       "name": "Nombre en la tarjeta",
       "expiry": "Caducidad (MM/AA)",
@@ -1917,7 +1952,7 @@
       "accepted": "Tarjetas aceptadas"
     },
     "upi": {
-      "note": "Pagarás con tu ID de UPI o una app UPI en la ventana segura de Razorpay.",
+      "note": "Pagarás con tu ID de UPI o una app UPI en la ventana segura del proveedor de pagos.",
       "apps": "Apps UPI",
       "saved": "ID de UPI guardados"
     },
@@ -1935,7 +1970,7 @@
       "subtotal": "Subtotal",
       "noTax": "Impuestos: ninguno para esta región",
       "total": "Total",
-      "trust": "Los pagos se procesan de forma segura con Razorpay.",
+      "trust": "Los pagos se procesan de forma segura con nuestro proveedor de pagos.",
       "qty": "Cant. {{qty}}",
       "toggle": "Total {{total}} · {{count}} artículos",
       "editCart": "Editar carrito",
@@ -2019,10 +2054,10 @@
       "changeLabel": "Cambiar {{field}}"
     },
     "netbanking": {
-      "note": "Elegirás tu banco en la ventana segura de Razorpay."
+      "note": "Elegirás tu banco en la ventana segura del proveedor de pagos."
     },
     "wallets": {
-      "note": "Elegirás tu monedero en la ventana segura de Razorpay."
+      "note": "Elegirás tu monedero en la ventana segura del proveedor de pagos."
     },
     "savedCards": {
       "title": "Tarjetas guardadas",
@@ -2042,7 +2077,23 @@
       "stepBack": "Paso anterior",
       "completeOrder": "Completar pedido"
     },
-    "poweredBy": "Con la tecnología de"
+    "poweredBy": "Con la tecnología de",
+    "consentLead": "Acepto los",
+    "consentTerms": "Términos y condiciones",
+    "consentRefund": "la Política de reembolsos",
+    "consentAnd": "y la",
+    "consentPrivacy": "Política de privacidad",
+    "purchaseOrder": {
+      "label": "Número de orden de compra (opcional)",
+      "help": "Se imprime en la factura. Puedes dejarlo vacío.",
+      "invalid": "Usa hasta 50 letras, dígitos, espacios o . / _ -"
+    },
+    "methods": {
+      "card": "Tarjetas",
+      "upi": "UPI",
+      "netbanking": "Banca en línea",
+      "wallet": "Monederos"
+    }
   },
   "cart": {
     "title": "Tu carrito",
@@ -4261,5 +4312,33 @@
     "browse": "Ver productos",
     "open": "Lista de deseos",
     "openCount": "Lista de deseos ({{count}})"
+  },
+  "entitlements": {
+    "title": "Qué incluyen tus planes",
+    "body": "Solo lectura: proviene de tus suscripciones activas y sus planes. Cada producto cuenta su propio uso.",
+    "none": "No tienes suscripciones activas.",
+    "loadError": "No se pudieron cargar tus derechos de uso.",
+    "until": "Activo hasta el {{date}}",
+    "noEnd": "Sin fecha de fin",
+    "limit": "Límite: {{limit}}",
+    "noLimit": "Sin límite definido",
+    "features": "Funciones incluidas",
+    "owner": {
+      "INDIVIDUAL": "Personal",
+      "ORGANIZATION": "Organización"
+    },
+    "admin": {
+      "title": "Consulta de derechos de uso",
+      "subtitle": "Solo lectura: a qué tiene derecho ahora un cliente u organización. Cada consulta queda en el registro de auditoría.",
+      "kind": "Consultar",
+      "customer": "Cliente",
+      "organization": "Organización",
+      "id": "ID",
+      "idHelp": "El ID numérico",
+      "idInvalid": "Introduce un número",
+      "lookUp": "Consultar",
+      "none": "No hay nada activo para este cliente u organización.",
+      "notFound": "Ningún cliente u organización tiene ese ID."
+    }
   }
 }

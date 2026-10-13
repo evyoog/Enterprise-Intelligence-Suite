@@ -3,6 +3,7 @@ import { screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { axe } from 'jest-axe'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { ApiError } from '../api/client'
 import { renderWithProviders } from '../test/renderWithProviders'
 import { BillingPage } from './BillingPage'
 
@@ -141,6 +142,14 @@ describe('BillingPage', () => {
     await user.type(screen.getByLabelText('Tax ID'), 'DE 123456789')
     expect(screen.queryByText(/GSTIN/)).not.toBeInTheDocument()
     expect(screen.getByRole('button', { name: 'Save' })).toBeEnabled()
+  })
+
+  it('tells a member without the Manage billing permission why there is nothing to see (C97 BI-5)', async () => {
+    overview.mockRejectedValue(new ApiError(403, 'You do not have permission to do this'))
+    renderWithProviders(<BillingPage />)
+
+    expect(await screen.findByText(/Only members with the Manage billing permission/)).toBeInTheDocument()
+    expect(screen.queryByRole('tab', { name: 'Invoices' })).not.toBeInTheDocument()
   })
 
   it('has no detectable a11y violations', async () => {

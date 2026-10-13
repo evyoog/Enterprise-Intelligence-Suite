@@ -196,6 +196,7 @@ export const NAV_CONFIG: NavDef[] = [
     when: { any: [platform('MANAGE_SUPPORT_TICKETS'), { customer: true }] },
     groupOverrides: [{ when: { any: [platform('MANAGE_SUPPORT_TICKETS'), orgAdmin] }, group: 'operations' }],
   },
+  { id: 'adminEntitlements', labelKey: 'entitlementsLookup', icon: ShieldCheck, group: 'operations', to: '/admin/entitlements', when: platform('VIEW_ENTITLEMENTS') },
   { id: 'reviews', labelKey: 'reviews', icon: Star, group: 'operations', to: '/admin/reviews', when: platform('MANAGE_REVIEWS') },
   { id: 'partners', labelKey: 'partners', icon: Handshake, group: 'operations', to: '/admin/partners', when: platform('MANAGE_PARTNERS') },
   { id: 'auditLog', labelKey: 'auditLog', icon: ScrollText, group: 'operations', to: '/admin/audit-log', when: platform('VIEW_AUDIT_LOG') },

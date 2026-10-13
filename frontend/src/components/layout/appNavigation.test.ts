@@ -90,7 +90,7 @@ describe('platform administrator (C80 §2)', () => {
     expect(t.platform).toEqual(['products', 'applications', 'offerings', 'integrations', 'integrations>platformEvents', 'integrations>apiKeys', 'searchAdmin', 'serviceStatus'])
     expect(t.operations).toEqual([
       'billing', 'billing>adminBillingInvoices', 'billing>adminPaymentGateway', 'billing>adminBillingSettings', 'billing>adminTaxConfiguration',
-      'support', 'reviews', 'partners', 'auditLog',
+      'support', 'adminEntitlements', 'reviews', 'partners', 'auditLog',
     ])
   })
 

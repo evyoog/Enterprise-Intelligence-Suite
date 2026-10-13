@@ -510,7 +510,8 @@
       "peopleStructure": "People & structure",
       "organizationsDirectory": "Organizations",
       "offerings": "Offerings",
-      "accessManagement": "Access management"
+      "accessManagement": "Access management",
+      "entitlementsLookup": "Entitlements lookup"
     },
     "catalogTitle": "Product catalog",
     "catalogSubtitle": "Search and filter the products available on the platform.",
@@ -704,7 +705,8 @@
     "changePlanDialog": {
       "title": "Change plan for {{product}}",
       "planLabel": "Plan",
-      "save": "Save"
+      "save": "Save",
+      "rule": "An upgrade takes effect now. A downgrade takes effect at your next renewal."
     },
     "confirmCancel": "This permanently cancels your subscription to {{product}}. Continue?",
     "seats": {
@@ -731,6 +733,11 @@
       "changeReminders": "Change reminder settings",
       "nextReminder": "Next reminder: {{date}}",
       "noReminderLeft": "No reminder before this renewal."
+    },
+    "scheduledChange": {
+      "notice": "Your plan changes to {{plan}} on {{date}}, at your next renewal. You keep your current plan until then.",
+      "keep": "Keep current plan",
+      "nextRenewal": "your next renewal"
     }
   },
   "orders": {
@@ -1037,7 +1044,7 @@
       "title": "Add payment method",
       "card": "Card",
       "upi": "UPI",
-      "consent": "I agree to securely save this card with Razorpay for future payments",
+      "consent": "I agree to securely save this card with the payment provider for future payments",
       "makeDefault": "Set as default",
       "continue": "Continue to secure entry",
       "saved": "Payment method saved.",
@@ -1068,7 +1075,8 @@
       "subtotal": "Subtotal credited",
       "download": "Download credit note",
       "close": "Close"
-    }
+    },
+    "noPermission": "Only members with the Manage billing permission can see your organization's billing. Ask an organization administrator to give you that permission."
   },
   "admin": {
     "billing": {
@@ -1116,7 +1124,7 @@
     },
     "paymentGateway": {
       "title": "Payment gateway",
-      "subtitle": "Razorpay connection status — read-only.",
+      "subtitle": "Payment gateways and their connection status — read-only.",
       "provider": "Provider",
       "status": "Status",
       "configured": "Configured",
@@ -1147,7 +1155,7 @@
         "business": "Business & invoicing",
         "offline": "Offline payments",
         "methods": "Payment methods",
-        "gateway": "Razorpay gateway",
+        "gateway": "Payment gateways",
         "reminders": "Renewal reminders"
       },
       "overview": {
@@ -1228,7 +1236,10 @@
         "payByInvoiceEnabled": "Pay by invoice",
         "checkoutDisplayName": "Name shown in Razorpay Checkout",
         "checkoutDescription": "Description shown in Razorpay Checkout",
-        "checkoutThemeColor": "Checkout colour"
+        "checkoutThemeColor": "Checkout colour",
+        "termsUrl": "Terms & Conditions page",
+        "privacyUrl": "Privacy policy page",
+        "refundPolicyUrl": "Refund policy page"
       },
       "h": {
         "prefix": "New invoices are numbered PREFIX-YEAR-NUMBER. Issued numbers never change.",
@@ -1276,7 +1287,9 @@
         "offlineMethod": "Offline payment",
         "offlineMethodBody": "Let customers pay against an invoice instead of online.",
         "appearance": "Razorpay Checkout appearance",
-        "appearanceBody": "How your business appears in the Razorpay payment window. These are not secrets."
+        "appearanceBody": "How your business appears in the Razorpay payment window. These are not secrets.",
+        "policies": "Policy pages",
+        "policiesBody": "Links to the Terms, Privacy and Refund pages on the evyoog.com website. Checkout links to them and invoices print them."
       },
       "preview": {
         "invoiceTitle": "Invoice preview",
@@ -1344,6 +1357,18 @@
         "daysLeft_other": "{{count}} days before",
         "renewalDay": "Renewal",
         "saveError": "Could not save the reminder defaults."
+      },
+      "loading": "Loading…",
+      "payByInvoiceOrgs": {
+        "title": "Organizations that can pay by invoice",
+        "subtitle": "Pay by invoice is only for organizations you enable here. Individual customers always pay online.",
+        "body": "An organization sees the Pay by invoice option at checkout only when the switch above is on and the organization is enabled below.",
+        "enabledTitle": "Enabled organizations",
+        "none": "No organization is enabled yet.",
+        "search": "Find an organization",
+        "searchHelp": "Type at least 2 letters of its name.",
+        "noMatch": "No organization matches.",
+        "switchLabel": "Pay by invoice for {{name}}"
       }
     },
     "events": {
@@ -1847,6 +1872,16 @@
         }
       },
       "close": "Close"
+    },
+    "gateways": {
+      "title": "Payment gateways",
+      "body": "The gateways the platform can take payments through. Checkout uses the active one and never shows a gateway's keys.",
+      "active": "Active",
+      "methods": "Methods",
+      "makeActive": "Make active",
+      "makeActiveNamed": "Make {{name}} the active gateway",
+      "testNamed": "Test the {{name}} connection",
+      "addNote": "Another gateway can be linked by adding it to the platform backend with its credentials in the common secrets file; it then appears in this list. Switching the active gateway affects new payments only."
     }
   },
   "checkout": {
@@ -1906,7 +1941,7 @@
       }
     },
     "card": {
-      "lead": "You'll enter your card details in Razorpay's secure window after you select Pay.",
+      "lead": "You'll enter your card details in the payment provider's secure window after you select Pay.",
       "number": "Card number",
       "name": "Name on card",
       "expiry": "Expiry (MM/YY)",
@@ -1917,7 +1952,7 @@
       "accepted": "Accepted cards"
     },
     "upi": {
-      "note": "You'll pay with your UPI ID or a UPI app in Razorpay's secure window.",
+      "note": "You'll pay with your UPI ID or a UPI app in the payment provider's secure window.",
       "apps": "UPI apps",
       "saved": "Saved UPI IDs"
     },
@@ -1935,7 +1970,7 @@
       "subtotal": "Subtotal",
       "noTax": "Tax: none for this region",
       "total": "Total",
-      "trust": "Payments are processed securely by Razorpay.",
+      "trust": "Payments are processed securely by our payment provider.",
       "qty": "Qty {{qty}}",
       "toggle": "Total {{total}} · {{count}} items",
       "editCart": "Edit cart",
@@ -2019,10 +2054,10 @@
       "changeLabel": "Change {{field}}"
     },
     "netbanking": {
-      "note": "You'll choose your bank in Razorpay's secure window."
+      "note": "You'll choose your bank in the payment provider's secure window."
     },
     "wallets": {
-      "note": "You'll choose your wallet in Razorpay's secure window."
+      "note": "You'll choose your wallet in the payment provider's secure window."
     },
     "savedCards": {
       "title": "Saved cards",
@@ -2042,7 +2077,23 @@
       "stepBack": "Step back",
       "completeOrder": "Complete order"
     },
-    "poweredBy": "Powered by"
+    "poweredBy": "Powered by",
+    "consentLead": "I agree to the",
+    "consentTerms": "Terms & Conditions",
+    "consentRefund": "Refund policy",
+    "consentAnd": "and",
+    "consentPrivacy": "Privacy policy",
+    "purchaseOrder": {
+      "label": "Purchase order number (optional)",
+      "help": "Printed on the invoice. You can leave it empty.",
+      "invalid": "Use up to 50 letters, digits, spaces or . / _ -"
+    },
+    "methods": {
+      "card": "Cards",
+      "upi": "UPI",
+      "netbanking": "Netbanking",
+      "wallet": "Wallets"
+    }
   },
   "cart": {
     "title": "Your cart",
@@ -4261,5 +4312,33 @@
     "browse": "Browse products",
     "open": "Wishlist",
     "openCount": "Wishlist ({{count}})"
+  },
+  "entitlements": {
+    "title": "What your plans include",
+    "body": "Read-only: this comes from your active subscriptions and their plans. Usage is counted by each product.",
+    "none": "You have no active subscriptions.",
+    "loadError": "Could not load your entitlements.",
+    "until": "Active until {{date}}",
+    "noEnd": "No end date",
+    "limit": "Limit: {{limit}}",
+    "noLimit": "No limit set",
+    "features": "Included features",
+    "owner": {
+      "INDIVIDUAL": "Personal",
+      "ORGANIZATION": "Organization"
+    },
+    "admin": {
+      "title": "Entitlements lookup",
+      "subtitle": "Read-only: what a customer or organization is entitled to now. Each lookup is recorded in the audit log.",
+      "kind": "Look up",
+      "customer": "Customer",
+      "organization": "Organization",
+      "id": "ID",
+      "idHelp": "The numeric ID",
+      "idInvalid": "Enter a number",
+      "lookUp": "Look up",
+      "none": "Nothing is active for this customer or organization.",
+      "notFound": "No customer or organization has that ID."
+    }
   }
 }
