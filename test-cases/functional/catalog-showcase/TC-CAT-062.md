@@ -1,4 +1,4 @@
-# TC-CAT-062: The compact card shows the banner and icon, falls back, and is not clickable in the form preview
+# TC-CAT-062: The card shows the banner and icon, falls back, and is not clickable in the form preview
 
 | Field | Value |
 |---|---|
@@ -17,7 +17,7 @@ Cards with and without a banner image and an icon.
 1. Render a card with both images. 2. Render one with neither. 3. Render the form preview.
 
 ## Expected Result
-Banner then icon images in that order; initials without an icon; no feature tags; in the preview Subscribe, Add to cart and the heart are disabled and the name is not a link.
+Banner then icon images in that order; initials without an icon; in the preview Subscribe, Add to cart and the heart are disabled and the name is not a link.
 
 ## Automated coverage
 - `frontend/src/components/catalog/CatalogComponents.test.tsx` — `shows the banner image behind the card…`, `shows the initials when there is no icon…`

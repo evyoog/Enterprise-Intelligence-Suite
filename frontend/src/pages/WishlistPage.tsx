@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { Box, Button, Grid, Skeleton, Snackbar } from '@mui/material'
+import { Box, Button, Skeleton, Snackbar } from '@mui/material'
 import { Heart } from 'lucide-react'
 import { Link as RouterLink } from 'react-router-dom'
 import { ApiError } from '../api/client'
@@ -8,6 +8,7 @@ import { productsApi, type Product } from '../api/productsApi'
 import { reviewsApi } from '../api/reviewsApi'
 import { useBuy } from '../components/cart/useBuy'
 import { canAddToCart, useAddToCart } from '../components/cart/useAddToCart'
+import { CatalogGrid } from '../components/catalog/CatalogGrid'
 import { CatalogProductCard } from '../components/catalog/CatalogProductCard'
 import { PageHeader } from '../components/layout/PageHeader'
 import { EmptyState } from '../components/ui/EmptyState'
@@ -53,31 +54,30 @@ export function WishlistPage() {
       <PageHeader icon={Heart} title={t('wishlist.title')} subtitle={t('wishlist.subtitle')} />
       {error && <ErrorState title={t('catalog.loadErrorTitle')} message={error} onRetry={() => setReload((n) => n + 1)} />}
       {!error && saved === null && (
-        <Grid container spacing={2.5}>
-          {[0, 1, 2].map((i) => <Grid key={i} size={{ xs: 12, sm: 6, lg: 4 }}><Skeleton variant="rounded" height={320} /></Grid>)}
-        </Grid>
+        <CatalogGrid>
+          {[0, 1, 2].map((i) => <Skeleton key={i} variant="rounded" height={320} />)}
+        </CatalogGrid>
       )}
       {saved && saved.length === 0 && (
         <EmptyState title={t('wishlist.emptyTitle')} description={t('wishlist.emptyBody')}
           action={<Button component={RouterLink} to="/products" variant="contained">{t('wishlist.browse')}</Button>} />
       )}
       {saved && saved.length > 0 && (
-        <Grid container spacing={2.5}>
+        <CatalogGrid>
           {saved.map((product) => (
-            <Grid key={product.id} size={{ xs: 12, sm: 6, lg: 4 }}>
-              <CatalogProductCard
-                product={product}
-                rating={ratings.get(product.id)}
-                saved
-                onToggleSaved={() => toggle(product.id)}
-                onSubscribe={() => buy(product.id)}
-                onAddToCart={() => addToCart(product)}
-                addToCartUnavailable={!canAddToCart(product)}
-                addingToCart={busyId === product.id}
-              />
-            </Grid>
+            <CatalogProductCard
+              key={product.id}
+              product={product}
+              rating={ratings.get(product.id)}
+              saved
+              onToggleSaved={() => toggle(product.id)}
+              onSubscribe={() => buy(product.id)}
+              onAddToCart={() => addToCart(product)}
+              addToCartUnavailable={!canAddToCart(product)}
+              addingToCart={busyId === product.id}
+            />
           ))}
-        </Grid>
+        </CatalogGrid>
       )}
       <Box>{notice}</Box>
       <Snackbar open={Boolean(toast)} autoHideDuration={4000} onClose={() => setToast(null)} message={toast ?? ''} />
