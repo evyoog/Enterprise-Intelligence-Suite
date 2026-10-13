@@ -70,6 +70,8 @@ export interface Product {
   featureTags?: string[]
   documentationUrl?: string | null
   supportUrl?: string | null
+  /** C94: when the product was added — the catalog's New badge and Newest sort. */
+  createdAt?: string
 }
 
 export interface ProductCreateRequest {

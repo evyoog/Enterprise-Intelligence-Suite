@@ -196,3 +196,5 @@ Stories for this sprint use `docs/02-requirements/functional-requirements/user-s
 - **Decisions:** [`open-decisions.md`](../open-decisions.md) (2026-09-25)
 
 Full analysis: [`EIS-document-analysis.md`](../EIS-document-analysis.md). Values that no source or decision gives are written **Not specified**.
+
+**Catalog redesign (2026-10-13, [C94](../open-decisions.md#c94)):** the public Product catalog was redesigned from the product owner's mockup (banner, category tiles, filter panel, rating and badges, grid and list view, sort) and a wishlist was added ([REQ-MKT-004](../../../02-requirements/FRD/wishlist/requirement.md)). Migration V034.

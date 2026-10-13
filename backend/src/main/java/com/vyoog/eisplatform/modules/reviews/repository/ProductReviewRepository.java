@@ -17,4 +17,9 @@ public interface ProductReviewRepository extends JpaRepository<ProductReview, Lo
 
     /** Platform admin dashboard (C53): reviews awaiting moderation. */
     long countByStatus(ReviewStatus status);
+
+    /** C94: [productId, average rating, review count] per product for one status, in a single query. */
+    @org.springframework.data.jpa.repository.Query(
+        "select r.productId, avg(r.rating), count(r) from ProductReview r where r.status = :status group by r.productId")
+    List<Object[]> summarizeByStatus(@org.springframework.data.repository.query.Param("status") ReviewStatus status);
 }

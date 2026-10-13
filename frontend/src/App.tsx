@@ -75,6 +75,7 @@ import { AdminBillingSettingsPage } from './pages/admin/AdminBillingSettingsPage
 import { AdminPartnerDetailPage } from './pages/admin/AdminPartnerDetailPage'
 import { RequireAdmin } from './components/routing/RequireAdmin'
 import { RequireAuth } from './components/routing/RequireAuth'
+import { WishlistPage } from './pages/WishlistPage'
 import { AuthAwareLayout, PublicOnly } from './components/layout/AppShell'
 import { useAuth } from './auth/AuthProvider'
 import { AuthModalProvider } from './auth/AuthModalContext'
@@ -157,6 +158,8 @@ function MainApp() {
           <Route path="/account/preferences" element={<PreferencesPage />} />
           <Route path="/my/products" element={<RequireAuth><MyProductsPage /></RequireAuth>} />
           <Route path="/my/subscriptions" element={<RequireAuth><MySubscriptionsPage /></RequireAuth>} />
+          {/* REQ-MKT-004 (C94): the products saved with the heart on the catalog. */}
+          <Route path="/my/wishlist" element={<RequireAuth><WishlistPage /></RequireAuth>} />
           <Route path="/organization/business-dashboard" element={<RequireAuth><BusinessDashboardPage /></RequireAuth>} />
           {/* C69: organization administration moved off the dashboard. */}
           <Route path="/organization/settings" element={<RequireAuth><OrganizationSettingsRedirect /></RequireAuth>} />

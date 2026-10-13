@@ -3,7 +3,7 @@
 **Status:** Approved
 **BRD:** Not specified
 **Owner:** Product owner
-**Approved by / on:** Product owner / 2026-10-03 ([C66](../../../01-business/roadmap/open-decisions.md#c66))
+**Approved by / on:** Product owner / 2026-10-03 ([C66](../../../01-business/roadmap/open-decisions.md#c66)); public catalog page redesigned 2026-10-13 ([C94](../../../01-business/roadmap/open-decisions.md#c94))
 
 | Field | Value |
 |---|---|
@@ -37,15 +37,19 @@ The Product Catalog becomes the reference design for the platform: a clean enter
 | REQ-CAT-003.8 | All Apps lists every app (including Inactive and Retired) with status/featured filters, a platform filter, search and a table or card view; deleting asks for confirmation. | P0 |
 | REQ-CAT-003.9 | Every redesigned screen has loading, empty and error states, is keyboard and screen-reader accessible (WCAG 2.1 AA contrast), responsive down to phone width, and translated (en, es). | P0 |
 | REQ-CAT-003.10 | Existing routes, API fields, authentication and permissions are unchanged; all new fields are optional and additive. | P0 |
+| REQ-CAT-003.11 | **Catalog banner and category tiles (C94):** the public catalog `/products` opens with a banner (title, subtitle, three trust points, View offerings, Wishlist for signed-in users, Add Product for administrators) and a row of category tiles, each with its product count; "All" shows the total. One category is chosen at a time. | P0 |
+| REQ-CAT-003.12 | **Filter panel (C94):** beside the application cards a panel filters by **Platform**, **Pricing model** (Subscription, One-time, Free), **Features** (feature tags, first six with Show more) and, for signed-in users, **Saved products only**. Each option shows how many loaded products it matches; Clear all resets them; on a phone the panel opens from a Filters button. | P0 |
+| REQ-CAT-003.13 | **Product card (C94):** a tinted banner with the logo (or initials), the badges **Featured** and **New** (added in the last 30 days) and the wishlist heart; then name, category and platform, description, up to three feature tags, the **rating and review count** (approved reviews, only when there are some), the **From** price (cheapest paid plan, or Free) and the **Subscribe** and **Add to cart** actions ([REQ-MKT-003.10](../cart-checkout/requirement.md)). The heart is specified in [REQ-MKT-004](../wishlist/requirement.md). | P0 |
+| REQ-CAT-003.14 | **Toolbar (C94):** "Showing N products", search with recent searches, **Sort** by Name, Price, Newest or Rating, and a **Grid / List** switch whose choice is remembered in the browser. | P0 |
 
 ## Out of scope
 - **Release versions** of an app: the backend has no release data. `products.version` is an edit counter (REQ-CAT-001.1) and is shown only on the edit page, as "Revision N".
-- Ratings on catalog cards, "Popular" sorting and media galleries — no backing data or decision.
+- A "Popular" badge or sort, device-platform, deployment and integration filters, and media galleries — no backing data or decision (ratings on cards were added by C94).
 - Redesigning the other screens beyond the shared theme (see [C66](../../../01-business/roadmap/open-decisions.md#c66) *Not redesigned*).
 - 02.04 Product Content (datasheets, versioned content, videos, case studies).
 
 ## Dependencies
 - Existing `PlatformService`, `ProductService`, `ProductController`, `PlatformController`, `MANAGE_CATALOG`.
-- New public `GET /catalog/platforms` and `GET /catalog/platforms/{id}` ([API](../../../06-api/api-requirements/catalog-showcase.md)).
+- New public `GET /catalog/platforms` and `GET /catalog/platforms/{id}` ([API](../../../06-api/api-requirements/catalog-showcase.md)). C94: public `GET /products/ratings` and `createdAt` on the product response (same API file).
 - New columns ([data model](../../../07-database/data-model/catalog-showcase.md), migration [V019](../../../../database/migrations/V019__catalog_showcase.sql)).
 - Screens: [catalog-showcase.md](../../../05-ui/screen-requirements/catalog-showcase.md); design system: [design-system.md](../../../05-ui/screen-requirements/design-system.md).
