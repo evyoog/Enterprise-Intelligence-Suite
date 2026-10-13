@@ -7,7 +7,7 @@
 | Routes | `/organization/access` (Members), `/organization/access/members/{memberId}` (member panel open), `/organization/access/roles/{role}` (Role defaults), `/organization/access/activity` |
 | Sidebar | Organization → **Access management** (people-with-shield icon), shown to organization admins and delegated administrators (*Manage access*) |
 | Also reached from | The member list on the business dashboard and each member row ("Manage access") |
-| Status | Specified, not built (waits for approval) |
+| Status | Built 2026-10-12 ([C90](../../01-business/roadmap/open-decisions.md#c90)). Differences from this spec: the member panel opens from `?member={id}` in the URL (not a path segment); the Role defaults tab picks the role with a toggle (no master list); the `DataTable`/`FilterBar` shared components were not created — the tab uses MUI table and filter fields; the Activity tab has no member/actor/date filters yet; the Last-reviewed filter is not built |
 
 Shared presentation: [billing-ui-standards.md](billing-ui-standards.md) (status chips, `DataTable`, `FilterBar`, loading/empty/error states, toasts, responsive layout). `DataTable` and `FilterBar` do not exist yet; they are created as shared components when this screen is built. Shared access components: [access-ui-components.md](access-ui-components.md). Light and dark mode come from the theme.
 

@@ -14,3 +14,4 @@
 | AC-10 | A structure node can be chosen and is applied on accept; product access is untouched. |
 | AC-11 | The Invitations tab lists, filters, resends and revokes; the platform administrator can read them. |
 | AC-12 | Every event is in the audit log; the screens work in English and Spanish and pass the accessibility checks. |
+| AC-13 | When the person accepts or declines, the inviter (and only the inviter) gets an in-app notification and an email unless muted; a refused acceptance sends none. |

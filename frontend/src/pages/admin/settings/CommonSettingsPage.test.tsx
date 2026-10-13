@@ -33,6 +33,12 @@ vi.mock('../../../api/platformAdministrationApi', () => ({
   },
 }))
 
+// C92 sections have their own tests (components/admin/*.test.tsx).
+vi.mock('../../../api/messageTemplatesApi', () => ({
+  messageTemplatesApi: { list: () => Promise.resolve([]) },
+  platformDefaultsApi: { get: () => new Promise(() => {}) },
+}))
+
 const usd = { code: 'USD', name: 'US Dollar', enabled: true }
 const eur = { code: 'EUR', name: 'Euro', enabled: true }
 const region = { id: 1, code: 'APAC', name: 'Asia Pacific', enabled: true }

@@ -62,7 +62,7 @@ class PreferenceServiceTest {
         assertThat(updated.reducedMotion()).isTrue();
 
         CustomerPreferenceDto reread = preferenceService.getPreferences(customerId);
-        assertThat(reread).isEqualTo(updated);
+        assertThat(reread).usingRecursiveComparison().ignoringFields("defaults").isEqualTo(updated);
     }
 
     @Test
@@ -71,7 +71,7 @@ class PreferenceServiceTest {
         preferenceService.updatePreferences(customerId, "en", null, null, "light", false);
         CustomerPreferenceDto second = preferenceService.updatePreferences(customerId, "es", null, null, "dark", true);
 
-        assertThat(preferenceService.getPreferences(customerId)).isEqualTo(second);
+        assertThat(preferenceService.getPreferences(customerId)).usingRecursiveComparison().ignoringFields("defaults").isEqualTo(second);
     }
 
     @Test

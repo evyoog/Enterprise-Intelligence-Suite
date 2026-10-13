@@ -270,6 +270,36 @@
     "removeMemberError": "No se pudo quitar a este miembro.",
     "loadError": "No se pudo cargar esta sección."
   },
+  "projects": {
+    "title": "Proyectos",
+    "intro": "Un proyecto es un grupo de miembros que comparte acceso a productos. Todos los miembros de un proyecto pueden usar sus productos con el rol que definas.",
+    "newName": "Nombre del proyecto",
+    "description": "Descripción (opcional)",
+    "create": "Crear proyecto",
+    "createError": "No se pudo crear este proyecto.",
+    "updateError": "No se pudo guardar este proyecto.",
+    "edit": "Editar",
+    "save": "Guardar",
+    "cancel": "Cancelar",
+    "delete": "Eliminar",
+    "deleteError": "No se pudo eliminar este proyecto.",
+    "noProjects": "Aún no hay proyectos. Crea uno para dar a un equipo acceso a productos.",
+    "members": "Miembros",
+    "noMembers": "Aún no hay miembros.",
+    "addMember": "Añadir miembro",
+    "addMemberError": "No se pudo añadir a este miembro.",
+    "removeMember": "Quitar",
+    "removeMemberError": "No se pudo quitar a este miembro.",
+    "products": "Productos",
+    "noProducts": "Aún no hay productos.",
+    "addProduct": "Añadir producto",
+    "role": "Rol",
+    "add": "Añadir",
+    "addProductError": "No se pudo añadir este producto.",
+    "removeProduct": "Quitar",
+    "removeProductError": "No se pudo quitar este producto.",
+    "loadError": "No se pudo cargar esta sección."
+  },
   "privilegedAccess": {
     "title": "Acceso elevado",
     "subtitle": "Solicita acceso temporal a un permiso que normalmente no tienes. Un administrador debe aprobarlo y termina automáticamente.",
@@ -478,7 +508,8 @@
       "billingOverview": "Resumen",
       "peopleStructure": "Personas y estructura",
       "organizationsDirectory": "Organizaciones",
-      "offerings": "Ofertas"
+      "offerings": "Ofertas",
+      "accessManagement": "Gestión de accesos"
     },
     "catalogTitle": "Catálogo de productos",
     "catalogSubtitle": "Busque y filtre los productos disponibles en la plataforma.",
@@ -1347,6 +1378,43 @@
         "lastError": "Último error",
         "payload": "Contenido",
         "receipts": "Recibos de manejadores"
+      },
+      "showFailed": "Ver fallidos",
+      "failedBanner_one": "{{count}} evento falló definitivamente y requiere atención. Reintente o corrija el receptor y repita el envío.",
+      "failedBanner_other": "{{count}} eventos fallaron definitivamente y requieren atención. Reintente o corrija el receptor y repita el envío.",
+      "replay": {
+        "open": "Reenviar eventos",
+        "title": "Reenviar eventos",
+        "intro": "Vuelva a enviar a un receptor eventos que ya se entregaron, por ejemplo tras una caída de un producto. Solo se envían los eventos entregados del rango y solo al receptor elegido. Los eventos están disponibles mientras se conservan (vea Ajustes).",
+        "receiver": "Receptor",
+        "noReceivers": "No hay receptores registrados.",
+        "rangeError": "El último día no puede ser anterior al primero.",
+        "preview": "Vista previa",
+        "send": "Reenviar ahora",
+        "cancel": "Cancelar",
+        "error": "No se pudieron reenviar los eventos.",
+        "previewSummary_one": "Se enviaría {{count}} evento a {{receiver}}.",
+        "previewSummary_other": "Se enviarían {{count}} eventos a {{receiver}}.",
+        "tooMany": "Un reenvío puede enviar como máximo {{limit}}. Elija un rango más corto o un tipo de evento.",
+        "doneSummary": "Reenvío a {{receiver}}: {{replayed}} enviados, {{failed}} fallidos.",
+        "failures": "Eventos que fallaron"
+      },
+      "settings": {
+        "open": "Ajustes",
+        "title": "Ajustes de la plataforma de eventos",
+        "retention": "Conservar eventos entregados (días)",
+        "retentionHelp": "30 días por defecto. El reenvío solo funciona con eventos que aún se conservan.",
+        "retentionRange": "Introduzca un número entero de días de 1 a 3650.",
+        "alerts": "Cuando un evento falla definitivamente",
+        "alertsHelp": "Las personas siguientes reciben un aviso cuando un evento agota sus intentos. Quien tenga acceso a esta pantalla también ve el número de fallidos arriba.",
+        "recipients": "Correos a avisar",
+        "recipientsHelp": "Uno por línea, hasta 20. Quien tenga cuenta también recibe el aviso en la aplicación.",
+        "inApp": "Avisar en la aplicación",
+        "email": "Avisar por correo",
+        "save": "Guardar ajustes",
+        "saved": "Ajustes guardados.",
+        "saveError": "No se pudieron guardar los ajustes.",
+        "loadError": "No se pudieron cargar los ajustes."
       }
     },
     "apiKeys": {
@@ -1355,7 +1423,9 @@
       "caption": "{{count}} claves de API",
       "owner": "Propietario",
       "requests": "Solicitudes",
-      "empty": "No se ha creado ninguna clave de API."
+      "empty": "No se ha creado ninguna clave de API.",
+      "organization": "Organización",
+      "personal": "Personal (heredada)"
     },
     "apps": {
       "title": "Todas las aplicaciones",
@@ -1650,7 +1720,10 @@
       "missingDependency": "{{product}} requiere {{required}}.",
       "currencyMismatch": "Este artículo tiene un precio en otra moneda que el resto de tu carrito. Págalo por separado.",
       "notEligible": "{{product}} no está disponible para su tipo de cuenta."
-    }
+    },
+    "addToCart": "Añadir al carrito",
+    "addToCartLabel": "Añadir {{name}} al carrito",
+    "viewCart": "Ver carrito"
   },
   "apiKeys": {
     "title": "Claves de API",
@@ -1694,7 +1767,18 @@
       "created": "Creada",
       "expires": "Caduca",
       "lastUsed": "Último uso",
-      "actions": "Acciones"
+      "actions": "Acciones",
+      "scope": "Alcance"
+    },
+    "legacyTitle": "Claves de API personales (heredadas)",
+    "legacyDescription": "Estas claves se crearon antes de que las claves pasaran a la organización. Siguen funcionando con acceso de lectura y escritura. Revócalas cuando la integración use una clave de la organización.",
+    "scope": {
+      "READ": "Solo lectura",
+      "READ_WRITE": "Lectura y escritura"
+    },
+    "scopeHelp": {
+      "READ": "Solo puede leer datos. Cualquier petición de cambio se rechaza.",
+      "READ_WRITE": "Puede leer y cambiar datos, con los permisos de un administrador de la organización."
     }
   },
   "ui": {
@@ -2939,6 +3023,7 @@
     "tabs": {
       "members": "Miembros",
       "groups": "Grupos",
+      "projects": "Proyectos",
       "structure": "Estructura",
       "invitations": "Invitaciones"
     }
@@ -2951,7 +3036,8 @@
     "title": "Seguridad de acceso",
     "tabs": {
       "federation": "Federación de identidad",
-      "mfa": "Política multifactor"
+      "mfa": "Política multifactor",
+      "apiKeys": "Claves de API"
     },
     "mfaTitle": "Política multifactor",
     "mfaSubtitle": "Exige un código de autenticador cuando los miembros inician sesión."
@@ -3005,7 +3091,7 @@
       },
       "VIDEO": {
         "title": "Vídeos",
-        "help": "Un enlace de YouTube, Vimeo u otra web. Los vídeos no se suben aquí.",
+        "help": "Un enlace de YouTube, Vimeo u otra web, o un archivo de vídeo (MP4 o WebM, hasta {{size}}) que se reproduce en la página de producto.",
         "empty": "Aún no hay vídeos.",
         "add": "Añadir vídeo"
       },
@@ -3070,6 +3156,9 @@
       "altText": "Texto alternativo (describe la imagen)",
       "videoUrl": "Enlace del vídeo",
       "videoHelp": "Un enlace de YouTube o Vimeo se reproduce en la página de producto; cualquier otro enlace https se abre en una pestaña nueva.",
+      "videoMode": "Cómo se añade el vídeo",
+      "videoModeLink": "Un enlace (YouTube, Vimeo o web)",
+      "videoModeFile": "Subir un archivo de vídeo",
       "customerName": "Nombre del cliente",
       "problem": "El problema",
       "result": "El resultado",
@@ -3551,5 +3640,186 @@
     "worksWith": {
       "title": "Funciona con"
     }
+  },
+  "access": {
+    "title": "Gestión de accesos",
+    "subtitle": "Controle qué puede hacer cada miembro y qué productos puede abrir.",
+    "tabs": {
+      "members": "Miembros",
+      "roles": "Valores por rol",
+      "activity": "Actividad"
+    },
+    "search": "Buscar nombre o correo",
+    "role": "Rol",
+    "any": "Cualquiera",
+    "product": "Producto",
+    "hasCustom": "Con acceso personalizado",
+    "clearFilters": "Borrar filtros",
+    "bulkChange": "Cambio masivo ({{count}})",
+    "retry": "Reintentar",
+    "member": "Miembro",
+    "products": "Productos",
+    "productsOf": "{{on}} de {{total}}",
+    "customAccess": "Acceso personalizado",
+    "customCount": "{{count}} personalizados",
+    "lastReviewed": "Última revisión",
+    "never": "Nunca",
+    "status": "Estado",
+    "actions": "Acciones",
+    "manage": "Gestionar acceso",
+    "manageFor": "Gestionar acceso de {{name}}",
+    "noMembers": "Ningún miembro coincide con estos filtros.",
+    "select": "Seleccionar a {{name}}",
+    "selectPage": "Seleccionar todos en esta página",
+    "roles": {
+      "ORG_ADMIN": "Administrador de la organización",
+      "MEMBER": "Miembro"
+    },
+    "statuses": {
+      "ACTIVE": "Activo",
+      "SUSPENDED": "Suspendido",
+      "INACTIVE": "Eliminado"
+    },
+    "source": {
+      "ROLE": "Del rol",
+      "OVERRIDE": "Personalizado",
+      "LOCKED": "Siempre activo",
+      "PROJECT": "De un proyecto"
+    },
+    "on": "Sí",
+    "off": "No",
+    "unsaved": "Sin guardar",
+    "willReset": "Se restablecerá",
+    "reset": "Restablecer",
+    "resetItem": "Restablecer {{name}} al valor del rol",
+    "seats": "Puestos {{inUse}}/{{quantity}}",
+    "noChanges": "Sin cambios",
+    "changesWaiting_one": "{{count}} cambio sin guardar",
+    "changesWaiting_other": "{{count}} cambios sin guardar",
+    "cancel": "Cancelar",
+    "save": "Guardar cambios",
+    "close": "Cerrar",
+    "loading": "Cargando…",
+    "loadError": "No se pudo cargar esta sección.",
+    "saveError": "No se pudo guardar este cambio.",
+    "savedFor": "Acceso actualizado para {{name}}",
+    "resetAll": "Restablecer todo al valor del rol",
+    "resetAllConfirm": "¿Restablecer todos los cambios individuales de este miembro a los valores del rol?",
+    "discardConfirm": "¿Descartar los cambios sin guardar?",
+    "markReviewed": "Marcar como revisado",
+    "reviewedOn": "Última revisión el {{date}} por {{by}}",
+    "neverReviewed": "Nunca revisado",
+    "productAccess": "Acceso a productos",
+    "featurePermissions": "Permisos de funciones",
+    "noSubscriptions": "Su organización no tiene suscripciones activas.",
+    "countOn": "{{on}} de {{total}} activos",
+    "areas": {
+      "MEMBERS_ACCESS": "Miembros y acceso",
+      "SUBSCRIPTIONS": "Suscripciones",
+      "ORDERS": "Pedidos",
+      "BILLING": "Facturación",
+      "SECURITY": "Seguridad e inicio de sesión",
+      "ORGANIZATION": "Ajustes de la organización"
+    },
+    "roleMembers_one": "{{count}} miembro tiene este rol.",
+    "roleMembers_other": "{{count}} miembros tienen este rol.",
+    "roleDefaultsIntro": "Estos valores se aplican a todos los del rol que no tengan un cambio individual.",
+    "adminLocked": "Los administradores de la organización siempre tienen todos los permisos de funciones.",
+    "adminLockedShort": "Los administradores de la organización siempre tienen todos los permisos.",
+    "reviewChanges": "Revisar cambios",
+    "impactTitle": "Revise el impacto",
+    "impactSummary_one": "Esto cambia el acceso de {{count}} miembro sin acceso personalizado. Los miembros con acceso personalizado lo conservan.",
+    "impactSummary_other": "Esto cambia el acceso de {{count}} miembros sin acceso personalizado. Los miembros con acceso personalizado lo conservan.",
+    "impactItem": "{{name}}: {{from}} → {{to}} ({{count}} miembros)",
+    "apply": "Aplicar",
+    "defaultsSaved_one": "Valores guardados. {{count}} miembro afectado.",
+    "defaultsSaved_other": "Valores guardados. {{count}} miembros afectados.",
+    "when": "Cuándo",
+    "what": "Cambio",
+    "by": "Por",
+    "details": "Detalles",
+    "noActivity": "Aún no hay cambios de acceso.",
+    "actions_": {
+      "ACCESS_PERMISSION_CHANGED": "Permiso cambiado",
+      "ACCESS_PRODUCT_CHANGED": "Acceso a producto cambiado",
+      "ACCESS_OVERRIDE_RESET": "Restablecido al valor del rol",
+      "ACCESS_ROLE_DEFAULT_CHANGED": "Valor del rol cambiado",
+      "ACCESS_BULK_CHANGED": "Cambio masivo",
+      "MEMBER_ROLE_CHANGED": "Rol cambiado",
+      "MEMBER_ACCESS_REVIEWED": "Acceso revisado",
+      "PRODUCT_ACCESS_GRANTED": "Producto activado",
+      "PRODUCT_ACCESS_REVOKED": "Producto desactivado",
+      "SUBSCRIPTION_SEATS_CHANGED": "Puestos cambiados"
+    },
+    "bulk": {
+      "title_one": "Cambio masivo para {{count}} miembro",
+      "title_other": "Cambio masivo para {{count}} miembros",
+      "action": "Acción",
+      "grant": "Activar",
+      "remove": "Desactivar",
+      "item": "Producto o permiso",
+      "productOption": "Producto: {{name}}",
+      "preview": "Vista previa",
+      "apply": "Aplicar a los miembros",
+      "error": "No se pudo ejecutar este cambio masivo.",
+      "skipped": "Omitidos",
+      "grantVerb": "Activar",
+      "removeVerb": "Desactivar",
+      "previewSummary": "{{action}} {{item}}: cambiarían {{applied}} miembros, {{skipped}} omitidos.",
+      "done": "{{action}} {{item}}: {{applied}} miembros cambiados, {{skipped}} omitidos."
+    }
+  },
+  "orgApiKeys": {
+    "title": "Claves de API de la organización",
+    "description": "Las claves pertenecen a tu organización, no a quien las crea, así que una integración sigue funcionando cuando esa persona se va. Una clave actúa como administrador de la organización, salvo la administración de la plataforma.",
+    "empty": "Tu organización aún no tiene claves de API.",
+    "pageTitle": "Claves de API",
+    "pageSubtitle": "Permite que tus propias integraciones llamen a la API de EIS. Las claves son de solo lectura o de lectura y escritura.",
+    "col": {
+      "createdBy": "Creada por"
+    }
+  },
+  "platformDefaults": {
+    "title": "Valores predeterminados para usuarios nuevos",
+    "description": "Con qué empieza un usuario nuevo hasta que elige por sí mismo. La elección del usuario siempre prevalece. Deja un campo vacío para no tener valor predeterminado.",
+    "language": "Idioma",
+    "region": "Región",
+    "currency": "Moneda",
+    "timeZone": "Zona horaria",
+    "dateFormat": "Formato de fecha",
+    "reminderDays": "Días de aviso de renovación",
+    "regionHelp": "Por ejemplo en-IN o es-ES.",
+    "timeZoneHelp": "Por ejemplo Asia/Kolkata o Europe/Madrid.",
+    "reminderDaysHelp": "De 1 a 30 días antes de la renovación.",
+    "none": "Sin valor predeterminado",
+    "save": "Guardar valores",
+    "saved": "Valores guardados.",
+    "loadError": "No se pudieron cargar los valores predeterminados.",
+    "saveError": "No se pudieron guardar los valores predeterminados."
+  },
+  "messageTemplates": {
+    "title": "Plantillas de mensajes",
+    "description": "Los correos y notificaciones que envía EIS, uno por tipo de mensaje e idioma. Usa {marcadores} como {name}. Restablece un idioma para volver al texto original.",
+    "channel": {
+      "EMAIL": "Correo",
+      "NOTIFICATION": "Notificación"
+    },
+    "customized": "Personalizada",
+    "edit": "Editar",
+    "editNamed": "Editar {{name}}",
+    "language": "Idioma",
+    "subject": "Asunto",
+    "titleHelp": "Se muestra como título de la notificación.",
+    "body": "Mensaje",
+    "placeholders": "Marcadores",
+    "example": "ejemplo",
+    "requiredHelp": "* debe aparecer en el texto. Los marcadores desconocidos se rechazan.",
+    "preview": "Vista previa",
+    "previewButton": "Vista previa",
+    "save": "Guardar",
+    "reset": "Restablecer al original",
+    "close": "Cerrar",
+    "loadError": "No se pudieron cargar las plantillas.",
+    "saveError": "No se pudo guardar la plantilla."
   }
 }

@@ -23,6 +23,17 @@ public class ApiManagementConfig {
         return registration;
     }
 
+    /** C92 (API-5 B): Deprecation, Sunset and Link headers for endpoints listed in app.api.deprecations. */
+    @Bean
+    public FilterRegistrationBean<ApiDeprecationFilter> apiDeprecationFilter(ApiDeprecationProperties properties) {
+        ApiDeprecationFilter filter = new ApiDeprecationFilter(properties.getDeprecations().stream()
+            .map(d -> new ApiDeprecationFilter.Rule(d.getPathPrefix(), d.getSunset(), d.getSuccessor())).toList());
+        FilterRegistrationBean<ApiDeprecationFilter> registration = new FilterRegistrationBean<>(filter);
+        registration.setOrder(Ordered.HIGHEST_PRECEDENCE + 1);
+        registration.addUrlPatterns("/*");
+        return registration;
+    }
+
     @Bean
     public ApiKeyAuthenticationFilter apiKeyAuthenticationFilter(ApiKeyService apiKeyService) {
         return new ApiKeyAuthenticationFilter(apiKeyService);

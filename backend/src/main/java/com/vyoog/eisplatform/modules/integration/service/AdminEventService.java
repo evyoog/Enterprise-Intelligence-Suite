@@ -4,6 +4,7 @@ import com.vyoog.eisplatform.common.exception.InvalidStateException;
 import com.vyoog.eisplatform.common.exception.ResourceNotFoundException;
 import com.vyoog.eisplatform.modules.audit.service.AuditService;
 import com.vyoog.eisplatform.modules.integration.dto.EventReceiptDto;
+import com.vyoog.eisplatform.modules.integration.dto.EventSummaryCountsDto;
 import com.vyoog.eisplatform.modules.integration.dto.OutboxEventDetailDto;
 import com.vyoog.eisplatform.modules.integration.dto.OutboxEventPageDto;
 import com.vyoog.eisplatform.modules.integration.dto.OutboxEventSummaryDto;
@@ -63,6 +64,11 @@ public class AdminEventService {
             PageRequest.of(safePage, PAGE_SIZE, Sort.by(Sort.Order.desc("occurredAt"), Sort.Order.desc("id"))));
         return new OutboxEventPageDto(result.getContent().stream().map(AdminEventService::summary).toList(),
             result.getTotalElements(), safePage, PAGE_SIZE);
+    }
+
+    public EventSummaryCountsDto counts() {
+        return new EventSummaryCountsDto(outboxEventRepository.countByStatus(OutboxEventStatus.PENDING),
+            outboxEventRepository.countByStatus(OutboxEventStatus.FAILED));
     }
 
     public List<String> eventTypes() {

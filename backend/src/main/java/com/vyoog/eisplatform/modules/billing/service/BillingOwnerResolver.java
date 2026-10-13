@@ -26,6 +26,7 @@ public class BillingOwnerResolver {
     private final OrganizationMemberRepository memberRepository;
     private final OrganizationRepository organizationRepository;
     private final AuthorizationService authorizationService;
+    private final com.vyoog.eisplatform.modules.authorization.service.MemberAccessService memberAccessService;
 
     public OrganizationMember resolveMembership(Long customerId) {
         OrganizationMember member = memberRepository.findFirstByCustomerIdAndStatus(customerId, MembershipStatus.ACTIVE)
@@ -41,7 +42,7 @@ public class BillingOwnerResolver {
 
     public OrganizationMember requireManageOrganizationBilling(Long customerId) {
         OrganizationMember member = resolveMembership(customerId);
-        if (!authorizationService.hasOrganizationPermission(member.getOrgRole(), "MANAGE_ORGANIZATION")) {
+        if (!memberAccessService.hasPermission(member, "MANAGE_ORGANIZATION_BILLING")) {
             throw new ForbiddenException("You do not have permission to do this");
         }
         return member;

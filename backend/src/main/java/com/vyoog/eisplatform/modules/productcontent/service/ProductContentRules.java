@@ -16,6 +16,10 @@ final class ProductContentRules {
         "png", Set.of("image/png"), "jpg", Set.of("image/jpeg"), "jpeg", Set.of("image/jpeg"), "webp", Set.of("image/webp"));
 
     static final Map<String, Set<String>> PDF = Map.of("pdf", Set.of("application/pdf"));
+    /** Hosted videos (PC-3, C89): only formats every browser plays. MOV is left out. */
+    static final Map<String, Set<String>> VIDEO = Map.of("mp4", Set.of("video/mp4"), "webm", Set.of("video/webm"));
+    /** The provider value of a video file uploaded to the product storage (no link). */
+    static final String HOSTED = "HOSTED";
 
     private ProductContentRules() {
     }

@@ -10,7 +10,7 @@ vi.mock('../../api/apiKeysApi', () => ({
   apiKeysApi: {},
   adminApiKeysApi: {
     list: () => Promise.resolve({
-      items: [{ id: 1, ownerCustomerId: 5, ownerEmail: 'jane@example.com', name: 'CRM sync', prefix: 'eis_ab12cd34', status: 'ACTIVE',
+      items: [{ id: 1, ownerCustomerId: 5, ownerEmail: 'jane@example.com', organizationId: 7, organizationName: 'Acme Corp', scope: 'READ', name: 'CRM sync', prefix: 'eis_ab12cd34', status: 'ACTIVE',
         createdAt: '2026-10-01T00:00:00Z', expiresAt: null, lastUsedAt: '2026-10-03T09:00:00Z', requestCount: 1234 }],
       totalElements: 1, page: 0, size: 20,
     }),

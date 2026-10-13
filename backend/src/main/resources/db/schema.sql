@@ -1379,7 +1379,7 @@ CREATE TABLE IF NOT EXISTS product_content_item (
     logo_file_name VARCHAR(255),
     logo_file_size BIGINT,
     logo_mime_type VARCHAR(100),
-    video_provider VARCHAR(20) CHECK (video_provider IN ('YOUTUBE', 'VIMEO', 'EXTERNAL')),
+    video_provider VARCHAR(20) CHECK (video_provider IN ('YOUTUBE', 'VIMEO', 'EXTERNAL', 'HOSTED')),
     video_url VARCHAR(1000),
     video_ref VARCHAR(50),
     thumbnail_url VARCHAR(1000),
@@ -1490,21 +1490,137 @@ CREATE UNIQUE INDEX IF NOT EXISTS ux_offering_name ON offering (lower(name));
 CREATE TABLE IF NOT EXISTS offering_product (
     offering_id BIGINT NOT NULL REFERENCES offering(id) ON DELETE CASCADE,
     sort_order INTEGER NOT NULL,
-    product_id BIGINT NOT NULL REFERENCES product(id),
+    product_id BIGINT NOT NULL REFERENCES products(id),
     PRIMARY KEY (offering_id, sort_order)
 );
 CREATE INDEX IF NOT EXISTS idx_offering_product_product ON offering_product (product_id);
 
 -- No row = the product is open to both individuals and organizations (no behaviour change).
 CREATE TABLE IF NOT EXISTS product_eligibility (
-    product_id BIGINT PRIMARY KEY REFERENCES product(id) ON DELETE CASCADE,
+    product_id BIGINT PRIMARY KEY REFERENCES products(id) ON DELETE CASCADE,
     audience VARCHAR(20) NOT NULL DEFAULT 'BOTH' CHECK (audience IN ('BOTH', 'INDIVIDUAL', 'ORGANIZATION'))
 );
 
 CREATE TABLE IF NOT EXISTS product_compatibility (
     id BIGSERIAL PRIMARY KEY,
-    product_id BIGINT NOT NULL REFERENCES product(id) ON DELETE CASCADE,
-    works_with_product_id BIGINT NOT NULL REFERENCES product(id) ON DELETE CASCADE,
+    product_id BIGINT NOT NULL REFERENCES products(id) ON DELETE CASCADE,
+    works_with_product_id BIGINT NOT NULL REFERENCES products(id) ON DELETE CASCADE,
     UNIQUE (product_id, works_with_product_id),
     CHECK (product_id <> works_with_product_id)
 );
+
+-- REQ-TEN-009 Projects (C88). Additive; mirrors database/migrations/V028__projects.sql.
+ALTER TABLE organization_group ADD COLUMN IF NOT EXISTS kind VARCHAR(10) NOT NULL DEFAULT 'GROUP' CHECK (kind IN ('GROUP', 'PROJECT'));
+ALTER TABLE organization_group ADD COLUMN IF NOT EXISTS description VARCHAR(500);
+
+CREATE TABLE IF NOT EXISTS organization_group_product (
+    id BIGSERIAL PRIMARY KEY,
+    group_id BIGINT NOT NULL REFERENCES organization_group(id) ON DELETE CASCADE,
+    product_id BIGINT NOT NULL REFERENCES products(id),
+    product_role VARCHAR(50) NOT NULL,
+    added_at TIMESTAMP NOT NULL DEFAULT now(),
+    UNIQUE (group_id, product_id)
+);
+
+-- Empty = direct assignment; set = the access comes from that project.
+ALTER TABLE organization_product_access ADD COLUMN IF NOT EXISTS source_group_id BIGINT REFERENCES organization_group(id);
+
+-- REQ-CAT-004.6 (C89): a product video can be a file in the product storage. Additive; mirrors database/migrations/V029__product_content_hosted_video.sql.
+ALTER TABLE product_content_item DROP CONSTRAINT IF EXISTS product_content_item_video_provider_check;
+ALTER TABLE product_content_item ADD CONSTRAINT product_content_item_video_provider_check
+    CHECK (video_provider IN ('YOUTUBE', 'VIMEO', 'EXTERNAL', 'HOSTED'));
+
+-- REQ-TEN-005 Access management (C90). Mirrors database/migrations/V030__access_management.sql.
+-- Individual overrides now also cover product access.
+ALTER TABLE member_access_override ADD COLUMN IF NOT EXISTS product_id BIGINT REFERENCES products(id) ON DELETE CASCADE;
+ALTER TABLE member_access_override ALTER COLUMN permission_code DROP NOT NULL;
+-- The old unique constraint, by its generated name (no DO block here: the test script runner splits on semicolons;
+-- database/migrations/V030 drops whatever unique constraint the table has).
+ALTER TABLE member_access_override DROP CONSTRAINT IF EXISTS member_access_override_organization_member_id_item_type_per_key;
+ALTER TABLE member_access_override DROP CONSTRAINT IF EXISTS member_access_override_organization_member_id_permission_code_key;
+CREATE UNIQUE INDEX IF NOT EXISTS ux_override_permission ON member_access_override (organization_member_id, permission_code) WHERE item_type = 'PERMISSION';
+CREATE UNIQUE INDEX IF NOT EXISTS ux_override_product ON member_access_override (organization_member_id, product_id) WHERE item_type = 'PRODUCT';
+
+-- Role defaults of one organization. No row = the platform role definition (permissions) or ON (products).
+CREATE TABLE IF NOT EXISTS organization_role_default (
+    id BIGSERIAL PRIMARY KEY,
+    organization_id BIGINT NOT NULL REFERENCES organization(id) ON DELETE CASCADE,
+    org_role VARCHAR(20) NOT NULL,
+    item_type VARCHAR(20) NOT NULL,
+    permission_code VARCHAR(60),
+    product_id BIGINT REFERENCES products(id) ON DELETE CASCADE,
+    enabled BOOLEAN NOT NULL,
+    updated_by_customer_id BIGINT REFERENCES customer(id),
+    updated_at TIMESTAMP NOT NULL DEFAULT now()
+);
+CREATE UNIQUE INDEX IF NOT EXISTS ux_role_default_permission ON organization_role_default (organization_id, org_role, permission_code) WHERE item_type = 'PERMISSION';
+CREATE UNIQUE INDEX IF NOT EXISTS ux_role_default_product ON organization_role_default (organization_id, org_role, product_id) WHERE item_type = 'PRODUCT';
+
+-- Product access that was granted or revoked directly becomes an explicit override, so it keeps its state when
+-- role defaults apply. Access that came from a project (source_group_id) is not touched.
+INSERT INTO member_access_override (organization_member_id, item_type, product_id, granted, set_at)
+SELECT a.organization_member_id, 'PRODUCT', a.product_id, (a.status = 'ACTIVE'), now()
+FROM organization_product_access a
+WHERE a.source_group_id IS NULL
+  AND NOT EXISTS (SELECT 1 FROM member_access_override o
+                  WHERE o.organization_member_id = a.organization_member_id AND o.item_type = 'PRODUCT' AND o.product_id = a.product_id);
+
+-- REQ-INT-002 (C91): event platform settings (retention and failure alerts). Migration V031.
+
+CREATE TABLE IF NOT EXISTS event_platform_setting (
+    id BIGINT PRIMARY KEY,
+    retention_days INT NOT NULL DEFAULT 30 CHECK (retention_days BETWEEN 1 AND 3650),
+    alert_recipients VARCHAR(2000),
+    alert_in_app BOOLEAN NOT NULL DEFAULT TRUE,
+    alert_email BOOLEAN NOT NULL DEFAULT TRUE,
+    updated_by VARCHAR(255),
+    updated_at TIMESTAMP NOT NULL DEFAULT now()
+);
+
+INSERT INTO event_platform_setting (id) VALUES (1) ON CONFLICT (id) DO NOTHING;
+
+-- REQ-INT-001 (C92): API keys belong to an organization and have a scope. Migration V032.
+ALTER TABLE api_key ADD COLUMN IF NOT EXISTS organization_id BIGINT REFERENCES organization(id);
+ALTER TABLE api_key ADD COLUMN IF NOT EXISTS scope VARCHAR(20) NOT NULL DEFAULT 'READ_WRITE';
+ALTER TABLE api_key ADD COLUMN IF NOT EXISTS created_by_customer_id BIGINT;
+ALTER TABLE api_key DROP CONSTRAINT IF EXISTS api_key_scope_check;
+ALTER TABLE api_key ADD CONSTRAINT api_key_scope_check CHECK (scope IN ('READ', 'READ_WRITE'));
+
+UPDATE api_key SET created_by_customer_id = owner_customer_id WHERE created_by_customer_id IS NULL;
+
+UPDATE api_key k
+   SET organization_id = m.organization_id
+  FROM organization_member m
+ WHERE k.organization_id IS NULL
+   AND m.customer_id = k.owner_customer_id
+   AND m.status = 'ACTIVE'
+   AND m.org_role = 'ORG_ADMIN';
+
+CREATE INDEX IF NOT EXISTS idx_api_key_organization ON api_key (organization_id);
+
+-- REQ-GOV-002 (C92): message templates and platform defaults. Migration V033.
+CREATE TABLE IF NOT EXISTS message_template (
+    id BIGSERIAL PRIMARY KEY,
+    code VARCHAR(60) NOT NULL,
+    language VARCHAR(10) NOT NULL,
+    subject VARCHAR(200) NOT NULL,
+    body TEXT NOT NULL,
+    updated_by VARCHAR(255),
+    updated_at TIMESTAMP NOT NULL DEFAULT now(),
+    CONSTRAINT uq_message_template UNIQUE (code, language)
+);
+
+-- One row (id = 1). Every value may be empty: empty means "no platform default" (the browser decides), so nothing
+-- changes for anyone until an administrator sets a default. Reminder days stay in billing_settings (REQ-SUB-004).
+CREATE TABLE IF NOT EXISTS platform_default (
+    id BIGINT PRIMARY KEY,
+    language VARCHAR(10),
+    region VARCHAR(20),
+    currency VARCHAR(10),
+    time_zone VARCHAR(64),
+    date_format VARCHAR(20),
+    updated_by VARCHAR(255),
+    updated_at TIMESTAMP NOT NULL DEFAULT now()
+);
+
+INSERT INTO platform_default (id) VALUES (1) ON CONFLICT (id) DO NOTHING;

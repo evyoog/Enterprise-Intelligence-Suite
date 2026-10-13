@@ -22,6 +22,10 @@ final class AuditSpecifications {
         return (root, cq, cb) -> cb.equal(root.get("action"), action);
     }
 
+    static Specification<AuditLog> hasActionIn(java.util.Collection<String> actions) {
+        return (root, cq, cb) -> root.get("action").in(actions);
+    }
+
     static Specification<AuditLog> timestampAfter(Instant from) {
         return (root, cq, cb) -> cb.greaterThanOrEqualTo(root.get("timestamp"), from);
     }

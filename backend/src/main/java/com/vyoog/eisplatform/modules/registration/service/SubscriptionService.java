@@ -63,6 +63,8 @@ public class SubscriptionService {
     private final OutboxService outboxService;
     /** REQ-CAT-005 (C85): per-product audience rule. */
     private final com.vyoog.eisplatform.modules.offering.service.EligibilityService eligibilityService;
+    /** REQ-TEN-005 (C90): organization entitlement changes recalculate member product access. */
+    private final org.springframework.context.ApplicationEventPublisher eventPublisher;
 
     /** REQ-INT-002.8: IDs, status and dates only (BR-2). */
     private void publish(String eventType, ProductSubscription subscription) {
@@ -245,6 +247,7 @@ public class SubscriptionService {
             "ProductSubscription", productId.toString(), organizationId, "Organization subscribed to product " + productId);
         publish(PlatformEventTypes.SUBSCRIPTION_CREATED, subscription);
         invoiceService.generateForSubscription(subscription.getId());
+        eventPublisher.publishEvent(new com.vyoog.eisplatform.modules.registration.event.OrganizationEntitlementsChangedEvent(organizationId));
 
         return toDto(subscription, product.getName());
     }
@@ -454,6 +457,10 @@ public class SubscriptionService {
             notify(subscription, "Subscription expired", "Your subscription has expired.");
             auditService.recordSuccess("SUBSCRIPTION_EXPIRED", null, subscription.getOwnerCustomerId(), null,
                 "ProductSubscription", subscription.getId().toString(), null, "Subscription expired automatically");
+            if (subscription.getOwnerOrganizationId() != null) {
+                eventPublisher.publishEvent(new com.vyoog.eisplatform.modules.registration.event.OrganizationEntitlementsChangedEvent(
+                    subscription.getOwnerOrganizationId()));
+            }
         }
         return overdue.size();
     }
@@ -479,6 +486,95 @@ public class SubscriptionService {
         auditService.recordSuccess("SUBSCRIPTION_PLAN_CHANGED", null, customerId, null,
             "ProductSubscription", subscriptionId.toString(), null, "Plan changed to " + request.planId());
         publish(PlatformEventTypes.SUBSCRIPTION_CHANGED, subscription);
+        return toDto(subscription);
+    }
+
+    // ------------------------------------------------------------------
+    // REQ-TEN-005.4 (D16, C65): organization subscription actions. The caller's permission (Manage subscriptions)
+    // is checked by SubscriptionSeatService; these methods act on one subscription of the caller's organization.
+    // ------------------------------------------------------------------
+
+    private ProductSubscription resolveOrganizationSubscription(Long organizationId, Long subscriptionId) {
+        return subscriptionRepository.findById(subscriptionId)
+            .filter(s -> s.getOwnerType() == RegistrationOwnerType.ORGANIZATION && organizationId.equals(s.getOwnerOrganizationId()))
+            .orElseThrow(() -> new ResourceNotFoundException("Subscription not found"));
+    }
+
+    private void afterOrganizationChange(ProductSubscription subscription, Long actorCustomerId, String action, String title, String message, String eventType) {
+        Long organizationId = subscription.getOwnerOrganizationId();
+        auditService.recordSuccess(action, null, actorCustomerId, null,
+            "ProductSubscription", subscription.getId().toString(), organizationId, message);
+        publish(eventType, subscription);
+        eventPublisher.publishEvent(new com.vyoog.eisplatform.modules.registration.event.OrganizationEntitlementsChangedEvent(organizationId));
+        try {
+            String product = productRepository.findById(subscription.getProductId()).map(Product::getName).orElse("a product");
+            memberRepository.findByOrganizationIdAndOrgRoleAndStatus(organizationId,
+                com.vyoog.eisplatform.modules.registration.model.OrgRole.ORG_ADMIN,
+                com.vyoog.eisplatform.modules.registration.model.MembershipStatus.ACTIVE).forEach(admin ->
+                customerRepository.findById(admin.getCustomerId()).ifPresent(customer ->
+                    notificationService.notify(customer.getId(), customer.getEmail(), NotificationCategory.SUBSCRIPTION,
+                        NotificationSeverity.INFO, title + ": " + product, message + " (" + product + ")")));
+        } catch (RuntimeException ignored) {
+            // a failed notice never fails the change
+        }
+    }
+
+    @Transactional
+    public SubscriptionDto suspendOrganizationSubscription(Long organizationId, Long actorCustomerId, Long subscriptionId) {
+        ProductSubscription subscription = resolveOrganizationSubscription(organizationId, subscriptionId);
+        if (subscription.getStatus() != SubscriptionStatus.ACTIVE) {
+            throw new IllegalArgumentException("Only an active subscription can be suspended.");
+        }
+        subscription.setStatus(SubscriptionStatus.SUSPENDED);
+        subscription = subscriptionRepository.save(subscription);
+        afterOrganizationChange(subscription, actorCustomerId, "SUBSCRIPTION_SUSPENDED", "Subscription suspended",
+            "The organization's subscription was suspended", PlatformEventTypes.SUBSCRIPTION_SUSPENDED);
+        return toDto(subscription);
+    }
+
+    @Transactional
+    public SubscriptionDto reactivateOrganizationSubscription(Long organizationId, Long actorCustomerId, Long subscriptionId) {
+        ProductSubscription subscription = resolveOrganizationSubscription(organizationId, subscriptionId);
+        if (subscription.getStatus() != SubscriptionStatus.SUSPENDED) {
+            throw new IllegalArgumentException("Only a suspended subscription can be reactivated.");
+        }
+        subscription.setStatus(SubscriptionStatus.ACTIVE);
+        subscription = subscriptionRepository.save(subscription);
+        afterOrganizationChange(subscription, actorCustomerId, "SUBSCRIPTION_REACTIVATED", "Subscription reactivated",
+            "The organization's subscription was reactivated", PlatformEventTypes.SUBSCRIPTION_RESUMED);
+        return toDto(subscription);
+    }
+
+    @Transactional
+    public SubscriptionDto cancelOrganizationSubscription(Long organizationId, Long actorCustomerId, Long subscriptionId) {
+        ProductSubscription subscription = resolveOrganizationSubscription(organizationId, subscriptionId);
+        if (subscription.getStatus() == SubscriptionStatus.CANCELLED) {
+            throw new IllegalArgumentException("This subscription is already cancelled.");
+        }
+        subscription.setStatus(SubscriptionStatus.CANCELLED);
+        subscription = subscriptionRepository.save(subscription);
+        afterOrganizationChange(subscription, actorCustomerId, "SUBSCRIPTION_CANCELLED", "Subscription cancelled",
+            "The organization's subscription was cancelled", PlatformEventTypes.SUBSCRIPTION_CANCELLED);
+        return toDto(subscription);
+    }
+
+    @Transactional
+    public SubscriptionDto changeOrganizationPlan(Long organizationId, Long actorCustomerId, Long subscriptionId, ChangePlanRequest request) {
+        ProductSubscription subscription = resolveOrganizationSubscription(organizationId, subscriptionId);
+        if (subscription.getStatus() == SubscriptionStatus.CANCELLED) {
+            throw new IllegalArgumentException("A cancelled subscription's plan cannot be changed.");
+        }
+        if (request.planId() != null) {
+            ProductPlan plan = productPlanRepository.findById(request.planId())
+                .orElseThrow(() -> new ResourceNotFoundException("Plan not found: " + request.planId()));
+            if (!plan.getProduct().getId().equals(subscription.getProductId())) {
+                throw new IllegalArgumentException("That plan does not belong to this subscription's product.");
+            }
+        }
+        subscription.setPlanId(request.planId());
+        subscription = subscriptionRepository.save(subscription);
+        afterOrganizationChange(subscription, actorCustomerId, "SUBSCRIPTION_PLAN_CHANGED", "Subscription plan changed",
+            "The organization's subscription plan was changed", PlatformEventTypes.SUBSCRIPTION_CHANGED);
         return toDto(subscription);
     }
 }

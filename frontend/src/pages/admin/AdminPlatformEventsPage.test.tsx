@@ -10,6 +10,11 @@ const list = vi.fn()
 const types = vi.fn()
 const get = vi.fn()
 const retry = vi.fn()
+const summary = vi.fn()
+const receivers = vi.fn()
+const replay = vi.fn()
+const settings = vi.fn()
+const updateSettings = vi.fn()
 
 vi.mock('../../api/eventsApi', () => ({
   adminEventsApi: {
@@ -17,6 +22,11 @@ vi.mock('../../api/eventsApi', () => ({
     types: () => types(),
     get: (id: number) => get(id),
     retry: (id: number) => retry(id),
+    summary: () => summary(),
+    receivers: () => receivers(),
+    replay: (b: unknown) => replay(b),
+    settings: () => settings(),
+    updateSettings: (b: unknown) => updateSettings(b),
   },
 }))
 
@@ -28,7 +38,10 @@ const delivered = { ...failed, id: 8, eventId: 'e-8', eventType: 'InvoiceGenerat
 
 describe('AdminPlatformEventsPage', () => {
   beforeEach(() => {
-    for (const m of [list, types, get, retry]) m.mockReset()
+    for (const m of [list, types, get, retry, summary, receivers, replay, settings, updateSettings]) m.mockReset()
+    summary.mockResolvedValue({ pending: 0, failed: 0 })
+    receivers.mockResolvedValue(['provisioning', 'webhook-dispatcher'])
+    settings.mockResolvedValue({ retentionDays: 30, alertRecipients: ['ops@vyoog.com'], alertInApp: true, alertEmail: true, updatedAt: '2026-10-12T00:00:00Z' })
     list.mockResolvedValue({ items: [failed, delivered], totalElements: 2, page: 0, size: 20 })
     types.mockResolvedValue(['InvoiceGenerated', 'SubscriptionCreated'])
   })
@@ -62,6 +75,17 @@ describe('AdminPlatformEventsPage', () => {
     expect(await screen.findByRole('dialog', { name: 'InvoiceGenerated' })).toBeInTheDocument()
     expect(screen.getByText(/"invoiceId": 3/)).toBeInTheDocument()
     expect(screen.getByText(/provisioning —/)).toBeInTheDocument()
+  })
+
+  it('warns about events that failed for good and offers Replay and Settings', async () => {
+    summary.mockResolvedValue({ pending: 0, failed: 2 })
+    const user = userEvent.setup()
+    renderWithProviders(<AdminPlatformEventsPage />)
+    expect(await screen.findByText(/2 events failed for good/)).toBeInTheDocument()
+    await user.click(screen.getByRole('button', { name: 'Show failed' }))
+    await waitFor(() => expect(list).toHaveBeenLastCalledWith(expect.objectContaining({ status: 'FAILED' })))
+    await user.click(screen.getByRole('button', { name: 'Replay events' }))
+    expect(await screen.findByRole('dialog', { name: 'Replay events' })).toBeInTheDocument()
   })
 
   it('has no detectable a11y violations', async () => {

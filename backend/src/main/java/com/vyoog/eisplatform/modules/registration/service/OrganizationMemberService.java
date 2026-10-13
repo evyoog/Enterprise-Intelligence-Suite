@@ -8,8 +8,6 @@ import com.vyoog.eisplatform.modules.registration.model.Organization;
 import com.vyoog.eisplatform.modules.registration.model.OrganizationMember;
 import com.vyoog.eisplatform.modules.registration.repository.OrganizationMemberRepository;
 import com.vyoog.eisplatform.modules.registration.repository.OrganizationRepository;
-import com.vyoog.eisplatform.modules.registration.repository.ProductSubscriptionRepository;
-import com.vyoog.eisplatform.modules.registration.model.SubscriptionStatus;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -32,7 +30,7 @@ public class OrganizationMemberService {
 
     private final OrganizationMemberRepository memberRepository;
     private final OrganizationRepository organizationRepository;
-    private final ProductSubscriptionRepository subscriptionRepository;
+    private final com.vyoog.eisplatform.modules.access.service.AccessSyncService accessSyncService;
 
     /** Throws if the organization has no free seat left. Callers must call
      * this immediately before inserting the new ACTIVE member row, inside
@@ -53,16 +51,8 @@ public class OrganizationMemberService {
                     + "Ask your Vyoog account manager to increase your seat limit, or free a seat first."
             );
         }
-        // REQ-SUB-003.4 (C63, BR-4): every ACTIVE organization subscription's
-        // seat quantity is also a limit on the pool of active members.
-        subscriptionRepository.findByOwnerOrganizationId(organizationId).stream()
-            .filter(s -> s.getStatus() == SubscriptionStatus.ACTIVE)
-            .filter(s -> activeCount >= s.getQuantity())
-            .findFirst()
-            .ifPresent(s -> {
-                throw new SeatLimitExceededException("All " + s.getQuantity() + " seats of a subscription are in use. "
-                    + "Add seats to the subscription, or free a seat first.");
-            });
+        // AM-3 B (C90): seats of a product are named, checked when the product is turned on (ProductSeatService),
+        // so the old subscription-wide pool check no longer applies here.
     }
 
     /** Plain (non-throwing) form of {@link #assertSeatAvailable}: is there room for one more active member right now?
@@ -90,7 +80,9 @@ public class OrganizationMemberService {
         member.setStatus(MembershipStatus.ACTIVE);
         member.setJoinedAt(Instant.now());
         member.setDeactivatedAt(null);
-        return memberRepository.save(member);
+        member = memberRepository.save(member);
+        accessSyncService.recomputeMember(member, null);
+        return member;
     }
 
     public OrganizationMember addMember(Long organizationId, Long customerId, OrgRole orgRole) {
@@ -101,7 +93,9 @@ public class OrganizationMemberService {
         member.setOrgRole(orgRole);
         member.setStatus(MembershipStatus.ACTIVE);
         member.setJoinedAt(Instant.now());
-        return memberRepository.save(member);
+        member = memberRepository.save(member);
+        accessSyncService.recomputeMember(member, null);
+        return member;
     }
 
     /** Never deletes the row — flips it INACTIVE and frees the seat, keeping
@@ -113,6 +107,7 @@ public class OrganizationMemberService {
         member.setStatus(MembershipStatus.INACTIVE);
         member.setDeactivatedAt(Instant.now());
         memberRepository.save(member);
+        accessSyncService.recomputeMember(member, null); // frees the named seats
     }
 
     /** 05.03.01 Suspend user (sprint 2026.4.1): frees the seat like
@@ -122,7 +117,9 @@ public class OrganizationMemberService {
             .orElseThrow(() -> new ResourceNotFoundException("Member not found"));
         member.setStatus(MembershipStatus.SUSPENDED);
         member.setDeactivatedAt(Instant.now());
-        return memberRepository.save(member);
+        member = memberRepository.save(member);
+        accessSyncService.recomputeMember(member, null); // frees the named seats
+        return member;
     }
 
     /** 05.03.01 Activate user (sprint 2026.4.1): re-admits a SUSPENDED member,
@@ -138,7 +135,9 @@ public class OrganizationMemberService {
         assertSeatAvailable(member.getOrganizationId());
         member.setStatus(MembershipStatus.ACTIVE);
         member.setDeactivatedAt(null);
-        return memberRepository.save(member);
+        member = memberRepository.save(member);
+        accessSyncService.recomputeMember(member, null);
+        return member;
     }
 
     /**

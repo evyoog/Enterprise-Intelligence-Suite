@@ -41,6 +41,9 @@ class SubscriptionSeatServiceTest {
     @Autowired private ProductRepository productRepository;
     @Autowired private ProductSubscriptionRepository subscriptionRepository;
     @Autowired private OutboxEventRepository outboxEventRepository;
+    @Autowired private ProductSeatService productSeatService;
+    @Autowired private com.vyoog.eisplatform.modules.access.service.AccessSyncService accessSyncService;
+    @Autowired private com.vyoog.eisplatform.modules.registration.repository.OrganizationMemberRepository memberRepository;
     @Autowired private AuditLogRepository auditLogRepository;
 
     private Organization newOrganization(int licensedSeats) {
@@ -120,19 +123,26 @@ class SubscriptionSeatServiceTest {
     }
 
     @Test
-    void addingAMemberBeyondASubscriptionsSeatsIsRefused() {
+    void aProductWithNoFreeSeatStaysOffForTheNextMemberUntilSeatsAreAdded() {
+        // REQ-TEN-005 (AM-3 B): named seats per product — the member still joins, but the product needs a free seat.
         Organization org = newOrganization(10);
         Long adminId = newMember(org, OrgRole.ORG_ADMIN);
         newMember(org, OrgRole.MEMBER);
-        Long subscriptionId = subscriptionService.subscribeOrganization(org.getId(), newProduct().getId(), null).id();
+        var product = newProduct();
+        Long subscriptionId = subscriptionService.subscribeOrganization(org.getId(), product.getId(), null).id();
         seatService.changeSeats(adminId, subscriptionId, 2);
+        assertThat(productSeatService.seatsInUse(org.getId(), product.getId())).isEqualTo(2);
 
-        assertThatThrownBy(() -> newMember(org, OrgRole.MEMBER))
+        Long thirdId = newMember(org, OrgRole.MEMBER);
+        assertThat(productSeatService.seatsInUse(org.getId(), product.getId())).isEqualTo(2);
+        var third = memberRepository.findFirstByCustomerIdAndStatus(thirdId, com.vyoog.eisplatform.modules.registration.model.MembershipStatus.ACTIVE).orElseThrow();
+        assertThatThrownBy(() -> accessSyncService.grantProduct(third, product.getId(), null, adminId))
             .isInstanceOf(SeatLimitExceededException.class)
-            .hasMessageContaining("seats of a subscription are in use");
+            .hasMessageContaining("No free seats on");
 
+        // more seats: the member who was left without one gets it at once
         seatService.changeSeats(adminId, subscriptionId, 3);
-        newMember(org, OrgRole.MEMBER);
+        assertThat(productSeatService.seatsInUse(org.getId(), product.getId())).isEqualTo(3);
     }
 
     @Test

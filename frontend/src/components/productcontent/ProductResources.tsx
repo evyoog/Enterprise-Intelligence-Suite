@@ -119,6 +119,20 @@ export function ProductResources({ productId, content }: { productId: number; co
 function VideoCard({ item }: { item: PublicItem }) {
   const { t } = useTranslation()
   const [playing, setPlaying] = useState(false)
+  if (item.videoProvider === 'HOSTED' && item.playUrl) {
+    // A video file in the product storage (PC-3, C89): played by the browser from a short-lived link.
+    return (
+      <Box>
+        <Box sx={{ position: 'relative', aspectRatio: '16 / 9', borderRadius: 2, overflow: 'hidden', bgcolor: '#000', border: '1px solid', borderColor: 'divider' }}>
+          <video controls preload="metadata" src={item.playUrl} aria-label={item.title} style={{ width: '100%', height: '100%', background: '#000' }}>
+            <track kind="captions" />
+          </video>
+        </Box>
+        <Typography sx={{ fontWeight: 600, mt: 0.75 }}>{item.title}</Typography>
+        {item.description && <Typography variant="body2" sx={{ color: 'text.secondary' }}>{item.description}</Typography>}
+      </Box>
+    )
+  }
   if (!item.embedUrl) {
     return (
       <Paper variant="outlined" sx={{ p: 2, borderRadius: 3, display: 'flex', flexDirection: 'column', gap: 1 }}>

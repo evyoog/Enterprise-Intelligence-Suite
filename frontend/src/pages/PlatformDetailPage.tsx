@@ -6,6 +6,7 @@ import { Link as RouterLink, useParams } from 'react-router-dom'
 import { ApiError, resolveAssetUrl } from '../api/client'
 import { catalogApi, type CatalogPlatform } from '../api/catalogApi'
 import { useBuy } from '../components/cart/useBuy'
+import { canAddToCart, useAddToCart } from '../components/cart/useAddToCart'
 import { SiteNavbar } from '../components/layout/SiteNavbar'
 import { useInAppShell } from '../components/layout/appShellContext'
 import { ProductTile } from '../components/products/ProductTile'
@@ -27,6 +28,7 @@ export function PlatformDetailPage() {
   const { t } = useTranslation()
   const inShell = useInAppShell()
   const handleSubscribeClick = useBuy()
+  const { addToCart, busyId, notice } = useAddToCart()
   const [platform, setPlatform] = useState<CatalogPlatform | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [reload, setReload] = useState(0)
@@ -90,7 +92,8 @@ export function PlatformDetailPage() {
                     <Grid container spacing={2.5}>
                       {apps.map((app) => (
                         <Grid key={app.id} size={{ xs: 12, sm: 6 }}>
-                          <ProductTile product={app} onSubscribe={() => handleSubscribeClick(app.id)} />
+                          <ProductTile product={app} onSubscribe={() => handleSubscribeClick(app.id)}
+                            onAddToCart={canAddToCart(app) ? () => addToCart(app) : undefined} addingToCart={busyId === app.id} />
                         </Grid>
                       ))}
                     </Grid>
@@ -126,6 +129,7 @@ export function PlatformDetailPage() {
           </Box>
         </>
       )}
+      {notice}
     </>
   )
 

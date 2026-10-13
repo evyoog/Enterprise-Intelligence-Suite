@@ -41,4 +41,7 @@ public class OrganizationProductAccess {
 
     @Column(nullable = false)
     private Instant assignedAt = Instant.now();
+    /** Empty = a direct assignment; set = the access comes from this project (REQ-TEN-009, BR-PRJ-004). */
+    @Column(name = "source_group_id")
+    private Long sourceGroupId;
 }

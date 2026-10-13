@@ -14,6 +14,9 @@ import com.vyoog.eisplatform.modules.invitation.dto.InvitationDtos.*;
 import com.vyoog.eisplatform.modules.invitation.model.InvitationStatus;
 import com.vyoog.eisplatform.modules.invitation.model.OrganizationInvitation;
 import com.vyoog.eisplatform.modules.invitation.repository.InvitationRepository;
+import com.vyoog.eisplatform.modules.notification.dto.NotificationDto;
+import com.vyoog.eisplatform.modules.notification.model.NotificationCategory;
+import com.vyoog.eisplatform.modules.notification.service.NotificationService;
 import com.vyoog.eisplatform.modules.orghierarchy.dto.OrgHierarchyDtos;
 import com.vyoog.eisplatform.modules.orghierarchy.service.OrgHierarchyService;
 import com.vyoog.eisplatform.modules.registration.model.*;
@@ -69,6 +72,7 @@ class InvitationServiceTest {
     @Autowired private AuditService auditService;
     @Autowired private KeycloakAdminClient keycloak;
     @Autowired private EmailService email;
+    @Autowired private NotificationService notificationService;
 
     private FakeEmailService mail() { return (FakeEmailService) email; }
     private FakeKeycloakAdminClient kc() { return (FakeKeycloakAdminClient) keycloak; }
@@ -386,5 +390,60 @@ class InvitationServiceTest {
         assertThat(service.adminList(o.getId())).hasSize(1);
         assertThat(service.adminList(o.getId()).get(0).toString()).doesNotContain(token());
         assertThatThrownBy(() -> service.adminList(-5L)).isInstanceOf(ResourceNotFoundException.class);
+    }
+
+    // ---- IN-9 (REQ-TEN-008.19): the inviter is notified when the invitation is accepted or declined
+
+    private java.util.List<NotificationDto> notices(Long customerId) {
+        return notificationService.listNotifications(customerId).notifications();
+    }
+
+    @Test
+    void theInviterIsNotifiedWhenTheInvitationIsAccepted() {
+        Organization o = org(10);
+        OrganizationMember admin = member(o, OrgRole.ORG_ADMIN);
+        Customer invitee = customer("ack");
+        service.create(admin.getCustomerId(), req(invitee.getEmail(), "MEMBER"));
+        assertThat(notices(admin.getCustomerId())).isEmpty();
+
+        service.accept(token(), invitee.getId());
+
+        assertThat(notices(admin.getCustomerId())).hasSize(1).first().satisfies(n -> {
+            assertThat(n.category()).isEqualTo(NotificationCategory.ORGANIZATION);
+            assertThat(n.title()).isEqualTo("Invitation accepted");
+            assertThat(n.message()).contains(invitee.getEmail()).contains("Inv Org").contains("a member");
+        });
+        assertThat(mail().lastNotificationSubject).isEqualTo("Invitation accepted");
+        assertThat(notices(invitee.getId())).isEmpty();
+    }
+
+    @Test
+    void theInviterIsNotifiedWhenTheInvitationIsDeclinedAndOnlyTheInviter() {
+        Organization o = org(10);
+        OrganizationMember admin = member(o, OrgRole.ORG_ADMIN);
+        OrganizationMember other = member(o, OrgRole.ORG_ADMIN);
+        service.create(admin.getCustomerId(), req("nope@inv.example", "MEMBER"));
+
+        service.decline(token());
+
+        assertThat(notices(admin.getCustomerId())).hasSize(1).first().satisfies(n -> {
+            assertThat(n.title()).isEqualTo("Invitation declined");
+            assertThat(n.message()).contains("nope@inv.example").contains("declined");
+        });
+        assertThat(notices(other.getCustomerId())).isEmpty();
+    }
+
+    @Test
+    void aRefusedAcceptanceSendsNoNotice() {
+        Organization o = org(10);
+        OrganizationMember admin = member(o, OrgRole.ORG_ADMIN);
+        Customer invitee = customer("wrong");
+        Customer stranger = customer("stranger");
+        service.create(admin.getCustomerId(), req(invitee.getEmail(), "MEMBER"));
+        String t = token();
+
+        assertThatThrownBy(() -> service.accept(t, stranger.getId())).isInstanceOf(ForbiddenException.class);
+
+        assertThat(notices(admin.getCustomerId())).isEmpty();
     }
 }

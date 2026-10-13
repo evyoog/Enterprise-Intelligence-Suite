@@ -17,5 +17,6 @@
 | BR-INV-013 | The accepting account's normalized email must equal the invited email. |
 | BR-INV-014 | A structure node on an invitation must be an active node of the same organization when sent. On accept it is applied if it still exists and is active; otherwise the member is left unplaced. The node grants no permission. |
 | BR-INV-015 | An invitation never grants product access and never changes personal subscriptions, invoices or other customer data. |
-| BR-INV-016 | Removing `INVITE_USERS` does not revoke invitations already sent; an administrator can revoke them. |
+| BR-INV-016 | Removing `INVITE_USERS` does not revoke invitations already sent; an administrator can revoke them (confirmed, IN-8). |
 | BR-INV-017 | A new account is created only when no customer with that email exists. The new customer gets first and last name from the form, status COMPLETED, an enabled Keycloak user, and the organization membership. |
+| BR-INV-018 | When an invitation is accepted or declined, the person who sent it receives an in-app notification (category ORGANIZATION) and an email unless they muted that category. Nobody else is notified. A refused acceptance sends nothing, and a failed notice never fails the acceptance or decline (IN-9). |

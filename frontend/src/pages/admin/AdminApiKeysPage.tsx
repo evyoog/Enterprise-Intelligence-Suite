@@ -10,7 +10,7 @@ import { PageHeader } from '../../components/layout/PageHeader'
 import { useLocalePreference } from '../../theming/LocalePreferenceProvider'
 
 /** "/admin/integrations/api-keys" — REQ-INT-001.4 (C61), `MANAGE_INTEGRATIONS`:
- * every API key with its owner, last use and request count. Read-only. */
+ * every API key with its organization (or, for a legacy personal key, its owner), scope, last use and request count. Read-only. */
 export function AdminApiKeysPage() {
   const { t } = useTranslation()
   const { formatDate, formatDateTime } = useLocalePreference()
@@ -37,8 +37,10 @@ export function AdminApiKeysPage() {
             <TableHead>
               <TableRow sx={{ bgcolor: 'action.hover' }}>
                 <TableCell>{t('admin.apiKeys.owner')}</TableCell>
+                <TableCell>{t('admin.apiKeys.organization')}</TableCell>
                 <TableCell>{t('apiKeys.col.name')}</TableCell>
                 <TableCell>{t('apiKeys.col.key')}</TableCell>
+                <TableCell>{t('apiKeys.col.scope')}</TableCell>
                 <TableCell>{t('apiKeys.col.status')}</TableCell>
                 <TableCell>{t('apiKeys.col.created')}</TableCell>
                 <TableCell>{t('apiKeys.col.lastUsed')}</TableCell>
@@ -47,13 +49,15 @@ export function AdminApiKeysPage() {
             </TableHead>
             <TableBody>
               {result.items.length === 0 && (
-                <TableRow><TableCell colSpan={7} sx={{ color: 'text.secondary', py: 4, textAlign: 'center' }}>{t('admin.apiKeys.empty')}</TableCell></TableRow>
+                <TableRow><TableCell colSpan={9} sx={{ color: 'text.secondary', py: 4, textAlign: 'center' }}>{t('admin.apiKeys.empty')}</TableCell></TableRow>
               )}
               {result.items.map((k) => (
                 <TableRow key={k.id} hover>
                   <TableCell>{k.ownerEmail ?? `#${k.ownerCustomerId}`}</TableCell>
+                  <TableCell>{k.organizationName ?? t('admin.apiKeys.personal')}</TableCell>
                   <TableCell>{k.name}</TableCell>
                   <TableCell sx={{ fontFamily: 'monospace' }}>{`${k.prefix}_…`}</TableCell>
+                  <TableCell>{t(`apiKeys.scope.${k.scope ?? 'READ_WRITE'}`)}</TableCell>
                   <TableCell><Chip size="small" color={API_KEY_STATUS_COLOR[k.status]} label={t(`apiKeys.status.${k.status}`)} /></TableCell>
                   <TableCell>{formatDate(k.createdAt)}</TableCell>
                   <TableCell>{k.lastUsedAt ? formatDateTime(k.lastUsedAt) : t('apiKeys.neverUsed')}</TableCell>

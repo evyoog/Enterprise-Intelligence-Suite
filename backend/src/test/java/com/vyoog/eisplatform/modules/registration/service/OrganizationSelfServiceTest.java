@@ -36,6 +36,9 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 class OrganizationSelfServiceTest {
 
     @Autowired
+    private com.vyoog.eisplatform.modules.access.service.AccessSyncService accessSyncService;
+
+    @Autowired
     private OrganizationSelfService organizationSelfService;
     @Autowired
     private OrganizationMemberService organizationMemberService;
@@ -96,12 +99,17 @@ class OrganizationSelfServiceTest {
         var admin = organizationMemberService.addMember(org.getId(), newCustomer("admin@test-org.example").getId(), OrgRole.ORG_ADMIN);
         var teammate = organizationMemberService.addMember(org.getId(), newCustomer("teammate@test-org.example").getId(), OrgRole.MEMBER);
 
-        // Before assignment: the org has the subscription, but this specific
-        // member has no access yet — the exact two-tier distinction this
-        // phase exists to make real.
+        // REQ-TEN-005 (AM-1): an entitled product is ON for members by default, with the default role USER.
         var before = organizationSelfService.listMemberProducts(admin.getCustomerId(), teammate.getId());
         assertThat(before).hasSize(1);
-        assertThat(before.get(0).myAccessAssigned()).isFalse();
+        assertThat(before.get(0).myAccessAssigned()).isTrue();
+        assertThat(before.get(0).myProductRole()).isEqualTo("USER");
+
+        // Turning it off is an individual override; the product stays off even after a recalculation.
+        organizationSelfService.revokeProductAccess(admin.getCustomerId(), teammate.getId(), product.getId());
+        assertThat(organizationSelfService.listMemberProducts(admin.getCustomerId(), teammate.getId()).get(0).myAccessAssigned()).isFalse();
+        accessSyncService.recomputeMember(teammate, null);
+        assertThat(organizationSelfService.listMemberProducts(admin.getCustomerId(), teammate.getId()).get(0).myAccessAssigned()).isFalse();
 
         var granted = organizationSelfService.assignProductAccess(admin.getCustomerId(), teammate.getId(), product.getId(), "PMS_USER");
         assertThat(granted.myAccessAssigned()).isTrue();
@@ -225,7 +233,13 @@ class OrganizationSelfServiceTest {
         Organization org = newOrganization();
         var onlyAdmin = organizationMemberService.addMember(org.getId(), newCustomer("only-admin@test-org.example").getId(), OrgRole.ORG_ADMIN);
 
+        // REQ-TEN-005 BR-3: nobody changes their own role (so the last administrator cannot demote themselves).
         assertThatThrownBy(() -> organizationSelfService.changeMemberRole(onlyAdmin.getCustomerId(), onlyAdmin.getId(), OrgRole.MEMBER))
+            .isInstanceOf(com.vyoog.eisplatform.common.exception.ForbiddenException.class)
+            .hasMessageContaining("own role");
+        // BR-5 still holds for the status actions.
+        assertThatThrownBy(() -> organizationSelfService.changeMemberStatus(onlyAdmin.getCustomerId(), onlyAdmin.getId(),
+            com.vyoog.eisplatform.modules.registration.dto.MemberStatusAction.SUSPEND))
             .isInstanceOf(IllegalArgumentException.class);
     }
 

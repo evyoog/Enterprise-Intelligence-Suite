@@ -202,13 +202,18 @@ public class RenewalReminderService {
         String how = renewalService.canChargeAutomatically(subscription)
             ? "Your saved payment method will be charged."
             : "A renewal invoice will be issued for you to pay online or by invoice.";
-        String title = "Your " + info.productName() + " subscription renews on " + date;
-        String body = "Your " + info.productName() + plan + " subscription renews on " + date + amount + ". " + how
-            + "\n\nManage your subscription: " + frontendUrl + "/my/subscriptions"
-            + "\nPay or update your payment method: " + frontendUrl + "/billing"
-            + "\nChange or turn off these reminders: " + frontendUrl + "/account/preferences";
-        notificationService.notify(recipient.getId(), recipient.getEmail(), NotificationCategory.SUBSCRIPTION,
-            NotificationSeverity.INFO, title, body);
+        java.util.Map<String, String> values = new java.util.HashMap<>();
+        values.put("product", info.productName());
+        values.put("plan", plan);
+        values.put("date", date);
+        values.put("amount", amount);
+        values.put("how", how);
+        values.put("manageUrl", frontendUrl + "/my/subscriptions");
+        values.put("billingUrl", frontendUrl + "/billing");
+        values.put("preferencesUrl", frontendUrl + "/account/preferences");
+        // C92 (TM-1 A): the wording is an administrator-editable template, in the recipient's language.
+        notificationService.notifyTemplated(recipient.getId(), recipient.getEmail(), NotificationCategory.SUBSCRIPTION,
+            NotificationSeverity.INFO, "NOTIF_RENEWAL_REMINDER", values);
         auditService.recordSuccess("RENEWAL_REMINDER_SENT", null, recipient.getId(), recipient.getEmail(), "ProductSubscription",
             subscription.getId().toString(), subscription.getOwnerOrganizationId(),
             "Renewal reminder " + daysBefore + " day(s) before " + date);

@@ -18,11 +18,18 @@ public interface ApiKeyRepository extends JpaRepository<ApiKey, Long> {
 
     List<ApiKey> findByOwnerCustomerIdOrderByCreatedAtDesc(Long ownerCustomerId);
 
+    List<ApiKey> findByOrganizationIdOrderByCreatedAtDesc(Long organizationId);
+
     Page<ApiKey> findAllByOrderByCreatedAtDesc(Pageable pageable);
 
     @Query("select count(k) from ApiKey k where k.ownerCustomerId = :owner and k.revokedAt is null "
         + "and (k.expiresAt is null or k.expiresAt > :now)")
     long countActive(@Param("owner") Long ownerCustomerId, @Param("now") Instant now);
+
+    /** C92: active keys of an organization (the limit is per organization). */
+    @Query("select count(k) from ApiKey k where k.organizationId = :organizationId and k.revokedAt is null "
+        + "and (k.expiresAt is null or k.expiresAt > :now)")
+    long countActiveForOrganization(@Param("organizationId") Long organizationId, @Param("now") Instant now);
 
     /** BR-8: one successful use. */
     @Modifying

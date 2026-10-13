@@ -126,6 +126,28 @@ public class OrganizationController {
         return subscriptionSeatService.changeSeats(currentCustomerResolver.resolve(jwt).getId(), subscriptionId, request.quantity());
     }
 
+    /** REQ-TEN-005.4 (D16, BR-11): organization subscription actions need Manage subscriptions (checked in the service). */
+    @PostMapping("/subscriptions/{subscriptionId}/suspend")
+    public SubscriptionDto suspendSubscription(@AuthenticationPrincipal Jwt jwt, @PathVariable Long subscriptionId) {
+        return subscriptionSeatService.suspend(currentCustomerResolver.resolve(jwt).getId(), subscriptionId);
+    }
+
+    @PostMapping("/subscriptions/{subscriptionId}/reactivate")
+    public SubscriptionDto reactivateSubscription(@AuthenticationPrincipal Jwt jwt, @PathVariable Long subscriptionId) {
+        return subscriptionSeatService.reactivate(currentCustomerResolver.resolve(jwt).getId(), subscriptionId);
+    }
+
+    @PostMapping("/subscriptions/{subscriptionId}/cancel")
+    public SubscriptionDto cancelSubscription(@AuthenticationPrincipal Jwt jwt, @PathVariable Long subscriptionId) {
+        return subscriptionSeatService.cancel(currentCustomerResolver.resolve(jwt).getId(), subscriptionId);
+    }
+
+    @PatchMapping("/subscriptions/{subscriptionId}/plan")
+    public SubscriptionDto changeSubscriptionPlan(@AuthenticationPrincipal Jwt jwt, @PathVariable Long subscriptionId,
+                                                  @Valid @RequestBody com.vyoog.eisplatform.modules.registration.dto.ChangePlanRequest request) {
+        return subscriptionSeatService.changePlan(currentCustomerResolver.resolve(jwt).getId(), subscriptionId, request);
+    }
+
     @GetMapping("/subscription")
     public List<SubscriptionDto> myOrgSubscription(@AuthenticationPrincipal Jwt jwt) {
         Customer customer = currentCustomerResolver.resolve(jwt);

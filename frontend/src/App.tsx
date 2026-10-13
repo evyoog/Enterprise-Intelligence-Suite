@@ -9,6 +9,7 @@ import { ProductsPage } from './pages/ProductsPage'
 import { MyProductsPage } from './pages/MyProductsPage'
 import { MySubscriptionsPage } from './pages/MySubscriptionsPage'
 import { OrganizationSettingsRedirect } from './pages/OrganizationSettingsPage'
+import { AccessManagementPage } from './pages/AccessManagementPage'
 import { OrganizationMembersPage } from './pages/OrganizationMembersPage'
 import { InvitationPage } from './pages/InvitationPage'
 import { OrganizationPrivilegedAccessPage } from './pages/OrganizationPrivilegedAccessPage'
@@ -159,6 +160,7 @@ function MainApp() {
           <Route path="/organization/business-dashboard" element={<RequireAuth><BusinessDashboardPage /></RequireAuth>} />
           {/* C69: organization administration moved off the dashboard. */}
           <Route path="/organization/settings" element={<RequireAuth><OrganizationSettingsRedirect /></RequireAuth>} />
+          <Route path="/organization/access" element={<RequireAuth><AccessManagementPage /></RequireAuth>} />
           <Route path="/organization/members" element={<RequireAuth><OrganizationMembersPage /></RequireAuth>} />
           {/* REQ-TEN-006 (C82): organization hierarchy; MANAGE_ORGANIZATION is enforced by the backend. */}
           <Route path="/organization/structure" element={<Navigate to="/organization/members?tab=structure" replace />} />

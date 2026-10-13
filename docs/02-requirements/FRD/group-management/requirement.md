@@ -21,7 +21,7 @@
 | 05.04.01.02 | Add member | same |
 | 05.04.01.03 | Remove member | same |
 
-05.04.02 Projects is **not** in this FRD — carried to sprint 2026.4.2 ([C35](../../../01-business/roadmap/open-decisions.md#c35)).
+05.04.02 Projects is **not** in this FRD: it is [REQ-TEN-009](../projects/requirement.md), built on groups ([C88](../../../01-business/roadmap/open-decisions.md#c88); first carried by [C35](../../../01-business/roadmap/open-decisions.md#c35)).
 
 ## Summary
 An organization admin can create named groups (e.g. "Engineering") and add or remove their own organization's members from them, on the Organization settings page (`/organization/settings`, moved from the business dashboard by [C69](../../../01-business/roadmap/open-decisions.md#c69)). A group carries no permissions or product access of its own.
@@ -40,7 +40,7 @@ An organization admin can create named groups (e.g. "Engineering") and add or re
 | REQ-TEN-003.6 | Every group action is scoped to the caller's own organization; acting on another organization's group or member is refused. | P0 |
 
 ## Out of scope
-- Projects (05.04.02), including "assign resources" — no resource model exists yet outside per-product access (C35)
+- Projects (05.04.02): now [REQ-TEN-009](../projects/requirement.md) (C88); the Groups list shows plain groups only
 - Any permission or product-access effect from group membership — a group is purely organizational grouping
 - Nested groups, or a member belonging to more than one group's worth of restriction (a member may belong to any number of groups; there is no exclusivity rule)
 

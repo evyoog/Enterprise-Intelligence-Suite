@@ -4,9 +4,11 @@ import {
   Alert, Box, Button, Chip, Dialog, DialogActions, DialogContent, DialogTitle, MenuItem, Pagination, Paper, Skeleton,
   Snackbar, Table, TableBody, TableCell, TableHead, TableRow, TextField, Typography,
 } from '@mui/material'
-import { AlertTriangle, CheckCircle2, Clock, Radio, RotateCcw } from 'lucide-react'
+import { AlertTriangle, CheckCircle2, Clock, History, Radio, RotateCcw, Settings } from 'lucide-react'
 import { ApiError } from '../../api/client'
-import { adminEventsApi, type EventStatus, type PlatformEventDetail, type PlatformEventPage } from '../../api/eventsApi'
+import { adminEventsApi, type EventStatus, type EventSummaryCounts, type PlatformEventDetail, type PlatformEventPage } from '../../api/eventsApi'
+import { EventReplayDialog } from '../../components/events/EventReplayDialog'
+import { EventSettingsDialog } from '../../components/events/EventSettingsDialog'
 import { PageHeader } from '../../components/layout/PageHeader'
 import { StatusTile } from '../../components/settings/SettingsSection'
 import { useLocalePreference } from '../../theming/LocalePreferenceProvider'
@@ -40,6 +42,12 @@ export function AdminPlatformEventsPage() {
   const [detail, setDetail] = useState<PlatformEventDetail | null>(null)
   const [toast, setToast] = useState<string | null>(null)
   const [busy, setBusy] = useState(false)
+  const [counts, setCounts] = useState<EventSummaryCounts | null>(null)
+  const [replayOpen, setReplayOpen] = useState(false)
+  const [settingsOpen, setSettingsOpen] = useState(false)
+
+  const loadCounts = useCallback(() => { adminEventsApi.summary().then(setCounts).catch(() => setCounts(null)) }, [])
+  useEffect(() => { loadCounts() }, [loadCounts])
 
   const load = useCallback(() => adminEventsApi.list({ type, status, from, to, page })
     .then((r) => { setResult(r); setError(null) })
@@ -55,7 +63,7 @@ export function AdminPlatformEventsPage() {
   const retry = (id: number) => {
     setBusy(true)
     adminEventsApi.retry(id)
-      .then((d) => { setToast(t('admin.events.retried')); if (detail) setDetail(d); void load() })
+      .then((d) => { setToast(t('admin.events.retried')); if (detail) setDetail(d); void load(); loadCounts() })
       .catch((e) => setToast(e instanceof ApiError ? e.message : t('admin.events.retryError')))
       .finally(() => setBusy(false))
   }
@@ -72,7 +80,20 @@ export function AdminPlatformEventsPage() {
 
   return (
     <>
-      <PageHeader icon={Radio} accent="cyan" area="integrations" title={t('admin.events.title')} subtitle={t('admin.events.subtitle')} />
+      <PageHeader icon={Radio} accent="cyan" area="integrations" title={t('admin.events.title')} subtitle={t('admin.events.subtitle')}
+        action={(
+          <Box sx={{ display: 'flex', gap: 1 }}>
+            <Button variant="outlined" startIcon={<History size={16} />} onClick={() => setReplayOpen(true)}>{t('admin.events.replay.open')}</Button>
+            <Button variant="outlined" startIcon={<Settings size={16} />} onClick={() => setSettingsOpen(true)}>{t('admin.events.settings.open')}</Button>
+          </Box>
+        )} />
+
+      {counts && counts.failed > 0 && (
+        <Alert severity="error" sx={{ mb: 2 }}
+          action={<Button color="inherit" size="small" onClick={() => { setStatus('FAILED'); setPage(0) }}>{t('admin.events.showFailed')}</Button>}>
+          {t('admin.events.failedBanner', { count: counts.failed })}
+        </Alert>
+      )}
 
       <Box sx={{ display: 'grid', gap: 2, mb: 3, gridTemplateColumns: { xs: '1fr', sm: 'repeat(3, minmax(0, 1fr))' } }}>
         {tile('PENDING', Clock, 'blue')}
@@ -193,6 +214,9 @@ export function AdminPlatformEventsPage() {
           </>
         )}
       </Dialog>
+
+      <EventReplayDialog open={replayOpen} eventTypes={types} onClose={() => setReplayOpen(false)} />
+      <EventSettingsDialog open={settingsOpen} onClose={() => setSettingsOpen(false)} />
 
       <Snackbar open={Boolean(toast)} autoHideDuration={4000} onClose={() => setToast(null)} message={toast ?? ''} />
     </>

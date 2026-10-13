@@ -3,7 +3,10 @@ import { useTranslation } from 'react-i18next'
 import { preferenceApi } from '../api/preferenceApi'
 import { useAuth } from '../auth/AuthProvider'
 import { useLocalePreference } from './LocalePreferenceProvider'
+import { DATE_FORMATS, type DateFormat } from './formatOptions'
 import { useThemeMode } from './ThemeModeProvider'
+
+const isDateFormat = (v: string): v is DateFormat => (DATE_FORMATS as readonly string[]).includes(v)
 
 /**
  * Phase 6 (2026.3.3): keeps the account-level {@code /me/preferences} row in
@@ -35,7 +38,7 @@ export function PreferenceSync() {
   const auth = useAuth()
   const { i18n } = useTranslation()
   const { mode, setMode, reducedMotion, setReducedMotion } = useThemeMode()
-  const { timeZone, setTimeZone, region, setRegion } = useLocalePreference()
+  const { timeZone, setTimeZone, region, setRegion, dateFormat, setDateFormat } = useLocalePreference()
 
   const hydratedFor = useRef<string | null>(null)
   const readyToPersist = useRef(false)
@@ -57,9 +60,15 @@ export function PreferenceSync() {
           setMode(pref.themeMode)
         }
         setReducedMotion(Boolean(pref.reducedMotion))
-        if (pref.timeZone) setTimeZone(pref.timeZone)
-        setRegion(pref.region ?? null)
-        if (pref.language) i18n.changeLanguage(pref.language)
+        // C92: a platform default only fills what the user has not chosen; the user's own value always wins.
+        const d = pref.defaults
+        const fresh = !pref.language && !pref.region && !pref.timeZone && !pref.themeMode
+        const tz = pref.timeZone ?? d?.timeZone
+        if (tz) setTimeZone(tz)
+        setRegion(pref.region ?? d?.region ?? null)
+        const lang = pref.language ?? d?.language
+        if (lang) i18n.changeLanguage(lang)
+        if (fresh && dateFormat === 'auto' && d?.dateFormat && isDateFormat(d.dateFormat)) setDateFormat(d.dateFormat)
       })
       .catch(() => {
         // No saved preferences yet, or a transient failure — the

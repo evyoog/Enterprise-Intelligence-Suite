@@ -31,3 +31,7 @@ flowchart LR
 | `RenewalReminderSent` | `RenewalReminderService` | None |
 
 With no handler, an event is marked DELIVERED (REQ-INT-002.3); it stays visible in the admin view until retention removes it.
+
+## Replay and failure alert (C91)
+- **Replay:** administrator → Platform events → Replay events → receiver, days, optional type → Preview → Replay now. The service selects DELIVERED events of the range that the receiver handles, calls only that receiver for each (own transaction, receipt added if missing), reports failures and writes one audit entry.
+- **Failure alert:** when the dispatcher records the last failed attempt (event becomes FAILED) it asks `EventFailureAlertService` to tell the addresses on the settings screen (in-app for people with an account, email for everyone).

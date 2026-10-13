@@ -54,6 +54,17 @@ The existing internal shared secret (`INTERNAL_SSO_SHARED_SECRET`, held in `conf
 - **Ordering** (for example a suspend arriving before the provisioned reply): Not specified.
 - **Timeouts** (when a missing reply counts as failed): Not specified.
 
+## Answers applied on 2026-10-09 ([C86](../../../01-business/roadmap/open-decisions.md#c86), [REQ-INT-003](../platform-tool-sync/requirement.md))
+| # | Question | Applied answer |
+|---|---|---|
+| 1 | Delivery mechanism | MCP as the **transport**; reliability from the platform's outbox, retries, idempotency keys and reconcile (REQ-INT-003.5–.7). Neither D13 nor D19 is replaced; webhooks or a queue can carry the same contract later. |
+| 2 | Retries, ordering, timeouts | Bounded exponential backoff (default 8 attempts, 5 s to 15 min); per-aggregate order with version numbers; 5 s call timeout (configurable) — contract v1 §6, §8. |
+| 4 | Message fields | Superseded by [contract v1](../../../09-integrations/platform-tool-contract-v1.md): organization (all fields), hierarchy, users, memberships, subscription (with end time and seats), product access with product role. |
+| 6 | One shared secret or one per product | One Keycloak **service client per product**; the shared SSO secret remains only for the browser bridge and is retired later (Q13). |
+| 3, 5, 7 | Product-team confirmation; failed provisioning state; "Configure service" | Still open. A failed provisioning leaves the tenant registry entry FAILED and the subscription unchanged (REQ-INT-003.17). Each hosted product team must still confirm the contract; Thittam Macro Planner is the first. |
+
+The messages "Provision requested / Provisioned / Failed / Suspend / Resume / Deprovision requested" of this FRD map to `provision_tenant`, `report_provisioning_result`, `set_subscription` (status SUSPENDED, ACTIVE, CANCELLED) in contract v1.
+
 ## Open questions
 | # | Question | Blocks approval |
 |---|---|---|

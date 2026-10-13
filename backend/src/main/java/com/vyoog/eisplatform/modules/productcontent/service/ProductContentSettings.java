@@ -24,6 +24,14 @@ public class ProductContentSettings {
     @Value("${eis.product-content.document-max-size:20971520}")
     private long documentMaxSize;
 
+    /** Hosted video (PC-3, C89): one presigned upload, so keep it well under the 5 GB S3 limit. */
+    @Value("${eis.product-content.video-max-size:524288000}")
+    private long videoMaxSize;
+
+    /** Playback link of a hosted video; long enough to watch and seek through a full video. */
+    @Value("${eis.product-content.playback-url-expiry:PT2H}")
+    private Duration playbackUrlExpiry;
+
     @Value("${eis.product-content.upload-url-expiry:PT15M}")
     private Duration uploadUrlExpiry;
 

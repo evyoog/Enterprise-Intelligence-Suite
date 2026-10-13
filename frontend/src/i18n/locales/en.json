@@ -270,6 +270,36 @@
     "removeMemberError": "Could not remove this member.",
     "loadError": "Could not load this section."
   },
+  "projects": {
+    "title": "Projects",
+    "intro": "A project is a group of members that shares access to products. Everyone in a project can use the project's products with the role you set.",
+    "newName": "Project name",
+    "description": "Description (optional)",
+    "create": "Create project",
+    "createError": "Could not create this project.",
+    "updateError": "Could not save this project.",
+    "edit": "Edit",
+    "save": "Save",
+    "cancel": "Cancel",
+    "delete": "Delete",
+    "deleteError": "Could not delete this project.",
+    "noProjects": "No projects yet. Create one to give a team access to products.",
+    "members": "Members",
+    "noMembers": "No members yet.",
+    "addMember": "Add member",
+    "addMemberError": "Could not add this member.",
+    "removeMember": "Remove",
+    "removeMemberError": "Could not remove this member.",
+    "products": "Products",
+    "noProducts": "No products yet.",
+    "addProduct": "Add product",
+    "role": "Role",
+    "add": "Add",
+    "addProductError": "Could not add this product.",
+    "removeProduct": "Remove",
+    "removeProductError": "Could not remove this product.",
+    "loadError": "Could not load this section."
+  },
   "privilegedAccess": {
     "title": "Elevated access",
     "subtitle": "Request temporary access to a permission you don't normally have. An administrator must approve it, and it ends automatically.",
@@ -478,7 +508,8 @@
       "billingOverview": "Overview",
       "peopleStructure": "People & structure",
       "organizationsDirectory": "Organizations",
-      "offerings": "Offerings"
+      "offerings": "Offerings",
+      "accessManagement": "Access management"
     },
     "catalogTitle": "Product catalog",
     "catalogSubtitle": "Search and filter the products available on the platform.",
@@ -1347,6 +1378,43 @@
         "lastError": "Last error",
         "payload": "Payload",
         "receipts": "Handler receipts"
+      },
+      "showFailed": "Show failed",
+      "failedBanner_one": "{{count}} event failed for good and needs attention. Retry it, or fix the receiver and replay.",
+      "failedBanner_other": "{{count}} events failed for good and need attention. Retry them, or fix the receiver and replay.",
+      "replay": {
+        "open": "Replay events",
+        "title": "Replay events",
+        "intro": "Send events that were already delivered to one receiver again, for example after a product was down. Only delivered events in the range are sent, and only to the receiver you choose. Events are available while they are kept (see Settings).",
+        "receiver": "Receiver",
+        "noReceivers": "No receivers are registered.",
+        "rangeError": "The last day must not be before the first day.",
+        "preview": "Preview",
+        "send": "Replay now",
+        "cancel": "Cancel",
+        "error": "Could not replay these events.",
+        "previewSummary_one": "{{count}} event would be sent to {{receiver}}.",
+        "previewSummary_other": "{{count}} events would be sent to {{receiver}}.",
+        "tooMany": "One replay can send at most {{limit}}. Choose a shorter range or an event type.",
+        "doneSummary": "Replay to {{receiver}}: {{replayed}} sent, {{failed}} failed.",
+        "failures": "Events that failed"
+      },
+      "settings": {
+        "open": "Settings",
+        "title": "Event platform settings",
+        "retention": "Keep delivered events for (days)",
+        "retentionHelp": "30 days by default. Replay only works for events that are still kept.",
+        "retentionRange": "Enter a whole number of days from 1 to 3650.",
+        "alerts": "When an event fails for good",
+        "alertsHelp": "The people below are told when an event has used all its attempts. Everyone with access to this screen also sees the failed count at the top.",
+        "recipients": "Email addresses to alert",
+        "recipientsHelp": "One per line, up to 20. People with an account also get the notice in the app.",
+        "inApp": "Notify in the app",
+        "email": "Notify by email",
+        "save": "Save settings",
+        "saved": "Settings saved.",
+        "saveError": "Could not save the settings.",
+        "loadError": "Could not load the settings."
       }
     },
     "apiKeys": {
@@ -1355,7 +1423,9 @@
       "caption": "{{count}} API keys",
       "owner": "Owner",
       "requests": "Requests",
-      "empty": "No API keys have been created."
+      "empty": "No API keys have been created.",
+      "organization": "Organization",
+      "personal": "Personal (legacy)"
     },
     "apps": {
       "title": "All Apps",
@@ -1650,7 +1720,10 @@
       "missingDependency": "{{product}} requires {{required}}.",
       "currencyMismatch": "This item is priced in a different currency from the rest of your cart. Check out separately.",
       "notEligible": "{{product}} is not available for your account type."
-    }
+    },
+    "addToCart": "Add to cart",
+    "addToCartLabel": "Add {{name}} to cart",
+    "viewCart": "View cart"
   },
   "apiKeys": {
     "title": "API keys",
@@ -1694,7 +1767,18 @@
       "created": "Created",
       "expires": "Expires",
       "lastUsed": "Last used",
-      "actions": "Actions"
+      "actions": "Actions",
+      "scope": "Scope"
+    },
+    "legacyTitle": "Personal API keys (legacy)",
+    "legacyDescription": "These keys were created before keys moved to the organization. They keep working with read-write access. Revoke them once the integration uses an organization key.",
+    "scope": {
+      "READ": "Read-only",
+      "READ_WRITE": "Read-write"
+    },
+    "scopeHelp": {
+      "READ": "Can read data only. Any change request is refused.",
+      "READ_WRITE": "Can read and change data, within the permissions of an organization administrator."
     }
   },
   "ui": {
@@ -2939,6 +3023,7 @@
     "tabs": {
       "members": "Members",
       "groups": "Groups",
+      "projects": "Projects",
       "structure": "Org structure",
       "invitations": "Invitations"
     }
@@ -2951,7 +3036,8 @@
     "title": "Sign-in security",
     "tabs": {
       "federation": "Identity federation",
-      "mfa": "Multi-factor policy"
+      "mfa": "Multi-factor policy",
+      "apiKeys": "API keys"
     },
     "mfaTitle": "Multi-factor policy",
     "mfaSubtitle": "Require an authenticator code when members sign in."
@@ -3005,7 +3091,7 @@
       },
       "VIDEO": {
         "title": "Videos",
-        "help": "A YouTube, Vimeo or other web link. Videos are not uploaded here.",
+        "help": "A YouTube, Vimeo or other web link, or a video file (MP4 or WebM, up to {{size}}) that plays on the product page.",
         "empty": "No videos yet.",
         "add": "Add video"
       },
@@ -3070,6 +3156,9 @@
       "altText": "Alt text (describes the image)",
       "videoUrl": "Video link",
       "videoHelp": "A YouTube or Vimeo link plays on the product page; any other https link opens in a new tab.",
+      "videoMode": "How the video is added",
+      "videoModeLink": "A link (YouTube, Vimeo or web)",
+      "videoModeFile": "Upload a video file",
       "customerName": "Customer name",
       "problem": "The problem",
       "result": "The result",
@@ -3551,5 +3640,186 @@
     "worksWith": {
       "title": "Works with"
     }
+  },
+  "access": {
+    "title": "Access management",
+    "subtitle": "Control what each member can do and which products they can open.",
+    "tabs": {
+      "members": "Members",
+      "roles": "Role defaults",
+      "activity": "Activity"
+    },
+    "search": "Search name or email",
+    "role": "Role",
+    "any": "Any",
+    "product": "Product",
+    "hasCustom": "Has custom access",
+    "clearFilters": "Clear filters",
+    "bulkChange": "Bulk change ({{count}})",
+    "retry": "Retry",
+    "member": "Member",
+    "products": "Products",
+    "productsOf": "{{on}} of {{total}}",
+    "customAccess": "Custom access",
+    "customCount": "{{count}} custom",
+    "lastReviewed": "Last reviewed",
+    "never": "Never",
+    "status": "Status",
+    "actions": "Actions",
+    "manage": "Manage access",
+    "manageFor": "Manage access for {{name}}",
+    "noMembers": "No members match these filters.",
+    "select": "Select {{name}}",
+    "selectPage": "Select all on this page",
+    "roles": {
+      "ORG_ADMIN": "Organization admin",
+      "MEMBER": "Member"
+    },
+    "statuses": {
+      "ACTIVE": "Active",
+      "SUSPENDED": "Suspended",
+      "INACTIVE": "Removed"
+    },
+    "source": {
+      "ROLE": "From role",
+      "OVERRIDE": "Custom",
+      "LOCKED": "Always on",
+      "PROJECT": "From a project"
+    },
+    "on": "On",
+    "off": "Off",
+    "unsaved": "Unsaved",
+    "willReset": "Will reset",
+    "reset": "Reset",
+    "resetItem": "Reset {{name}} to the role default",
+    "seats": "Seats {{inUse}}/{{quantity}}",
+    "noChanges": "No changes",
+    "changesWaiting_one": "{{count}} unsaved change",
+    "changesWaiting_other": "{{count}} unsaved changes",
+    "cancel": "Cancel",
+    "save": "Save changes",
+    "close": "Close",
+    "loading": "Loading…",
+    "loadError": "Could not load this section.",
+    "saveError": "Could not save this change.",
+    "savedFor": "Access updated for {{name}}",
+    "resetAll": "Reset all to role default",
+    "resetAllConfirm": "Reset every individual override of this member to the role defaults?",
+    "discardConfirm": "Discard your unsaved changes?",
+    "markReviewed": "Mark as reviewed",
+    "reviewedOn": "Last reviewed {{date}} by {{by}}",
+    "neverReviewed": "Never reviewed",
+    "productAccess": "Product access",
+    "featurePermissions": "Feature permissions",
+    "noSubscriptions": "Your organization has no active subscriptions.",
+    "countOn": "{{on}} of {{total}} on",
+    "areas": {
+      "MEMBERS_ACCESS": "Members & access",
+      "SUBSCRIPTIONS": "Subscriptions",
+      "ORDERS": "Orders",
+      "BILLING": "Billing",
+      "SECURITY": "Security & sign-in",
+      "ORGANIZATION": "Organization settings"
+    },
+    "roleMembers_one": "{{count}} member has this role.",
+    "roleMembers_other": "{{count}} members have this role.",
+    "roleDefaultsIntro": "These defaults apply to everyone with the role who has no individual override.",
+    "adminLocked": "Organization admins always have every feature permission.",
+    "adminLockedShort": "Organization admins always have every permission.",
+    "reviewChanges": "Review changes",
+    "impactTitle": "Review the impact",
+    "impactSummary_one": "This changes access for {{count}} member without custom access. Members with custom access keep their overrides.",
+    "impactSummary_other": "This changes access for {{count}} members without custom access. Members with custom access keep their overrides.",
+    "impactItem": "{{name}}: {{from}} → {{to}} ({{count}} members)",
+    "apply": "Apply",
+    "defaultsSaved_one": "Role defaults saved. {{count}} member affected.",
+    "defaultsSaved_other": "Role defaults saved. {{count}} members affected.",
+    "when": "When",
+    "what": "Change",
+    "by": "By",
+    "details": "Details",
+    "noActivity": "No access changes yet.",
+    "actions_": {
+      "ACCESS_PERMISSION_CHANGED": "Permission changed",
+      "ACCESS_PRODUCT_CHANGED": "Product access changed",
+      "ACCESS_OVERRIDE_RESET": "Reset to role default",
+      "ACCESS_ROLE_DEFAULT_CHANGED": "Role default changed",
+      "ACCESS_BULK_CHANGED": "Bulk change",
+      "MEMBER_ROLE_CHANGED": "Role changed",
+      "MEMBER_ACCESS_REVIEWED": "Access reviewed",
+      "PRODUCT_ACCESS_GRANTED": "Product turned on",
+      "PRODUCT_ACCESS_REVOKED": "Product turned off",
+      "SUBSCRIPTION_SEATS_CHANGED": "Seats changed"
+    },
+    "bulk": {
+      "title_one": "Bulk change for {{count}} member",
+      "title_other": "Bulk change for {{count}} members",
+      "action": "Action",
+      "grant": "Turn on",
+      "remove": "Turn off",
+      "item": "Product or permission",
+      "productOption": "Product: {{name}}",
+      "preview": "Preview",
+      "apply": "Apply to members",
+      "error": "Could not run this bulk change.",
+      "skipped": "Skipped",
+      "grantVerb": "Turn on",
+      "removeVerb": "Turn off",
+      "previewSummary": "{{action}} {{item}}: {{applied}} members would change, {{skipped}} skipped.",
+      "done": "{{action}} {{item}}: {{applied}} members changed, {{skipped}} skipped."
+    }
+  },
+  "orgApiKeys": {
+    "title": "Organization API keys",
+    "description": "Keys belong to your organization, not to the person who creates them, so an integration keeps working when that person leaves. A key acts as an administrator of the organization, except platform administration.",
+    "empty": "No API keys for your organization yet.",
+    "pageTitle": "API keys",
+    "pageSubtitle": "Let your own integrations call the EIS API. Keys are read-only or read-write.",
+    "col": {
+      "createdBy": "Created by"
+    }
+  },
+  "platformDefaults": {
+    "title": "Defaults for new users",
+    "description": "What a new user starts with until they choose for themselves. A user's own choice always wins. Leave a field empty for no platform default.",
+    "language": "Language",
+    "region": "Region",
+    "currency": "Currency",
+    "timeZone": "Time zone",
+    "dateFormat": "Date format",
+    "reminderDays": "Renewal reminder days",
+    "regionHelp": "For example en-IN or es-ES.",
+    "timeZoneHelp": "For example Asia/Kolkata or Europe/Madrid.",
+    "reminderDaysHelp": "1 to 30 days before renewal.",
+    "none": "No default",
+    "save": "Save defaults",
+    "saved": "Defaults saved.",
+    "loadError": "Could not load the defaults.",
+    "saveError": "Could not save the defaults."
+  },
+  "messageTemplates": {
+    "title": "Message templates",
+    "description": "The emails and notifications EIS sends, one per message type and language. Use {placeholders} such as {name}. Reset a language to go back to the built-in text.",
+    "channel": {
+      "EMAIL": "Email",
+      "NOTIFICATION": "Notification"
+    },
+    "customized": "Customized",
+    "edit": "Edit",
+    "editNamed": "Edit {{name}}",
+    "language": "Language",
+    "subject": "Subject",
+    "titleHelp": "Shown as the notification title.",
+    "body": "Message",
+    "placeholders": "Placeholders",
+    "example": "example",
+    "requiredHelp": "* must appear in the text. Unknown placeholders are rejected.",
+    "preview": "Preview",
+    "previewButton": "Preview",
+    "save": "Save",
+    "reset": "Reset to built-in",
+    "close": "Close",
+    "loadError": "Could not load the templates.",
+    "saveError": "Could not save the template."
   }
 }

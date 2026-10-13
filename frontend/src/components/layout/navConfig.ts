@@ -2,7 +2,7 @@ import type { ComponentType } from 'react'
 import {
   Activity, BookOpen, Cable, ClipboardList, CreditCard, FolderTree, Handshake, KeyRound, Landmark, LayoutDashboard,
   LayoutGrid, Layers, LifeBuoy, NotebookPen, Package, PlugZap, Radio, ScrollText, SearchCheck, ShieldCheck, Star,
-  Boxes, Building2, Store, UserCog, UsersRound, Wrench, FileText, Receipt, Gauge,
+  Boxes, Building2, Store, UserCheck, UserCog, UsersRound, Wrench, FileText, Receipt, Gauge,
 } from 'lucide-react'
 
 /**
@@ -110,6 +110,8 @@ export const NAV_CONFIG: NavDef[] = [
   { id: 'members', labelKey: 'peopleStructure', icon: UsersRound, group: 'organization', to: '/organization/members',
     // Administrators, and members allowed only to send invitations (REQ-TEN-008).
     when: { any: [orgAdmin, organization('INVITE_USERS')] } },
+  // REQ-TEN-005 (C90): organization admins and delegated administrators (Manage access).
+  { id: 'access', labelKey: 'accessManagement', icon: UserCheck, group: 'organization', to: '/organization/access', when: organization('MANAGE_ACCESS') },
   {
     id: 'rolesPermissions', labelKey: 'rolesPermissions', icon: ShieldCheck, group: 'organization', to: '/admin/roles',
     matchPrefixes: ['/admin/permissions'],

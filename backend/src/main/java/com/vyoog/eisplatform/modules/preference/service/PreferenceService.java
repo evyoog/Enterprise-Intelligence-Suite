@@ -35,12 +35,13 @@ public class PreferenceService {
     private static final Set<String> SUPPORTED_THEME_MODES = Set.of("light", "dark", "system");
 
     private final CustomerPreferenceRepository repository;
+    private final com.vyoog.eisplatform.modules.administration.service.PlatformDefaultsService platformDefaultsService;
 
     @Transactional(readOnly = true)
     public CustomerPreferenceDto getPreferences(Long customerId) {
         return repository.findById(customerId)
             .map(this::toDto)
-            .orElseGet(() -> new CustomerPreferenceDto(null, null, null, null, false));
+            .orElseGet(() -> new CustomerPreferenceDto(null, null, null, null, false, platformDefaultsService.get()));
     }
 
     @Transactional
@@ -96,7 +97,8 @@ public class PreferenceService {
             preference.getRegion(),
             preference.getTimeZone(),
             preference.getThemeMode(),
-            preference.isReducedMotion()
+            preference.isReducedMotion(),
+            platformDefaultsService.get()
         );
     }
 }

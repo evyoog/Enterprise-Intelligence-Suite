@@ -15,7 +15,7 @@
 
 | Application ID | Code | Application | Roadmap item | Source |
 |---|---|---|---|---|
-| 05 | `APP-TEN` | [Customer / Tenant Management](../applications/05-customer-tenant-management.md) | Carry-over only: 05.02 Tenant Lifecycle, 05.03.01 Invite/Create user, 05.04.02 Projects (see [C31](../open-decisions.md#c31)) | [PO] "eVyoog EIS - Roadmap Initiatives" |
+| 05 | `APP-TEN` | [Customer / Tenant Management](../applications/05-customer-tenant-management.md) | Carry-over only: 05.02 Tenant Lifecycle, 05.03.01 Invite/Create user (Create user removed from the MVP, [C87](../open-decisions.md#c87)), 05.04.02 Projects (built in 2026.4.1 by [C88](../open-decisions.md#c88); see [C31](../open-decisions.md#c31)) | [PO] "eVyoog EIS - Roadmap Initiatives" |
 | 13a | `APP-INT` (part) | Gateway & Events (API Management 13.01, Event Platform 13.03) | [C31](../open-decisions.md#c31): pulled forward from 2027.1.1 |
 | 15a | `APP-GOV` (part) | Audit & Platform Administration (15.01 Platform Administration, 15.03 Audit) | [C31](../open-decisions.md#c31): pulled forward from 2027.2.2 |
 
@@ -43,26 +43,26 @@
 
 | FRD | Requirement | Functions | Status |
 |---|---|---|---|
-| [platform-administration](../../../02-requirements/FRD/platform-administration/requirement.md) | REQ-GOV-001 | 15.01.01 (currencies, feature flags, languages), 15.01.02 (regions) | Approved |
+| [platform-administration](../../../02-requirements/FRD/platform-administration/requirement.md) | REQ-GOV-001 | 15.01.01 (currencies, feature flags, languages), 15.01.02 (regions; defaults and templates, C92) | Approved |
 | [tenant-lifecycle](../../../02-requirements/FRD/tenant-lifecycle/requirement.md) | REQ-TEN-004 | 05.02.01.03, 05.02.01.05 (.01/.02/.04 satisfied by existing code) | Approved |
-| [api-management](../../../02-requirements/FRD/api-management/requirement.md) | REQ-INT-001 | 13.01.01.03, 13.01.02.01–.04 (13.01.01.02 partly; .01, .04 Not specified) | Draft — built 2026-10-03 at the product owner's request |
-| [event-platform](../../../02-requirements/FRD/event-platform/requirement.md) | REQ-INT-002 | 13.03.01.01–.04 (.05 Replay Not specified) | Draft — built 2026-10-03 at the product owner's request |
+| [api-management](../../../02-requirements/FRD/api-management/requirement.md) | REQ-INT-001 | 13.01.01.03, .04 (C92), 13.01.02.01–.04 (13.01.01.02 partly; .01 Not specified) | Draft — built 2026-10-03 at the product owner's request |
+| [event-platform](../../../02-requirements/FRD/event-platform/requirement.md) | REQ-INT-002 | 13.03.01.01–.05 | Draft — built 2026-10-03 at the product owner's request |
 
 ### Progress (as of 2026-10-03)
 
 | Feature | Status | Note |
 |---|---|---|
 | 15.01.01 Platform Configuration (currencies, feature flags, languages) | Done (this FRD's scope) | Configure defaults not built |
-| 15.01.02 Global Settings (regions) | Partly done | Regions built; Configure defaults, Manage templates not built |
+| 15.01.02 Global Settings (regions, defaults, templates) | Done | Regions built earlier; Configure defaults and Manage templates built 2026-10-13 ([C92](../open-decisions.md#c92), REQ-GOV-001.7 to .12) |
 | 15.03 Audit | Done | Already built early in 2026.3.3 (see that sprint's own audit trail work) |
-| 13a 13.01 API Management | Done (this FRD's scope) | API keys, rate limits, `/v1` alias, per-key usage ([REQ-INT-001](../../../02-requirements/FRD/api-management/requirement.md)); FRD still Draft, open questions listed there |
-| 13a 13.03 Event Platform | Done (this FRD's scope) | Outbox, dispatcher, retries, admin events view ([REQ-INT-002](../../../02-requirements/FRD/event-platform/requirement.md)); Replay not built; FRD still Draft |
+| 13a 13.01 API Management | Done | API keys, rate limits, `/v1` alias, per-key usage ([REQ-INT-001](../../../02-requirements/FRD/api-management/requirement.md)); questions answered 2026-10-13 ([C92](../open-decisions.md#c92)): organization-owned keys, read-only and read-write scopes, deprecation headers; FRD still Draft |
+| 13a 13.03 Event Platform | Done (this FRD's scope) | Outbox, dispatcher, retries, admin events view ([REQ-INT-002](../../../02-requirements/FRD/event-platform/requirement.md)); Replay, retention setting and failure alerts built 2026-10-12 ([C91](../open-decisions.md#c91)); FRD still Draft |
 | 05.02 Tenant Lifecycle | Done (this FRD's scope) | Assign region, tenant policies built; Create/Configure tenant, Configure isolation satisfied by existing code (C37) |
-| 05.03.02 Role Assignment / 06.02.01 RBAC — Access management (REQ-TEN-005) | Specified (Draft) | Decision C65 (D16); FRD, screens, API, data model and UAT scripts written 2026-10-03; build waits for approval |
-| 05.03.01 Invite/Create user | Not started | Carried again — needs a decision on the identity-creation flow ([C34](../open-decisions.md#c34)) |
-| 05.04.02 Projects | Not started | Carried again — needs a decision on the Project resource model ([C35](../open-decisions.md#c35)) |
+| 05.03.02 Role Assignment / 06.02.01 RBAC — Access management (REQ-TEN-005) | Built 2026-10-12 | Decisions C65 (D16) and [C90](../open-decisions.md#c90) (AM-0 to AM-10). Access management screen, role defaults, overrides, bulk, activity, named seats per product, organization subscription actions, billing permission. Migration V030 |
+| 05.03.01 Invite/Create user | Closed | Invite user was built in 2026.4.1 ([C84](../open-decisions.md#c84)); Create user was removed from the MVP ([C87](../open-decisions.md#c87)). Nothing is left to carry |
+| 05.04.02 Projects | Closed | Built in 2026.4.1 ([C88](../open-decisions.md#c88)): a project is a group plus product access. Nothing is left to carry |
 
-The remaining 15.01.02 items remain open for this sprint; 13a's FRDs need approval of their open questions. Test plans: [TESTPLAN-INT-001](../../../../test-cases/functional/api-management/TESTPLAN-INT-001.md), [TESTPLAN-INT-002](../../../../test-cases/functional/event-platform/TESTPLAN-INT-002.md).
+13a's FRDs still need formal approval. Test plans: [TESTPLAN-INT-001](../../../../test-cases/functional/api-management/TESTPLAN-INT-001.md), [TESTPLAN-INT-002](../../../../test-cases/functional/event-platform/TESTPLAN-INT-002.md).
 
 ## EIS 05 Customer / Tenant Management (carry-over only)
 
@@ -75,8 +75,8 @@ Full breakdown with APIs, services, entities and events: [applications/05-custom
 | Capability | Feature | Functions (requirement candidates from [WB:Functions]) | Priority | Commitment |
 |---|---|---|---|---|
 | [05.02 Tenant Management](../applications/05-customer-tenant-management.md#0502-tenant-management) | 05.02.01 Tenant Lifecycle | Create tenant; Configure tenant; Assign region; Configure isolation; Configure tenant policies | P0 | Commit — **Done** ([tenant-lifecycle](../../../02-requirements/FRD/tenant-lifecycle/requirement.md)) |
-| [05.03 User Management](../applications/05-customer-tenant-management.md#0503-user-management) | 05.03.01 User Lifecycle | Invite user; Create user | P0 | Commit — **Not started** |
-| [05.04 Group & Project Management](../applications/05-customer-tenant-management.md#0504-group--project-management) | 05.04.02 Projects | Create project; Assign users; Assign resources | P0 | Commit — **Not started** |
+| [05.03 User Management](../applications/05-customer-tenant-management.md#0503-user-management) | 05.03.01 User Lifecycle | Invite user (built in 2026.4.1); ~~Create user~~ (removed, [C87](../open-decisions.md#c87)) | P0 | Closed |
+| [05.04 Group & Project Management](../applications/05-customer-tenant-management.md#0504-group--project-management) | 05.04.02 Projects | Create project; Assign users; Assign resources | P0 | Closed (built in 2026.4.1, [C88](../open-decisions.md#c88)) |
 
 ### Dependencies
 
@@ -103,9 +103,9 @@ Full breakdown: [applications/13-integration-api-platform.md](../applications/13
 
 | Capability | Feature | Functions (requirement candidates from [WB:Functions]) | Priority | Commitment |
 |---|---|---|---|---|
-| [13.01 API Management](../applications/13-integration-api-platform.md#1301-api-management) | 13.01.01 API Lifecycle | Register API; Publish API; Version API; Deprecate API | P0 | Commit — Version **Done**, Publish partly (OpenAPI), Register and Deprecate **Not specified** ([api-management](../../../02-requirements/FRD/api-management/requirement.md)) |
+| [13.01 API Management](../applications/13-integration-api-platform.md#1301-api-management) | 13.01.01 API Lifecycle | Register API; Publish API; Version API; Deprecate API | P0 | Commit — Version **Done**, Deprecate **Done** (C92 headers), Publish partly (OpenAPI), Register **Not specified** ([api-management](../../../02-requirements/FRD/api-management/requirement.md)) |
 | [13.01 API Management](../applications/13-integration-api-platform.md#1301-api-management) | 13.01.02 API Security | Authenticate API; Authorize API; Rate limit API; Monitor API | P0 | Commit — **Done** (Monitor partly: per-key usage) |
-| [13.03 Event Platform](../applications/13-integration-api-platform.md#1303-event-platform) | 13.03.01 Event Bus | Publish event; Subscribe to event; Route event; Retry event; Replay event | P0 | Commit — **Done** except Replay (**Not specified**) ([event-platform](../../../02-requirements/FRD/event-platform/requirement.md)) |
+| [13.03 Event Platform](../applications/13-integration-api-platform.md#1303-event-platform) | 13.03.01 Event Bus | Publish event; Subscribe to event; Route event; Retry event; Replay event | P0 | Commit — **Done** (Replay built 2026-10-12, [C91](../open-decisions.md#c91)) ([event-platform](../../../02-requirements/FRD/event-platform/requirement.md)) |
 
 ### Dependencies
 
@@ -131,7 +131,7 @@ Full breakdown: [applications/15-administration-governance.md](../applications/1
 | Capability | Feature | Functions (requirement candidates from [WB:Functions]) | Priority | Commitment |
 |---|---|---|---|---|
 | [15.01 Platform Administration](../applications/15-administration-governance.md#1501-platform-administration) | 15.01.01 Platform Configuration | Configure platform (currencies, feature flags); Configure languages | Not specified | Not specified — **Done** ([platform-administration](../../../02-requirements/FRD/platform-administration/requirement.md)) |
-| [15.01 Platform Administration](../applications/15-administration-governance.md#1501-platform-administration) | 15.01.02 Global Settings | Configure regions; Configure defaults; Manage templates | Not specified | Not specified — regions **Done**, defaults/templates **Not started** |
+| [15.01 Platform Administration](../applications/15-administration-governance.md#1501-platform-administration) | 15.01.02 Global Settings | Configure regions; Configure defaults; Manage templates | Not specified | Not specified — regions, defaults and templates **Done** ([C92](../open-decisions.md#c92)) |
 
 ### Dependencies
 

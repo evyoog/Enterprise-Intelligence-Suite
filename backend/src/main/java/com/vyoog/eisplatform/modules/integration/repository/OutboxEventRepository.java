@@ -39,4 +39,6 @@ public interface OutboxEventRepository extends JpaRepository<OutboxEvent, Long>,
     @Query("delete from OutboxEvent e where e.status = com.vyoog.eisplatform.modules.integration.model.OutboxEventStatus.DELIVERED "
         + "and e.deliveredAt < :cutoff")
     int deleteDeliveredBefore(@Param("cutoff") Instant cutoff);
+
+    long countByStatus(OutboxEventStatus status);
 }

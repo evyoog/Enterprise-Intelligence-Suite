@@ -3,7 +3,9 @@
 ## Screens
 | Screen | Route | Roles | Wireframe |
 |--------|-------|-------|-----------|
-| Common settings | `/admin/settings/common` | Platform admin (`MANAGE_PLATFORM_SETTINGS`) | Not specified |
+| Common settings (Platform → Products → Configuration) | `/admin?tab=configuration` | Platform admin (`MANAGE_PLATFORM_SETTINGS`) | Not specified |
+
+C92 adds two sections to this screen, **Defaults for new users** and **Message templates**: see [platform-defaults-templates](../../../05-ui/screen-requirements/platform-defaults-templates.md).
 
 ## Fields and validation
 | Field | Type | Required | Validation | Error message (i18n key) |

@@ -11,7 +11,12 @@ public interface MemberAccessOverrideRepository extends JpaRepository<MemberAcce
     Optional<MemberAccessOverride> findByOrganizationMemberIdAndItemTypeAndPermissionCode(
         Long organizationMemberId, String itemType, String permissionCode);
 
+    Optional<MemberAccessOverride> findByOrganizationMemberIdAndItemTypeAndProductId(
+        Long organizationMemberId, String itemType, Long productId);
+
     List<MemberAccessOverride> findByOrganizationMemberId(Long organizationMemberId);
+
+    List<MemberAccessOverride> findByOrganizationMemberIdIn(java.util.Collection<Long> organizationMemberIds);
 
     List<MemberAccessOverride> findByPermissionCodeAndGrantedTrue(String permissionCode);
 }

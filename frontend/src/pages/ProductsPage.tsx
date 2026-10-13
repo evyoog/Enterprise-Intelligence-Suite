@@ -11,6 +11,7 @@ import { productsApi, type Product, type ProductSearchResponse } from '../api/pr
 import { searchHistoryApi } from '../api/searchHistoryApi'
 import { useAuth } from '../auth/AuthProvider'
 import { useBuy } from '../components/cart/useBuy'
+import { canAddToCart, useAddToCart } from '../components/cart/useAddToCart'
 import { PageHeader } from '../components/layout/PageHeader'
 import { SiteNavbar } from '../components/layout/SiteNavbar'
 import { useInAppShell } from '../components/layout/appShellContext'
@@ -50,6 +51,7 @@ export function ProductsPage() {
   const [searchFocused, setSearchFocused] = useState(false)
   const [reload, setReload] = useState(0)
   const handleSubscribeClick = useBuy()
+  const { addToCart, busyId, notice } = useAddToCart()
 
   useEffect(() => {
     const timeout = setTimeout(() => setDebouncedQuery(query), DEBOUNCE_MS)
@@ -213,7 +215,8 @@ export function ProductsPage() {
           <Grid container spacing={2.5}>
             {apps.map((product) => (
               <Grid key={product.id} size={{ xs: 12, sm: 6, lg: 4, xl: 3 }}>
-                <ProductTile product={product} onSubscribe={() => handleSubscribeClick(product.id)} />
+                <ProductTile product={product} onSubscribe={() => handleSubscribeClick(product.id)}
+                  onAddToCart={canAddToCart(product) ? () => addToCart(product) : undefined} addingToCart={busyId === product.id} />
               </Grid>
             ))}
           </Grid>
@@ -221,6 +224,7 @@ export function ProductsPage() {
       </Box>
 
       <SupportCTA />
+      {notice}
     </>
   )
 

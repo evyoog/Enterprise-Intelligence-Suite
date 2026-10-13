@@ -21,14 +21,17 @@ vi.mock('../../api/productContentApi', () => ({
   uploadProductFile: api.upload,
 }))
 
-const STORAGE = { configured: true, imageMaxSize: 5 * 1024 * 1024, documentMaxSize: 20 * 1024 * 1024, imageTypes: ['jpg', 'jpeg', 'png', 'webp'], documentTypes: ['pdf'] }
+const STORAGE = {
+  configured: true, imageMaxSize: 5 * 1024 * 1024, documentMaxSize: 20 * 1024 * 1024, videoMaxSize: 500 * 1024 * 1024,
+  imageTypes: ['jpg', 'jpeg', 'png', 'webp'], documentTypes: ['pdf'], videoTypes: ['mp4', 'webm'],
+}
 
 const item = (over: Partial<AdminItem>): AdminItem => ({
   id: 1, kind: 'VIDEO', title: 'Product tour', description: null, status: 'DRAFT', displayOrder: 1, version: 1,
   updatedAt: '2026-10-07T10:00:00Z', publishedAt: null, file: null, fileUrl: null, altText: null, logo: null, logoUrl: null,
   videoProvider: 'YOUTUBE', videoUrl: 'https://youtu.be/dQw4w9WgXcQ', embedUrl: 'https://www.youtube-nocookie.com/embed/dQw4w9WgXcQ',
   thumbnailUrl: 'https://i.ytimg.com/vi/dQw4w9WgXcQ/hqdefault.jpg', customerName: null, problem: null, result: null,
-  articleId: null, articleTitle: null, articleAvailable: false, ...over,
+  articleId: null, articleTitle: null, articleAvailable: false, playUrl: null, ...over,
 })
 
 const sheet = item({ id: 2, kind: 'DATASHEET', title: 'Platform datasheet', status: 'PUBLISHED', version: 3, videoProvider: null, videoUrl: null,
@@ -119,6 +122,55 @@ describe('Product content — admin Content tab (REQ-CAT-004)', () => {
     })))
   })
 
+  it('uploads a video file to storage and sends it instead of a link (PC-3)', async () => {
+    api.uploadUrl.mockResolvedValue({ uploadKey: 'product-content/7/video/abc.mp4', uploadUrl: 'https://s3.test/put', expiresAt: '2026-10-12T10:15:00Z', maxSize: 500 * 1024 * 1024 })
+    api.upload.mockReturnValue({ promise: Promise.resolve(), cancel: vi.fn() })
+    api.create.mockResolvedValue(item({ id: 12, videoProvider: 'HOSTED', videoUrl: null, embedUrl: null, thumbnailUrl: null, file: { fileName: 'tour.mp4', size: 12, mimeType: 'video/mp4' } }))
+    const { baseElement } = renderManager()
+    const user = userEvent.setup({ applyAccept: false })
+    await user.click(await screen.findByRole('button', { name: 'Add video' }))
+    const dialog = await screen.findByRole('dialog')
+    await user.type(within(dialog).getByLabelText(/^Title/), 'Tour video')
+    // a link by default; switching to a file hides the link field
+    expect(within(dialog).getByLabelText(/^Video link/)).toBeInTheDocument()
+    await user.click(within(dialog).getByLabelText('Upload a video file'))
+    expect(within(dialog).queryByLabelText(/^Video link/)).not.toBeInTheDocument()
+
+    await user.click(within(dialog).getByRole('button', { name: 'Save' }))
+    expect(await within(dialog).findByText('Choose and upload the file first.')).toBeInTheDocument()
+
+    const input = baseElement.querySelector('input[type="file"]') as HTMLInputElement
+    await user.upload(input, new File(['0123456789ab'], 'tour.mp4', { type: 'video/mp4' }))
+    await within(dialog).findByText('Ready: tour.mp4')
+    expect(api.uploadUrl).toHaveBeenCalledWith(7, expect.objectContaining({ kind: 'VIDEO', purpose: 'file', fileName: 'tour.mp4', contentType: 'video/mp4', size: 12 }))
+    await user.click(within(dialog).getByRole('button', { name: 'Save' }))
+    await waitFor(() => expect(api.create).toHaveBeenCalledWith(7, expect.objectContaining({
+      kind: 'VIDEO', videoUrl: null, file: { uploadKey: 'product-content/7/video/abc.mp4', fileName: 'tour.mp4', contentType: 'video/mp4', size: 12 },
+    })))
+  })
+
+  it('refuses a video type that is not MP4 or WebM before uploading, and keeps a link possible without storage', async () => {
+    const { baseElement } = renderManager()
+    const user = userEvent.setup({ applyAccept: false })
+    await user.click(await screen.findByRole('button', { name: 'Add video' }))
+    const dialog = await screen.findByRole('dialog')
+    await user.click(within(dialog).getByLabelText('Upload a video file'))
+    const input = baseElement.querySelector('input[type="file"]') as HTMLInputElement
+    await user.upload(input, new File(['x'], 'clip.mov', { type: 'video/quicktime' }))
+    expect(await within(dialog).findByText(/This file type is not allowed here\. Allowed: MP4, WEBM\./)).toBeInTheDocument()
+    expect(api.uploadUrl).not.toHaveBeenCalled()
+  })
+
+  it('without storage the video file option is off but a link still works', async () => {
+    api.list.mockResolvedValue(content([], { ...STORAGE, configured: false }))
+    renderManager()
+    const user = userEvent.setup()
+    await user.click(await screen.findByRole('button', { name: 'Add video' }))
+    const dialog = await screen.findByRole('dialog')
+    expect(within(dialog).getByLabelText('Upload a video file')).toBeDisabled()
+    expect(within(dialog).getByLabelText(/^Video link/)).toBeInTheDocument()
+  })
+
   it('refuses a wrong file type or an oversized file before uploading anything', async () => {
     const { baseElement } = renderManager()
     const user = userEvent.setup({ applyAccept: false })
@@ -199,7 +251,7 @@ describe('Product content — Resources tab (REQ-CAT-004.9)', () => {
   const pub = (over: Partial<PublicItem>): PublicItem => ({
     id: 1, kind: 'DATASHEET', title: 'Datasheet', description: null, version: 2, updatedAt: '2026-10-07T10:00:00Z', file: null,
     imageUrl: null, altText: null, logoUrl: null, videoProvider: null, videoUrl: null, embedUrl: null, thumbnailUrl: null,
-    customerName: null, problem: null, result: null, articleRef: null, articleType: null, ...over,
+    customerName: null, problem: null, result: null, articleRef: null, articleType: null, playUrl: null, ...over,
   })
   const all: PublicContent = {
     datasheets: [pub({ file: { fileName: 'd.pdf', size: 3 * 1024 * 1024, mimeType: 'application/pdf' } })],
@@ -208,6 +260,7 @@ describe('Product content — Resources tab (REQ-CAT-004.9)', () => {
     videos: [
       pub({ id: 4, kind: 'VIDEO', title: 'Tour', videoProvider: 'YOUTUBE', embedUrl: 'https://www.youtube-nocookie.com/embed/dQw4w9WgXcQ', thumbnailUrl: 'https://i.ytimg.com/vi/dQw4w9WgXcQ/hqdefault.jpg', videoUrl: 'https://youtu.be/dQw4w9WgXcQ' }),
       pub({ id: 5, kind: 'VIDEO', title: 'Webinar', videoProvider: 'EXTERNAL', videoUrl: 'https://videos.example.com/w' }),
+      pub({ id: 7, kind: 'VIDEO', title: 'Hosted walkthrough', videoProvider: 'HOSTED', playUrl: 'https://s3.test/video.mp4?sig=9', file: { fileName: 'walk.mp4', size: 9000000, mimeType: 'video/mp4' } }),
     ],
     caseStudies: [pub({ id: 6, kind: 'CASE_STUDY', title: 'How Acme saved time', customerName: 'Acme', problem: 'Slow month-end', result: 'Closed 3 days faster',
       file: { fileName: 'acme.pdf', size: 1000, mimeType: 'application/pdf' } })],
@@ -225,6 +278,15 @@ describe('Product content — Resources tab (REQ-CAT-004.9)', () => {
     expect(screen.getByRole('link', { name: /Open video in a new tab/ })).toHaveAttribute('rel', 'noopener noreferrer')
     expect(screen.getByText('Slow month-end')).toBeInTheDocument()
     expect(await axe(container)).toHaveNoViolations()
+  })
+
+  it('plays an uploaded video from its short-lived link, in the page', () => {
+    render(<MemoryRouter><ProductResources productId={7} content={all} /></MemoryRouter>)
+    const video = document.querySelector('video')!
+    expect(video).toHaveAttribute('src', 'https://s3.test/video.mp4?sig=9')
+    expect(video).toHaveAttribute('aria-label', 'Hosted walkthrough')
+    expect(video).toHaveAttribute('controls')
+    expect(screen.getByText('Hosted walkthrough')).toBeInTheDocument()
   })
 
   it('asks for a fresh download link only when the visitor clicks', async () => {

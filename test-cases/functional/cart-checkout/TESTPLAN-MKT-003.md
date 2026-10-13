@@ -9,7 +9,7 @@
 | Status | Draft (the FRD is Draft; built 2026-10-01 at the product owner's request with the engineering defaults recorded under C59) |
 
 ## Scope
-Every acceptance criterion in [`acceptance-criteria.md`](../../../docs/02-requirements/FRD/cart-checkout/acceptance-criteria.md): TC-MKT-011 to TC-MKT-026. The redesigned checkout screen is covered in [TESTPLAN-BIL-001](../billing-payments/TESTPLAN-BIL-001.md) (TC-BIL-019 to TC-BIL-023).
+Every acceptance criterion in [`acceptance-criteria.md`](../../../docs/02-requirements/FRD/cart-checkout/acceptance-criteria.md): TC-MKT-011 to TC-MKT-026 and, for C93 (Add to cart on the card), TC-MKT-027 to TC-MKT-030. The redesigned checkout screen is covered in [TESTPLAN-BIL-001](../billing-payments/TESTPLAN-BIL-001.md) (TC-BIL-019 to TC-BIL-023).
 
 ## Approach
 Backend: `CartServiceTest` and `CartAuthorizationTest` against the H2-backed Spring context (Razorpay mocked). Frontend: Vitest with Testing Library and jest-axe, API mocked. Manual: cross-device persistence (TC-MKT-013) and the audit check (TC-MKT-024).

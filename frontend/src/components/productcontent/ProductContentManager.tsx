@@ -74,7 +74,7 @@ export function ProductContentManager({ productId }: { productId: number }) {
   }
 
   const { storage } = data
-  const sizeFor = (kind: ContentKind) => formatSize(kind === 'IMAGE' ? storage.imageMaxSize : storage.documentMaxSize)
+  const sizeFor = (kind: ContentKind) => formatSize(kind === 'IMAGE' ? storage.imageMaxSize : kind === 'VIDEO' ? storage.videoMaxSize : storage.documentMaxSize)
   const needsStorage = (kind: ContentKind) => kind === 'DATASHEET' || kind === 'IMAGE'
 
   const meta = (item: AdminItem) => {

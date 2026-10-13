@@ -24,7 +24,8 @@ Backend: `OutboxDispatcherTest` (handlers registered by the test), `Subscription
 | [TC-INT-015](TC-INT-015.md) | Administrators list, filter, open and retry events | AC-7, AC-8, AC-11 | Yes |
 | [TC-INT-016](TC-INT-016.md) | Delivered events older than the retention period are removed | AC-9 | Yes |
 | [TC-INT-017](TC-INT-017.md) | Business changes publish their catalogue events | AC-10 | Partly |
+| [TC-INT-020](TC-INT-020.md) to [TC-INT-026](TC-INT-026.md) | Replay, preview, failures, limits, configurable retention and its job, failure alerts (C91) | AC-12 | Yes |
 
 ## Blocked or partial
-- Replay of delivered events (13.03.01.05) is Not specified and not tested.
+- Replay (13.03.01.05, C91) is tested against test receivers only; no real receiver exists yet (provisioning REQ-ORD-002 and webhooks D19 are the first). The alert emails are asserted with a mocked mail service, not a real mail server.
 - Order, invoice, payment and checkout events are published by code paths covered by their own tests; their event rows are not asserted individually (TC-INT-017 lists which are).

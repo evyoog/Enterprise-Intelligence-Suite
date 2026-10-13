@@ -37,6 +37,7 @@ public class OutboxDispatcher {
     private final OutboxEventRepository outboxEventRepository;
     private final EventHandlerReceiptRepository receiptRepository;
     private final ObjectProvider<PlatformEventHandler> handlers;
+    private final EventFailureAlertService alertService;
     private final TransactionTemplate tx;
     private final int batchSize;
     private final int maxAttempts;
@@ -46,6 +47,7 @@ public class OutboxDispatcher {
     public OutboxDispatcher(OutboxEventRepository outboxEventRepository,
                             EventHandlerReceiptRepository receiptRepository,
                             ObjectProvider<PlatformEventHandler> handlers,
+                            EventFailureAlertService alertService,
                             PlatformTransactionManager transactionManager,
                             @Value("${app.events.dispatcher.batch-size:100}") int batchSize,
                             @Value("${app.events.dispatcher.max-attempts:10}") int maxAttempts,
@@ -54,6 +56,7 @@ public class OutboxDispatcher {
         this.outboxEventRepository = outboxEventRepository;
         this.receiptRepository = receiptRepository;
         this.handlers = handlers;
+        this.alertService = alertService;
         this.tx = new TransactionTemplate(transactionManager);
         this.tx.setPropagationBehavior(TransactionDefinition.PROPAGATION_REQUIRES_NEW);
         this.batchSize = batchSize;
@@ -98,7 +101,10 @@ public class OutboxDispatcher {
                     receiptRepository.save(receipt);
                 });
             } catch (RuntimeException e) {
-                recordFailure(event.getId(), handler.name(), e);
+                if (recordFailure(event.getId(), handler.name(), e)) {
+                    // REQ-INT-002 (C91, EV-4): the event failed for good; tell the people on the settings screen.
+                    alertService.notifyFailed(event.getId());
+                }
                 return false;
             }
         }
@@ -112,9 +118,10 @@ public class OutboxDispatcher {
         return true;
     }
 
-    private void recordFailure(Long id, String handlerName, RuntimeException error) {
+    /** True when this failure used the last attempt and the event is now FAILED. */
+    private boolean recordFailure(Long id, String handlerName, RuntimeException error) {
         log.warn("Event {} failed in handler {}: {}", id, handlerName, error.getMessage());
-        tx.executeWithoutResult(status -> outboxEventRepository.findById(id).ifPresent(current -> {
+        Boolean failedForGood = tx.execute(status -> outboxEventRepository.findById(id).map(current -> {
             int attempts = current.getAttempts() + 1;
             current.setAttempts(attempts);
             String message = handlerName + ": " + (error.getMessage() == null ? error.getClass().getSimpleName() : error.getMessage());
@@ -122,10 +129,12 @@ public class OutboxDispatcher {
             if (attempts >= maxAttempts) {
                 current.setStatus(OutboxEventStatus.FAILED);
                 current.setNextAttemptAt(null);
-            } else {
-                current.setNextAttemptAt(Instant.now().plus(delayAfter(attempts)));
+                return true;
             }
-        }));
+            current.setNextAttemptAt(Instant.now().plus(delayAfter(attempts)));
+            return false;
+        }).orElse(false));
+        return Boolean.TRUE.equals(failedForGood);
     }
 
     /** BR-3: 30 s, 1 min, 2 min, … doubling, capped (defaults). */

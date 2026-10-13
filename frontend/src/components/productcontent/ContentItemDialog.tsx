@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import {
-  Alert, Box, Button, Dialog, DialogActions, DialogContent, DialogTitle, MenuItem, TextField, Typography,
+  Alert, Box, Button, Dialog, DialogActions, DialogContent, DialogTitle, FormControlLabel, MenuItem, Radio, RadioGroup, TextField, Typography,
 } from '@mui/material'
 import { ApiError } from '../../api/client'
 import { contentTypeOf, type UploadProgress } from '../../api/knowledgeApi'
@@ -32,6 +32,8 @@ export function ContentItemDialog({ productId, kind, item, storage, onClose, onS
   const [description, setDescription] = useState(item?.description ?? '')
   const [altText, setAltText] = useState(item?.altText ?? '')
   const [videoUrl, setVideoUrl] = useState(item?.videoUrl ?? '')
+  // PC-3 (C89): a video is a link or a file uploaded to the product storage, never both.
+  const [videoMode, setVideoMode] = useState<'link' | 'file'>(item?.videoProvider === 'HOSTED' ? 'file' : 'link')
   const [customerName, setCustomerName] = useState(item?.customerName ?? '')
   const [problem, setProblem] = useState(item?.problem ?? '')
   const [result, setResult] = useState(item?.result ?? '')
@@ -54,10 +56,11 @@ export function ContentItemDialog({ productId, kind, item, storage, onClose, onS
     return () => { active = false }
   }, [kind, productId])
 
-  const hasFileSlot = kind === 'DATASHEET' || kind === 'IMAGE' || kind === 'CASE_STUDY'
+  const hostedVideo = kind === 'VIDEO' && videoMode === 'file'
+  const hasFileSlot = kind === 'DATASHEET' || kind === 'IMAGE' || kind === 'CASE_STUDY' || hostedVideo
   const imageAllowed = kind === 'IMAGE'
-  const allowedFor = (slot: Slot) => (slot === 'logo' || imageAllowed ? storage.imageTypes : storage.documentTypes)
-  const maxFor = (slot: Slot) => (slot === 'logo' || imageAllowed ? storage.imageMaxSize : storage.documentMaxSize)
+  const allowedFor = (slot: Slot) => (slot === 'logo' || imageAllowed ? storage.imageTypes : kind === 'VIDEO' ? storage.videoTypes : storage.documentTypes)
+  const maxFor = (slot: Slot) => (slot === 'logo' || imageAllowed ? storage.imageMaxSize : kind === 'VIDEO' ? storage.videoMaxSize : storage.documentMaxSize)
   const pendingOf = (slot: Slot) => pending.find((p) => p.slot === slot)?.uploaded
   const busy = saving || uploading !== null && (uploading.progress.state === 'preparing' || uploading.progress.state === 'uploading')
 
@@ -92,7 +95,8 @@ export function ContentItemDialog({ productId, kind, item, storage, onClose, onS
     const errors: Record<string, string> = {}
     if (!title.trim() || title.trim().length > 200) errors.title = t('productContent.errors.title')
     if (kind === 'IMAGE' && !altText.trim()) errors.altText = t('productContent.errors.alt')
-    if (kind === 'VIDEO' && !/^https:\/\/\S+$/i.test(videoUrl.trim())) errors.videoUrl = t('productContent.errors.videoUrl')
+    if (kind === 'VIDEO' && videoMode === 'link' && !/^https:\/\/\S+$/i.test(videoUrl.trim())) errors.videoUrl = t('productContent.errors.videoUrl')
+    if (hostedVideo && !pendingOf('file') && item?.videoProvider !== 'HOSTED') errors.file = t('productContent.errors.file')
     if (kind === 'CASE_STUDY' && !customerName.trim()) errors.customerName = t('productContent.errors.customer')
     if (kind === 'DOCUMENTATION' && articleId === '') errors.article = t('productContent.errors.article')
     if ((kind === 'DATASHEET' || kind === 'IMAGE') && !item && !pendingOf('file')) errors.file = t('productContent.errors.file')
@@ -105,9 +109,9 @@ export function ContentItemDialog({ productId, kind, item, storage, onClose, onS
     if (!validate()) return
     const request: ItemRequest = {
       kind, title: title.trim(), description: description.trim() || null, altText: altText.trim() || null,
-      videoUrl: videoUrl.trim() || null, customerName: customerName.trim() || null, problem: problem.trim() || null,
+      videoUrl: kind === 'VIDEO' && videoMode === 'file' ? null : videoUrl.trim() || null, customerName: customerName.trim() || null, problem: problem.trim() || null,
       result: result.trim() || null, articleId: articleId === '' ? null : articleId,
-      file: pendingOf('file') ?? null, logo: pendingOf('logo') ?? null,
+      file: kind === 'VIDEO' && videoMode === 'link' ? null : pendingOf('file') ?? null, logo: pendingOf('logo') ?? null,
     }
     setSaving(true)
     try {
@@ -155,7 +159,7 @@ export function ContentItemDialog({ productId, kind, item, storage, onClose, onS
         {t(item ? 'productContent.dialog.editTitle' : 'productContent.dialog.addTitle', { kind: kindName })}
       </DialogTitle>
       <DialogContent sx={{ display: 'flex', flexDirection: 'column', gap: 2, pt: '8px !important' }}>
-        {!storage.configured && hasFileSlot && <Alert severity="info">{t('productContent.storageOff')}</Alert>}
+        {!storage.configured && (hasFileSlot || kind === 'VIDEO') && <Alert severity="info">{t('productContent.storageOff')}</Alert>}
         {error && <Alert severity="error" role="alert">{error}</Alert>}
 
         <TextField label={t('productContent.fields.title')} value={title} onChange={(e) => setTitle(e.target.value)} required
@@ -171,6 +175,13 @@ export function ContentItemDialog({ productId, kind, item, storage, onClose, onS
         )}
 
         {kind === 'VIDEO' && (
+          <RadioGroup row aria-label={t('productContent.fields.videoMode')} value={videoMode}
+            onChange={(e) => setVideoMode(e.target.value === 'file' ? 'file' : 'link')}>
+            <FormControlLabel value="link" control={<Radio />} label={t('productContent.fields.videoModeLink')} />
+            <FormControlLabel value="file" control={<Radio />} label={t('productContent.fields.videoModeFile')} disabled={!storage.configured} />
+          </RadioGroup>
+        )}
+        {kind === 'VIDEO' && videoMode === 'link' && (
           <TextField label={t('productContent.fields.videoUrl')} value={videoUrl} onChange={(e) => setVideoUrl(e.target.value)} required
             type="url" error={!!fieldErrors.videoUrl} helperText={fieldErrors.videoUrl ?? t('productContent.fields.videoHelp')}
             placeholder="https://www.youtube.com/watch?v=…" />
