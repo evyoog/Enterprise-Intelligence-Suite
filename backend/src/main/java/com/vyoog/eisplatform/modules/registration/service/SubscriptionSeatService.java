@@ -142,4 +142,10 @@ public class SubscriptionSeatService {
         Long organizationId = organizationSelfService.requireOrganizationPermission(customerId, "MANAGE_SUBSCRIPTIONS");
         return subscriptionService.changeOrganizationPlan(organizationId, customerId, subscriptionId, request);
     }
+
+    @Transactional
+    public SubscriptionDto cancelScheduledPlanChange(Long customerId, Long subscriptionId) {
+        Long organizationId = organizationSelfService.requireOrganizationPermission(customerId, "MANAGE_SUBSCRIPTIONS");
+        return subscriptionService.cancelScheduledOrganizationPlanChange(organizationId, customerId, subscriptionId);
+    }
 }

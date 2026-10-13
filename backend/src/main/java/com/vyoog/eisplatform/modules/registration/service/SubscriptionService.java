@@ -309,7 +309,10 @@ public class SubscriptionService {
             subscription.getPlanId(),
             planName,
             subscription.getQuantity(),
-            subscription.isAutoRenew()
+            subscription.isAutoRenew(),
+            subscription.getPendingPlanId(),
+            subscription.getPendingPlanId() == null ? null
+                : productPlanRepository.findById(subscription.getPendingPlanId()).map(ProductPlan::getName).orElse(null)
         );
     }
 
@@ -414,6 +417,7 @@ public class SubscriptionService {
             return false;
         }
         Instant oldRenewal = subscription.getExpiresAt();
+        applyPendingPlan(subscription);   // C97 SC-1: a scheduled downgrade takes effect with this renewal
         Optional<Instant> next = nextExpiry(subscription, oldRenewal);
         if (next.isEmpty()) {
             return false;
@@ -462,6 +466,7 @@ public class SubscriptionService {
         }
         Instant from = subscription.getExpiresAt() != null && subscription.getExpiresAt().isAfter(Instant.now())
             ? subscription.getExpiresAt() : Instant.now();
+        applyPendingPlan(subscription);   // C97 SC-1
         Instant newExpiry = nextExpiry(subscription, from)
             .orElseThrow(() -> new IllegalArgumentException("This subscription has no billing period to renew."));
         subscription.setExpiresAt(newExpiry);
@@ -502,28 +507,105 @@ public class SubscriptionService {
         return overdue.size();
     }
 
-    /** 07.01.02 Change plan (upgrade/downgrade unified, sprint 2026.4.3) —
-     * refused if the plan belongs to a different product, or the
-     * subscription is cancelled. */
+    /** 07.01.02 Change plan (sprint 2026.4.3), C97 SC-1: an upgrade (or a plan of the same price) takes effect at once; a downgrade is
+     * scheduled and takes effect at the next renewal, so the customer keeps what they paid for until then. Refused if the plan belongs to
+     * a different product, or the subscription is cancelled. */
     @Transactional
     public SubscriptionDto changePlan(Long customerId, Long subscriptionId, ChangePlanRequest request) {
         ProductSubscription subscription = resolveOwnSubscription(customerId, subscriptionId);
+        boolean scheduled = applyPlanChange(subscription, request);
+        auditService.recordSuccess(scheduled ? "SUBSCRIPTION_PLAN_CHANGE_SCHEDULED" : "SUBSCRIPTION_PLAN_CHANGED", null, customerId, null,
+            "ProductSubscription", subscriptionId.toString(), null,
+            (scheduled ? "Downgrade to plan " + request.planId() + " scheduled for the next renewal" : "Plan changed to " + request.planId()));
+        if (scheduled) {
+            notify(subscription, "Plan change scheduled", "Your plan will change at your next renewal on "
+                + (subscription.getExpiresAt() == null ? "the renewal date" : subscription.getExpiresAt().atZone(java.time.ZoneOffset.UTC).toLocalDate()) + ".");
+        }
+        publish(PlatformEventTypes.SUBSCRIPTION_CHANGED, subscription);
+        return toDto(subscription);
+    }
+
+    /** Validates and applies (or schedules) a plan change; returns true when it was scheduled rather than applied. */
+    private boolean applyPlanChange(ProductSubscription subscription, ChangePlanRequest request) {
         if (subscription.getStatus() == SubscriptionStatus.CANCELLED) {
             throw new IllegalArgumentException("A cancelled subscription's plan cannot be changed.");
         }
+        ProductPlan target = null;
         if (request.planId() != null) {
-            ProductPlan plan = productPlanRepository.findById(request.planId())
+            target = productPlanRepository.findById(request.planId())
                 .orElseThrow(() -> new ResourceNotFoundException("Plan not found: " + request.planId()));
-            if (!plan.getProduct().getId().equals(subscription.getProductId())) {
+            if (!target.getProduct().getId().equals(subscription.getProductId())) {
                 throw new IllegalArgumentException("That plan does not belong to this subscription's product.");
             }
         }
+        ProductPlan current = subscription.getPlanId() == null ? null : productPlanRepository.findById(subscription.getPlanId()).orElse(null);
+        if (target != null && current != null && target.getId().equals(current.getId())) {
+            // Choosing the plan already in force just withdraws a scheduled change.
+            clearPendingPlan(subscription);
+            subscriptionRepository.save(subscription);
+            return false;
+        }
+        if (target != null && current != null && isDowngrade(current, target)) {
+            subscription.setPendingPlanId(target.getId());
+            subscription.setPendingPlanRequestedAt(Instant.now());
+            subscriptionRepository.save(subscription);
+            return true;
+        }
+        clearPendingPlan(subscription);
         subscription.setPlanId(request.planId());
-        subscription = subscriptionRepository.save(subscription);
-        auditService.recordSuccess("SUBSCRIPTION_PLAN_CHANGED", null, customerId, null,
-            "ProductSubscription", subscriptionId.toString(), null, "Plan changed to " + request.planId());
-        publish(PlatformEventTypes.SUBSCRIPTION_CHANGED, subscription);
+        subscriptionRepository.save(subscription);
+        return false;
+    }
+
+    /** A downgrade is a cheaper plan, compared per month (a yearly price is divided by 12; a one-time price is taken as it is). */
+    static boolean isDowngrade(ProductPlan current, ProductPlan target) {
+        return monthlyPrice(target).compareTo(monthlyPrice(current)) < 0;
+    }
+
+    private static java.math.BigDecimal monthlyPrice(ProductPlan plan) {
+        java.math.BigDecimal price = plan.getPrice() == null ? java.math.BigDecimal.ZERO : plan.getPrice();
+        return plan.getBillingPeriod() == BillingPeriod.YEARLY ? price.divide(java.math.BigDecimal.valueOf(12), 4, java.math.RoundingMode.HALF_UP) : price;
+    }
+
+    private static void clearPendingPlan(ProductSubscription subscription) {
+        subscription.setPendingPlanId(null);
+        subscription.setPendingPlanRequestedAt(null);
+    }
+
+    /** C97 SC-1: withdraws a scheduled downgrade. */
+    @Transactional
+    public SubscriptionDto cancelScheduledPlanChange(Long customerId, Long subscriptionId) {
+        ProductSubscription subscription = resolveOwnSubscription(customerId, subscriptionId);
+        return withdrawScheduledChange(subscription, customerId);
+    }
+
+    @Transactional
+    public SubscriptionDto cancelScheduledOrganizationPlanChange(Long organizationId, Long actorCustomerId, Long subscriptionId) {
+        return withdrawScheduledChange(resolveOrganizationSubscription(organizationId, subscriptionId), actorCustomerId);
+    }
+
+    private SubscriptionDto withdrawScheduledChange(ProductSubscription subscription, Long actorCustomerId) {
+        if (subscription.getPendingPlanId() != null) {
+            clearPendingPlan(subscription);
+            subscription = subscriptionRepository.save(subscription);
+            auditService.recordSuccess("SUBSCRIPTION_PLAN_CHANGE_WITHDRAWN", null, actorCustomerId, null, "ProductSubscription",
+                subscription.getId().toString(), subscription.getOwnerOrganizationId(), "Scheduled plan change withdrawn");
+        }
         return toDto(subscription);
+    }
+
+    /** C97 SC-1: at a renewal, a scheduled downgrade takes effect, so the renewal is billed at the new plan's price. */
+    private void applyPendingPlan(ProductSubscription subscription) {
+        Long pending = subscription.getPendingPlanId();
+        if (pending == null) {
+            return;
+        }
+        if (productPlanRepository.existsById(pending)) {
+            subscription.setPlanId(pending);
+            auditService.recordSuccess("SUBSCRIPTION_PLAN_CHANGED", null, subscription.getOwnerCustomerId(), null, "ProductSubscription",
+                subscription.getId().toString(), subscription.getOwnerOrganizationId(), "Scheduled downgrade to plan " + pending + " applied at renewal");
+        }
+        clearPendingPlan(subscription);
     }
 
     // ------------------------------------------------------------------
@@ -598,20 +680,11 @@ public class SubscriptionService {
     @Transactional
     public SubscriptionDto changeOrganizationPlan(Long organizationId, Long actorCustomerId, Long subscriptionId, ChangePlanRequest request) {
         ProductSubscription subscription = resolveOrganizationSubscription(organizationId, subscriptionId);
-        if (subscription.getStatus() == SubscriptionStatus.CANCELLED) {
-            throw new IllegalArgumentException("A cancelled subscription's plan cannot be changed.");
-        }
-        if (request.planId() != null) {
-            ProductPlan plan = productPlanRepository.findById(request.planId())
-                .orElseThrow(() -> new ResourceNotFoundException("Plan not found: " + request.planId()));
-            if (!plan.getProduct().getId().equals(subscription.getProductId())) {
-                throw new IllegalArgumentException("That plan does not belong to this subscription's product.");
-            }
-        }
-        subscription.setPlanId(request.planId());
-        subscription = subscriptionRepository.save(subscription);
-        afterOrganizationChange(subscription, actorCustomerId, "SUBSCRIPTION_PLAN_CHANGED", "Subscription plan changed",
-            "The organization's subscription plan was changed", PlatformEventTypes.SUBSCRIPTION_CHANGED);
+        boolean scheduled = applyPlanChange(subscription, request);
+        afterOrganizationChange(subscription, actorCustomerId, scheduled ? "SUBSCRIPTION_PLAN_CHANGE_SCHEDULED" : "SUBSCRIPTION_PLAN_CHANGED",
+            scheduled ? "Subscription plan change scheduled" : "Subscription plan changed",
+            scheduled ? "The organization's plan will change at the next renewal" : "The organization's subscription plan was changed",
+            PlatformEventTypes.SUBSCRIPTION_CHANGED);
         return toDto(subscription);
     }
 }
