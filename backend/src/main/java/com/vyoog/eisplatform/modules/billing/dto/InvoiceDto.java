@@ -39,6 +39,8 @@ public record InvoiceDto(
     List<com.vyoog.eisplatform.modules.billing.tax.dto.TaxComponentDto> taxLines,
     /** Admin views only: why a Draft is blocked. Never shown to the customer. */
     String taxBlockCode,
-    String taxBlockReason
+    String taxBlockReason,
+    /** C97 BI-9: optional customer purchase-order number, printed on the invoice. */
+    String purchaseOrderNumber
 ) {
 }

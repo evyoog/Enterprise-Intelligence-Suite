@@ -32,6 +32,15 @@ public record CheckoutSummaryDto(
     String checkoutThemeColor,
     /** C96: true when the invoice is a Draft because its tax could not be determined yet. Nothing can be paid until it is issued. */
     boolean taxPending,
-    String placeOfSupply
+    String placeOfSupply,
+    /** C97 BI-7: links to the evyoog.com Terms, Privacy and Refund pages (Billing settings); null when not set. */
+    String termsUrl,
+    String privacyUrl,
+    String refundPolicyUrl,
+    /** C97 BI-9: the optional purchase-order number the customer gave for this invoice. */
+    String purchaseOrderNumber,
+    /** C97 BI-8: the active payment gateway code and its display name, so the screens say nothing gateway-specific. */
+    String gatewayCode,
+    String gatewayName
 ) {
 }

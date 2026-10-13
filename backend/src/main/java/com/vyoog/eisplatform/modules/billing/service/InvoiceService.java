@@ -369,6 +369,20 @@ public class InvoiceService {
         return invoice;
     }
 
+    /** C97 BI-9: an optional purchase-order number the customer can add (or clear) until the invoice is paid. */
+    @Transactional
+    public InvoiceDto setPurchaseOrder(Long customerId, Long organizationId, Long invoiceId, String purchaseOrderNumber) {
+        Invoice invoice = resolveOwn(customerId, organizationId, invoiceId);
+        if (invoice.getStatus() != InvoiceStatus.OPEN && invoice.getStatus() != InvoiceStatus.DRAFT) {
+            throw new com.vyoog.eisplatform.common.exception.BillingConflictException("A purchase-order number can only be changed before the invoice is paid.");
+        }
+        invoice.setPurchaseOrderNumber(purchaseOrderNumber == null || purchaseOrderNumber.isBlank() ? null : purchaseOrderNumber.trim());
+        invoice = invoiceRepository.save(invoice);
+        auditService.recordSuccess("INVOICE_PO_NUMBER_SET", null, customerId, null, "Invoice", invoice.getId().toString(),
+            invoice.getOwnerOrganizationId(), "Purchase-order number " + (invoice.getPurchaseOrderNumber() == null ? "cleared" : "set") + " on " + invoice.getInvoiceNumber());
+        return toDto(invoice, true, null, false);
+    }
+
     public Invoice getById(Long invoiceId) {
         return invoiceRepository.findById(invoiceId).orElseThrow(() -> new ResourceNotFoundException("Invoice not found"));
     }
@@ -464,7 +478,8 @@ public class InvoiceService {
             invoice.getIssuedAt(), invoice.getDueAt(), invoice.getBillToSnapshot(), invoice.getPaymentRoute(), ownerLabel, lines, payments,
             invoice.getTaxStatus().name(), invoice.getTaxEngine() == null ? null : invoice.getTaxEngine().name(), invoice.getPlaceOfSupply(),
             invoice.getCustomerTaxId(), withDetail ? invoice.getIssuerSnapshot() : null, taxLines,
-            admin ? invoice.getTaxBlockCode() : null, admin ? invoice.getTaxBlockReason() : null);
+            admin ? invoice.getTaxBlockCode() : null, admin ? invoice.getTaxBlockReason() : null,
+            invoice.getPurchaseOrderNumber());
     }
 
     /** The tax components copied onto an invoice when it was calculated (REQ-BIL-002.43), summed per component. */

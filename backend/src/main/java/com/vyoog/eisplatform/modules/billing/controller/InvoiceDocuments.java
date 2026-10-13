@@ -64,6 +64,7 @@ final class InvoiceDocuments {
         body.append("Bill to:\n").append(invoice.getBillToSnapshot()).append("\n");
         if (invoice.getCustomerTaxId() != null) body.append("GSTIN / Tax ID: ").append(invoice.getCustomerTaxId()).append("\n");
         if (invoice.getPlaceOfSupply() != null) body.append("Place of supply: ").append(invoice.getPlaceOfSupply()).append("\n");
+        if (invoice.getPurchaseOrderNumber() != null) body.append("Purchase order: ").append(invoice.getPurchaseOrderNumber()).append("\n");
         body.append("\n");
         for (var line : invoice.getLines()) {
             body.append(String.format("%-40s x%-3d %10.2f%n", line.getDescription(), line.getQuantity(), line.getAmount() / 100.0));
@@ -102,6 +103,13 @@ final class InvoiceDocuments {
         }
         if (issuer != null && issuer.invoiceFooterNote() != null) {
             body.append("\n").append(issuer.invoiceFooterNote()).append("\n");
+        }
+
+        if (issuer != null && (issuer.termsUrl() != null || issuer.privacyUrl() != null || issuer.refundPolicyUrl() != null)) {
+            body.append("\n");
+            if (issuer.termsUrl() != null) body.append("Terms: ").append(issuer.termsUrl()).append("\n");
+            if (issuer.privacyUrl() != null) body.append("Privacy: ").append(issuer.privacyUrl()).append("\n");
+            if (issuer.refundPolicyUrl() != null) body.append("Refunds: ").append(issuer.refundPolicyUrl()).append("\n");
         }
 
         byte[] bytes = body.toString().getBytes(StandardCharsets.UTF_8);

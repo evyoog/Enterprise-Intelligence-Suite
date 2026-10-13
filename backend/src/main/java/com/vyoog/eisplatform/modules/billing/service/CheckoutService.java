@@ -58,6 +58,7 @@ public class CheckoutService {
     private final NotificationService notificationService;
     private final AuditService auditService;
     private final BillingSettingsService billingSettingsService;
+    private final PaymentGatewayService paymentGatewayService;
 
     /** C97 BI-4: Pay by invoice is only for organizations the platform admin has enabled (and only while the global
      * switch in Billing settings is on). Individual customers always pay online. */
@@ -193,7 +194,10 @@ public class CheckoutService {
             settings.getCheckoutDescription(),
             settings.getCheckoutThemeColor(),
             invoice != null && invoice.getStatus() == InvoiceStatus.DRAFT,
-            invoice != null ? invoice.getPlaceOfSupply() : null);
+            invoice != null ? invoice.getPlaceOfSupply() : null,
+            settings.getTermsUrl(), settings.getPrivacyUrl(), settings.getRefundPolicyUrl(),
+            invoice != null ? invoice.getPurchaseOrderNumber() : null,
+            paymentGatewayService.activeCode(), paymentGatewayService.activeName());
     }
 
     private String billingEmail(Long customerId, Long organizationId, Long fallbackCustomerId) {

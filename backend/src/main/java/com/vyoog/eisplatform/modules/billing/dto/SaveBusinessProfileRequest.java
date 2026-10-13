@@ -26,6 +26,9 @@ public record SaveBusinessProfileRequest(
     @Pattern(regexp = "^$|^https?://\\S{3,250}$", message = "must start with http:// or https://") String website,
     @NotBlank @Pattern(regexp = "(?i)^[A-Z0-9]{2,10}$", message = "must be 2 to 10 letters or digits") String invoicePrefix,
     @Min(0) @Max(365) int paymentTermsDays,
-    @Size(max = 500) String invoiceFooterNote
+    @Size(max = 500) String invoiceFooterNote,
+    @Pattern(regexp = "^$|^https?://\\S{3,480}$", message = "must start with http:// or https://") String termsUrl,
+    @Pattern(regexp = "^$|^https?://\\S{3,480}$", message = "must start with http:// or https://") String privacyUrl,
+    @Pattern(regexp = "^$|^https?://\\S{3,480}$", message = "must start with http:// or https://") String refundPolicyUrl
 ) {
 }

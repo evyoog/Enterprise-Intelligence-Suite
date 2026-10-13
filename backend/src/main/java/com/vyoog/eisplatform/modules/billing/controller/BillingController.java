@@ -120,6 +120,12 @@ public class BillingController {
     }
 
     /** TX-6: the credit notes issued against one of the customer's invoices. */
+    @PutMapping("/invoices/{invoiceId}/purchase-order")
+    public InvoiceDto purchaseOrder(@AuthenticationPrincipal Jwt jwt, @PathVariable Long invoiceId,
+                                    @jakarta.validation.Valid @RequestBody com.vyoog.eisplatform.modules.billing.dto.SavePurchaseOrderRequest request) {
+        return invoiceService.setPurchaseOrder(currentCustomerResolver.resolve(jwt).getId(), null, invoiceId, request.purchaseOrderNumber());
+    }
+
     @GetMapping("/invoices/{invoiceId}/credit-notes")
     public java.util.List<com.vyoog.eisplatform.modules.billing.tax.dto.CreditNoteDto> creditNotes(@AuthenticationPrincipal Jwt jwt, @PathVariable Long invoiceId) {
         Customer customer = currentCustomerResolver.resolve(jwt);

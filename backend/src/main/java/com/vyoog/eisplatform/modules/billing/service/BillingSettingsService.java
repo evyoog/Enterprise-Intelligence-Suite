@@ -92,6 +92,9 @@ public class BillingSettingsService {
         s.setInvoicePrefix(r.invoicePrefix().trim().toUpperCase(Locale.ROOT));
         s.setPaymentTermsDays(r.paymentTermsDays());
         s.setInvoiceFooterNote(blankToNull(r.invoiceFooterNote()));
+        s.setTermsUrl(blankToNull(r.termsUrl()));
+        s.setPrivacyUrl(blankToNull(r.privacyUrl()));
+        s.setRefundPolicyUrl(blankToNull(r.refundPolicyUrl()));
         s.setUpdatedByCustomerId(adminCustomerId);
         s = settingsRepository.save(s);
         auditService.recordSuccess("BILLING_BUSINESS_PROFILE_SAVED", null, adminCustomerId, null,
@@ -193,7 +196,7 @@ public class BillingSettingsService {
         return new BusinessProfileDto(s.getBusinessLegalName(), s.getBusinessTradeName(), s.getBusinessGstin(), s.getBusinessPan(),
             s.getBusinessCin(), s.getBusinessAddressLine1(), s.getBusinessAddressLine2(), s.getBusinessCity(), s.getBusinessState(),
             s.getBusinessPostalCode(), s.getBusinessCountry(), s.getBusinessEmail(), s.getBusinessPhone(), s.getBusinessWebsite(),
-            s.getInvoicePrefix(), s.getPaymentTermsDays(), s.getInvoiceFooterNote(), s.getUpdatedAt());
+            s.getInvoicePrefix(), s.getPaymentTermsDays(), s.getInvoiceFooterNote(), s.getTermsUrl(), s.getPrivacyUrl(), s.getRefundPolicyUrl(), s.getUpdatedAt());
     }
 
     private PaymentMethodSettingsDto toMethodsDto(BillingSettings s) {

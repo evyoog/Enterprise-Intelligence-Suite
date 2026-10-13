@@ -35,7 +35,7 @@ class InvoiceDocumentsTest {
         invoice.setBillToSnapshot("Jane Customer");
         BusinessProfileDto issuer = new BusinessProfileDto("eVyoog Technologies Pvt Ltd", "eVyoog", "29ABCDE1234F1Z5", "ABCDE1234F", null,
             "12 MG Road", null, "Bengaluru", "Karnataka", "560001", "India", "billing@evyoog.example", null, null,
-            "EVY", 30, "Thank you for your business.", null);
+            "EVY", 30, "Thank you for your business.", "https://www.evyoog.example/terms", "https://www.evyoog.example/privacy", "https://www.evyoog.example/refunds", null);
         OfflineBankDetailsDto bank = new OfflineBankDetailsDto("eVyoog Technologies Pvt Ltd", "HDFC Bank", "MG Road", "50200012345678",
             "CURRENT", "HDFC0001234", null, null, null, "evyoog@hdfcbank", "eVyoog Technologies Pvt Ltd", null, null,
             true, true, true, null);
@@ -46,7 +46,8 @@ class InvoiceDocumentsTest {
         assertThat(text).contains("GSTIN: 29ABCDE1234F1Z5", "12 MG Road, Bengaluru, Karnataka, 560001, India",
             "Due: 2026-10-31", "Bank: HDFC Bank, MG Road", "IFSC: HDFC0001234", "UPI ID: evyoog@hdfcbank",
             "Quote EVY-2026-000009 as the payment reference.");
-        assertThat(text.trim()).endsWith("Thank you for your business.");
+        assertThat(text).contains("Thank you for your business.");
+        assertThat(text.trim()).endsWith("Refunds: https://www.evyoog.example/refunds");
     }
 
     private Invoice taxedInvoice() {

@@ -106,7 +106,7 @@ class BillingSettingsServiceTest {
     private SaveBusinessProfileRequest profile(String prefix, int terms) {
         return new SaveBusinessProfileRequest("eVyoog Technologies Pvt Ltd", "eVyoog", "29abcde1234f1z5", "abcde1234f",
             "U72900KA2020PTC123456", "12 MG Road", null, "Bengaluru", "Karnataka", "560001", "India",
-            "billing@evyoog.example", "+91 80 1234 5678", "https://www.evyoog.example", prefix, terms, "Thank you for your business.");
+            "billing@evyoog.example", "+91 80 1234 5678", "https://www.evyoog.example", prefix, terms, "Thank you for your business.", "https://www.evyoog.example/terms", null, "");
     }
 
     @Test
@@ -135,9 +135,9 @@ class BillingSettingsServiceTest {
     @Test
     void invalidRegistrationNumbersAndPrefixesAreRefused() {
         var bad = new SaveBusinessProfileRequest("X", null, "12345", "ABC", "NOPE", "a", null, "c", "s", "1", "In",
-            "not-an-email", "abc", "ftp://x", "a", 400, null);
+            "not-an-email", "abc", "ftp://x", "a", 400, null, "terms", null, null);
         assertThat(validator.validate(bad)).extracting(v -> v.getPropertyPath().toString())
-            .contains("gstin", "pan", "cin", "email", "phone", "website", "invoicePrefix", "paymentTermsDays");
+            .contains("gstin", "pan", "cin", "email", "phone", "website", "invoicePrefix", "paymentTermsDays", "termsUrl");
         assertThat(validator.validate(profile("INV", 30))).isEmpty();
     }
 
