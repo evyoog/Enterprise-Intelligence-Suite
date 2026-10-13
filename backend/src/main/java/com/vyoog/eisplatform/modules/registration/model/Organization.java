@@ -132,6 +132,10 @@ public class Organization {
     @Column(name = "allow_seat_overage", nullable = false)
     private boolean allowSeatOverage = false;
 
+    /** C97 BI-4: whether this organization may choose Pay by invoice at checkout. Platform-admin-managed (Billing settings). */
+    @Column(name = "pay_by_invoice_enabled", nullable = false)
+    private boolean payByInvoiceEnabled = false;
+
     @CreatedDate
     @Column(updatable = false)
     private Instant createdAt;

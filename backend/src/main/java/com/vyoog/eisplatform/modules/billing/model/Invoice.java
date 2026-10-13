@@ -121,6 +121,10 @@ public class Invoice {
     @Column(name = "issuer_snapshot", length = 1500)
     private String issuerSnapshot;
 
+    /** C97 BI-9: an optional purchase order number the customer gives, printed on the invoice. */
+    @Column(name = "purchase_order_number", length = 50)
+    private String purchaseOrderNumber;
+
     /** BI-3: the customer's tax ID (for example GSTIN) as it was when the invoice was finalized. */
     @Column(name = "customer_tax_id", length = 50)
     private String customerTaxId;

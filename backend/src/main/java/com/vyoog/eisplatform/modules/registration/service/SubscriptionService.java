@@ -188,7 +188,12 @@ public class SubscriptionService {
                 created.setOwnerCustomerId(customerId);
                 return created;
             });
-        subscription.setStatus(SubscriptionStatus.ACTIVE);
+        // C97 BI-1: a paid purchase starts after payment (card or UPI) or at once with a due date (pay by invoice). Until then it is
+        // PENDING_SUBSCRIPTION. A subscription that is already active keeps running while the new purchase is paid.
+        boolean paid = planId != null && productPlanRepository.findById(planId).map(p -> p.getPrice().signum() > 0).orElse(false);
+        boolean alreadyActive = subscription.getStatus() == SubscriptionStatus.ACTIVE;
+        boolean startNow = !paid || alreadyActive;
+        subscription.setStatus(startNow ? SubscriptionStatus.ACTIVE : SubscriptionStatus.PENDING_SUBSCRIPTION);
         subscription.setStartedAt(Instant.now());
         subscription.setPlanId(planId);
         // REQ-SUB-004.1 (C64): a Monthly/Yearly plan gets a renewal date and auto-renew.
@@ -196,14 +201,46 @@ public class SubscriptionService {
         subscription.setAutoRenew(true);
         subscription = subscriptionRepository.save(subscription);
 
-        customerRepository.findById(customerId).ifPresent(customer ->
-            notificationService.notify(customerId, customer.getEmail(), NotificationCategory.SUBSCRIPTION, NotificationSeverity.INFO,
-                "Subscribed to " + product.getName(),
-                "You're now subscribed to " + product.getName() + "."));
-        auditService.recordSuccess("SUBSCRIPTION_CREATED", null, customerId, null,
-            "ProductSubscription", productId.toString(), null, "Customer subscribed to product " + productId + " from the cart");
-        publish(PlatformEventTypes.SUBSCRIPTION_CREATED, subscription);
+        if (startNow) {
+            customerRepository.findById(customerId).ifPresent(customer ->
+                notificationService.notify(customerId, customer.getEmail(), NotificationCategory.SUBSCRIPTION, NotificationSeverity.INFO,
+                    "Subscribed to " + product.getName(),
+                    "You're now subscribed to " + product.getName() + "."));
+            auditService.recordSuccess("SUBSCRIPTION_CREATED", null, customerId, null,
+                "ProductSubscription", productId.toString(), null, "Customer subscribed to product " + productId + " from the cart");
+            publish(PlatformEventTypes.SUBSCRIPTION_CREATED, subscription);
+        } else {
+            customerRepository.findById(customerId).ifPresent(customer ->
+                notificationService.notify(customerId, customer.getEmail(), NotificationCategory.SUBSCRIPTION, NotificationSeverity.INFO,
+                    "Order received: " + product.getName(),
+                    "Your subscription to " + product.getName() + " starts when your payment is received."));
+            auditService.recordSuccess("SUBSCRIPTION_ORDERED", null, customerId, null,
+                "ProductSubscription", productId.toString(), null, "Customer ordered product " + productId + " from the cart; it starts after payment");
+        }
         return subscription.getId();
+    }
+
+    /** C97 BI-1: starts a purchase that was waiting for payment. Does nothing for a subscription that is not PENDING_SUBSCRIPTION, so a
+     * second payment event for the same invoice changes nothing. The term starts now. */
+    @Transactional
+    public boolean activatePending(Long subscriptionId, String reason) {
+        ProductSubscription subscription = subscriptionRepository.findById(subscriptionId).orElse(null);
+        if (subscription == null || subscription.getStatus() != SubscriptionStatus.PENDING_SUBSCRIPTION) {
+            return false;
+        }
+        subscription.setStatus(SubscriptionStatus.ACTIVE);
+        subscription.setStartedAt(Instant.now());
+        subscription.setExpiresAt(firstRenewalDate(subscription.getPlanId(), subscription.getStartedAt()));
+        subscription = subscriptionRepository.save(subscription);
+        String productName = productRepository.findById(subscription.getProductId()).map(Product::getName).orElse("your product");
+        notify(subscription, "Subscription active", "Your subscription to " + productName + " is now active.");
+        auditService.recordSuccess("SUBSCRIPTION_ACTIVATED", null, subscription.getOwnerCustomerId(), null,
+            "ProductSubscription", subscription.getId().toString(), subscription.getOwnerOrganizationId(), "Subscription started: " + reason);
+        publish(PlatformEventTypes.SUBSCRIPTION_CREATED, subscription);
+        if (subscription.getOwnerOrganizationId() != null) {
+            eventPublisher.publishEvent(new com.vyoog.eisplatform.modules.registration.event.OrganizationEntitlementsChangedEvent(subscription.getOwnerOrganizationId()));
+        }
+        return true;
     }
 
     /** 09.02.01 Service Provisioning (sprint 2027.1.1): the organization

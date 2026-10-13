@@ -35,6 +35,7 @@ public class TaxTestSupport {
     @Autowired private TaxRuleRepository ruleRepository;
     @Autowired private TaxSettingsRepository taxSettingsRepository;
     @Autowired private BillingDetailsService billingDetailsService;
+    @Autowired private com.vyoog.eisplatform.modules.registration.repository.OrganizationRepository organizationRepository;
 
     /** The seller: an Indian company in Tamil Nadu. */
     public void supplierInTamilNadu() {
@@ -118,5 +119,23 @@ public class TaxTestSupport {
         internalEngine();
         zeroRateRule("IN");
         billingDetailsForCustomer(customer.getId(), customer.getEmail());
+    }
+
+    /** C97 BI-4: an organization with billing details in Tamil Nadu, optionally enabled for Pay by invoice. */
+    public com.vyoog.eisplatform.modules.registration.model.Organization organizationReadyToInvoice(
+            com.vyoog.eisplatform.modules.registration.model.Customer admin, boolean payByInvoice) {
+        supplierInTamilNadu();
+        internalEngine();
+        zeroRateRule("IN");
+        var org = new com.vyoog.eisplatform.modules.registration.model.Organization();
+        org.setName("Invoice Org " + System.nanoTime());
+        org.setCode("INV-" + System.nanoTime());
+        org.setBusinessEmail("org-" + System.nanoTime() + "@example.com");
+        org.setCountry("India");
+        org.setPayByInvoiceEnabled(payByInvoice);
+        org = organizationRepository.save(org);
+        billingDetailsService.saveForOrganization(admin.getId(), org.getId(), new SaveBillingDetailsRequest(
+            "Org Payer", org.getBusinessEmail(), "1 Main St", null, "Chennai", "Tamil Nadu", "600001", "India", null));
+        return org;
     }
 }

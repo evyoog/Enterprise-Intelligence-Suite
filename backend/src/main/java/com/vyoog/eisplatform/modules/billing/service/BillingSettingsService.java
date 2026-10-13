@@ -32,6 +32,7 @@ public class BillingSettingsService {
 
     private final BillingSettingsRepository settingsRepository;
     private final AuditService auditService;
+    private final com.vyoog.eisplatform.modules.registration.repository.OrganizationRepository organizationRepository;
 
     /** The saved row, or an unsaved one holding the defaults. */
     public BillingSettings current() {
@@ -137,6 +138,48 @@ public class BillingSettingsService {
 
     public boolean payByInvoiceEnabled() {
         return current().isMethodPayByInvoiceEnabled();
+    }
+
+    /** C97 BI-4: pay by invoice is only for organizations the platform admin enables, and only while the global switch is on. */
+    public boolean payByInvoiceAllowedFor(Long organizationId) {
+        if (organizationId == null || !payByInvoiceEnabled()) {
+            return false;
+        }
+        return organizationRepository.findById(organizationId)
+            .map(com.vyoog.eisplatform.modules.registration.model.Organization::isPayByInvoiceEnabled).orElse(false);
+    }
+
+    @Transactional(readOnly = true)
+    public List<com.vyoog.eisplatform.modules.billing.dto.PayByInvoiceOrganizationDto> payByInvoiceOrganizations() {
+        return organizationRepository.findByPayByInvoiceEnabledTrueOrderByNameAsc().stream().map(this::toOrgDto).toList();
+    }
+
+    @Transactional(readOnly = true)
+    public List<com.vyoog.eisplatform.modules.billing.dto.PayByInvoiceOrganizationDto> searchOrganizations(String query) {
+        if (query == null || query.isBlank()) {
+            return List.of();
+        }
+        return organizationRepository.findTop20ByNameContainingIgnoreCaseOrderByNameAsc(query.trim()).stream().map(this::toOrgDto).toList();
+    }
+
+    @Transactional
+    public com.vyoog.eisplatform.modules.billing.dto.PayByInvoiceOrganizationDto setOrganizationPayByInvoice(
+            Long adminCustomerId, Long organizationId, boolean enabled) {
+        var org = organizationRepository.findById(organizationId)
+            .orElseThrow(() -> new com.vyoog.eisplatform.common.exception.ResourceNotFoundException("Organization not found"));
+        if (org.isPayByInvoiceEnabled() != enabled) {
+            org.setPayByInvoiceEnabled(enabled);
+            org = organizationRepository.save(org);
+            auditService.recordSuccess(enabled ? "ORG_PAY_BY_INVOICE_ENABLED" : "ORG_PAY_BY_INVOICE_DISABLED", null, adminCustomerId,
+                null, "Organization", org.getId().toString(), org.getId(),
+                "Pay by invoice " + (enabled ? "enabled" : "disabled") + " for " + org.getName());
+        }
+        return toOrgDto(org);
+    }
+
+    private com.vyoog.eisplatform.modules.billing.dto.PayByInvoiceOrganizationDto toOrgDto(
+            com.vyoog.eisplatform.modules.registration.model.Organization o) {
+        return new com.vyoog.eisplatform.modules.billing.dto.PayByInvoiceOrganizationDto(o.getId(), o.getName(), o.getCode(), o.isPayByInvoiceEnabled());
     }
 
     /** A start-payment request naming a method the admin switched off is refused. */

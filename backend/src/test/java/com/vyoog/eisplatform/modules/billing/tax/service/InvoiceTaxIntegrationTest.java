@@ -151,8 +151,9 @@ class InvoiceTaxIntegrationTest {
         var summary = checkoutService.summaryForInvoice(customer.getId(), null, draft.getId());
         assertThat(summary.taxPending()).isTrue();
         assertThat(summary.invoiceNumber()).isNull();
+        // C97 BI-4: an individual may not pay by invoice at all, so a Draft is refused before its status is even looked at.
         assertThatThrownBy(() -> checkoutService.chooseOffline(customer.getId(), null, customer.getId(), draft.getId()))
-            .isInstanceOf(BillingConflictException.class);
+            .isInstanceOf(com.vyoog.eisplatform.common.exception.ForbiddenException.class);
     }
 
     @Test

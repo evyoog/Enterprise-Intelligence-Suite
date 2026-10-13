@@ -118,6 +118,9 @@ class RenewalAndRemindersTest {
         ProductPlan plan = monthlyPlan("499");
         Customer owner = newCustomer("Asia/Kolkata");
         Long id = subscriptionService.subscribeFromCart(owner.getId(), plan.getProduct().getId(), plan.getId());
+        assertThat(subscriptionRepository.findById(id).orElseThrow().getStatus()).isEqualTo(SubscriptionStatus.PENDING_SUBSCRIPTION);
+        assertThat(subscriptionService.activatePending(id, "test payment")).isTrue();
+        assertThat(subscriptionService.activatePending(id, "second event")).as("activation is idempotent").isFalse();
         ProductSubscription s = subscriptionRepository.findById(id).orElseThrow();
         Instant oldRenewal = Instant.now().minus(1, ChronoUnit.HOURS).truncatedTo(ChronoUnit.SECONDS);
         s.setExpiresAt(oldRenewal);

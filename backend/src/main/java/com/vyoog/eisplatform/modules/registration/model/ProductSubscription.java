@@ -49,6 +49,13 @@ public class ProductSubscription {
     @Column(name = "plan_id")
     private Long planId;
 
+    /** C97 SC-1: a downgrade chosen by the customer; it replaces the plan at the next renewal. Null = nothing scheduled. */
+    @Column(name = "pending_plan_id")
+    private Long pendingPlanId;
+
+    @Column(name = "pending_plan_requested_at")
+    private Instant pendingPlanRequestedAt;
+
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 30)
     private SubscriptionStatus status = SubscriptionStatus.PENDING_SUBSCRIPTION;

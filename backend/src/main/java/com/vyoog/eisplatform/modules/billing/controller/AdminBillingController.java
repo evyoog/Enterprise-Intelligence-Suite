@@ -116,6 +116,19 @@ public class AdminBillingController {
         return billingSettingsService.savePaymentMethods(admin.getId(), request);
     }
 
+    @GetMapping("/settings/pay-by-invoice/organizations")
+    public java.util.List<com.vyoog.eisplatform.modules.billing.dto.PayByInvoiceOrganizationDto> payByInvoiceOrganizations(
+            @RequestParam(required = false) String search) {
+        return search == null || search.isBlank() ? billingSettingsService.payByInvoiceOrganizations() : billingSettingsService.searchOrganizations(search);
+    }
+
+    @PutMapping("/settings/pay-by-invoice/organizations/{organizationId}")
+    public com.vyoog.eisplatform.modules.billing.dto.PayByInvoiceOrganizationDto setPayByInvoice(@AuthenticationPrincipal Jwt jwt,
+            @PathVariable Long organizationId, @RequestBody com.vyoog.eisplatform.modules.billing.dto.SetPayByInvoiceRequest request) {
+        Customer admin = currentCustomerResolver.resolve(jwt);
+        return billingSettingsService.setOrganizationPayByInvoice(admin.getId(), organizationId, request.enabled());
+    }
+
     @GetMapping("/payments")
     public Page<PaymentDto> payments(@RequestParam(defaultValue = "0") int page) {
         return paymentService.listForAdmin(PageRequest.of(page, 20));

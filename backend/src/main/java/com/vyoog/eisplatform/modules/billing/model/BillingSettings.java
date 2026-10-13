@@ -167,6 +167,19 @@ public class BillingSettings {
     @Column(name = "reminder_time_zone", nullable = false, length = 64)
     private String reminderTimeZone = "Asia/Kolkata";
 
+    // ---- C97: legal pages (BI-7) and the payment gateway taking online payments (BI-8) ----
+    @Column(name = "terms_url", length = 500)
+    private String termsUrl;
+
+    @Column(name = "privacy_url", length = 500)
+    private String privacyUrl;
+
+    @Column(name = "refund_policy_url", length = 500)
+    private String refundPolicyUrl;
+
+    @Column(name = "active_gateway", nullable = false, length = 30)
+    private String activeGateway = "RAZORPAY";
+
     @LastModifiedDate
     @Column(name = "updated_at")
     private Instant updatedAt;

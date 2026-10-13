@@ -74,6 +74,7 @@ public class InvoiceService {
     private final TaxClassService taxClassService;
     private final InvoiceTaxLineRepository invoiceTaxLineRepository;
     private final InvoiceNumberService invoiceNumberService;
+    private final org.springframework.context.ApplicationEventPublisher eventPublisher;
     /** REQ-INT-002 (C62): InvoiceGenerated. */
     private final com.vyoog.eisplatform.modules.integration.service.OutboxService outboxService;
 
@@ -376,6 +377,17 @@ public class InvoiceService {
     public void markPaid(Invoice invoice) {
         invoice.setStatus(InvoiceStatus.PAID);
         invoiceRepository.save(invoice);
+        publishActivation(invoice, com.vyoog.eisplatform.modules.billing.event.InvoiceActivationEvent.PAID);
+    }
+
+    /** C97 BI-1: tells the subscription module that the purchases on this invoice may start. */
+    public void publishActivation(Invoice invoice, String reason) {
+        List<Long> subscriptionIds = new ArrayList<>(invoice.getLines().stream().map(InvoiceLine::getSubscriptionId)
+            .filter(java.util.Objects::nonNull).distinct().toList());
+        if (subscriptionIds.isEmpty() && invoice.getSubscriptionId() != null) {
+            subscriptionIds.add(invoice.getSubscriptionId());
+        }
+        eventPublisher.publishEvent(new com.vyoog.eisplatform.modules.billing.event.InvoiceActivationEvent(invoice.getId(), subscriptionIds, reason));
     }
 
     @Transactional
