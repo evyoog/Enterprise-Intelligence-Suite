@@ -1,9 +1,11 @@
 import { useBuy } from '../components/cart/useBuy'
+import { canAddToCart, useAddToCart } from '../components/cart/useAddToCart'
 import { useEffect, useMemo, useState } from 'react'
 import {
   ArrowRight, FileText, LifeBuoy, MessageSquare,
   Package, Plug, ShieldCheck, Sparkles, Zap,
 } from 'lucide-react'
+import { useTranslation } from 'react-i18next'
 import { Link as RouterLink } from 'react-router-dom'
 import { productsApi, type BillingPeriod, type Product } from '../api/productsApi'
 import { useAuthModal } from '../auth/AuthModalContext'
@@ -48,6 +50,8 @@ export function HomePage() {
   // product's checkout when signed in, or a full-page sign-in (with a way
   // back here) when not, never an instant action from this card itself.
   const handleSubscribeClick = useBuy()
+  const { t } = useTranslation()
+  const { addToCart, busyId, notice } = useAddToCart()
 
 
   const hasYearlyTier = useMemo(
@@ -170,6 +174,10 @@ export function HomePage() {
                     <p>{product.description ?? 'A Vyoog product, ready to launch from your workspace.'}</p>
                     <div className="product-actions">
                       <RouterLink className="product-link" to="/products">Explore →</RouterLink>
+                      {canAddToCart(product) && (
+                        <button className="product-subscribe-btn" disabled={busyId === product.id} onClick={() => addToCart(product)}
+                          aria-label={t('cart.addToCartLabel', { name: product.name })}>{t('cart.addToCart')}</button>
+                      )}
                       <button className="product-subscribe-btn" onClick={() => handleSubscribeClick(product.id)}>Subscribe</button>
                     </div>
                   </article>
@@ -376,6 +384,7 @@ export function HomePage() {
           <div className="copy">© {new Date().getFullYear()} Vyoog Information Pvt Ltd. All rights reserved.</div>
         </div>
       </footer>
+      {notice}
     </div>
   )
 }

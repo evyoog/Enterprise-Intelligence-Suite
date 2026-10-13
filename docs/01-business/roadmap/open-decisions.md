@@ -792,6 +792,15 @@ Screen: [business-dashboard.md](../../05-ui/screen-requirements/business-dashboa
 - **Behaviour changes to be aware of:** the key list on Account → Security shows only legacy personal keys (and is hidden when there are none); organization keys are on Organization → Sign-in security → API keys. The admin API keys screen now shows the organization and scope.
 **Still Not specified:** plan-based rate limits; a developer portal; key rotation; scopes finer than read/write; per-key IP allow-lists; templates for the other messages; a template version history; per-organization templates or defaults.
 
+### C93
+**Decision (product owner, 2026-10-13) — Add to cart on the product card, questions CT-1 to CT-4 ([REQ-MKT-003.10](../../02-requirements/FRD/cart-checkout/requirement.md)):** the product owner asked for an **Add to cart** button on the product card so that several products can be bought in one go. FRD REQ-MKT-003 is updated and built.
+- **CT-1 A:** the button adds the **cheapest paid plan**; the customer can change the plan later in the cart (REQ-MKT-003.4).
+- **CT-2 A:** the customer **stays on the page**: a message "Added {product} — {plan} to your cart" with a **View cart** link, and the cart badge count goes up.
+- **CT-3 B:** the button is **always "Add to cart"**, also when the product is already in the cart or already subscribed. The cart keeps its existing rules and messages after the click (a product is in the cart once; an active subscription is flagged on the cart).
+- **CT-4 A:** paid products only, on **every product card** (Products catalog, platform pages, Home). A product with only free plans keeps **Subscribe**. A signed-out visitor is sent to sign in and the product is then added through the cart (as with Buy); no anonymous cart.
+- **Defaults applied (not asked):** the existing **Subscribe** button stays next to it (it adds and opens the cart); admin product grids have no Add to cart; the button is disabled while the add is running; a refused add shows the cart's own message in the same notice; adding a product that is already in the cart follows the cart's rule for a second add (REQ-MKT-003.1). No backend change.
+**Still Not specified:** an "In cart" or "Subscribed" state on the card; a plan picker on the card; an anonymous cart.
+
 ### DN-2 Sprint scope, length and dates
 **Decision:**
 - **Sprint length:** sprints are **calendar months**. Sprint `.1`, `.2` and `.3` are the first, second and third months of the PI's calendar quarter. Example: 2026.3.3 = 1–30 Sep 2026; 2026.4.1 = 1–31 Oct 2026.
@@ -912,6 +921,7 @@ These documents are **not** changed by this file. Update them to match:
 | C90 | Built 2026-10-12 (AM-0 A, AM-1 A, AM-2 A, AM-3 B, AM-4 A, AM-5 A, AM-6 both, AM-7 A, AM-8 A, AM-9 A, AM-10 A). FRD REQ-TEN-005, migration V030. Remaining: apply V030; confirm the defaults in C90; run UAT-TEN-005-01 to -04 |
 | C91 | Built 2026-10-12 (EV-1 B, EV-2 A, EV-3 A + configurable, EV-4 both). FRD REQ-INT-002.9 to .11, migration V031. Remaining: apply V031; set the alert addresses on the Platform events screen; a replay against a real receiver once provisioning (REQ-ORD-002) or webhooks exist |
 | C92 | Built 2026-10-13 (API-1 B, API-2 B, API-3 A, API-4 B, API-5 B, TM-1 A, TM-2 A). FRDs REQ-INT-001 and REQ-GOV-001.7 to .12, migrations V032 and V033. Remaining: apply V032 and V033; set the platform defaults and review the templates on Platform → Products → Configuration; add `app.api.deprecations` entries when `/v2` exists; plan-based limits |
+| C93 | Built 2026-10-13 (CT-1 A, CT-2 A, CT-3 B, CT-4 A). REQ-MKT-003.10, TC-MKT-027 to TC-MKT-030, frontend only. Remaining: nothing; an "In cart" state on the card if wanted |
 | C54 | The wider navigation-consolidation / shared `<DataTable>`/`<FilterBar>` pass ([C44](#c44)) would make the business dashboard's new click-to-filter table and sort behavior reusable elsewhere instead of page-local — still carried, same as before. `database/seed/README.md` now points to [docs/07-database/demo-data.md](../../07-database/demo-data.md) for exactly what `DemoDataSeeder` adds |
 
 **Done (2026-09-26), no longer follow-up:** C31 (sprint pages 2026.4.1 through 2027.2.2, and the "Sprint" field on application pages 02, 03, 04, 05, 10, 11, 12, 13, 15, all updated to the corrected sequence — this superseded the older "C21: add the general policy engine to `SPRINT-2027.2.2.md`" and "C16, C17: add the deferred functions to `SPRINT-2027.1.3.md`" rows, and the "C21: add the agent controls to `SPRINT-2027.1.2.md`" row, which are now folded into C31's own sprint pages); C32–C35 (FRDs written and Approved, sprint 2026.4.1 built, carry-over recorded on `SPRINT-2026.4.2.md`).

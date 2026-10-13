@@ -1720,7 +1720,10 @@
       "missingDependency": "{{product}} requires {{required}}.",
       "currencyMismatch": "This item is priced in a different currency from the rest of your cart. Check out separately.",
       "notEligible": "{{product}} is not available for your account type."
-    }
+    },
+    "addToCart": "Add to cart",
+    "addToCartLabel": "Add {{name}} to cart",
+    "viewCart": "View cart"
   },
   "apiKeys": {
     "title": "API keys",
