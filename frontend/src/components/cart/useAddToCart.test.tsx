@@ -34,7 +34,7 @@ function Cards() {
     <>
       <CartButton />
       {[paid, second, free].map((p) => (
-        <ProductTile key={p.id} product={p} onAddToCart={canAddToCart(p) ? () => addToCart(p) : undefined} addingToCart={busyId === p.id} />
+        <ProductTile key={p.id} product={p} onAddToCart={() => addToCart(p)} addToCartUnavailable={!canAddToCart(p)} addingToCart={busyId === p.id} />
       ))}
       <output data-testid="where">{where.pathname}{where.search}</output>
       {notice}
@@ -58,7 +58,9 @@ describe('Add to cart on the product card', () => {
     const user = userEvent.setup()
     add.mockResolvedValueOnce({ itemCount: 1 }).mockResolvedValueOnce({ itemCount: 2 })
     renderCards()
-    expect(screen.queryByRole('button', { name: 'Add Free app to cart' })).not.toBeInTheDocument()
+    // Every card shows the button; a product with no paid plan has it disabled.
+    expect(screen.getByRole('button', { name: 'Add Free app to cart' })).toBeDisabled()
+    expect(screen.getByRole('button', { name: 'Add Valam.ai to cart' })).toBeEnabled()
 
     await user.click(screen.getByRole('button', { name: 'Add Valam.ai to cart' }))
     await waitFor(() => expect(add).toHaveBeenCalledWith(1, 11))

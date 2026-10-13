@@ -174,10 +174,9 @@ export function HomePage() {
                     <p>{product.description ?? 'A Vyoog product, ready to launch from your workspace.'}</p>
                     <div className="product-actions">
                       <RouterLink className="product-link" to="/products">Explore →</RouterLink>
-                      {canAddToCart(product) && (
-                        <button className="product-subscribe-btn" disabled={busyId === product.id} onClick={() => addToCart(product)}
-                          aria-label={t('cart.addToCartLabel', { name: product.name })}>{t('cart.addToCart')}</button>
-                      )}
+                      <button className="product-subscribe-btn" disabled={busyId === product.id || !canAddToCart(product)}
+                        title={canAddToCart(product) ? undefined : t('cart.noPaidPlan')} onClick={() => addToCart(product)}
+                        aria-label={t('cart.addToCartLabel', { name: product.name })}>{t('cart.addToCart')}</button>
                       <button className="product-subscribe-btn" onClick={() => handleSubscribeClick(product.id)}>Subscribe</button>
                     </div>
                   </article>

@@ -20,9 +20,11 @@ interface ProductTileProps {
   onDelete?: () => void
   /** Public catalog (C48): a Subscribe action right on the card. */
   onSubscribe?: () => void
-  /** C93 (CT-1 A): Add to cart right on the card, for a product with a paid plan; the page stays where it is. */
+  /** C93 (CT-1 A): Add to cart right on the card; the page stays where it is. Shown on every public card. */
   onAddToCart?: () => void
   addingToCart?: boolean
+  /** A product with no paid plan cannot go into the cart: the button stays visible but disabled, with the reason. */
+  addToCartUnavailable?: boolean
 }
 
 /**
@@ -32,7 +34,7 @@ interface ProductTileProps {
  * Launch when a launch URL is set, and View details. Used by the catalog, the
  * platform pages and the admin app grids.
  */
-export function ProductTile({ product, admin = false, showPlatformChips = true, onDelete, onSubscribe, onAddToCart, addingToCart = false }: ProductTileProps) {
+export function ProductTile({ product, admin = false, showPlatformChips = true, onDelete, onSubscribe, onAddToCart, addingToCart = false, addToCartUnavailable = false }: ProductTileProps) {
   const { t } = useTranslation()
   const color = appColor(product)
   const palette = showcasePalette(color)
@@ -73,11 +75,15 @@ export function ProductTile({ product, admin = false, showPlatformChips = true, 
           <Button size="small" variant="contained" onClick={onSubscribe}>{t('catalog.app.subscribe')}</Button>
         )}
         {onAddToCart && (
-          <Button size="small" variant="outlined" disabled={addingToCart} onClick={onAddToCart}
-            startIcon={<ShoppingCart size={14} aria-hidden />} aria-label={t('cart.addToCartLabel', { name: product.name })}
-            sx={{ color: palette.text }}>
-            {t('cart.addToCart')}
-          </Button>
+          <Tooltip title={addToCartUnavailable ? t('cart.noPaidPlan') : ''}>
+            <Box component="span" sx={{ display: 'inline-flex' }}>
+              <Button size="small" variant="outlined" disabled={addingToCart || addToCartUnavailable} onClick={onAddToCart}
+                startIcon={<ShoppingCart size={14} aria-hidden />} aria-label={t('cart.addToCartLabel', { name: product.name })}
+                sx={{ color: palette.text }}>
+                {t('cart.addToCart')}
+              </Button>
+            </Box>
+          </Tooltip>
         )}
         {admin && (
           <Box sx={{ ml: 'auto', display: 'flex', gap: 0.25 }}>
