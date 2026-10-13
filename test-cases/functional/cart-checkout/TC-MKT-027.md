@@ -18,7 +18,7 @@ Signed in (unless stated); a product with a free plan and two paid plans, a seco
 2. Click **Add to cart** on the product with several plans.
 
 ## Expected Result
-The cheapest paid plan is added (`POST /me/cart/items`); the page does not change; the notice "Added {product} — {plan} to your cart" with a **View cart** link appears; the badge shows the new count. The free-only product has no Add to cart button.
+The cheapest paid plan is added (`POST /me/cart/items`); the page does not change; the notice "Added {product} — {plan} to your cart" with a **View cart** link appears; the badge shows the new count. The free-only product also shows the button, disabled, with the hint "No paid plan yet. Use Subscribe.".
 
 ## Automated coverage
 - `frontend/src/components/cart/useAddToCart.test.tsx` — `picks the cheapest paid plan…`, `adds in place, stays on the page…`

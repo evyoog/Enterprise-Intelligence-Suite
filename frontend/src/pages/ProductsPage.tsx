@@ -216,7 +216,7 @@ export function ProductsPage() {
             {apps.map((product) => (
               <Grid key={product.id} size={{ xs: 12, sm: 6, lg: 4, xl: 3 }}>
                 <ProductTile product={product} onSubscribe={() => handleSubscribeClick(product.id)}
-                  onAddToCart={canAddToCart(product) ? () => addToCart(product) : undefined} addingToCart={busyId === product.id} />
+                  onAddToCart={() => addToCart(product)} addToCartUnavailable={!canAddToCart(product)} addingToCart={busyId === product.id} />
               </Grid>
             ))}
           </Grid>

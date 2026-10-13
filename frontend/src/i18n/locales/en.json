@@ -1723,7 +1723,8 @@
     },
     "addToCart": "Add to cart",
     "addToCartLabel": "Add {{name}} to cart",
-    "viewCart": "View cart"
+    "viewCart": "View cart",
+    "noPaidPlan": "No paid plan yet. Use Subscribe."
   },
   "apiKeys": {
     "title": "API keys",

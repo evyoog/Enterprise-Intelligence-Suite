@@ -1723,7 +1723,8 @@
     },
     "addToCart": "Añadir al carrito",
     "addToCartLabel": "Añadir {{name}} al carrito",
-    "viewCart": "Ver carrito"
+    "viewCart": "Ver carrito",
+    "noPaidPlan": "Aún no hay un plan de pago. Usa Suscribirse."
   },
   "apiKeys": {
     "title": "Claves de API",

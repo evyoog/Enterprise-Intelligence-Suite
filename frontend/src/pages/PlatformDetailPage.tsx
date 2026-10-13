@@ -93,7 +93,7 @@ export function PlatformDetailPage() {
                       {apps.map((app) => (
                         <Grid key={app.id} size={{ xs: 12, sm: 6 }}>
                           <ProductTile product={app} onSubscribe={() => handleSubscribeClick(app.id)}
-                            onAddToCart={canAddToCart(app) ? () => addToCart(app) : undefined} addingToCart={busyId === app.id} />
+                            onAddToCart={() => addToCart(app)} addToCartUnavailable={!canAddToCart(app)} addingToCart={busyId === app.id} />
                         </Grid>
                       ))}
                     </Grid>
