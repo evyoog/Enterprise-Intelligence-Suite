@@ -4968,7 +4968,7 @@
     "newTitle": "Nuevo problema",
     "create": "Crear problema",
     "cancel": "Cancelar",
-    "manage": "Abrir",
+    "manage": "Gestionar",
     "view": "Ver",
     "openFor": "Abrir el problema {{title}}",
     "viewFor": "Ver el problema {{title}}",
