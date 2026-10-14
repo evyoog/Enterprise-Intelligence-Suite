@@ -140,8 +140,8 @@ export function OrganizationOrdersPage() {
           )}
           <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
             {pendingOrders?.map((order) => (
-              <Paper key={order.id} variant="outlined" sx={{ p: 2, display: 'flex', flexDirection: 'column', gap: 1 }}>
-                <Typography sx={{ fontWeight: 700 }}>{order.productName}{order.planName ? ` — ${order.planName}` : ''}</Typography>
+              <Paper key={order.id} component="section" aria-label={t('orders.purchaseRequestNumber', { id: order.id })} variant="outlined" sx={{ p: 2, display: 'flex', flexDirection: 'column', gap: 1 }}>
+                <OrderSummary order={order} />
                 <Typography variant="body2" sx={{ color: 'text.secondary' }}>{t('orders.requestedBy', { name: order.requestedByName })}</Typography>
                 <TextField
                   size="small"
@@ -172,7 +172,7 @@ export function OrganizationOrdersPage() {
           {myOrders?.map((order) => (
             <Paper key={order.id} variant="outlined" sx={{ p: 2, display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 1 }}>
               <Box>
-                <Typography sx={{ fontWeight: 700 }}>{order.productName}{order.planName ? ` — ${order.planName}` : ''}</Typography>
+                <OrderSummary order={order} />
                 {order.decidedByName && (
                   <Typography variant="body2" sx={{ color: 'text.secondary' }}>{t('orders.decidedBy', { name: order.decidedByName })}</Typography>
                 )}
@@ -187,6 +187,31 @@ export function OrganizationOrdersPage() {
           ))}
         </Box>
       </Box>
+    </Box>
+  )
+}
+
+/** C100 CA-1 B / CA-2: every product of the order, and why the member asked for it. */
+function orderLine(name: string, plan?: string) {
+  return `${name}${plan ? ` — ${plan}` : ''}`
+}
+
+function OrderSummary({ order }: { order: Order }) {
+  const { t } = useTranslation()
+  const items = order.items?.length ? order.items : [{ productId: order.productId, productName: order.productName, planId: order.planId, planName: order.planName }]
+  return (
+    <Box>
+      <Typography variant="overline" sx={{ color: 'text.secondary', lineHeight: 1.6 }}>{t('orders.purchaseRequestNumber', { id: order.id })}</Typography>
+      {items.length === 1
+        ? <Typography sx={{ fontWeight: 700 }}>{orderLine(items[0].productName, items[0].planName)}</Typography>
+        : (
+          <Box component="ul" aria-label={t('orders.products')} sx={{ m: 0, pl: 2.5 }}>
+            {items.map((item, i) => <Typography key={`${item.productId}-${i}`} component="li" sx={{ fontWeight: 700 }}>{orderLine(item.productName, item.planName)}</Typography>)}
+          </Box>
+        )}
+      {order.requestReason && (
+        <Typography variant="body2" sx={{ color: 'text.secondary', mt: 0.5, whiteSpace: 'pre-wrap' }}>{t('orders.reason', { reason: order.requestReason })}</Typography>
+      )}
     </Box>
   )
 }

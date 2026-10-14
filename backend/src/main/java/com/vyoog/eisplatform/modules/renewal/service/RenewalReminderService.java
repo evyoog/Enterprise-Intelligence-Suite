@@ -27,6 +27,7 @@ import com.vyoog.eisplatform.modules.renewal.model.RenewalReminderLog;
 import com.vyoog.eisplatform.modules.renewal.model.RenewalReminderPreference;
 import com.vyoog.eisplatform.modules.renewal.repository.RenewalReminderLogRepository;
 import com.vyoog.eisplatform.modules.renewal.repository.RenewalReminderPreferenceRepository;
+import com.vyoog.eisplatform.modules.renewal.repository.RenewalReminderRecipientRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.dao.DataIntegrityViolationException;
@@ -80,6 +81,8 @@ public class RenewalReminderService {
     private final OutboxService outboxService;
     private final TransactionTemplate newTransaction;
     private final String frontendUrl;
+    private final RenewalReminderRecipientRepository recipientRepository;
+    private final com.vyoog.eisplatform.modules.authorization.service.MemberAccessService memberAccessService;
 
     public RenewalReminderService(ProductSubscriptionRepository subscriptionRepository, OrganizationMemberRepository memberRepository,
                                   CustomerRepository customerRepository, CustomerPreferenceRepository customerPreferenceRepository,
@@ -87,7 +90,8 @@ public class RenewalReminderService {
                                   BillingSettingsService billingSettingsService, SubscriptionService subscriptionService,
                                   RenewalService renewalService, NotificationService notificationService, AuditService auditService,
                                   OutboxService outboxService, PlatformTransactionManager transactionManager,
-                                  @Value("${app.frontend-url}") String frontendUrl) {
+                                  @Value("${app.frontend-url}") String frontendUrl, RenewalReminderRecipientRepository recipientRepository,
+                                  com.vyoog.eisplatform.modules.authorization.service.MemberAccessService memberAccessService) {
         this.subscriptionRepository = subscriptionRepository;
         this.memberRepository = memberRepository;
         this.customerRepository = customerRepository;
@@ -103,6 +107,8 @@ public class RenewalReminderService {
         this.newTransaction = new TransactionTemplate(transactionManager);
         this.newTransaction.setPropagationBehavior(TransactionDefinition.PROPAGATION_REQUIRES_NEW);
         this.frontendUrl = frontendUrl.replaceAll("/+$", "");
+        this.recipientRepository = recipientRepository;
+        this.memberAccessService = memberAccessService;
     }
 
     /** BR-4: what applies to one recipient. */
@@ -134,16 +140,35 @@ public class RenewalReminderService {
         return ZoneId.of("UTC");
     }
 
-    /** BR-8: an individual subscription's owner; an organization
-     * subscription's ACTIVE organization admins. */
-    List<Customer> recipients(ProductSubscription subscription) {
+    /** A reminder recipient and the channels they get it on (C100 RR-5). */
+    record Recipient(Customer customer, boolean inApp, boolean email) {
+    }
+
+    /** BR-8, C100 RR-2 B and RR-5: an individual subscription's owner; for an organization subscription the ACTIVE organization admins, the ACTIVE
+     * members with Manage billing, and the people an organization administrator added (each on the channels chosen), each person once. */
+    List<Recipient> recipients(ProductSubscription subscription) {
         if (subscription.getOwnerType() == RegistrationOwnerType.INDIVIDUAL) {
-            return customerRepository.findById(subscription.getOwnerCustomerId()).map(List::of).orElse(List.of());
+            return customerRepository.findById(subscription.getOwnerCustomerId()).map(c -> List.of(new Recipient(c, true, true))).orElse(List.of());
         }
-        List<Customer> admins = new ArrayList<>();
-        memberRepository.findByOrganizationIdAndOrgRoleAndStatus(subscription.getOwnerOrganizationId(), OrgRole.ORG_ADMIN, MembershipStatus.ACTIVE)
-            .forEach(m -> customerRepository.findById(m.getCustomerId()).ifPresent(admins::add));
-        return admins;
+        Long organizationId = subscription.getOwnerOrganizationId();
+        Map<Long, Recipient> byCustomer = new LinkedHashMap<>();
+        memberRepository.findByOrganizationId(organizationId).stream().filter(m -> m.getStatus() == MembershipStatus.ACTIVE)
+            .filter(m -> m.getOrgRole() == OrgRole.ORG_ADMIN || memberAccessService.hasPermission(m, "MANAGE_ORGANIZATION_BILLING"))
+            .forEach(m -> customerRepository.findById(m.getCustomerId()).ifPresent(c -> byCustomer.put(c.getId(), new Recipient(c, true, true))));
+        for (var extra : recipientRepository.findByOrganizationId(organizationId)) {
+            boolean active = memberRepository.findByOrganizationIdAndCustomerId(organizationId, extra.getCustomerId())
+                .map(m -> m.getStatus() == MembershipStatus.ACTIVE).orElse(false);
+            if (!active) {
+                continue;
+            }
+            Recipient existing = byCustomer.get(extra.getCustomerId());
+            if (existing != null) {
+                continue;   // already gets every channel
+            }
+            customerRepository.findById(extra.getCustomerId()).ifPresent(c ->
+                byCustomer.put(c.getId(), new Recipient(c, extra.isInAppEnabled(), extra.isEmailEnabled())));
+        }
+        return new ArrayList<>(byCustomer.values());
     }
 
     /** One scheduler run (every 15 minutes, RenewalJob). Returns reminders sent. */
@@ -157,8 +182,8 @@ public class RenewalReminderService {
             SubscriptionStatus.ACTIVE, now, now.plus(Duration.ofDays(MAX_DAYS + 2)));
         int sent = 0;
         for (ProductSubscription subscription : candidates) {
-            for (Customer recipient : recipients(subscription)) {
-                Effective eff = effective(recipient.getId(), settings);
+            for (Recipient recipient : recipients(subscription)) {
+                Effective eff = effective(recipient.customer().getId(), settings);
                 if (!eff.enabled()) {
                     continue;
                 }
@@ -168,23 +193,59 @@ public class RenewalReminderService {
                 if (days < 1 || days > eff.daysBefore() || localNow.toLocalTime().isBefore(eff.sendTime())) {
                     continue;
                 }
-                if (logRepository.existsBySubscriptionIdAndRecipientCustomerIdAndLocalDate(subscription.getId(), recipient.getId(), today)) {
+                sent += sendOnce(subscription, recipient, today, (int) days, now, false);
+            }
+        }
+        sent += sendGraceDue(now, settings);
+        return sent;
+    }
+
+    /**
+     * C100 RR-4 A: once the term has ended with auto-renew off, a reminder goes out every day of the grace period at the recipient's send time and in
+     * the recipient's time zone, and the last one is on the grace period's last day <b>in that time zone</b>: the reminders do not stop at the
+     * instant the subscription expires, they stop at the end of that local day. A renewed subscription has no grace end and gets no more.
+     */
+    private int sendGraceDue(Instant now, BillingSettings settings) {
+        int sent = 0;
+        for (ProductSubscription subscription : subscriptionRepository.findByGraceEndsAtBetween(now.minus(Duration.ofDays(2)), now.plus(Duration.ofDays(GRACE_DAYS_MAX)))) {
+            if ((subscription.getStatus() != SubscriptionStatus.ACTIVE && subscription.getStatus() != SubscriptionStatus.EXPIRED)
+                    || subscription.getExpiresAt() == null || subscription.getExpiresAt().isAfter(now)) {
+                continue;
+            }
+            for (Recipient recipient : recipients(subscription)) {
+                Effective eff = effective(recipient.customer().getId(), settings);
+                if (!eff.enabled()) {
                     continue;
                 }
-                try {
-                    Boolean done = newTransaction.execute(status -> send(subscription, recipient, today, (int) days, now));
-                    if (Boolean.TRUE.equals(done)) {
-                        sent++;
-                    }
-                } catch (DataIntegrityViolationException e) {
-                    // BR-6: another run logged this reminder first — nothing to send.
+                ZonedDateTime localNow = now.atZone(eff.zone());
+                LocalDate today = localNow.toLocalDate();
+                LocalDate endedOn = subscription.getExpiresAt().atZone(eff.zone()).toLocalDate();
+                LocalDate lastDay = subscription.getGraceEndsAt().atZone(eff.zone()).toLocalDate();
+                if (today.isBefore(endedOn) || today.isAfter(lastDay) || localNow.toLocalTime().isBefore(eff.sendTime())) {
+                    continue;
                 }
+                sent += sendOnce(subscription, recipient, today, (int) ChronoUnit.DAYS.between(today, endedOn), now, true);
             }
         }
         return sent;
     }
 
-    private boolean send(ProductSubscription subscription, Customer recipient, LocalDate localDate, int daysBefore, Instant now) {
+    private static final int GRACE_DAYS_MAX = 9;
+
+    private int sendOnce(ProductSubscription subscription, Recipient recipient, LocalDate today, int daysBefore, Instant now, boolean grace) {
+        if (logRepository.existsBySubscriptionIdAndRecipientCustomerIdAndLocalDate(subscription.getId(), recipient.customer().getId(), today)) {
+            return 0;
+        }
+        try {
+            Boolean done = newTransaction.execute(status -> send(subscription, recipient, today, daysBefore, now, grace));
+            return Boolean.TRUE.equals(done) ? 1 : 0;
+        } catch (DataIntegrityViolationException e) {
+            return 0;   // BR-6: another run logged this reminder first — nothing to send.
+        }
+    }
+
+    private boolean send(ProductSubscription subscription, Recipient target, LocalDate localDate, int daysBefore, Instant now, boolean grace) {
+        Customer recipient = target.customer();
         RenewalReminderLog entry = new RenewalReminderLog();
         entry.setSubscriptionId(subscription.getId());
         entry.setRecipientCustomerId(recipient.getId());
@@ -195,33 +256,46 @@ public class RenewalReminderService {
         logRepository.saveAndFlush(entry);
 
         SubscriptionService.RenewalInfo info = subscriptionService.renewalInfo(subscription);
-        String date = DateTimeFormatter.ISO_LOCAL_DATE.format(subscription.getExpiresAt().atZone(effectiveZone(recipient)));
+        ZoneId zone = effectiveZone(recipient);
+        String date = DateTimeFormatter.ISO_LOCAL_DATE.format(subscription.getExpiresAt().atZone(zone));
         String plan = info.planName() == null ? "" : " (" + info.planName() + ")";
         String amount = info.amount() == null || info.amount().compareTo(BigDecimal.ZERO) == 0
             ? "" : " for " + info.amount().stripTrailingZeros().toPlainString() + " " + info.currency();
-        String how = renewalService.canChargeAutomatically(subscription)
-            ? "Your saved payment method will be charged."
-            : "A renewal invoice will be issued for you to pay online or by invoice.";
         java.util.Map<String, String> values = new java.util.HashMap<>();
         values.put("product", info.productName());
         values.put("plan", plan);
         values.put("date", date);
-        values.put("amount", amount);
-        values.put("how", how);
         values.put("manageUrl", frontendUrl + "/my/subscriptions");
         values.put("billingUrl", frontendUrl + "/billing");
         values.put("preferencesUrl", frontendUrl + "/account/preferences");
-        // C92 (TM-1 A): the wording is an administrator-editable template, in the recipient's language.
+        String templateCode;
+        if (grace) {
+            // C100 RR-4 A: the grace reminder names the last day, in the recipient's own time zone.
+            String graceEnd = DateTimeFormatter.ISO_LOCAL_DATE.format(subscription.getGraceEndsAt().atZone(zone));
+            values.put("graceEnd", graceEnd);
+            values.put("how", subscription.getStatus() == SubscriptionStatus.ACTIVE
+                ? "It is read-only until " + graceEnd + "; renew before then to keep full access."
+                : "It has expired; renew to get access back.");
+            templateCode = "NOTIF_RENEWAL_GRACE_REMINDER";
+        } else {
+            values.put("amount", amount);
+            values.put("how", renewalService.canChargeAutomatically(subscription)
+                ? "Your saved payment method will be charged."
+                : "A renewal invoice will be issued for you to pay online or by invoice.");
+            templateCode = "NOTIF_RENEWAL_REMINDER";
+        }
+        // C92 (TM-1 A): the wording is an administrator-editable template, in the recipient's language. C100 RR-5: on the channels chosen for this person.
         notificationService.notifyTemplated(recipient.getId(), recipient.getEmail(), NotificationCategory.SUBSCRIPTION,
-            NotificationSeverity.INFO, "NOTIF_RENEWAL_REMINDER", values);
+            NotificationSeverity.INFO, templateCode, values, target.inApp(), target.email());
         auditService.recordSuccess("RENEWAL_REMINDER_SENT", null, recipient.getId(), recipient.getEmail(), "ProductSubscription",
             subscription.getId().toString(), subscription.getOwnerOrganizationId(),
-            "Renewal reminder " + daysBefore + " day(s) before " + date);
+            grace ? "Renewal reminder " + (-daysBefore) + " day(s) after the term ended (grace period)" : "Renewal reminder " + daysBefore + " day(s) before " + date);
         Map<String, Object> payload = new LinkedHashMap<>();
         payload.put("subscriptionId", subscription.getId());
         payload.put("recipientCustomerId", recipient.getId());
         payload.put("renewalDate", subscription.getExpiresAt().toString());
         payload.put("daysBefore", daysBefore);
+        payload.put("grace", grace);
         payload.put("localDate", localDate.toString());
         outboxService.publish(PlatformEventTypes.RENEWAL_REMINDER_SENT, PlatformEventTypes.AGGREGATE_SUBSCRIPTION, subscription.getId(), payload);
         return true;
@@ -289,7 +363,7 @@ public class RenewalReminderService {
                 SubscriptionService.RenewalInfo info = subscriptionService.renewalInfo(s);
                 ZonedDateTime next = s.getStatus() == SubscriptionStatus.ACTIVE ? nextReminder(s, customerId, eff, now) : null;
                 return new RenewalDto(s.getId(), info.productName(), info.planName(), s.isAutoRenew(), s.getExpiresAt(),
-                    eff.enabled(), next == null ? null : next.toOffsetDateTime().toString());
+                    eff.enabled(), next == null ? null : next.toOffsetDateTime().toString(), s.getGraceEndsAt());
             })
             .toList();
     }
@@ -301,6 +375,15 @@ public class RenewalReminderService {
         ZonedDateTime localNow = now.atZone(eff.zone());
         LocalDate today = localNow.toLocalDate();
         LocalDate renewal = subscription.getExpiresAt().atZone(eff.zone()).toLocalDate();
+        if (subscription.getGraceEndsAt() != null && !subscription.getExpiresAt().isAfter(now)) {
+            // C100 RR-4 A: in the grace period the next reminder is today (if not sent yet and still to come) or tomorrow, up to the last grace day.
+            LocalDate lastDay = subscription.getGraceEndsAt().atZone(eff.zone()).toLocalDate();
+            LocalDate day = today;
+            if (!localNow.toLocalTime().isBefore(eff.sendTime()) || logRepository.existsBySubscriptionIdAndRecipientCustomerIdAndLocalDate(subscription.getId(), customerId, today)) {
+                day = today.plusDays(1);
+            }
+            return day.isAfter(lastDay) ? null : ZonedDateTime.of(day, eff.sendTime(), eff.zone());
+        }
         for (int d = eff.daysBefore(); d >= 1; d--) {
             LocalDate date = renewal.minusDays(d);
             if (date.isBefore(today)) {

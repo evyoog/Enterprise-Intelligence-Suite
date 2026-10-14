@@ -74,6 +74,8 @@ public class InvoiceService {
     private final TaxClassService taxClassService;
     private final InvoiceTaxLineRepository invoiceTaxLineRepository;
     private final InvoiceNumberService invoiceNumberService;
+    /** C100 (PB-1 note): coupons. */
+    private final CouponService couponService;
     private final org.springframework.context.ApplicationEventPublisher eventPublisher;
     /** REQ-INT-002 (C62): InvoiceGenerated. */
     private final com.vyoog.eisplatform.modules.integration.service.OutboxService outboxService;
@@ -95,7 +97,45 @@ public class InvoiceService {
      * (each line carries its own). */
     @Transactional
     public Invoice generateForSubscriptions(List<Long> subscriptionIds) {
-        record Billed(ProductSubscription subscription, Product product, ProductPlan plan, long amount, Currency currency) {}
+        return generate(subscriptionIds, 0, 0, null);
+    }
+
+    /** C100 (PB-1 note): the same, with a coupon code. The code is checked again here and counted as redeemed; it throws
+     * {@link IllegalArgumentException} (nothing is created) when the coupon can no longer be used. */
+    @Transactional
+    public Invoice generateForSubscriptions(List<Long> subscriptionIds, String couponCode) {
+        return generate(subscriptionIds, 0, 0, couponCode);
+    }
+
+    /** One seat's price for one term, in minor units, and its currency (C100 SE-1 B: a plan's price is per seat). Empty for a free subscription. */
+    public record SeatPrice(long unitAmount, Currency currency) {
+    }
+
+    public Optional<SeatPrice> seatPrice(ProductSubscription subscription) {
+        Product product = productRepository.findById(subscription.getProductId()).orElse(null);
+        if (product == null) {
+            return Optional.empty();
+        }
+        ProductPlan plan = subscription.getPlanId() == null ? null : productPlanRepository.findById(subscription.getPlanId()).orElse(null);
+        BigDecimal price = plan != null ? plan.getPrice() : product.getPrice();
+        long amount = toMinorUnits(price);
+        return amount > 0 ? Optional.of(new SeatPrice(amount, plan != null ? plan.getCurrency() : Currency.USD)) : Optional.empty();
+    }
+
+    /** C100 SE-1 B: the invoice for seats added in the middle of a term: added seats x seat price x remaining days / days in the term. Returns null when
+     * there is nothing to charge (a free plan, or no days left). */
+    @Transactional
+    public Invoice generateSeatIncrease(Long subscriptionId, int addedSeats, int remainingDays, int termDays) {
+        if (addedSeats <= 0 || remainingDays <= 0 || termDays <= 0) {
+            return null;
+        }
+        return generate(List.of(subscriptionId), addedSeats, Math.min(remainingDays, termDays) * 10_000 / termDays, null);
+    }
+
+    /** Shared by a new or renewal invoice (seatsAdded = 0: every seat, the whole term) and a seat-increase invoice (the added seats, the share of the
+     * term left, in 1/10 000). */
+    private Invoice generate(List<Long> subscriptionIds, int seatsAdded, int termShareBasisPoints, String couponCode) {
+        record Billed(ProductSubscription subscription, Product product, ProductPlan plan, long unit, int quantity, long amount, Currency currency) {}
         List<Billed> billed = new ArrayList<>();
         for (Long subscriptionId : subscriptionIds) {
             ProductSubscription subscription = subscriptionRepository.findById(subscriptionId)
@@ -106,9 +146,17 @@ public class InvoiceService {
                 : productPlanRepository.findById(subscription.getPlanId()).orElse(null);
             BigDecimal price = plan != null ? plan.getPrice() : product.getPrice();
             Currency currency = plan != null ? plan.getCurrency() : Currency.USD;
-            long amount = toMinorUnits(price);
+            long unit = toMinorUnits(price);
+            // C100 SE-1 B: the price is per seat for an organization subscription; an individual subscription is always one seat.
+            boolean perSeat = subscription.getOwnerOrganizationId() != null;
+            int quantity = seatsAdded > 0 ? seatsAdded : perSeat ? Math.max(1, subscription.getQuantity()) : 1;
+            long amount = unit * quantity;
+            if (seatsAdded > 0) {
+                amount = BigDecimal.valueOf(amount).multiply(BigDecimal.valueOf(termShareBasisPoints))
+                    .divide(BigDecimal.valueOf(10_000), 0, RoundingMode.HALF_UP).longValueExact();
+            }
             if (amount > 0) {
-                billed.add(new Billed(subscription, product, plan, amount, currency));
+                billed.add(new Billed(subscription, product, plan, unit, quantity, amount, currency));
             }
         }
         if (billed.isEmpty()) {
@@ -125,7 +173,10 @@ public class InvoiceService {
                 throw new IllegalArgumentException("Subscriptions with different owners cannot be billed on one invoice.");
             }
         }
-        long total = billed.stream().mapToLong(Billed::amount).sum();
+        long gross = billed.stream().mapToLong(Billed::amount).sum();
+        // C100 (PB-1 note): the coupon, checked and counted now; the invoice's subtotal is net of it, so subtotal + tax = total everywhere.
+        CouponService.Discount discount = couponCode == null || couponCode.isBlank() ? null : couponService.redeem(couponCode, currency.name(), gross);
+        long total = gross - (discount == null ? 0 : discount.amount());
 
         // C96: the invoice is created as a Draft; it is finalized (number, issue date, due date, event) only when its tax
         // has been calculated safely (BR-40).
@@ -138,6 +189,8 @@ public class InvoiceService {
         invoice.setSubtotal(total);
         invoice.setTaxAmount(0);
         invoice.setTotal(total);
+        invoice.setDiscountAmount(discount == null ? 0 : discount.amount());
+        invoice.setCouponCode(discount == null ? null : discount.code());
         invoice.setTaxStatus(InvoiceTaxStatus.BLOCKED);
         invoice.setPeriodStart(first.getStartedAt() != null ? first.getStartedAt() : Instant.now());
         invoice.setPeriodEnd(first.getExpiresAt());
@@ -147,14 +200,22 @@ public class InvoiceService {
         invoice.setBillToSnapshot(billingDetailsService.snapshotFor(billingDetails));
         invoice = invoiceRepository.save(invoice);
 
+        long discountLeft = discount == null ? 0 : discount.amount();
         for (Billed b : billed) {
             InvoiceLine line = new InvoiceLine();
             line.setInvoice(invoice);
-            line.setDescription(b.product().getName() + (b.plan() != null ? " — " + b.plan().getName() : ""));
+            // The discount is shared across the lines in proportion to their amounts; the last line takes the rounding remainder.
+            long share = discountLeft == 0 ? 0 : b == billed.get(billed.size() - 1) ? discountLeft
+                : BigDecimal.valueOf(discount.amount()).multiply(BigDecimal.valueOf(b.amount())).divide(BigDecimal.valueOf(gross), 0, RoundingMode.HALF_UP).longValueExact();
+            share = Math.min(share, Math.min(discountLeft, b.amount()));
+            line.setDiscountAmount(share);
+            discountLeft -= share;
+            String what = b.product().getName() + (b.plan() != null ? " — " + b.plan().getName() : "");
+            line.setDescription(seatsAdded > 0 ? "Added seats: " + what : what);
             line.setPeriodStart(b.subscription().getStartedAt() != null ? b.subscription().getStartedAt() : invoice.getPeriodStart());
             line.setPeriodEnd(b.subscription().getExpiresAt());
-            line.setQuantity(1);
-            line.setUnitAmount(b.amount());
+            line.setQuantity(b.quantity());
+            line.setUnitAmount(seatsAdded > 0 ? b.amount() / Math.max(1, b.quantity()) : b.unit());
             line.setAmount(b.amount());
             line.setSubscriptionId(b.subscription().getId());
             TaxClass taxClass = taxClassService.classOf(b.product());
@@ -172,7 +233,7 @@ public class InvoiceService {
     private Invoice calculateTaxAndFinalize(Invoice invoice) {
         TaxModeSnapshot pinned = taxCalculationService.pin();
         List<TaxCalculationRequest.Line> lines = invoice.getLines().stream().map(l -> new TaxCalculationRequest.Line(String.valueOf(l.getId()),
-            l.getDescription(), l.getTaxClassCode(), l.getHsnSacCode(), l.getAmount(), l.getQuantity())).toList();
+            l.getDescription(), l.getTaxClassCode(), l.getHsnSacCode(), l.getAmount() - l.getDiscountAmount(), l.getQuantity())).toList();
         String ref = taxCalculationService.nextTransactionRef(invoice.getId());
         TaxCalculationRequest request = taxRequestAssembler.assemble(ref, TransactionType.SALE, java.time.LocalDate.now(ZoneOffset.UTC),
             invoice.getCurrency().name(), invoice.getOwnerCustomerId(), invoice.getOwnerOrganizationId(), lines);
@@ -467,7 +528,7 @@ public class InvoiceService {
     private InvoiceDto toDto(Invoice invoice, boolean withDetail, String ownerLabel, boolean admin) {
         List<InvoiceLineDto> lines = withDetail
             ? invoice.getLines().stream().map(l -> new InvoiceLineDto(l.getDescription(), l.getPeriodStart(), l.getPeriodEnd(),
-                l.getQuantity(), l.getUnitAmount(), l.getAmount(), l.getTaxAmount(), l.getTaxClassCode(), l.getHsnSacCode())).toList()
+                l.getQuantity(), l.getUnitAmount(), l.getAmount(), l.getTaxAmount(), l.getTaxClassCode(), l.getHsnSacCode(), l.getDiscountAmount())).toList()
             : null;
         List<com.vyoog.eisplatform.modules.billing.dto.PaymentDto> payments = withDetail
             ? paymentRepository.findByInvoiceId(invoice.getId()).stream().map(this::toBarePaymentDto).toList()
@@ -479,7 +540,7 @@ public class InvoiceService {
             invoice.getTaxStatus().name(), invoice.getTaxEngine() == null ? null : invoice.getTaxEngine().name(), invoice.getPlaceOfSupply(),
             invoice.getCustomerTaxId(), withDetail ? invoice.getIssuerSnapshot() : null, taxLines,
             admin ? invoice.getTaxBlockCode() : null, admin ? invoice.getTaxBlockReason() : null,
-            invoice.getPurchaseOrderNumber());
+            invoice.getPurchaseOrderNumber(), invoice.getCouponCode(), invoice.getDiscountAmount());
     }
 
     /** The tax components copied onto an invoice when it was calculated (REQ-BIL-002.43), summed per component. */

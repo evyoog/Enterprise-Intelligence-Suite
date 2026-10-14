@@ -3,8 +3,8 @@
 | Field | Value |
 |---|---|
 | Requirement | [REQ-SUB-002](../../02-requirements/FRD/entitlements/requirement.md) (Approved, [C97](../../01-business/roadmap/open-decisions.md#c97) EN-1, EN-3, EN-5) |
-| Business rules | [BR-1 to BR-10](../../02-requirements/FRD/entitlements/business-rules.md) |
-| API | [entitlements.md](../api-requirements/entitlements.md) — `GET /me/entitlements`, `GET /admin/entitlements/customers/{id}`, `GET /admin/entitlements/organizations/{id}` |
+| Business rules | [BR-1 to BR-11](../../02-requirements/FRD/entitlements/business-rules.md) |
+| API | [entitlements.md](../../06-api/api-requirements/entitlements.md) — `GET /me/entitlements`, `GET /admin/entitlements/customers/{id}`, `GET /admin/entitlements/organizations/{id}` |
 | Built | 2026-10-13 — `frontend/src/components/subscriptions/EntitlementsSection.tsx`, `frontend/src/pages/admin/AdminEntitlementsPage.tsx`, `frontend/src/api/registrationApi.ts` (`entitlementsApi`) |
 | Supersedes | [plan-entitlements.md](plan-entitlements.md) (the first draft: a card with a status chip and a usage-limit note) |
 
@@ -20,10 +20,11 @@ One card per ACTIVE subscription. Read-only: no button, switch or field on it ch
 | Plan chip | The plan name, primary, outlined; hidden when the subscription has no plan | — |
 | Term line | "Active until {date}" (term end, platform date format) or "No end date"; then " · " and either "Limit: {number}" (thousands separators) or "No limit set" | `entitlements.until`, `entitlements.noEnd`, `entitlements.limit`, `entitlements.noLimit` |
 | Included features | One chip per entry of the plan's `includedFeatures`, in a list labelled "Included features"; nothing is shown when the plan lists none | `entitlements.features` |
+| **Read-only chip** ([C100](../../01-business/roadmap/open-decisions.md#c100) RR-1 B, [REQ-SUB-002.10](../../02-requirements/FRD/entitlements/requirement.md)) | A warning chip with a lock icon, **"Read-only until {date}"**, next to the plan chip, only while `accessMode` is `READ_ONLY` and `graceEndsAt` is set (the term has ended with auto-renew off and the 7-day grace period runs). A full-access entitlement shows none. The "Active until {date}" line still shows the term end | `entitlements.readOnlyUntil` |
 
 The limit is **the plan's limit only** ([C97](../../01-business/roadmap/open-decisions.md#c97) EN-5). There is no progress bar, percentage or "used" figure anywhere, and no note about usage tracking on the card; each product counts its own usage.
 
-A SUSPENDED, CANCELLED, EXPIRED or still-pending subscription grants nothing ([BR-1](../../02-requirements/FRD/entitlements/business-rules.md)), so it has **no card**. It still appears in the subscriptions list above with its status ([my-subscriptions.md](my-subscriptions.md)).
+A SUSPENDED, CANCELLED, EXPIRED or still-pending subscription grants nothing (an ACTIVE subscription in its read-only grace period still has a card, with the read-only chip) ([BR-1](../../02-requirements/FRD/entitlements/business-rules.md)), so it has **no card**. It still appears in the subscriptions list above with its status ([my-subscriptions.md](my-subscriptions.md)).
 
 ## Section on My subscriptions
 | Field | Value |

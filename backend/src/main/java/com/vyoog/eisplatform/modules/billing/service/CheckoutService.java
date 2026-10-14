@@ -181,7 +181,7 @@ public class CheckoutService {
             subscription != null ? subscription.getId() : null,
             subscription != null ? subscription.getStatus().name() : null,
             currency, items,
-            invoice != null ? invoice.getSubtotal() : 0,
+            invoice != null ? invoice.getSubtotal() + invoice.getDiscountAmount() : 0,
             taxLines,
             invoice != null ? invoice.getTotal() : 0,
             invoice != null ? invoice.getDueAt() : null,
@@ -196,7 +196,8 @@ public class CheckoutService {
             invoice != null ? invoice.getPlaceOfSupply() : null,
             settings.getTermsUrl(), settings.getPrivacyUrl(), settings.getRefundPolicyUrl(),
             invoice != null ? invoice.getPurchaseOrderNumber() : null,
-            preferred == null ? null : preferred.code(), preferred == null ? null : preferred.name());
+            preferred == null ? null : preferred.code(), preferred == null ? null : preferred.name(),
+            invoice != null ? invoice.getCouponCode() : null, invoice != null ? invoice.getDiscountAmount() : 0);
     }
 
     /** C98: a method is offered only if Billing settings allow it and an eligible gateway offers it (the tile order of Billing settings is kept). */

@@ -3,7 +3,7 @@
 | Field | Value |
 |---|---|
 | Test Case ID (required) | TC-SUB-017 |
-| Requirement ID (required) | [REQ-SUB-003](../../../docs/02-requirements/FRD/subscription-seats/requirement.md) (C63) |
+| Requirement ID (required) | [REQ-SUB-003](../../../docs/02-requirements/FRD/subscription-seats/requirement.md) (C63; permission changed by C100 SE-2: Manage billing changes seats, see TC-SUB-049) |
 | Acceptance Criterion | [AC-6](../../../docs/02-requirements/FRD/subscription-seats/acceptance-criteria.md), [AC-7](../../../docs/02-requirements/FRD/subscription-seats/acceptance-criteria.md) |
 | Test Plan | [TESTPLAN-SUB-003](TESTPLAN-SUB-003.md) |
 | Priority | P1 |
@@ -25,10 +25,10 @@ The member is refused; the other admin gets 404; the cancelled subscription gets
 - `frontend/src/components/subscriptions/OrganizationSubscriptionsSection.test.tsx`
 
 ## Actual Result
-The automated tests passed on 2026-10-03.
+The automated tests passed on 2026-10-03 and again on 2026-10-14.
 
 ## Status
-Passed (automated run 2026-10-03)
+Passed (automated run 2026-10-14)
 
 ## Linked Defect (if failed)
 None.

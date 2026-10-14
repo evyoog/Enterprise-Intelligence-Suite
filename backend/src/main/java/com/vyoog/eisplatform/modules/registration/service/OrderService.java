@@ -17,6 +17,7 @@ import com.vyoog.eisplatform.modules.product.repository.ProductRepository;
 import com.vyoog.eisplatform.modules.registration.dto.DecideOrderRequest;
 import com.vyoog.eisplatform.modules.registration.dto.OrderDto;
 import com.vyoog.eisplatform.modules.registration.dto.SubmitOrderRequest;
+import com.vyoog.eisplatform.modules.registration.model.OrderItem;
 import com.vyoog.eisplatform.modules.registration.model.*;
 import com.vyoog.eisplatform.modules.registration.repository.CustomerRepository;
 import com.vyoog.eisplatform.modules.registration.repository.OrderRepository;
@@ -101,44 +102,133 @@ public class OrderService {
         return order;
     }
 
-    /** 09.01.01.01/.02/.03/.04 Create/Validate/Price/Submit order, folded
-     * into one action: there is no separate draft state, and "price" is
-     * simply read from the product/plan (no billing engine exists to quote
-     * against — see decision C39). */
-    @Transactional
-    public OrderDto submitOrder(Long customerId, SubmitOrderRequest request) {
-        OrganizationMember member = resolveMembership(customerId);
-        Product product = productRepository.findById(request.productId())
-            .filter(p -> p.getStatus() == ProductStatus.ACTIVE)
-            .orElseThrow(() -> new ResourceNotFoundException("Product not found"));
-        eligibilityService.assertEligible(product.getId(), true);
-        if (request.planId() != null) {
-            ProductPlan plan = productPlanRepository.findById(request.planId())
-                .orElseThrow(() -> new ResourceNotFoundException("Plan not found: " + request.planId()));
-            if (!plan.getProduct().getId().equals(product.getId())) {
-                throw new IllegalArgumentException("That plan does not belong to this product.");
+    /** The items of a request, checked: a published product the organization may buy, and a plan of that product. */
+    private List<SubmitOrderRequest.Item> validatedItems(SubmitOrderRequest request) {
+        List<SubmitOrderRequest.Item> items = request.items() != null && !request.items().isEmpty() ? request.items()
+            : request.productId() == null ? List.of() : List.of(new SubmitOrderRequest.Item(request.productId(), request.planId()));
+        if (items.isEmpty()) {
+            throw new IllegalArgumentException("Choose at least one product.");
+        }
+        java.util.Set<Long> seen = new java.util.HashSet<>();
+        for (SubmitOrderRequest.Item item : items) {
+            if (item.productId() == null || !seen.add(item.productId())) {
+                throw new IllegalArgumentException("Each product can be in an order once.");
+            }
+            Product product = productRepository.findById(item.productId())
+                .filter(p -> p.getStatus() == ProductStatus.ACTIVE)
+                .orElseThrow(() -> new ResourceNotFoundException("Product not found"));
+            eligibilityService.assertEligible(product.getId(), true);
+            if (item.planId() != null) {
+                ProductPlan plan = productPlanRepository.findById(item.planId())
+                    .orElseThrow(() -> new ResourceNotFoundException("Plan not found: " + item.planId()));
+                if (!plan.getProduct().getId().equals(product.getId())) {
+                    throw new IllegalArgumentException("That plan does not belong to this product.");
+                }
             }
         }
+        return items;
+    }
 
+    private Order newOrder(OrganizationMember member, Long customerId, List<SubmitOrderRequest.Item> items) {
         Order order = new Order();
         order.setOrganizationId(member.getOrganizationId());
         order.setRequestedByCustomerId(customerId);
-        order.setProductId(request.productId());
-        order.setPlanId(request.planId());
+        order.setProductId(items.get(0).productId());
+        order.setPlanId(items.get(0).planId());
+        for (SubmitOrderRequest.Item item : items) {
+            OrderItem row = new OrderItem();
+            row.setOrder(order);
+            row.setProductId(item.productId());
+            row.setPlanId(item.planId());
+            order.getItems().add(row);
+        }
+        return order;
+    }
+
+    private String productNames(List<SubmitOrderRequest.Item> items) {
+        return items.stream().map(i -> productRepository.findById(i.productId()).map(Product::getName).orElse("a product")).collect(java.util.stream.Collectors.joining(", "));
+    }
+
+    /** 09.01.01.01/.02/.03/.04 Create/Validate/Price/Submit order, folded into one action: there is no separate draft state, and "price" is simply read
+     * from the product/plan (see decision C39). C100 CA-1 B: an order can hold several products. C100 CA-2: the member's {@code reason} is shown to the
+     * administrators who decide. */
+    @Transactional
+    public OrderDto submitOrder(Long customerId, SubmitOrderRequest request) {
+        OrganizationMember member = resolveMembership(customerId);
+        List<SubmitOrderRequest.Item> items = validatedItems(request);
+        String reason = request.reason() == null ? null : request.reason().trim();
+        if (reason != null && reason.length() > 500) {
+            throw new IllegalArgumentException("The reason can have up to 500 characters.");
+        }
+        Order order = newOrder(member, customerId, items);
         order.setStatus(OrderStatus.SUBMITTED);
+        order.setRequestReason(reason == null || reason.isEmpty() ? null : reason);
         order = orderRepository.save(order);
 
         auditService.recordSuccess("ORDER_SUBMITTED", null, customerId, null,
-            "Order", order.getId().toString(), member.getOrganizationId(), "Order submitted for product " + request.productId());
-        notifyOrgAdmins(member.getOrganizationId(), "New order awaiting approval",
-            "A member has requested " + product.getName() + " for your organization.");
+            "Order", order.getId().toString(), member.getOrganizationId(), "Purchase request submitted for " + items.size() + " product(s)");
+        notifyOrgAdmins(member.getOrganizationId(), "New purchase request awaiting approval",
+            requesterName(customerId) + " has asked to buy " + productNames(items) + " for your organization"
+                + (order.getRequestReason() == null ? "." : ": " + order.getRequestReason()));
 
         return toDto(order);
     }
 
+    /** C100 CA-2: an organization admin, or a person with Manage billing, buys directly: the order is recorded as approved by the buyer, every product
+     * is provisioned, and ONE invoice (with the coupon, if any) bills them all. When the buyer is not an organization admin, the admins are told.
+     * Returns the invoice id (null when everything was free) and the order. */
+    public record DirectPurchase(OrderDto order, Long invoiceId) {
+    }
+
+    @Transactional
+    public DirectPurchase purchaseDirectly(Long customerId, SubmitOrderRequest request, String couponCode) {
+        OrganizationMember member = resolveMembership(customerId);
+        if (!canPurchaseDirectly(member)) {
+            throw new ForbiddenException("You do not have permission to do this");
+        }
+        List<SubmitOrderRequest.Item> items = validatedItems(request);
+        Order order = newOrder(member, customerId, items);
+        order.setStatus(OrderStatus.APPROVED);
+        order.setDecidedByCustomerId(customerId);
+        order.setDecidedAt(Instant.now());
+        order.setDecisionNote("Purchased directly");
+        order = orderRepository.save(order);
+        Long invoiceId = subscriptionService.subscribeOrganizationItems(order.getOrganizationId(),
+            items.stream().map(i -> new long[] {i.productId(), i.planId() == null ? 0 : i.planId()}).toList(), couponCode);
+
+        auditService.recordSuccess("ORDER_PURCHASED_DIRECTLY", null, customerId, null, "Order", order.getId().toString(), member.getOrganizationId(),
+            "Purchased " + items.size() + " product(s) directly");
+        publishApproved(order, customerId);
+        if (member.getOrgRole() != OrgRole.ORG_ADMIN) {
+            notifyOrgAdmins(member.getOrganizationId(), "A purchase was made for your organization",
+                requesterName(customerId) + " bought " + productNames(items) + " for your organization.");
+        }
+        return new DirectPurchase(toDto(order), invoiceId);
+    }
+
+    /** C100 CA-2: who may buy without a request: organization admins and people with Manage billing. */
+    public boolean canPurchaseDirectly(OrganizationMember member) {
+        return member.getOrgRole() == OrgRole.ORG_ADMIN || memberAccessService.hasPermission(member, "MANAGE_ORGANIZATION_BILLING");
+    }
+
+    private void publishApproved(Order order, Long decidedBy) {
+        Map<String, Object> payload = new LinkedHashMap<>();
+        payload.put("orderId", order.getId());
+        payload.put("organizationId", order.getOrganizationId());
+        payload.put("productId", order.getProductId());
+        payload.put("planId", order.getPlanId());
+        payload.put("productIds", order.getItems().stream().map(OrderItem::getProductId).toList());
+        payload.put("decidedByCustomerId", decidedBy);
+        outboxService.publish(PlatformEventTypes.ORDER_APPROVED, PlatformEventTypes.AGGREGATE_ORDER, order.getId(), payload);
+    }
+
+    private String requesterName(Long customerId) {
+        return customerRepository.findById(customerId).map(c -> c.getFirstName() + " " + c.getLastName()).orElse("A member");
+    }
+
     /** 09.04.01.03 Approve; 09.02.01.01/.03 Provision/Activate service —
      * folded into one call, synchronously (see this class's own javadoc on
-     * why there is no separate provisioning step to track). */
+     * why there is no separate provisioning step to track). C100 CA-1 B: every product of the order is provisioned and one invoice bills them. */
     @Transactional
     public OrderDto approveOrder(Long customerId, Long orderId, DecideOrderRequest request) {
         OrganizationMember admin = requireManageOrders(customerId);
@@ -146,7 +236,13 @@ public class OrderService {
         if (order.getStatus() != OrderStatus.SUBMITTED) {
             throw new IllegalArgumentException("Only a submitted order can be approved.");
         }
-        subscriptionService.subscribeOrganization(order.getOrganizationId(), order.getProductId(), order.getPlanId());
+        List<OrderItem> items = order.getItems().isEmpty() ? List.of(legacyItem(order)) : order.getItems();
+        if (items.size() == 1) {
+            subscriptionService.subscribeOrganization(order.getOrganizationId(), items.get(0).getProductId(), items.get(0).getPlanId());
+        } else {
+            subscriptionService.subscribeOrganizationItems(order.getOrganizationId(),
+                items.stream().map(i -> new long[] {i.getProductId(), i.getPlanId() == null ? 0 : i.getPlanId()}).toList(), null);
+        }
 
         order.setStatus(OrderStatus.APPROVED);
         order.setDecidedByCustomerId(customerId);
@@ -156,16 +252,18 @@ public class OrderService {
 
         auditService.recordSuccess("ORDER_APPROVED", null, customerId, null,
             "Order", orderId.toString(), admin.getOrganizationId(), "Order approved and provisioned");
-        Map<String, Object> payload = new LinkedHashMap<>();
-        payload.put("orderId", order.getId());
-        payload.put("organizationId", order.getOrganizationId());
-        payload.put("productId", order.getProductId());
-        payload.put("planId", order.getPlanId());
-        payload.put("decidedByCustomerId", customerId);
-        outboxService.publish(PlatformEventTypes.ORDER_APPROVED, PlatformEventTypes.AGGREGATE_ORDER, order.getId(), payload);
+        publishApproved(order, customerId);
         notifyRequester(order, "Order approved", "Your order has been approved and provisioned.");
 
         return toDto(order);
+    }
+
+    private OrderItem legacyItem(Order order) {
+        OrderItem item = new OrderItem();
+        item.setOrder(order);
+        item.setProductId(order.getProductId());
+        item.setPlanId(order.getPlanId());
+        return item;
     }
 
     /** 09.04.01.04 Reject. */
@@ -247,11 +345,15 @@ public class OrderService {
             .map(c -> c.getFirstName() + " " + c.getLastName()).orElse("Unknown");
         String decidedByName = order.getDecidedByCustomerId() == null ? null
             : customerRepository.findById(order.getDecidedByCustomerId()).map(c -> c.getFirstName() + " " + c.getLastName()).orElse(null);
+        List<OrderItem> rows = order.getItems().isEmpty() ? List.of(legacyItem(order)) : order.getItems();
+        List<OrderDto.Item> items = rows.stream().map(i -> new OrderDto.Item(i.getProductId(),
+            productRepository.findById(i.getProductId()).map(Product::getName).orElse("Unknown product"), i.getPlanId(),
+            i.getPlanId() == null ? null : productPlanRepository.findById(i.getPlanId()).map(ProductPlan::getName).orElse(null))).toList();
         return new OrderDto(
             order.getId(), order.getProductId(), productName, order.getPlanId(), planName,
             order.getStatus(), order.getRequestedByCustomerId(), requestedByName,
             order.getDecidedByCustomerId(), decidedByName, order.getDecidedAt(), order.getDecisionNote(),
-            order.getCreatedAt()
+            order.getCreatedAt(), items, order.getRequestReason()
         );
     }
 }

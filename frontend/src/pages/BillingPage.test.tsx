@@ -79,6 +79,20 @@ describe('BillingPage', () => {
     expect(await screen.findByText('INV-2026-000002')).toBeInTheDocument()
   })
 
+  it('shows the coupon discount of an invoice only when there is one (C100)', async () => {
+    overview.mockResolvedValue(emptyOverview)
+    invoices.mockResolvedValue({
+      content: [
+        { id: 2, invoiceNumber: 'INV-2026-000002', status: 'PAID', currency: 'USD', total: 900, subtotal: 900, taxAmount: 0, issuedAt: '2026-10-01T00:00:00Z', couponCode: 'SAVE10', discountAmount: 100 },
+        { id: 3, invoiceNumber: 'INV-2026-000003', status: 'PAID', currency: 'USD', total: 500, subtotal: 500, taxAmount: 0, issuedAt: '2026-10-01T00:00:00Z', couponCode: null, discountAmount: 0 },
+      ],
+    })
+    renderWithProviders(<BillingPage />)
+    await userEvent.setup().click(await screen.findByRole('tab', { name: 'Invoices' }))
+    expect(await screen.findByText('Discount (SAVE10): −1.00 USD')).toBeInTheDocument()
+    expect(screen.getAllByText(/^Discount/)).toHaveLength(1)
+  })
+
   it('saves billing details', async () => {
     overview.mockResolvedValue(emptyOverview)
     saveDetails.mockResolvedValue({ id: 1, billingName: 'Jane', billingEmail: 'jane@example.com' })

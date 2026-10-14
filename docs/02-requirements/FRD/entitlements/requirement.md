@@ -4,8 +4,8 @@
 **BRD:** Not specified
 **Owner:** Product owner
 **Approved by / on:** Product owner / 2026-10-13 ([C97](../../../01-business/roadmap/open-decisions.md#c97), answers EN-1 to EN-5)
-**Decision:** [C52](../../../01-business/roadmap/open-decisions.md#c52), [C97](../../../01-business/roadmap/open-decisions.md#c97)
-**Built:** 2026-10-13 — see [Where it is built](#where-it-is-built)
+**Decision:** [C52](../../../01-business/roadmap/open-decisions.md#c52), [C97](../../../01-business/roadmap/open-decisions.md#c97), [C100](../../../01-business/roadmap/open-decisions.md#c100) (RR-1 B: the read-only grace period adds `accessMode`)
+**Built:** 2026-10-13 — see [Where it is built](#where-it-is-built); **`accessMode` and `graceEndsAt` added 2026-10-14** ([C100](../../../01-business/roadmap/open-decisions.md#c100))
 
 | Field | Value |
 |---|---|
@@ -26,7 +26,7 @@
 | 07.02.02 | Allocate quota; Adjust quota | No — Not covered (see Out of scope) |
 
 ## Summary
-An entitlement answers "is this feature or product available to this customer or organization, and what are its limits?". Per [C52](../../../01-business/roadmap/open-decisions.md#c52), this is **derived at runtime** from an ACTIVE subscription plus its plan's existing `includedFeatures` and `usageLimit` fields ([REQ-CAT-002](../plan-management/requirement.md)) — there is no separate entitlement table to keep in sync, grant, or revoke. A suspended, cancelled or expired subscription grants nothing. The same derived check is used by the platform's own UI and is exposed to hosted products over the existing internal service-to-service channel.
+An entitlement answers "is this feature or product available to this customer or organization, and what are its limits?". Per [C52](../../../01-business/roadmap/open-decisions.md#c52), this is **derived at runtime** from an ACTIVE subscription plus its plan's existing `includedFeatures` and `usageLimit` fields ([REQ-CAT-002](../plan-management/requirement.md)) — there is no separate entitlement table to keep in sync, grant, or revoke. A suspended, cancelled or expired subscription grants nothing. A subscription whose term has ended with auto-renew off and that is in its 7-day grace period ([REQ-SUB-004.13](../renewal-reminders/requirement.md)) still answers `allowed`, but **read-only** ([C100](../../../01-business/roadmap/open-decisions.md#c100) RR-1 B). The same derived check is used by the platform's own UI and is exposed to hosted products over the existing internal service-to-service channel.
 
 [C97](../../../01-business/roadmap/open-decisions.md#c97) confirmed this and settled the five questions that were open: entitlements are **read-only and derived** (EN-1); EIS proposes the internal check `POST /internal/entitlements/check` and the product teams adopt it (EN-2); platform administrators can look up any customer's or organization's entitlements, read-only, with the new support permission **View entitlements** (`VIEW_ENTITLEMENTS`) (EN-3); there are **no licence keys** (EN-4); and EIS stores **only the plan's limit** — each product counts usage and enforces the limit (EN-5).
 
@@ -49,6 +49,7 @@ An entitlement answers "is this feature or product available to this customer or
 | REQ-SUB-002.7 | A platform administrator with `VIEW_ENTITLEMENTS` can look up any customer's or any organization's entitlements, read-only. Every lookup is written to the audit log (`ENTITLEMENTS_VIEWED`). ([C97](../../../01-business/roadmap/open-decisions.md#c97) EN-3) | Must |
 | REQ-SUB-002.8 | Only the plan's `usageLimit` is stored and exposed. Entitlements never carry consumption; each hosted product counts and enforces usage itself. ([C97](../../../01-business/roadmap/open-decisions.md#c97) EN-5) | Must |
 | REQ-SUB-002.9 | For an organization member, a product is available only when the organization has an ACTIVE subscription **and** the member has ACTIVE access to that product (the existing per-member product access). The check says `NO_MEMBER_ACCESS` when the subscription exists but the member lacks access. | Must |
+| REQ-SUB-002.10 | **Access mode** ([C100](../../../01-business/roadmap/open-decisions.md#c100) RR-1 B). Every entitlement and every internal check that is `allowed` carries `accessMode`: **`FULL`**, or **`READ_ONLY`** while the subscription's term has ended with auto-renew off and its grace period (7 days) is still running, together with `graceEndsAt`, the end of the grace period. A hosted product that receives `READ_ONLY` must **not allow changes** and should show the customer that renewing restores full access. When the grace period ends the subscription is EXPIRED and the check answers `NO_SUBSCRIPTION`. A check that is not allowed has no `accessMode`. The customer's My subscriptions screen marks a read-only entitlement "Read-only until {date}". | Must |
 
 ## Out of scope
 - Counting usage against limits (quota consumption/enforcement) — each product does that itself; EIS keeps no usage data ([C97](../../../01-business/roadmap/open-decisions.md#c97) EN-5, [C50](../../../01-business/roadmap/open-decisions.md#c50)).
@@ -79,7 +80,7 @@ An entitlement answers "is this feature or product available to this customer or
 | DTOs | `…/registration/dto/EntitlementDto.java`, `EntitlementCheckRequest.java`, `EntitlementCheckResponse.java` |
 | Permission | `VIEW_ENTITLEMENTS` (platform), enforced in `SecurityConfig` for `/admin/entitlements/**`; seeded in `RbacSeeder` |
 | Frontend | `frontend/src/components/subscriptions/EntitlementsSection.tsx` (My subscriptions), `frontend/src/pages/admin/AdminEntitlementsPage.tsx` (route `/admin/entitlements`) |
-| Tests | `EntitlementServiceTest`, `EntitlementsAuthorizationTest` (backend); `AdminEntitlementsPage.test.tsx`, `MySubscriptionsPage.test.tsx` (frontend). Cases: [test-cases/functional/entitlements/](../../../../test-cases/functional/entitlements/) |
+| Tests | `EntitlementServiceTest`, `EntitlementsAuthorizationTest`, `SeatsGraceAndRecipientsTest` (backend); `AdminEntitlementsPage.test.tsx`, `MySubscriptionsPage.test.tsx` (frontend). Cases: [test-cases/functional/entitlements/](../../../../test-cases/functional/entitlements/) |
 
 ## Open questions
 All answered by [C97](../../../01-business/roadmap/open-decisions.md#c97) (product owner, 2026-10-13). None remains open.
@@ -94,7 +95,8 @@ All answered by [C97](../../../01-business/roadmap/open-decisions.md#c97) (produ
 ## Defaults applied (not asked)
 Recorded here because the product owner did not specify them:
 - **Feature match** is case-insensitive on the trimmed `includedFeatures` entry (comma-separated list on the plan).
-- **A subscription past its `expiresAt`** grants nothing even before the hourly expiry job flips it to EXPIRED ([BR-1](business-rules.md)).
+- **A subscription past its `expiresAt`** grants nothing even before the hourly expiry job flips it to EXPIRED ([BR-1](business-rules.md)), **unless** the job has already set its grace end date and that is still in the future: then it is read-only ([BR-11](business-rules.md)). The job runs hourly, so for up to an hour after a term ends with auto-renew off the check still says `NO_SUBSCRIPTION`.
+- **`accessMode` on a plan-less or never-ending subscription** is `FULL`; `graceEndsAt` is null unless the answer is `READ_ONLY`.
 - **A product that is not ACTIVE in the catalogue** is `UNKNOWN_PRODUCT` and is left out of the lists.
 - **A request naming neither `customerId` nor `organizationId`** is answered `BAD_REQUEST` (HTTP 200, `allowed: false`); a body without `productId` is refused with HTTP 400.
 - **Organization endpoint access:** `GET /organization/me/entitlements` is open to any ACTIVE member of the organization (the existing `/organization/me/**` rule); no extra organization permission is required, although the first draft of REQ-SUB-002.3 said access follows existing organization permissions. The data is only the products and plans, no money or personal data. Tighten it (for example to `MANAGE_SUBSCRIPTIONS`) if the product owner wants.

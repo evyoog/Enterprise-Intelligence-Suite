@@ -121,6 +121,13 @@ public class Invoice {
     @Column(name = "issuer_snapshot", length = 1500)
     private String issuerSnapshot;
 
+    /** C100 (PB-1 note): the coupon code applied to this invoice and the discount it gave, in minor units. {@code subtotal} is already net of the discount. */
+    @Column(name = "coupon_code", length = 40)
+    private String couponCode;
+
+    @Column(name = "discount_amount", nullable = false)
+    private long discountAmount = 0;
+
     /** C97 BI-9: an optional purchase order number the customer gives, printed on the invoice. */
     @Column(name = "purchase_order_number", length = 50)
     private String purchaseOrderNumber;

@@ -4,7 +4,7 @@
 |---|---|
 | Feature ID (required) | FTR-SUB-002 |
 | Requirement(s) covered | [REQ-SUB-002](../../../docs/02-requirements/FRD/entitlements/requirement.md) |
-| Decision | [C97](../../../docs/01-business/roadmap/open-decisions.md#c97) (EN-1 to EN-5) |
+| Decision | [C97](../../../docs/01-business/roadmap/open-decisions.md#c97) (EN-1 to EN-5), [C100](../../../docs/01-business/roadmap/open-decisions.md#c100) (RR-1 B: `accessMode`) |
 | Status | Approved with the FRD (product owner, 2026-10-13) |
 
 ## Scope
@@ -13,7 +13,7 @@ Every acceptance criterion in [`acceptance-criteria.md`](../../../docs/02-requir
 ## Test Strategy
 | Level | Approach |
 |---|---|
-| Unit / integration | `EntitlementServiceTest` (Spring Boot, H2); `EntitlementsAuthorizationTest` (MockMvc, security) |
+| Unit / integration | `EntitlementServiceTest` (Spring Boot, H2); `EntitlementsAuthorizationTest` (MockMvc, security); `SeatsGraceAndRecipientsTest` (the read-only grace mode) |
 | Frontend | Vitest and Testing Library with jest-axe: `MySubscriptionsPage.test.tsx`, `AdminEntitlementsPage.test.tsx`, API mocked |
 | Manual | The cases marked Not Run or with a "Not covered" note; dev environment with a local PostgreSQL |
 
@@ -34,3 +34,4 @@ Every acceptance criterion in [`acceptance-criteria.md`](../../../docs/02-requir
 | [TC-SUB-035](TC-SUB-035.md) | AC-12 past term end | P1 | Yes |
 | [TC-SUB-036](TC-SUB-036.md) | AC-13 My subscriptions section | P1 | Yes |
 | [TC-SUB-037](TC-SUB-037.md) | AC-14 admin lookup page | P1 | Yes |
+| [TC-SUB-058](TC-SUB-058.md) | AC-15, AC-16 read-only access mode in the grace period | P0 | Yes (partly) |

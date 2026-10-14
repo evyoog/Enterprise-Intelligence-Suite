@@ -35,6 +35,7 @@ import { fadeUp, useMotionAllowed } from '../components/dashboard/motion'
 import { useResource } from '../components/dashboard/useResource'
 import { StatusBadge } from '../components/ui/StatusBadge'
 import { useLocalePreference } from '../theming/LocalePreferenceProvider'
+import { isInGrace } from '../utils/grace'
 
 /** A trend needs one currency present on both sides to mean anything — with
  * more than one currency, or a zero last-period base (nothing to compare a
@@ -610,7 +611,9 @@ export function BusinessDashboardPage() {
           <Fact label={t('bizDash.billing.activeSubs')} value={String(dashboard?.billing.subscriptions.filter((s) => s.status === 'ACTIVE').length ?? 0)} />
           <Fact label={t('bizDash.billing.nextRenewal')} loading={renewals.loading}
             value={nextRenewal ? `${nextRenewal.productName} · ${formatDate(nextRenewal.renewalDate)}` : t('bizDash.billing.noRenewal')}
-            hint={nextRenewal ? (nextRenewal.autoRenew ? t('bizDash.billing.autoRenew') : t('bizDash.billing.manualRenew')) : undefined} />
+            hint={nextRenewal ? (isInGrace(nextRenewal.graceEndsAt) && nextRenewal.graceEndsAt
+              ? t('bizDash.billing.readOnlyUntil', { date: formatDate(nextRenewal.graceEndsAt) })
+              : nextRenewal.autoRenew ? t('bizDash.billing.autoRenew') : t('bizDash.billing.manualRenew')) : undefined} />
           <Box>
             <Typography variant="caption" sx={{ color: 'text.secondary', textTransform: 'uppercase', letterSpacing: '0.05em', fontWeight: 600 }}>{t('bizDash.billing.spent')}</Typography>
             <Typography sx={{ fontWeight: 600 }}>{spend ? spend.text : t('bizDash.billing.noSpend')}</Typography>

@@ -24,6 +24,8 @@ export interface Renewal {
   remindersEnabled: boolean
   /** In the user's time zone, ISO with offset; null when off or none left. */
   nextReminderAt: string | null
+  /** C100 RR-1 B: set while the term has ended and the 7-day read-only grace period runs. */
+  graceEndsAt?: string | null
 }
 
 /** REQ-SUB-004.4/.5 — platform defaults (`MANAGE_BILLING`). */
@@ -45,4 +47,40 @@ export const adminRenewalsApi = {
   defaults: () => apiRequest<RenewalReminderDefaults>('/admin/billing/settings/renewal-reminders'),
   saveDefaults: (body: Omit<RenewalReminderDefaults, 'updatedAt'>) =>
     apiRequest<RenewalReminderDefaults>('/admin/billing/settings/renewal-reminders', { method: 'PUT', body: JSON.stringify(body) }),
+}
+
+/** C100 RR-2 B / RR-5: one person who gets the organization's renewal reminders. */
+export interface ReminderRecipient {
+  customerId: number
+  name: string
+  email: string
+  reason: 'ORG_ADMIN' | 'MANAGE_BILLING' | 'ADDED'
+  emailEnabled: boolean
+  inAppEnabled: boolean
+}
+
+/** `defaults` always get reminders (read-only); `added` are chosen by an administrator. */
+export interface ReminderRecipients {
+  defaults: ReminderRecipient[]
+  added: ReminderRecipient[]
+}
+
+/** An active member who is not a default recipient and so can be added. */
+export interface ReminderRecipientCandidate {
+  customerId: number
+  name: string
+  email: string
+}
+
+export interface SaveReminderRecipientsBody {
+  recipients: { customerId: number; email: boolean; inApp: boolean }[]
+}
+
+/** Needs the organization's Manage billing permission. */
+export const reminderRecipientsApi = {
+  get: () => apiRequest<ReminderRecipients>('/organization/me/renewal-reminder-recipients'),
+  /** Active members who are not default recipients (Manage billing only). */
+  candidates: () => apiRequest<ReminderRecipientCandidate[]>('/organization/me/renewal-reminder-recipients/candidates'),
+  save: (body: SaveReminderRecipientsBody) =>
+    apiRequest<ReminderRecipients>('/organization/me/renewal-reminder-recipients', { method: 'PUT', body: JSON.stringify(body) }),
 }

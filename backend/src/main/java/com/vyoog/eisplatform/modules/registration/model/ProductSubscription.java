@@ -76,6 +76,14 @@ public class ProductSubscription {
     @Column(name = "auto_renew", nullable = false)
     private boolean autoRenew = true;
 
+    /** C100 SE-1 B: a seat decrease asked for during the term; it takes effect with the next renewal. Null = nothing scheduled. */
+    @Column(name = "pending_quantity")
+    private Integer pendingQuantity;
+
+    /** C100 RR-1 B: set when the term ends with auto-renew off; until then the subscription is read-only, after it the subscription expires. */
+    @Column(name = "grace_ends_at")
+    private Instant graceEndsAt;
+
     @CreatedDate
     @Column(updatable = false)
     private Instant createdAt;

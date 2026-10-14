@@ -78,7 +78,14 @@ function InvoicesTab() {
                 <TableCell>{new Date(inv.issuedAt).toLocaleDateString()}</TableCell>
                 <TableCell><Chip size="small" label={inv.status} color={statusColor(inv.status)} /></TableCell>
                 <TableCell>{inv.paymentRoute ? t(`admin.billing.routes.${inv.paymentRoute}`) : '—'}</TableCell>
-                <TableCell align="right">{money(inv.total, inv.currency)}</TableCell>
+                <TableCell align="right">
+                  {money(inv.total, inv.currency)}
+                  {(inv.discountAmount ?? 0) > 0 && (
+                    <Typography variant="caption" sx={{ display: 'block', color: 'text.secondary' }}>
+                      {inv.couponCode ? t('billing.invoices.discount', { code: inv.couponCode }) : t('billing.invoices.discountPlain')}: −{money(inv.discountAmount ?? 0, inv.currency)}
+                    </Typography>
+                  )}
+                </TableCell>
                 <TableCell align="right">
                   {/* C96: a Draft is waiting for tax; it is resolved on Tax configuration. */}
                   {inv.status === 'DRAFT' && (

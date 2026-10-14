@@ -4,7 +4,7 @@
 **BRD:** Not specified
 **Owner:** Product owner
 **Approved by / on:** Product owner, 2026-10-13 ([C97](../../../01-business/roadmap/open-decisions.md#c97), answers BI-1 to BI-9). Every open question that blocked approval (3, 4, 5, 8, 9, 10, 11, 12) is answered below.
-**Decision:** [C97](../../../01-business/roadmap/open-decisions.md#c97) (sprint 2026.4.3 answers, 2026-10-13), [C46](../../../01-business/roadmap/open-decisions.md#c46), [C50](../../../01-business/roadmap/open-decisions.md#c50) (billing scope), [C51](../../../01-business/roadmap/open-decisions.md#c51) (tax, see REQ-BIL-002), [C55](../../../01-business/roadmap/open-decisions.md#c55) (checkout, pay by invoice)
+**Decision:** [C97](../../../01-business/roadmap/open-decisions.md#c97) (sprint 2026.4.3 answers, 2026-10-13), [C100](../../../01-business/roadmap/open-decisions.md#c100) (PB-1 note: the coupon exception, per-seat invoice lines, 2026-10-14), [C46](../../../01-business/roadmap/open-decisions.md#c46), [C50](../../../01-business/roadmap/open-decisions.md#c50) (billing scope), [C51](../../../01-business/roadmap/open-decisions.md#c51) (tax, see REQ-BIL-002), [C55](../../../01-business/roadmap/open-decisions.md#c55) (checkout, pay by invoice)
 
 | Field | Value |
 |---|---|
@@ -28,7 +28,7 @@
 | 08.05.02 | Format currency | Yes (uses existing platform currencies) |
 | 01.02.01 | View spending (moved to Billing by [C19](../../../01-business/roadmap/open-decisions.md#c19)) | Yes |
 
-Not covered: 08.01 Pricing (price books, promotions), 08.02.01 Usage billing — later, per [C50](../../../01-business/roadmap/open-decisions.md#c50) (not MVP); 08.05.01 Tax — see [REQ-BIL-002](../tax-rules/requirement.md); 08.05.02 Convert currency — Not specified.
+**08.01.02 Promotions — coupon codes only** ([C100](../../../01-business/roadmap/open-decisions.md#c100) PB-1 note): create coupon, apply promotion (REQ-BIL-001.34 to .36). Not covered: 08.01.01 Price books, plan-level discounts and any other promotion, 08.02.01 Usage billing — later, per [C50](../../../01-business/roadmap/open-decisions.md#c50) (not MVP), which [C100](../../../01-business/roadmap/open-decisions.md#c100) PB-1 A confirms; 08.05.01 Tax — see [REQ-BIL-002](../tax-rules/requirement.md); 08.05.02 Convert currency — Not specified.
 
 ## Summary
 Customers (individuals, and organization members with the **Manage billing** permission for their organization) can keep billing details, see invoices, pay them through **Razorpay Checkout**, save and manage payment methods, see payment history, and download invoice and receipt documents. Platform administrators can see all invoices and payments, refund payments, and see whether the payment gateway is configured.
@@ -40,14 +40,14 @@ EIS never collects, transmits or stores full card numbers or CVV ([BR-BIL-001](.
 ## Actors
 - Individual customer — own billing details, invoices, payment methods and payments
 - Organization member with **Manage billing** (`MANAGE_ORGANIZATION_BILLING`) — the organization's billing; organization admins have it by default and can give it to others ([C97](../../../01-business/roadmap/open-decisions.md#c97) BI-5, [C65](../../../01-business/roadmap/open-decisions.md#c65))
-- Platform administrator (new permission `MANAGE_BILLING`) — all invoices and payments, refunds, gateway status and choice, which organizations may pay by invoice
+- Platform administrator (new permission `MANAGE_BILLING`) — all invoices and payments, refunds, gateway status and choice, which organizations may pay by invoice, **coupons**
 - Razorpay — checkout window, tokenized payment methods, webhooks
 
 ## Functional requirements
 | ID | Requirement | Priority |
 |---|---|---|
 | REQ-BIL-001.1 | A customer can view and edit billing details: billing name, billing email, address line 1, address line 2, city, state/region, postal code, country, and an optional tax ID. | Must |
-| REQ-BIL-001.2 | An invoice is generated and finalized when a paid subscription starts or renews (individual subscription, approved organization order, or renewal job). It holds one line per plan with the billing period, quantity, unit price, amount, currency, subtotal, and total. Each line also shows the tax name, tax rate and tax amount calculated by [REQ-BIL-002](../tax-rules/requirement.md), and the invoice records which tax method was used (Admin rate or Tax service). | Must |
+| REQ-BIL-001.2 | An invoice is generated and finalized when a paid subscription starts or renews (individual subscription, approved organization order, or renewal job). It holds one line per plan with the billing period, quantity (for an organization the seats, REQ-BIL-001.36), unit price, amount, currency, subtotal, and total. Each line also shows the tax name, tax rate and tax amount calculated by [REQ-BIL-002](../tax-rules/requirement.md), and the invoice records which tax method was used (Admin rate or Tax service). | Must |
 | REQ-BIL-001.3 | Every invoice has a unique invoice number that never changes once finalized. | Must |
 | REQ-BIL-001.4 | A customer can list their invoices (filter by status and date) and open an invoice's detail. | Must |
 | REQ-BIL-001.5 | A customer can pay an OPEN invoice. The backend creates a Razorpay order for the invoice total; the UI opens Razorpay Checkout with that order; after completion the backend verifies Razorpay's signature before recording the payment. | Must |
@@ -80,10 +80,17 @@ EIS never collects, transmits or stores full card numbers or CVV ([BR-BIL-001](.
 | REQ-BIL-001.32 | **Optional purchase-order number** ([C97](../../../01-business/roadmap/open-decisions.md#c97) BI-9 A). A customer may give a purchase-order number (up to 50 characters) for an invoice until it is paid; it is printed on the invoice and never required. | Should |
 | REQ-BIL-001.33 | **Refunds, methods, bank payments and fees** ([C97](../../../01-business/roadmap/open-decisions.md#c97) BI-9 A, BI-6 A). Refunds are made by platform administrators only, full or partial (REQ-BIL-001.12). Online methods are cards, UPI, netbanking and wallets. A bank payment recorded by an administrator must equal the open amount: **no partial bank payments** (REQ-BIL-001.20). The bank details shown are account name, bank name, account number, IFSC and SWIFT/BIC (REQ-BIL-001.21). **No fees line** is added to any invoice or checkout summary. | Must |
 
+### Coupons and seat billing ([C100](../../../01-business/roadmap/open-decisions.md#c100))
+| ID | Requirement | Priority |
+|---|---|---|
+| REQ-BIL-001.34 | **Coupons, set up by the platform administrator** (PB-1 note; the exception to REQ-BIL-001's "promotions are later"). A platform administrator with `MANAGE_BILLING` creates a coupon on **Billing → Coupons** (`/admin/billing/coupons`) with a **code** (3 to 40 letters, digits, dashes or underscores, stored in capitals, unique), an optional **description** (up to 200 characters), a **type** — **percent off** from 1 to 99, or a **fixed amount** above zero in **one currency** — and an **expiry date and time** that must be in the future when the coupon is created. The administrator can **edit** everything but the code, **disable** a coupon before its expiry and **enable** it again, and **delete** a coupon that was **never redeemed**. The list shows each coupon's status (Active, Disabled, Expired) and how many times it was redeemed. Every create, change, enable, disable and delete is audited. A coupon is usable only while it is enabled and before its expiry. | Must |
+| REQ-BIL-001.35 | **A coupon on an invoice.** A customer who pays (an individual, an organization administrator or a Manage billing holder) enters **one code per cart** ([REQ-MKT-003.18](../cart-checkout/requirement.md)). When the invoice is created the code is **checked again** (it exists, is enabled, has not expired, and a fixed coupon is in the invoice's currency) and a coupon worth the whole invoice or more is **refused**; if it fails, **nothing is created** and the customer is told why. A percent coupon takes its percentage of the invoice subtotal (rounded to the currency's smallest unit); a fixed coupon takes its amount. The discount is **shared across the invoice lines in proportion to their amounts** (the last line takes the rounding remainder) and **tax is calculated on the discounted amounts**. The invoice records the **code** and the **discount** and each line its share. **`subtotal` on the invoice is net of the discount** (so subtotal + tax = total); the checkout summary shows the **gross** subtotal, a **Discount ({code})** line, the tax and the total. The coupon's **redemption count goes up when the invoice is created**, once per invoice. The invoice list, the checkout and the invoice document show the discount and the code. A **purchase request** from a member carries no coupon. A renewal invoice and a seat-increase invoice take no coupon. | Must |
+| REQ-BIL-001.36 | **Per-seat invoice lines** ([REQ-SUB-003.7, .8](../subscription-seats/requirement.md)). For an organization subscription a new or renewal invoice has a line of the plan price × the seats, with the seat count as the line quantity. A **seat increase** during a term issues its own invoice with one line "Added seats: {product} — {plan}": quantity = the added seats, amount = added seats × seat price × remaining days ÷ days in the term (30 or 365), taxed like any invoice. Nothing is invoiced for a free plan or when no days remain. Per-seat pricing is an engineering default to confirm (see [Open points](#open-points)). | Must |
+
 ## Out of scope
 - Collecting card numbers, CVV or bank details in any EIS screen or API ([BR-BIL-001](../../../03-business-rules/BR-BIL-001-no-raw-card-data.md)).
 - Automatic charging of saved methods for renewals (auto-debit / e-mandate) — pending decision D15 (auto-renew).
-- Price books, promotions, coupons, usage billing — later, per [C50](../../../01-business/roadmap/open-decisions.md#c50).
+- Price books, plan-level discounts, promotions other than the coupon code, usage billing — later, per [C50](../../../01-business/roadmap/open-decisions.md#c50) (confirmed by [C100](../../../01-business/roadmap/open-decisions.md#c100) PB-1 A). Coupon **limits** (maximum redemptions, per customer, minimum amount, first purchase only), coupons scoped to products or plans, and stacking are **Not specified**.
 - Tax calculation rules — see [REQ-BIL-002](../tax-rules/requirement.md).
 - Adjusting or crediting invoices, credit notes — Not specified.
 - A second payment provider's payment creation, confirmation and webhooks: the gateway list and interface exist ([REQ-BIL-001.31](#functional-requirements)), but only Razorpay can take a payment today. Which gateways follow Razorpay is Not specified ([C97](../../../01-business/roadmap/open-decisions.md#c97)).
@@ -92,10 +99,10 @@ EIS never collects, transmits or stores full card numbers or CVV ([BR-BIL-001](.
 - Editing gateway credentials in the UI — they live only in the common secrets file ([BR-SEC-001](../../../03-business-rules/BR-SEC-001-central-secrets-file.md)).
 
 ## Dependencies
-- Existing subscription flows (REQ-SUB-001), organization orders (REQ-ORD-001), platform currencies and regions (REQ-GOV-001), `AuditService`, `NotificationService`.
+- Existing subscription flows (REQ-SUB-001), seats (REQ-SUB-003), the cart (REQ-MKT-003), organization orders (REQ-ORD-001), platform currencies and regions (REQ-GOV-001), `AuditService`, `NotificationService`.
 - New tables described in [07-database/data-model/billing-payments.md](../../../07-database/data-model/billing-payments.md).
 - New permission `MANAGE_BILLING` (platform ADMIN) and the organization permission `MANAGE_ORGANIZATION_BILLING` ("Manage billing", REQ-TEN-005).
-- Migration [V037__billing_rules_sprint_2026_4_3.sql](../../../../database/migrations/V037__billing_rules_sprint_2026_4_3.sql) (apply by hand: Flyway is disabled).
+- Migration [V037__billing_rules_sprint_2026_4_3.sql](../../../../database/migrations/V037__billing_rules_sprint_2026_4_3.sql) and, for coupons and invoice discounts, [V040__seats_grace_purchase_requests_coupons.sql](../../../../database/migrations/V040__seats_grace_purchase_requests_coupons.sql) (apply by hand: Flyway is disabled).
 - Razorpay account and credentials (provided later by the product owner): [09-integrations/razorpay.md](../../../09-integrations/razorpay.md).
 - Common secrets file: [BR-SEC-001](../../../03-business-rules/BR-SEC-001-central-secrets-file.md).
 
@@ -109,6 +116,13 @@ EIS never collects, transmits or stores full card numbers or CVV ([BR-BIL-001](.
 | Cross-feature flow | [docs/04-workflows/purchase-to-payment.md](../../../04-workflows/purchase-to-payment.md) |
 | Data model | [docs/07-database/data-model/billing-payments.md](../../../07-database/data-model/billing-payments.md) |
 | Razorpay integration | [docs/09-integrations/razorpay.md](../../../09-integrations/razorpay.md) |
+
+## Open points
+Raised for the product owner ([C100](../../../01-business/roadmap/open-decisions.md#c100)); none blocks use of the feature.
+1. **Per-seat pricing is an engineering default to confirm** (REQ-BIL-001.36, [REQ-SUB-003.7](../subscription-seats/requirement.md#open-points)): it changes what organizations are invoiced.
+2. **Coupons have no limits yet.** There is no maximum number of redemptions, no per-customer limit, no minimum amount, no first-purchase-only rule and no scoping to products or plans; any enabled, unexpired coupon works for any cart in its currency, any number of times. Specify these before a campaign relies on them.
+3. **A coupon is counted when the invoice is created, even if that invoice is a tax-blocked Draft** ([REQ-BIL-002](../tax-rules/requirement.md)) or is never paid; there is no un-counting.
+4. **The coupon edit screen refuses a past expiry, the API accepts it** on an existing coupon (that is how a coupon is expired at once through the API). The create rule (expiry in the future) is the same on both.
 
 ## Open questions
 | # | Question | Blocks approval |

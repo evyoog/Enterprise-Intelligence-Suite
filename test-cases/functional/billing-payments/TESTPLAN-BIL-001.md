@@ -4,7 +4,7 @@
 |---|---|
 | Requirement | [REQ-BIL-001](../../../docs/02-requirements/FRD/billing-payments/requirement.md) |
 | Acceptance criteria | [acceptance-criteria.md](../../../docs/02-requirements/FRD/billing-payments/acceptance-criteria.md) |
-| Decision | [C46](../../../docs/01-business/roadmap/open-decisions.md#c46), [C47](../../../docs/01-business/roadmap/open-decisions.md#c47), [C55](../../../docs/01-business/roadmap/open-decisions.md#c55) |
+| Decision | [C46](../../../docs/01-business/roadmap/open-decisions.md#c46), [C47](../../../docs/01-business/roadmap/open-decisions.md#c47), [C55](../../../docs/01-business/roadmap/open-decisions.md#c55), [C100](../../../docs/01-business/roadmap/open-decisions.md#c100) (coupons) |
 
 Covers invoice generation, paying an invoice through Razorpay (mocked — no real Razorpay call is ever made in these tests), refunds, webhook idempotency and signature checks, saved payment methods, and gateway status. Every case below runs against a real H2-backed Spring context (`@SpringBootTest`) with only `RazorpayClient` mocked — entities, repositories and service logic are real.
 
@@ -33,3 +33,15 @@ TC-BIL-060 to TC-BIL-070 (acceptance criteria AC-36 to AC-46): purchase starts a
 | [TC-BIL-068](TC-BIL-068.md) | Policy links: settings, checkout, invoice | P1 | Yes |
 | [TC-BIL-069](TC-BIL-069.md) | Payment gateways list and active gateway | P1 | Yes |
 | [TC-BIL-070](TC-BIL-070.md) | Purchase-order number | P1 | Yes |
+
+## Coupons and seat billing ([C100](../../../docs/01-business/roadmap/open-decisions.md#c100), REQ-BIL-001.34 to .36)
+TC-BIL-119 to TC-BIL-124 (acceptance criteria AC-48 to AC-53): the administrator's coupon rules (TC-BIL-119), the discount before tax and the redemption count (TC-BIL-120), the check again at invoice creation (TC-BIL-121), the coupon API permissions (TC-BIL-122), the Coupons page (TC-BIL-123) and the discount shown at checkout, in Billing and on the document (TC-BIL-124). AC-54 (per-seat lines and the seat-increase invoice) is covered by [TC-SUB-045](../subscription-seats/TC-SUB-045.md) and [TC-SUB-046](../subscription-seats/TC-SUB-046.md); the cart side by [TESTPLAN-MKT-003](../cart-checkout/TESTPLAN-MKT-003.md). Backend cases run in `CouponAndPurchaseTest` and `CouponAuthorizationTest`; frontend cases in `AdminCouponsPage.test.tsx`, `CheckoutPage.test.tsx`, `BillingPage.test.tsx` and `AdminBillingPage.test.tsx`. Not automated: the invoice document printing the discount (TC-BIL-124, Not Run for that step).
+
+| Test Case ID | Title | Priority | Automated? |
+|---|---|---|---|
+| [TC-BIL-119](TC-BIL-119.md) | Coupons: create, edit, disable, delete, rules | P0 | Yes |
+| [TC-BIL-120](TC-BIL-120.md) | Discount before tax; counted once the invoice exists | P0 | Yes |
+| [TC-BIL-121](TC-BIL-121.md) | Checked again at invoice creation; a refused coupon creates nothing | P0 | Yes |
+| [TC-BIL-122](TC-BIL-122.md) | Coupon API needs sign-in and the billing permission | P0 | Yes |
+| [TC-BIL-123](TC-BIL-123.md) | The Coupons page | P1 | Yes |
+| [TC-BIL-124](TC-BIL-124.md) | Discount shown at checkout, in Billing and on the invoice document | P1 | Yes (partly) |

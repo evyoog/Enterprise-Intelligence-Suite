@@ -13,6 +13,7 @@ Shared presentation standards (theme, `<DataTable>`/`<FilterBar>`, status chips,
 | Payment gateway | `/admin/billing/payment-gateway` | `MANAGE_BILLING` | [admin-payment-gateway.md](../../../05-ui/screen-requirements/admin-payment-gateway.md) |
 | Checkout payment (steps: Cart › Billing details › Payment › Complete; C59 redesign) — REQ-BIL-001.18/.19/.22 | `/checkout?invoiceId=…` (or `?subscriptionId=…`) | Owner of the subscription/invoice; organization billing user (Open question 5) | [checkout-payment.md](../../../05-ui/screen-requirements/checkout-payment.md) |
 | Billing settings (business profile and policy links, offline bank details, payment methods and the organizations allowed to pay by invoice, **Payment gateways**, renewal reminders) — REQ-BIL-001.21, .24, .28, .30, .31 | `/admin/billing/settings` | `MANAGE_BILLING` | [admin-billing-settings.md](../../../05-ui/screen-requirements/admin-billing-settings.md) |
+| Coupons (list, add, edit, enable or disable, delete) — REQ-BIL-001.34 | `/admin/billing/coupons` | `MANAGE_BILLING` | [admin-coupons.md](../../../05-ui/screen-requirements/admin-coupons.md) |
 | Payment brand assets (logos, icons) — REQ-BIL-001.23 | — | — | [payment-brand-assets.md](../../../05-ui/screen-requirements/payment-brand-assets.md) |
 
 Screens for the related FRDs built alongside this one:
@@ -31,5 +32,11 @@ Screens follow [application-layout.md](../../../05-ui/screen-requirements/applic
 - **Checkout** ([checkout-payment.md](../../../05-ui/screen-requirements/checkout-payment.md)): the consent sentence links to the Terms, Refund and Privacy pages (BI-7); an optional purchase-order field (BI-9); Pay by invoice only for enabled organizations (BI-4).
 - **Billing** ([billing.md](../../../05-ui/screen-requirements/billing.md)): a no-permission state for members without Manage billing (BI-5).
 - **Billing settings** ([admin-billing-settings.md](../../../05-ui/screen-requirements/admin-billing-settings.md)): policy links, organizations allowed to pay by invoice, Payment gateways panel.
+
+## Changes from the sprint 2026.4.3 answers ([C100](../../../01-business/roadmap/open-decisions.md#c100))
+- **Coupons page** under Admin → Billing ([admin-coupons.md](../../../05-ui/screen-requirements/admin-coupons.md)).
+- **Checkout** ([checkout-payment.md](../../../05-ui/screen-requirements/checkout-payment.md)): a **Discount ({code})** line between the subtotal and the tax in the cart summary.
+- **Billing** ([billing.md](../../../05-ui/screen-requirements/billing.md)) and the admin invoice list: the invoice's discount and coupon code under its total.
+- **Cart** ([cart.md](../../../05-ui/screen-requirements/cart.md)): the coupon field and seats × price.
 
 Wireframes: Not specified.

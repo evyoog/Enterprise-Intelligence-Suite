@@ -41,6 +41,9 @@ public record InvoiceDto(
     String taxBlockCode,
     String taxBlockReason,
     /** C97 BI-9: optional customer purchase-order number, printed on the invoice. */
-    String purchaseOrderNumber
+    String purchaseOrderNumber,
+    /** C100 (PB-1 note): the coupon applied and the discount it gave; {@code subtotal} is net of the discount, so subtotal + tax = total. */
+    String couponCode,
+    long discountAmount
 ) {
 }

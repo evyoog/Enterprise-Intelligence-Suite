@@ -17,6 +17,9 @@ public record EntitlementDto(
     List<String> includedFeatures,
     /** The plan's limit only (C97 EN-5); each product counts its own usage and enforces it. Null means no limit is set. */
     Integer usageLimit,
-    int quantity
+    int quantity,
+    /** C100 RR-1 B: FULL, or READ_ONLY while the term has ended and the 7-day grace period runs. */
+    String accessMode,
+    Instant graceEndsAt
 ) {
 }
