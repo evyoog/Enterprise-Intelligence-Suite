@@ -36,7 +36,7 @@ Two columns.
   - one line per tax with name and rate, for example "GST (18 %)", from [REQ-BIL-002](../../02-requirements/FRD/tax-rules/requirement.md) using the region in the customer's billing details — or **"Tax calculated at payment"** if there are no billing details yet;
   - divider; **Total** (large, bold);
   - primary full-width button: **Proceed to checkout** (individual) or **Submit order for approval** (organization member) with the helper text **"Your organization admin approves orders before payment."**;
-  - trust line: lock icon, **"Secure payments by Razorpay"**, and a small row of the accepted payment logos ([payment-brand-assets.md](payment-brand-assets.md)).
+  - trust line: lock icon, **"Secure payments by Razorpay"**, and a small row of the accepted payment logos ([payment-brand-assets.md](payment-brand-assets.md)). *As built this line is fixed text (`cart.summary.trust`) and still names Razorpay, even when another gateway is the default ([C98](../../01-business/roadmap/open-decisions.md#c98)); making it follow the routed gateway is a follow-up.*
 - No coupon field ([C50](../../01-business/roadmap/open-decisions.md#c50)), no shipping, no fees line (REQ-MKT-003 Open question 7), no quantity stepper (D14 not decided).
 
 ### Tablet (600–1023 px)

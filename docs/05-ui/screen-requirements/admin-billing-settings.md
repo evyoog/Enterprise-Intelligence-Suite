@@ -2,20 +2,20 @@
 
 | Field | Value |
 |---|---|
-| Requirement | [REQ-BIL-001.21](../../02-requirements/FRD/billing-payments/requirement.md), extended by [C60](../../01-business/roadmap/open-decisions.md#c60); sprint 2026.4.3 ([C97](../../01-business/roadmap/open-decisions.md#c97)): REQ-BIL-001.28 (pay-by-invoice organizations), .30 (policy links), .31 (payment gateways) |
+| Requirement | [REQ-BIL-001.21](../../02-requirements/FRD/billing-payments/requirement.md), extended by [C60](../../01-business/roadmap/open-decisions.md#c60); sprint 2026.4.3 ([C97](../../01-business/roadmap/open-decisions.md#c97)): REQ-BIL-001.28 (pay-by-invoice organizations), .30 (policy links), .31 (payment gateways, replaced by [REQ-BIL-003](../../02-requirements/FRD/payment-gateways/requirement.md), [C98](../../01-business/roadmap/open-decisions.md#c98)) |
 | Decisions | [C55](../../01-business/roadmap/open-decisions.md#c55) (offline bank details), [C60](../../01-business/roadmap/open-decisions.md#c60) (full billing settings, Razorpay credentials view, corporate design) |
 | Route | `/admin/billing/settings` (`?tab=business` · `offline` · `methods` · `gateway` · `reminders`) |
 | Sidebar | Admin → Billing → **Billing settings** (alongside Invoices & payments and Payment gateway) |
 | Permissions | `MANAGE_BILLING` (platform ADMIN). Others: route hidden; API returns 403 |
 | Built | 2026-10-01 — `frontend/src/pages/admin/AdminBillingSettingsPage.tsx` |
-| Secrets | **None on this screen.** Razorpay keys live only in `config/secrets.env` ([BR-SEC-001](../../03-business-rules/BR-SEC-001-central-secrets-file.md)); the Razorpay tab shows only whether each key is set |
+| Secrets | **Never shown.** The **Payment gateways** tab lets `MANAGE_BILLING` enter and rotate a gateway's credentials ([C98](../../01-business/roadmap/open-decisions.md#c98); write-only, encrypted at rest, see [admin-payment-gateway.md](admin-payment-gateway.md)); no other tab handles a secret. Credentials in `config/secrets.env` ([BR-SEC-001](../../03-business-rules/BR-SEC-001-central-secrets-file.md)) keep working |
 
 Shared presentation rules: [billing-ui-standards.md](billing-ui-standards.md). Corporate design: [C60](../../01-business/roadmap/open-decisions.md#c60) (page header with icon and brand stripe, accent-coloured sections).
 
 ## Layout
 - **Page header:** Settings icon (violet), eyebrow "Billing", title, subtitle.
-- **Overview tiles** (4, clickable — they open their tab): Business & invoicing (blue: legal name, Complete / Needs details), Offline payments (teal: bank name, Ready / Needs details), Payment methods (violet: "n of 5 on"), Razorpay gateway (amber: Test / Live, Configured / Not configured).
-- **Tabs** with icons; the tab is kept in the URL. The fifth tab, **Renewal reminders**, is specified in [renewal-reminders.md](renewal-reminders.md). The **Payment gateways** tab (formerly "Razorpay gateway") is gateway-neutral since [C97](../../01-business/roadmap/open-decisions.md#c97) BI-8; its overview tile reads the Razorpay status.
+- **Overview tiles** (4, clickable — they open their tab): Business & invoicing (blue: legal name, Complete / Needs details), Offline payments (teal: bank name, Ready / Needs details), Payment methods (violet: "n of 5 on"), Payment gateways (amber: "{active} of {implemented} active" from `GET /admin/billing/gateways/summary`, with the chip Configured when at least one gateway is active, otherwise None active).
+- **Tabs** with icons; the tab is kept in the URL. The fifth tab, **Renewal reminders**, is specified in [renewal-reminders.md](renewal-reminders.md). The **Payment gateways** tab (formerly "Razorpay gateway") is provider-independent since [C98](../../01-business/roadmap/open-decisions.md#c98): it embeds the same list, dialogs and overview as the [Payment Gateways](admin-payment-gateway.md) screen.
 - Each form tab: accent-coloured **sections** (left colour bar, icon, title, description) on the left, a sticky **live preview** on the right (large screens), and a sticky **save bar** (unsaved-changes notice, last updated, **Discard**, **Save changes** — disabled until something changed). Leaving the browser tab with unsaved changes asks first.
 
 ## Tab 1 — Business & invoicing
@@ -67,7 +67,7 @@ Preview: "What customers see" — the bank block, accepted-method chips, cheque 
 ## Tab 3 — Payment methods
 | Section | Field | Notes |
 |---|---|---|
-| Online payment methods | Cards, UPI, Netbanking, Wallets (switch cards) | Hidden from the checkout when off; the start-payment API refuses an off method. While Razorpay is not configured each shows "Shown to customers once the Razorpay keys are set" |
+| Online payment methods | Cards, UPI, Netbanking, Wallets (switch cards) | Hidden from the checkout when off; the start-payment API refuses an off method. While no gateway is active each shows "Shown to customers once the Razorpay keys are set" (`admin.billingSettings.h.needsGateway`; the wording still names Razorpay). Which of the switched-on methods checkout actually offers also depends on the active gateways ([REQ-BIL-003.11](../../02-requirements/FRD/payment-gateways/requirement.md)) |
 | Offline payment | Pay by invoice | The **global switch**. Off: the tile is hidden for everyone and the API refuses the offline route. On: only the organizations enabled in the next section may use it |
 | Organizations that can pay by invoice ([C97](../../01-business/roadmap/open-decisions.md#c97) BI-4) | List and search, see below | Individual customers never can |
 | Razorpay Checkout appearance | Name shown in Razorpay Checkout (max 100), Description (max 255), Checkout colour (`#RRGGBB`, with a colour picker) | Passed to Razorpay Checkout; not secrets |
@@ -81,26 +81,15 @@ Preview: "What customers see" — the bank block, accepted-method chips, cheque 
 At least one method (online or Pay by invoice) must stay on. Preview: a mock of the Razorpay window header in the chosen colour with the methods that are on.
 
 ## Tab 4 — Payment gateways
-Two parts: the gateway list ([C97](../../01-business/roadmap/open-decisions.md#c97) BI-8), then the Razorpay credentials panel, which is the same panel as the [Payment gateway](admin-payment-gateway.md) screen.
+The tab renders `PaymentGatewayManagement`, **the same component as the [Payment Gateways](admin-payment-gateway.md) screen** ([C98](../../01-business/roadmap/open-decisions.md#c98), REQ-BIL-003), without that page's header. Everything in [admin-payment-gateway.md](admin-payment-gateway.md) applies here unchanged:
 
-### Payment gateways list (amber section, plug icon)
-Title "Payment gateways"; description "The gateways the platform can take payments through. Checkout uses the active one and never shows a gateway's keys." One card per gateway the backend has (each is a `PaymentGateway` bean; Razorpay is the first):
+- the four overview statistics (Registered, Configured, Active, Need configuration);
+- one card per implemented provider with the separate Configuration, Connection, Active and Default chips and only the valid actions (Configure, Test connection, Activate, Make default, Deactivate, View details);
+- the **Planned integrations** section (View details only, never operational);
+- the **Configure** dialog generated from the provider's fields (write-only secrets, a blank keeps the stored value, environment select, tested first when the gateway is active);
+- the **Details** dialog with the Overview, Webhook and Activity tabs.
 
-| Element | Content |
-|---|---|
-| Name | Gateway name (heading level 3), an **Active** chip on the one checkout uses, and a Configured / Not configured chip |
-| Methods | "Methods: Cards, UPI, Netbanking, Wallets" (the methods the gateway supports) |
-| **Test connection** | Outlined button, accessible name "Test the {name} connection"; enabled only when configured; shows Connected, or the gateway's error, inline (`role="status"`) |
-| **Make active** | Contained button, accessible name "Make {name} the active gateway"; disabled when it is already active or not configured. Affects new payments only |
-
-An info note under the list: "Another gateway can be linked by adding it to the platform backend with its credentials in the common secrets file; it then appears in this list. Switching the active gateway affects new payments only." No key or secret is ever shown in the list. A backend refusal shows in a dismissible error alert. How to add a gateway (developers): [billing-payments API](../../06-api/api-requirements/billing-payments.md#how-to-add-another-payment-gateway).
-
-### Razorpay credentials
-
-- **Razorpay credentials:** Configured / Not configured and Test / Live chips; three tiles — Key ID (masked, for example `rzp_test_••••••7890`), Key secret, Webhook secret — each **Present** (green) or **Missing** (red). **Test connection** (enabled when configured) shows the result.
-- **Webhook:** the URL to register in Razorpay, with Copy; last webhook received.
-- **Add or rotate the keys:** five numbered steps — generate keys in the Razorpay Dashboard; put them in `config/secrets.env` (`RAZORPAY_KEY_ID=`, `RAZORPAY_KEY_SECRET=`, `RAZORPAY_WEBHOOK_SECRET=`, each with Copy); register the webhook; restart the backend; test the connection.
-- Security note: keys are never typed into, stored by or shown on this screen (BR-SEC-001 rules 1 and 5). Entering keys on a screen would need BR-SEC-001 to change first (encrypted storage, rotation, audit) — not built.
+The earlier C97 list (one card with Test connection and Make active) and the Razorpay credentials panel (tiles, "add or rotate the keys in `config/secrets.env`" steps, no key entry) no longer exist; their content is in the gateway card and details dialog above. The tab shows no key or secret. Related: the Payment methods tab (Tab 3) switches methods on for the whole platform, the details dialog switches them per gateway.
 
 ## States
 Loading skeletons per tab; backend errors as-is with **Retry**; success toast "Settings saved."; field errors under each field after the first save attempt.
@@ -109,7 +98,7 @@ Loading skeletons per tab; backend errors as-is with **Retry**; success toast "S
 Visible labels; errors in helper text; switches have accessible names; overview tiles are buttons with `aria-pressed`; tabs are linked to their panel; previews are labelled regions; the save bar status is announced (`role="status"`); axe tests for each tab.
 
 ## API used
-[billing-payments.md](../../06-api/api-requirements/billing-payments.md): `GET/PUT /admin/billing/settings/business`, `GET/PUT /admin/billing/settings/offline`, `GET/PUT /admin/billing/settings/payment-methods`, `GET/PUT …/settings/pay-by-invoice/organizations[/{id}]`, `GET /admin/billing/gateway`, `POST /admin/billing/gateway/test`, `GET /admin/billing/gateways`, `PUT /admin/billing/gateways/active`, `POST /admin/billing/gateways/{code}/test`.
+[billing-payments.md](../../06-api/api-requirements/billing-payments.md): `GET/PUT /admin/billing/settings/business`, `GET/PUT /admin/billing/settings/offline`, `GET/PUT /admin/billing/settings/payment-methods`, `GET/PUT …/settings/pay-by-invoice/organizations[/{id}]`, `GET /admin/billing/gateways/summary` (overview tile) and the gateway endpoints of [payment-gateways.md](../../06-api/api-requirements/payment-gateways.md) through the embedded list. The earlier `GET /admin/billing/gateway` and `POST /admin/billing/gateway/test` are no longer called by this screen.
 
 ## Built (sprint 2026.4.3)
-Policy links, the organizations panel (`frontend/src/components/settings/PayByInvoiceOrganizations.tsx`) and the gateways panel (`frontend/src/components/settings/PaymentGatewaysPanel.tsx`) in `AdminBillingSettingsPage.tsx`, 2026-10-13. Tests: `AdminBillingSettingsPage.test.tsx`.
+Policy links and the organizations panel (`frontend/src/components/settings/PayByInvoiceOrganizations.tsx`) in `AdminBillingSettingsPage.tsx`, 2026-10-13. The gateways tab was rebuilt on 2026-10-14 ([C98](../../01-business/roadmap/open-decisions.md#c98)): it embeds `frontend/src/components/payments/PaymentGatewayManagement.tsx` (the C97 `PaymentGatewaysPanel.tsx` was removed). Tests: `AdminBillingSettingsPage.test.tsx` (including "shows the payment gateways tab with the same list as the Payment Gateways page (C98)").

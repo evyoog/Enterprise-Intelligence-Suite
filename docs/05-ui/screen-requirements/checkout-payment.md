@@ -22,7 +22,7 @@ Shared presentation rules (theme, status chips, money formatting, loading/empty/
   - **Left — steps** (about 62 %).
   - **Right — cart summary** (about 38 %), on a light-grey surface (`background.default` / `action.hover`, so it adapts to dark mode).
 - **Header (left column):** the EIS logo and name (in place of the reference's "MERCHANT NAME"), and below it a **breadcrumb stepper**: **Cart › Billing details › Payment › Complete**. The current step is bold; earlier steps are links back to them; later steps are plain text. When the checkout did not start from the cart (paying an invoice from Billing), the **Cart** crumb is hidden (proposed — REQ-BIL-001 Open question 22).
-- **Below the card:** a "Powered by" badge on the left — the Razorpay logo when Razorpay is the active gateway, otherwise the active gateway's name ([payment-brand-assets.md](payment-brand-assets.md); [C97](../../01-business/roadmap/open-decisions.md#c97) BI-8); the Terms, Refund and Privacy links are in the consent sentence (below).
+- **Below the card:** a "Powered by" badge on the left — the Razorpay logo when the gateway the backend would use first (`gatewayCode` of the checkout summary) is Razorpay or none is named, otherwise that gateway's name ([payment-brand-assets.md](payment-brand-assets.md); [C97](../../01-business/roadmap/open-decisions.md#c97) BI-8, [C98](../../01-business/roadmap/open-decisions.md#c98)); the Terms, Refund and Privacy links are in the consent sentence (below).
 
 ### Tablet (600–1023 px)
 Same card; the right column narrows. If the content does not fit, the summary moves above the steps as on mobile. Not otherwise specified.
@@ -97,7 +97,15 @@ Mandatory rule: no EIS frontend state, API, log, database column or analytics ev
 - Disabled until a method is ready (a tile selected; for Card, a saved card selected or **Use another card** open) **and** the terms checkbox is ticked. While a request is in progress the button is disabled and shows a spinner (double-click protection).
 
 ### Gateway not configured
-Card, UPI, Netbanking and Wallets tiles appear **disabled** with a tooltip "Online payments are not available yet." and the shared banner (`billing.gateway.notConfigured`, [billing-ui-standards.md](billing-ui-standards.md#gateway-banner)). Pay by invoice stays available if allowed. If no tile is enabled, the Pay button stays disabled.
+Card, UPI, Netbanking and Wallets tiles appear **disabled** with a tooltip "Online payments are not available yet." and the shared banner (`billing.gateway.notConfigured`, [billing-ui-standards.md](billing-ui-standards.md#gateway-banner)). This is shown when the summary's `gatewayConfigured` is false, that is, when **no active, fully configured gateway can take the invoice's currency** ([C98](../../01-business/roadmap/open-decisions.md#c98)). Pay by invoice stays available if allowed. If no tile is enabled, the Pay button stays disabled.
+
+### Gateway chosen by the backend (C98)
+The checkout never chooses a gateway ([REQ-BIL-003.12](../../02-requirements/FRD/payment-gateways/requirement.md), [BR-10](../../02-requirements/FRD/payment-gateways/business-rules.md)).
+- **Tiles offered** are the methods Billing settings allow **and** that at least one eligible gateway offers for the invoice's currency (`enabledMethods` in the checkout summary).
+- **Pay** starts the payment (`POST …/invoices/{id}/payments` with the chosen tile as `method`). The backend routes it and answers with the chosen `provider`, the public `keyId` and a public `clientConfig`. If no gateway can take it, the request fails with 503 and the screen shows the server's message ("No payment gateway is available for {currency} {method} payments."); nothing is created.
+- **The window that opens belongs to the provider the backend chose.** The screen has a launcher only for Razorpay (Razorpay Checkout). If the backend routes the payment to a provider the screen has no launcher for, **no payment window opens, nothing is charged and the payment is not confirmed**; the result is the failed state with the text "This payment was routed to a gateway this screen cannot open yet. Nothing was charged. Please try another method or contact support." (`checkout.providerUnsupported`). Adding a launcher for a new provider is part of adding that provider (see [09-integrations/payment-gateways.md](../../09-integrations/payment-gateways.md#how-to-add-a-new-provider)).
+- **Footer "Powered by"** names the gateway in `gatewayName` (the Razorpay logo for Razorpay).
+- Saved cards and the "Save this card" consent stay **Razorpay-only** ([C98](../../01-business/roadmap/open-decisions.md#c98) defaults).
 
 ### Footer bar (bottom of the left column)
 - Left: **‹ Step back** — to the previous step (Billing details; from Billing details, to the cart).

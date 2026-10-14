@@ -1244,7 +1244,7 @@
       "copy": "Copiar",
       "copied": "Copiado",
       "copyEndpoint": "Copiar la URL del webhook",
-      "localUrl": "Esta URL apunta a este equipo, así que el proveedor no puede alcanzarla. Define la dirección pública del backend (APP_BACKEND_URL) para este entorno.",
+      "localUrl": "Esta URL apunta a este equipo, así que el proveedor no puede alcanzarla. Define la dirección pública del backend (BACKEND_URL) para este entorno.",
       "hookSecretSet": "Secreto del webhook definido",
       "hookSecretMissing": "Falta el secreto del webhook",
       "signature": {

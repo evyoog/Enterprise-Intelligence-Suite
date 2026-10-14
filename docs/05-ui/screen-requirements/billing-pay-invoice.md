@@ -8,6 +8,7 @@
 > - **Purchase-order field (BI-9).** On the Payment step, an optional text field **"Purchase order number (optional)"** with help "Printed on the invoice. You can leave it empty." It saves when the field loses focus (`PUT …/invoices/{id}/purchase-order`), accepts up to 50 letters, digits, spaces and `. / _ -`, shows "Use up to 50 letters, digits, spaces or . / _ -" for anything else and does not call the server; a server refusal (for example the invoice is already paid) shows under the field. It never blocks Pay. Keys: `checkout.purchaseOrder.*`. Shown only when there is an invoice.
 > - **Pay by invoice (BI-4).** The tile appears only for an organization the platform administrator enabled; an individual never sees it.
 > - **Started purchase (BI-1).** After a card, UPI, netbanking or wallet payment is confirmed, the purchase is active when the result shows; Pay by invoice starts it at once. See [my-subscriptions.md](my-subscriptions.md) for the Pending status shown before payment.
+> **Amended by [C98](../../01-business/roadmap/open-decisions.md#c98) (2026-10-14).** The gateway is chosen by the backend for each payment (default first, by currency and method), not by the browser; the footer names the gateway the backend would use first, and a payment routed to a provider the screen cannot open shows an error and charges nothing. See [Gateway chosen by the backend](checkout-payment.md#gateway-chosen-by-the-backend-c98).
 > The full description of the screen is [checkout-payment.md](checkout-payment.md).
 
 | Field | Value |

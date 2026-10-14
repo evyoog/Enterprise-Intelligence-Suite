@@ -1244,7 +1244,7 @@
       "copy": "Copy",
       "copied": "Copied",
       "copyEndpoint": "Copy the webhook URL",
-      "localUrl": "This URL points at this machine, so the provider cannot reach it. Set the public backend address (APP_BACKEND_URL) for this environment.",
+      "localUrl": "This URL points at this machine, so the provider cannot reach it. Set the public backend address (BACKEND_URL) for this environment.",
       "hookSecretSet": "Webhook secret set",
       "hookSecretMissing": "Webhook secret missing",
       "signature": {

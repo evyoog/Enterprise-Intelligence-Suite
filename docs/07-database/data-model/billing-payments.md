@@ -2,6 +2,8 @@
 
 > **Sprint 2026.4.3 additions ([C97](../../01-business/roadmap/open-decisions.md#c97)):** migration [`V037__billing_rules_sprint_2026_4_3.sql`](../../../database/migrations/V037__billing_rules_sprint_2026_4_3.sql), mirrored in `backend/src/main/resources/db/schema.sql` — see [C97 changes](#c97-changes-migration-v037). Flyway is disabled: apply V034 to V037 by hand, in order.
 
+> **Payment gateways ([C98](../../01-business/roadmap/open-decisions.md#c98), REQ-BIL-003):** migration [`V038__payment_gateways.sql`](../../../database/migrations/V038__payment_gateways.sql), mirrored in `backend/src/main/resources/db/schema.sql` — new table `payment_gateway_config` and a per-provider `payment_webhook_event` — see [C98 changes](#c98-changes-migration-v038). Apply V038 by hand after V037.
+
 Proposed for [REQ-BIL-001](../../02-requirements/FRD/billing-payments/requirement.md) and [REQ-BIL-002](../../02-requirements/FRD/tax-rules/requirement.md). Final column types are set in the migration when the feature is built. Workbook entities used: Invoice (DE), Payment (DE). No card numbers or CVV are stored anywhere ([BR-BIL-001](../../03-business-rules/BR-BIL-001-no-raw-card-data.md)).
 
 Ownership: every record belongs to **either** a customer (individual) **or** an organization, never both.
@@ -54,8 +56,8 @@ At most one ENABLED row per (region_id, effective_from) — [BR-2](../../02-requ
 |---|---|---|
 | id | Yes | Primary key |
 | invoice_id | Yes | |
-| provider | Yes | `RAZORPAY` |
-| provider_order_id, provider_payment_id | Yes / when known | Razorpay IDs |
+| provider | Yes | The code of the provider that created the payment (`RAZORPAY` today; any implemented provider's code, [C98](../../01-business/roadmap/open-decisions.md#c98)) or `OFFLINE`. Confirm, reconcile and refund go to this provider. Column is `VARCHAR(20)`, so a provider code must be at most 20 characters |
+| provider_order_id, provider_payment_id | Yes / when known | The provider's IDs (Razorpay IDs today) |
 | status | Yes | CREATED, CAPTURED, FAILED, PARTIALLY_REFUNDED, REFUNDED |
 | amount, refunded_amount, currency | Yes | Smallest unit |
 | method_type, method_network, method_last4 | When known | Display only. `method_type` gains `OFFLINE` (C55) |
@@ -88,7 +90,7 @@ Single row, platform-wide (REQ-BIL-001.21; extended by [C60](../../01-business/r
 | method_card_enabled, method_upi_enabled, method_netbanking_enabled, method_wallet_enabled, method_pay_by_invoice_enabled | Yes (default true) | Checkout methods |
 | checkout_display_name, checkout_description, checkout_theme_color | No | Razorpay Checkout appearance |
 | terms_url, privacy_url, refund_policy_url | No | Links to the Terms, Privacy and Refund pages on evyoog.com, up to 500 characters each (BI-7). V037 |
-| active_gateway | Yes (default `RAZORPAY`) | Code of the payment gateway checkout uses (BI-8). V037 |
+| active_gateway | Yes (default `RAZORPAY`) | Code of the payment gateway checkout used (BI-8). V037. **No longer used by routing since [C98](../../01-business/roadmap/open-decisions.md#c98)**: activation and default now live in `payment_gateway_config`. The column is left in place and is not read or written; do not rely on it |
 | updated_at, updated_by_customer_id | Yes | |
 
 ## payment_refund
@@ -108,7 +110,7 @@ id, payment_id, provider_refund_id, amount, reason, status, requested_by, create
 | status | Yes | ACTIVE, REMOVED |
 
 ## payment_webhook_event
-id, provider_event_id (unique), event_type, payment_id (nullable), received_at, processed_at, payload_summary (no card data).
+id, **provider** (`VARCHAR(30) NOT NULL DEFAULT 'RAZORPAY'`, V038), provider_event_id, event_type, payment_id (nullable), received_at, processed_at, payload_summary (no card data). **Unique on (`provider`, `provider_event_id`)** (`uq_payment_webhook_event_provider`, V038): an event is processed once per provider, so the same event id from two providers is two events. The earlier single-column unique constraint on `provider_event_id` is dropped. Existing rows get `RAZORPAY`.
 
 ## C97 changes (migration V037)
 All additive, `IF NOT EXISTS`, safe to re-run. Tables and columns:
@@ -132,4 +134,32 @@ All additive, `IF NOT EXISTS`, safe to re-run. Tables and columns:
 
 Unique on (`invoice_id`, `kind`) (`uq_invoice_reminder`): one row per invoice and kind.
 
-Not stored: the payment gateway's credentials (environment or secrets file, BR-SEC-001), and no licence keys or usage figures anywhere ([REQ-SUB-002](../../02-requirements/FRD/entitlements/requirement.md) is derived, with no table). Subscription activation after payment (BI-1) adds no column: it uses the existing `product_subscription.status` (`PENDING_SUBSCRIPTION` to `ACTIVE`) and `started_at`.
+## C98 changes (migration V038)
+Additive and safe to re-run (`IF NOT EXISTS`, `DROP CONSTRAINT IF EXISTS`, `ON CONFLICT DO NOTHING`). Mirrored in `backend/src/main/resources/db/schema.sql`. Requirement: [REQ-BIL-003](../../02-requirements/FRD/payment-gateways/requirement.md); rules: [business-rules.md](../../02-requirements/FRD/payment-gateways/business-rules.md).
+
+| Table | Change | Purpose |
+|---|---|---|
+| payment_gateway_config | **New table**, below | One row per payment provider: environment, encrypted credentials, activation, default, enabled methods, last test, webhook status |
+| payment_webhook_event | `provider VARCHAR(30) NOT NULL DEFAULT 'RAZORPAY'` added; unique `uq_payment_webhook_event_provider (provider, provider_event_id)` replaces the unique on `provider_event_id` alone | Idempotency per provider (BR-13) |
+| payment_gateway_config | `INSERT … ('RAZORPAY', true, true)` | An existing installation keeps taking payments: Razorpay is active and default after the migration (BR-17) |
+
+### payment_gateway_config
+| Attribute | Required | Description |
+|---|---|---|
+| id | Yes | BIGSERIAL primary key |
+| provider_code | Yes | Unique, up to 30 characters; the registry's provider code in upper case (`RAZORPAY`) |
+| environment | No | `TEST` or `LIVE` (CHECK); null until chosen (a configuration that predates the screen) |
+| activated | Yes | Default false. Accepting new payments (BR-8) |
+| default_gateway | Yes | Default false. Tried first by routing; at most one active gateway holds it (BR-8) |
+| credentials_encrypted | No | **AES-256-GCM ciphertext** (base64 of a 12-byte IV followed by the ciphertext and tag) of one JSON object of field key to value. Never returned by any API and never logged. Null when nothing is stored. The master key is the environment variable `PAYMENT_GATEWAY_ENCRYPTION_KEY`, **not stored anywhere in the database** (BR-3) |
+| credentials_updated_at | No | When credentials were last stored |
+| config_version | Yes | Default 1; incremented by every save of credentials or environment. A test result counts only for the version it tested (BR-6) |
+| enabled_methods | No | Comma-separated methods switched on; null means every method the provider supports (BR-15) |
+| test_status, test_message, tested_at, tested_config_version | No | Outcome of the last connection test (a `ConnectionStatus` name, a message of up to 300 characters, when, and which `config_version`) |
+| last_webhook_at, last_webhook_event_type | No | The last accepted, correctly signed webhook |
+| last_webhook_failure_at, last_webhook_failure_reason, webhook_failure_count | Yes for the count (default 0) | **One counter and the latest reason, not a row per attempt** (BR-13). The count is never reset |
+| created_at, updated_at, updated_by_customer_id | Yes / Yes / No | Housekeeping. `updated_by_customer_id` is null when the administrator's Keycloak account has no customer row |
+
+A row is created on first use for **every** provider the registry lists, planned ones included (inactive, nothing stored), and the Razorpay row is created active and default when it is missing. Credentials the deployment supplies through the secrets file are **not** copied here; a stored value overrides them field by field (BR-5).
+
+Not stored: the payment gateway's credentials supplied through the environment or secrets file (BR-SEC-001), and no licence keys or usage figures anywhere ([REQ-SUB-002](../../02-requirements/FRD/entitlements/requirement.md) is derived, with no table). Subscription activation after payment (BI-1) adds no column: it uses the existing `product_subscription.status` (`PENDING_SUBSCRIPTION` to `ACTIVE`) and `started_at`.
