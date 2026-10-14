@@ -31,6 +31,30 @@ public class AdminPaymentGatewayController {
         return gateways.summary();
     }
 
+    /** Starting points for the Add gateway form. */
+    @GetMapping("/templates")
+    public List<GatewayDtos.Template> templates() {
+        return gateways.templates();
+    }
+
+    /** Adds a gateway: definition plus (optionally) credential values, stored encrypted. */
+    @PostMapping
+    @ResponseStatus(org.springframework.http.HttpStatus.CREATED)
+    public GatewayDtos.Detail create(@AuthenticationPrincipal Jwt jwt, @RequestBody GatewayDtos.CreateGateway request) {
+        return gateways.create(actor(jwt), request);
+    }
+
+    @PutMapping("/{code}/definition")
+    public GatewayDtos.Detail updateDefinition(@AuthenticationPrincipal Jwt jwt, @PathVariable String code, @RequestBody GatewayDtos.Definition request) {
+        return gateways.updateDefinition(actor(jwt), code, request);
+    }
+
+    @DeleteMapping("/{code}")
+    @ResponseStatus(org.springframework.http.HttpStatus.NO_CONTENT)
+    public void delete(@AuthenticationPrincipal Jwt jwt, @PathVariable String code) {
+        gateways.delete(actor(jwt), code);
+    }
+
     @GetMapping("/{code}")
     public GatewayDtos.Detail detail(@PathVariable String code) {
         return gateways.detail(code);

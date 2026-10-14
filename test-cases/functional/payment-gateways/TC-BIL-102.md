@@ -30,7 +30,7 @@ No axe violations on the page; the error alert with Retry appears; Retry shows t
 Not covered by an automated test: axe on the Configure and Details dialogs, keyboard-only use, dark theme, phone width, and Spanish text (`es.json` has the keys; no test compares them).
 
 ## Actual Result
-The automated tests listed above passed (frontend: `npx vitest run` of AdminPaymentGatewayPage, AdminBillingSettingsPage and CheckoutPage tests on 2026-10-14, 44 passed). The parts listed as not covered have **not** been run.
+The automated tests listed above passed (frontend: `npx vitest run` of AdminPaymentGatewayPage, AdminBillingSettingsPage and CheckoutPage tests on 2026-10-14, 48 passed). The parts listed as not covered have **not** been run.
 
 ## Status
 Passed for the automated part (2026-10-14); the not-covered part is Not Run

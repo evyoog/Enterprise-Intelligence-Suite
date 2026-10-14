@@ -24,10 +24,17 @@ public record GatewayDescriptor(
     List<String> setupSteps,
     List<String> webhookEvents
 ) {
-    public enum Implementation { IMPLEMENTED, PLANNED }
+    /** IMPLEMENTED: a working adapter exists. CONFIGURATION_ONLY: an administrator added the gateway and its credentials are stored, but EIS has no
+     * adapter for it, so it can never be tested, activated or routed to. */
+    public enum Implementation { IMPLEMENTED, CONFIGURATION_ONLY }
 
     public boolean implemented() {
         return implementation == Implementation.IMPLEMENTED;
+    }
+
+    /** True for a gateway an administrator added (no adapter). */
+    public boolean custom() {
+        return implementation == Implementation.CONFIGURATION_ONLY;
     }
 
     public String webhookPath() {

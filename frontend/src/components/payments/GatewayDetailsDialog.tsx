@@ -13,7 +13,7 @@ type TabKey = 'overview' | 'webhook' | 'activity'
 
 /** C98: everything about one gateway that does not belong in the list: capabilities, payment methods, evidence that each capability has worked,
  * the webhook set-up, recent webhook events and the administrators' change history. Read-only apart from the payment-method switches. */
-export function GatewayDetailsDialog({ code, planned, onClose, onChanged }: { code: string; planned: boolean; onClose: () => void; onChanged: () => void }) {
+export function GatewayDetailsDialog({ code, configurationOnly, onClose, onChanged }: { code: string; configurationOnly: boolean; onClose: () => void; onChanged: () => void }) {
   const { t } = useTranslation()
   const [detail, setDetail] = useState<GatewayDetail | null>(null)
   const [error, setError] = useState<string | null>(null)
@@ -48,9 +48,9 @@ export function GatewayDetailsDialog({ code, planned, onClose, onChanged }: { co
   const fieldLine = (f: GatewayField) => (
     <Box component="li" key={f.key} sx={{ display: 'flex', gap: 1, alignItems: 'center', py: 0.25 }}>
       <Typography variant="body2" sx={{ flex: 1 }}>{f.label}{f.required ? ' *' : ''}</Typography>
-      {planned ? <Typography variant="caption" sx={{ color: 'text.secondary' }}>{f.secret ? t('admin.paymentGateway.secretField') : t('admin.paymentGateway.publicField')}</Typography>
-        : <Chip size="small" variant="outlined" color={f.configured ? 'success' : 'default'}
-          label={f.configured ? t('admin.paymentGateway.fieldSet', { source: t(`admin.paymentGateway.source.${f.source}`) }) : t('admin.paymentGateway.fieldNotSet')} />}
+      <Typography variant="caption" sx={{ color: 'text.secondary' }}>{f.secret ? t('admin.paymentGateway.secretField') : t('admin.paymentGateway.publicField')}</Typography>
+      <Chip size="small" variant="outlined" color={f.configured ? 'success' : 'default'}
+        label={f.configured ? t('admin.paymentGateway.fieldSet', { source: t(`admin.paymentGateway.source.${f.source}`) }) : t('admin.paymentGateway.fieldNotSet')} />
     </Box>
   )
 
@@ -70,11 +70,11 @@ export function GatewayDetailsDialog({ code, planned, onClose, onChanged }: { co
         {!detail && !error && <Skeleton variant="rounded" height={260} />}
         {detail && g && (
           <>
-            {planned && <Alert severity="info" sx={{ mb: 2 }}>{t('admin.paymentGateway.plannedNote', { name: g.name })}</Alert>}
+            {configurationOnly && <Alert severity="info" sx={{ mb: 2 }}>{t('admin.paymentGateway.configurationOnlyNote', { name: g.name })}</Alert>}
             <Tabs value={tab} onChange={(_, v) => setTab(v)} aria-label={t('admin.paymentGateway.detailTabs')} sx={{ mb: 2, borderBottom: 1, borderColor: 'divider' }}>
               <Tab value="overview" label={t('admin.paymentGateway.tabs.overview')} />
-              {!planned && <Tab value="webhook" label={t('admin.paymentGateway.tabs.webhook')} />}
-              {!planned && <Tab value="activity" label={t('admin.paymentGateway.tabs.activity')} />}
+              {!configurationOnly && <Tab value="webhook" label={t('admin.paymentGateway.tabs.webhook')} />}
+              <Tab value="activity" label={t('admin.paymentGateway.tabs.activity')} />
             </Tabs>
 
             {tab === 'overview' && (
@@ -98,7 +98,7 @@ export function GatewayDetailsDialog({ code, planned, onClose, onChanged }: { co
                 <Box>
                   <Typography variant="overline" sx={{ color: 'text.secondary' }}>{t('admin.paymentGateway.paymentMethods')}</Typography>
                   <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap' }}>
-                    {g.supportedMethods.map((m) => planned
+                    {g.supportedMethods.map((m) => configurationOnly
                       ? <Chip key={m} size="small" label={methodLabel(m)} />
                       : (
                         <FormControlLabel key={m} label={methodLabel(m)}
@@ -107,13 +107,13 @@ export function GatewayDetailsDialog({ code, planned, onClose, onChanged }: { co
                             onChange={(e) => void toggleMethod(m, e.target.checked)} />} />
                       ))}
                   </Box>
-                  {!planned && <Typography variant="caption" sx={{ color: 'text.secondary' }}>{t('admin.paymentGateway.methodsHelp')}</Typography>}
+                  {!configurationOnly && <Typography variant="caption" sx={{ color: 'text.secondary' }}>{t('admin.paymentGateway.methodsHelp')}</Typography>}
                 </Box>
                 <Box>
                   <Typography variant="overline" sx={{ color: 'text.secondary' }}>{t('admin.paymentGateway.fields')}</Typography>
                   <Box component="ul" sx={{ listStyle: 'none', p: 0, m: 0 }}>{detail.fields.map(fieldLine)}</Box>
                 </Box>
-                {!planned && (
+                {!configurationOnly && (
                   <Box>
                     <Typography variant="overline" sx={{ color: 'text.secondary' }}>{t('admin.paymentGateway.evidence')}</Typography>
                     <Typography variant="caption" sx={{ display: 'block', color: 'text.secondary', mb: 0.5 }}>{t('admin.paymentGateway.evidenceHelp')}</Typography>

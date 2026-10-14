@@ -84,8 +84,7 @@ At least one method (online or Pay by invoice) must stay on. Preview: a mock of 
 The tab renders `PaymentGatewayManagement`, **the same component as the [Payment Gateways](admin-payment-gateway.md) screen** ([C98](../../01-business/roadmap/open-decisions.md#c98), REQ-BIL-003), without that page's header. Everything in [admin-payment-gateway.md](admin-payment-gateway.md) applies here unchanged:
 
 - the four overview statistics (Registered, Configured, Active, Need configuration);
-- one card per implemented provider with the separate Configuration, Connection, Active and Default chips and only the valid actions (Configure, Test connection, Activate, Make default, Deactivate, View details);
-- the **Planned integrations** section (View details only, never operational);
+- one card per gateway with the separate Configuration, Connection, Active and Default chips and only the valid actions (Configure, Test connection, Activate, Make default, Deactivate, View details; Edit and Remove for a gateway an administrator added), and the **Add payment gateway** button and dialog ([C99](../../01-business/roadmap/open-decisions.md#c99)); a gateway an administrator added is labelled "No payment integration" and is never operational (there is no Planned section any more);
 - the **Configure** dialog generated from the provider's fields (write-only secrets, a blank keeps the stored value, environment select, tested first when the gateway is active);
 - the **Details** dialog with the Overview, Webhook and Activity tabs.
 

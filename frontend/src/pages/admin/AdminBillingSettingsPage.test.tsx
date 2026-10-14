@@ -159,9 +159,9 @@ describe('AdminBillingSettingsPage (C55, C60)', () => {
 
   it('shows the payment gateways tab with the same list as the Payment Gateways page (C98)', async () => {
     gatewayList.mockResolvedValue([{
-      code: 'RAZORPAY', name: 'Razorpay', description: 'x', logo: 'razorpay', implementation: 'IMPLEMENTED', supportedMethods: ['card'], enabledMethods: ['card'],
+      code: 'RAZORPAY', name: 'Razorpay', description: 'x', logo: 'razorpay', implementation: 'IMPLEMENTED', custom: false, supportedMethods: ['card'], enabledMethods: ['card'],
       currencies: ['INR'], countries: ['IN'], configurationStatus: 'CONFIGURED', connectionStatus: 'NOT_TESTED', activated: true, defaultGateway: true,
-      actions: { configure: true, test: true, activate: false, deactivate: true, setDefault: false },
+      actions: { configure: true, test: true, activate: false, deactivate: true, setDefault: false, edit: false, remove: false },
     }])
     renderAt('gateway')
 

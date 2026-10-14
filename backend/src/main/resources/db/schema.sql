@@ -1917,3 +1917,8 @@ CREATE TABLE IF NOT EXISTS payment_gateway_config (
     updated_by_customer_id BIGINT
 );
 INSERT INTO payment_gateway_config (provider_code, activated, default_gateway) VALUES ('RAZORPAY', true, true) ON CONFLICT (provider_code) DO NOTHING;
+
+-- C99 / REQ-BIL-003: gateways added from the Payment Gateways screen. Mirrors database/migrations/V039__payment_gateway_custom_definitions.sql.
+ALTER TABLE payment_gateway_config ADD COLUMN IF NOT EXISTS custom BOOLEAN NOT NULL DEFAULT false;
+ALTER TABLE payment_gateway_config ADD COLUMN IF NOT EXISTS display_name VARCHAR(100);
+ALTER TABLE payment_gateway_config ADD COLUMN IF NOT EXISTS definition TEXT;

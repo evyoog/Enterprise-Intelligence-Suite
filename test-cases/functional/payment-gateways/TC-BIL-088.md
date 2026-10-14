@@ -33,7 +33,7 @@ One event row, one capture, the invoice PAID once; both providers keep an "evt-1
 The concurrent duplicate (two deliveries racing, acknowledged on `DataIntegrityViolationException` in `PaymentWebhookController`) is not covered by an automated test.
 
 ## Actual Result
-The automated tests listed above passed (backend: Surefire reports of 2026-10-14 (`backend/target/surefire-reports`, `mvn -B verify`): GatewayManagementServiceTest 14 tests, RazorpayGatewayTest 5, CredentialCipherTest 3, PaymentGatewayAuthorizationTest 4, BillingServiceTest 12, no failures).
+The automated tests listed above passed (backend: Surefire reports of 2026-10-14 (`backend/target/surefire-reports`, `mvn -B verify`): GatewayManagementServiceTest 18 tests, RazorpayGatewayTest 5, CredentialCipherTest 3, PaymentGatewayAuthorizationTest 4, BillingServiceTest 12, no failures).
 
 ## Status
 Passed (automated run 2026-10-14)
