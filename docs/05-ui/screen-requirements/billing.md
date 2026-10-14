@@ -5,10 +5,13 @@
 | Requirement | [REQ-BIL-001](../../02-requirements/FRD/billing-payments/requirement.md) |
 | Route | `/billing` (signed-in tool frame, [application-layout.md](application-layout.md)) |
 | Sidebar | Workspace → **Billing**, shown to individual customers and to organization billing users (permission: FRD Open question 5) |
-| Permissions | Own billing only (individual) or the organization's billing (organization billing user). Others: route hidden; API returns 404 |
+| Permissions | Own billing only (individual) or the organization's billing for a member with the **Manage billing** permission (`MANAGE_ORGANIZATION_BILLING`, [C97](../../01-business/roadmap/open-decisions.md#c97) BI-5). A member without it: the API returns 403 for every organization billing call, reads included, and the screen shows the no-permission state below |
 | Layout | One screen with five tabs, following the C44 rule of grouping related functions instead of one screen per function |
 
 Shared presentation rules (theme, `<DataTable>`/`<FilterBar>`, status chips, money/date formatting, responsive, loading/empty/error, feedback, accessibility, i18n, gateway banner component): [billing-ui-standards.md](billing-ui-standards.md).
+
+## No permission to see organization billing (BI-5)
+When the first organization billing call is answered 403, the screen shows a single warning alert in place of the tabs and their content: **"Only members with the Manage billing permission can see your organization's billing. Ask an organization administrator to give you that permission."** (`billing.noPermission`). There are no tabs, no invoice list and no payment methods, and no other message. Organization admins have the permission by default.
 
 ## Gateway banner (all tabs)
 When the payment gateway is not configured, a banner shows above the tabs: **"Online payments are not available yet. You can still view invoices and update billing details."** Pay and Add payment method are disabled everywhere on the screen. i18n: `billing.gateway.notConfigured`.
@@ -24,7 +27,7 @@ A row of summary cards:
 | Default payment method | Card-style tile: type, network or UPI app, last 4, expiry; "None" with an **Add payment method** button |
 
 Below the cards:
-- **Alerts strip** — one alert per condition that applies: an invoice past its due date ("Not available until FRD Open question 4 is answered" — due dates are not yet a real rule), and the default card expiring within the next two months ("Your default card ending •••• 1234 expires {month}/{year}. Add a new payment method before it expires.").
+- **Alerts strip** — one alert per condition that applies: an invoice past its due date (due dates are real since [C97](../../01-business/roadmap/open-decisions.md#c97) BI-2: issue date + 15 days by default; the customer also gets reminders 3 days before, on and 7 days after the due date), and the default card expiring within the next two months ("Your default card ending •••• 1234 expires {month}/{year}. Add a new payment method before it expires.").
 - **Spending chart** — bar chart of total paid per period, last 6 periods, computed from paid invoices only (see the `dataviz` skill for chart styling).
 - **Recent invoices** — last 5, same columns as the Invoices tab, with **View all**.
 
@@ -42,11 +45,11 @@ Below the cards:
 | Tax | Money | Calculated by [REQ-BIL-002](../../02-requirements/FRD/tax-rules/requirement.md); shows the tax name on hover (for example "GST 18%") |
 | Total | Money | |
 | Status | Chip | OPEN, PAID, PARTIALLY_REFUNDED, REFUNDED, VOID — see [status chip mapping](billing-ui-standards.md#status-chips) |
-| Actions | Buttons, shown on row hover | **View**, **Pay** (OPEN only; opens [Pay invoice](billing-pay-invoice.md)), **Download invoice**, **Download receipt** (PAID only) |
+| Actions | Buttons, shown on row hover | **View**, **Pay** (OPEN only; opens the [Checkout payment](checkout-payment.md) screen; [Pay invoice](billing-pay-invoice.md) is the superseded dialog), **Download invoice**, **Download receipt** (PAID only) |
 
 Sort: issue date, newest first. Pagination: 20 per page.
 
-**Invoice detail** (drawer, laid out like the printed invoice): header (invoice number, status, issue and due dates), bill-to (from Billing details at the time of issue), lines (description, period, quantity, unit price, amount), subtotal, **one line per tax** (tax name, rate, amount — [REQ-BIL-002](../../02-requirements/FRD/tax-rules/requirement.md)), total, payments made against it (date, method, amount, status), **Download invoice** / **Download receipt** buttons.
+**Invoice detail** (drawer, laid out like the printed invoice): header (invoice number, status, issue and due dates. The purchase-order number ([C97](../../01-business/roadmap/open-decisions.md#c97) BI-9) is printed on the invoice document; the drawer does not show it yet (Not built)), bill-to (from Billing details at the time of issue), lines (description, period, quantity, unit price, amount), subtotal, **one line per tax** (tax name, rate, amount — [REQ-BIL-002](../../02-requirements/FRD/tax-rules/requirement.md)), total, payments made against it (date, method, amount, status), **Download invoice** / **Download receipt** buttons.
 
 ## Tab 3 — Payment methods
 Card-style tiles, one per saved method, laid out in a grid: network name and a generic card icon (no third-party logos unless licensed), "•••• 1234", expiry, a default star badge, and an **Expired** ribbon on cards past expiry. Each tile has an overflow (⋮) menu:

@@ -2,6 +2,14 @@
 
 > **Superseded ([C55](../../01-business/roadmap/open-decisions.md#c55), built 2026-10-01):** **Pay** on an OPEN invoice now opens the [Checkout payment](checkout-payment.md) screen (`/checkout?invoiceId=…`); this dialog was removed. Kept as the record of the earlier behaviour.
 
+> **Amended by [C97](../../01-business/roadmap/open-decisions.md#c97) (2026-10-13), for the live checkout screen:**
+> - **Gateway-neutral wording (BI-8).** Wording that names Razorpay in the steps below is the Razorpay implementation. The checkout reads `gatewayCode` and `gatewayName` from its summary: the footer shows the Razorpay logo for Razorpay and the gateway's name for any other gateway; the messages "Online payments are not available yet." and "Confirming your payment…" never name a gateway. The window the customer pays in belongs to the active gateway.
+> - **Consent links (BI-7).** The terms checkbox reads "I agree to the **Terms & Conditions**, **Refund policy** and **Privacy policy**." Each name is a link (opens in a new tab, `rel="noopener noreferrer"`) to the page set in Billing settings; one not set is plain text. Clicking a link does not tick or untick the box. Keys: `checkout.consentLead`, `checkout.consentTerms`, `checkout.consentRefund`, `checkout.consentAnd`, `checkout.consentPrivacy`.
+> - **Purchase-order field (BI-9).** On the Payment step, an optional text field **"Purchase order number (optional)"** with help "Printed on the invoice. You can leave it empty." It saves when the field loses focus (`PUT …/invoices/{id}/purchase-order`), accepts up to 50 letters, digits, spaces and `. / _ -`, shows "Use up to 50 letters, digits, spaces or . / _ -" for anything else and does not call the server; a server refusal (for example the invoice is already paid) shows under the field. It never blocks Pay. Keys: `checkout.purchaseOrder.*`. Shown only when there is an invoice.
+> - **Pay by invoice (BI-4).** The tile appears only for an organization the platform administrator enabled; an individual never sees it.
+> - **Started purchase (BI-1).** After a card, UPI, netbanking or wallet payment is confirmed, the purchase is active when the result shows; Pay by invoice starts it at once. See [my-subscriptions.md](my-subscriptions.md) for the Pending status shown before payment.
+> The full description of the screen is [checkout-payment.md](checkout-payment.md).
+
 | Field | Value |
 |---|---|
 | Requirement | [REQ-BIL-001.5–.7](../../02-requirements/FRD/billing-payments/requirement.md) |

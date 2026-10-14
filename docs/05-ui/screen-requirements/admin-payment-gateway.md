@@ -44,3 +44,5 @@ See also [09-integrations/razorpay.md](../../09-integrations/razorpay.md).
 **Test connection** (enabled only when Configured) makes one harmless authenticated call to Razorpay and shows the result inline — **Connected** (with the time of the check) or the error returned.
 
 > **C60 (2026-10-01):** this screen and Billing settings → Razorpay gateway share one panel (`RazorpayGatewayPanel`): credential tiles (Present / Missing, key ID masked), Test / Live, webhook URL with Copy, last webhook, Test connection, and the steps to add or rotate the keys in `config/secrets.env`. No key is entered or shown ([admin-billing-settings.md](admin-billing-settings.md#tab-4--razorpay-gateway-credentials)).
+
+> **C97 BI-8 (2026-10-13):** the platform now has a list of payment gateways with an active one; it is on [Billing settings → Payment gateways](admin-billing-settings.md#tab-4--payment-gateways). This screen stays the read-only Razorpay credentials view. Provider "Razorpay" is no longer fixed for the platform, only for this view.
