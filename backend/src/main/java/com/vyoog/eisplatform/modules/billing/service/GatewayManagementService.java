@@ -10,14 +10,17 @@ import com.vyoog.eisplatform.modules.billing.model.PaymentStatus;
 import com.vyoog.eisplatform.modules.billing.repository.PaymentGatewayConfigRepository;
 import com.vyoog.eisplatform.modules.billing.repository.PaymentRepository;
 import com.vyoog.eisplatform.modules.billing.repository.PaymentWebhookEventRepository;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.vyoog.eisplatform.modules.billing.service.gateway.ConfigField;
 import com.vyoog.eisplatform.modules.billing.service.gateway.ConnectionResult;
 import com.vyoog.eisplatform.modules.billing.service.gateway.ConnectionStatus;
+import com.vyoog.eisplatform.modules.billing.service.gateway.CustomGatewayDefinition;
 import com.vyoog.eisplatform.modules.billing.service.gateway.GatewayActor;
 import com.vyoog.eisplatform.modules.billing.service.gateway.GatewayContext;
 import com.vyoog.eisplatform.modules.billing.service.gateway.GatewayCredentialStore;
 import com.vyoog.eisplatform.modules.billing.service.gateway.GatewayDescriptor;
 import com.vyoog.eisplatform.modules.billing.service.gateway.GatewayRegistry;
+import com.vyoog.eisplatform.modules.billing.service.gateway.GatewayTemplates;
 import com.vyoog.eisplatform.modules.billing.service.gateway.PaymentGateway;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -35,6 +38,8 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 /**
@@ -46,8 +51,18 @@ import java.util.stream.Collectors;
 public class GatewayManagementService {
 
     private static final int MAX_FIELD_LENGTH = 500;
+    private static final Pattern CODE = Pattern.compile("^[A-Z][A-Z0-9_]{1,29}$");
+    private static final Pattern FIELD_KEY = Pattern.compile("^[A-Za-z][A-Za-z0-9]{0,39}$");
+    private static final Pattern CURRENCY = Pattern.compile("^[A-Z]{3}$");
+    private static final Pattern COUNTRY = Pattern.compile("^[A-Z]{2}$");
+    private static final Pattern LOGO = Pattern.compile("^[a-z0-9_-]{1,30}$");
+    private static final List<String> METHODS = List.of("card", "upi", "netbanking", "wallet", "bank_transfer", "paypal");
+    /** Codes that would collide with the fixed paths under /admin/billing/gateways. */
+    private static final Set<String> RESERVED = Set.of("DEFAULT", "ACTIVE", "SUMMARY", "TEMPLATES");
 
     private final GatewayRegistry registry;
+    private final GatewayTemplates templates;
+    private final ObjectMapper objectMapper;
     private final PaymentGatewayConfigRepository configRepository;
     private final GatewayCredentialStore credentialStore;
     private final PaymentRepository paymentRepository;
@@ -58,11 +73,13 @@ public class GatewayManagementService {
     private final TransactionTemplate newTransaction;
     private final String backendUrl;
 
-    public GatewayManagementService(GatewayRegistry registry, PaymentGatewayConfigRepository configRepository, GatewayCredentialStore credentialStore,
+    public GatewayManagementService(GatewayRegistry registry, GatewayTemplates templates, ObjectMapper objectMapper, PaymentGatewayConfigRepository configRepository, GatewayCredentialStore credentialStore,
                                     PaymentRepository paymentRepository, PaymentWebhookEventRepository webhookEventRepository,
                                     AuditLogRepository auditLogRepository, AuditService auditService, PlatformTransactionManager txManager,
                                     @Value("${app.backend-url}") String backendUrl) {
         this.registry = registry;
+        this.templates = templates;
+        this.objectMapper = objectMapper;
         this.configRepository = configRepository;
         this.credentialStore = credentialStore;
         this.paymentRepository = paymentRepository;
@@ -86,7 +103,7 @@ public class GatewayManagementService {
         int implemented = (int) all.stream().filter(g -> "IMPLEMENTED".equals(g.implementation())).count();
         int configured = (int) all.stream().filter(g -> "CONFIGURED".equals(g.configurationStatus())).count();
         int active = (int) all.stream().filter(GatewayDtos.Gateway::activated).count();
-        int needs = (int) all.stream().filter(g -> "IMPLEMENTED".equals(g.implementation()) && !"CONFIGURED".equals(g.configurationStatus())).count();
+        int needs = (int) all.stream().filter(g -> !"CONFIGURED".equals(g.configurationStatus())).count();
         return new GatewayDtos.Summary(all.size(), implemented, configured, active, needs);
     }
 
@@ -102,7 +119,7 @@ public class GatewayManagementService {
             boolean set = value != null && !value.isBlank();
             String source = !set ? "NONE" : stored.containsKey(f.key()) && !stored.get(f.key()).isBlank() ? "STORED" : "ENVIRONMENT";
             return new GatewayDtos.Field(f.key(), f.label(), f.secret(), f.required(), f.webhook(), f.help(), set, source,
-                set && !f.secret() && adapter != null ? adapter.mask(f.key(), value) : null);
+                set && !f.secret() ? (adapter != null ? adapter.mask(f.key(), value) : defaultMask(value)) : null);
         }).toList();
         GatewayDtos.Gateway gateway = toGateway(d, config);
         boolean webhookSecretSet = d.fields().stream().filter(ConfigField::webhook).allMatch(f -> resolved.getOrDefault(f.key(), "").length() > 0)
@@ -131,22 +148,9 @@ public class GatewayManagementService {
     /** Stores credentials and environment. A blank field keeps the stored value. If the gateway is active the new configuration is tested in the
      * same transaction and, when the test fails, nothing is saved. */
     public GatewayDtos.Detail saveConfiguration(GatewayActor actor, String code, GatewayDtos.SaveConfiguration request) {
-        GatewayDescriptor d = requireImplemented(code);
-        PaymentGateway adapter = registry.adapter(d.code()).orElseThrow();
-        Map<String, String> submitted = new LinkedHashMap<>();
-        if (request.fields() != null) {
-            for (Map.Entry<String, String> e : request.fields().entrySet()) {
-                ConfigField field = d.fields().stream().filter(f -> f.key().equals(e.getKey())).findFirst()
-                    .orElseThrow(() -> new IllegalArgumentException("Unknown field: " + e.getKey()));
-                String value = e.getValue() == null ? "" : e.getValue().trim();
-                if (value.length() > MAX_FIELD_LENGTH || value.chars().anyMatch(Character::isISOControl)) {
-                    throw new IllegalArgumentException(field.label() + " is not valid.");
-                }
-                if (!value.isEmpty()) {
-                    submitted.put(field.key(), value);
-                }
-            }
-        }
+        GatewayDescriptor d = descriptor(code);
+        PaymentGateway adapter = registry.adapter(d.code()).orElse(null);   // null for a gateway an administrator added: credentials only
+        Map<String, String> submitted = cleanValues(d, request.fields());
         String environment = request.environment() == null || request.environment().isBlank() ? null : request.environment().trim().toUpperCase(Locale.ROOT);
         if (environment != null && !d.environments().contains(environment)) {
             throw new IllegalArgumentException("Environment must be one of " + String.join(", ", d.environments()) + ".");
@@ -161,11 +165,13 @@ public class GatewayManagementService {
                 Map<String, String> merged = new LinkedHashMap<>(credentialStore.decrypt(config));
                 merged.putAll(submitted);
                 String newEnvironment = environment != null ? environment : config.getEnvironment();
-                Map<String, String> env = new LinkedHashMap<>(adapter.environmentCredentials());
-                env.putAll(merged);
-                String invalid = adapter.validateConfiguration(new GatewayContext(d.code(), newEnvironment, env));
-                if (invalid != null) {
-                    throw new IllegalArgumentException(invalid);
+                if (adapter != null) {
+                    Map<String, String> env = new LinkedHashMap<>(adapter.environmentCredentials());
+                    env.putAll(merged);
+                    String invalid = adapter.validateConfiguration(new GatewayContext(d.code(), newEnvironment, env));
+                    if (invalid != null) {
+                        throw new IllegalArgumentException(invalid);
+                    }
                 }
                 if (!submitted.isEmpty()) {
                     credentialStore.write(config, merged);
@@ -176,7 +182,7 @@ public class GatewayManagementService {
                 config.setUpdatedAt(Instant.now());
                 config.setUpdatedByCustomerId(actor.customerId());
                 config = configRepository.saveAndFlush(config);
-                if (config.isActivated()) {
+                if (adapter != null && config.isActivated()) {
                     ConnectionResult result = runTest(d, adapter, config);
                     applyTestResult(config, result);
                     if (!result.successful()) {
@@ -299,6 +305,98 @@ public class GatewayManagementService {
         auditService.recordSuccess("PAYMENT_GATEWAY_METHODS_CHANGED", actor.keycloakSub(), actor.customerId(), null, "PaymentGateway", d.code(), null,
             "Payment methods: " + String.join(", ", wanted));
         return detail(d.code());
+    }
+
+    // ------------------------------------------------- gateways added by an administrator (C99)
+
+    /** Starting points for the Add form. A template whose code is already on the screen is left out. */
+    public List<GatewayDtos.Template> templates() {
+        Set<String> taken = registry.descriptors().stream().map(GatewayDescriptor::code).collect(Collectors.toSet());
+        return templates.all().stream().filter(t -> !taken.contains(t.code()))
+            .map(t -> new GatewayDtos.Template(t.code(), t.name(), t.description(), t.logo(), t.countries(), t.currencies(), t.methods(),
+                t.fields().stream().map(f -> new GatewayDtos.FieldDefinition(f.key(), f.label(), f.secret(), f.required())).toList())).toList();
+    }
+
+    /** Adds a gateway and, when given, stores its credentials encrypted. The gateway has no adapter: it is listed as configuration only and can never
+     * be tested, activated or used for a payment until an integration exists for it. */
+    public GatewayDtos.Detail create(GatewayActor actor, GatewayDtos.CreateGateway request) {
+        GatewayDtos.Definition def = request == null ? null : request.definition();
+        if (def == null) {
+            throw new IllegalArgumentException("The gateway definition is required.");
+        }
+        String code = RESERVED.contains(GatewayRegistry.normalise(def.code())) ? null : GatewayRegistry.normalise(def.code());
+        if (code == null || !CODE.matcher(code).matches()) {
+            throw new IllegalArgumentException("The code must be 2 to 30 letters, digits or underscores, starting with a letter, and not a reserved word.");
+        }
+        CustomGatewayDefinition definition = validatedDefinition(def);
+        String environment = request.environment() == null || request.environment().isBlank() ? "TEST" : request.environment().trim().toUpperCase(Locale.ROOT);
+        if (!definition.environments().contains(environment)) {
+            throw new IllegalArgumentException("Environment must be TEST or LIVE.");
+        }
+        GatewayDescriptor d = definition.toDescriptor(code, def.name().trim());
+        Map<String, String> values = cleanValues(d, request.values());
+        if (!values.isEmpty() && !credentialStore.encryptionAvailable()) {
+            throw new BillingConflictException("Credentials cannot be stored because the encryption key is not configured on the server (PAYMENT_GATEWAY_ENCRYPTION_KEY).");
+        }
+        if (registry.isAdapterCode(code) || configRepository.findByProviderCode(code).isPresent()) {
+            throw new BillingConflictException("A payment gateway with the code " + code + " already exists.");
+        }
+        try {
+            tx.executeWithoutResult(s -> {
+                PaymentGatewayConfig config = new PaymentGatewayConfig();
+                config.setProviderCode(code);
+                config.setCustom(true);
+                config.setDisplayName(d.name());
+                config.setDefinition(toJson(definition));
+                config.setEnvironment(environment);
+                config.setUpdatedByCustomerId(actor.customerId());
+                if (!values.isEmpty()) {
+                    credentialStore.write(config, values);
+                    config.setCredentialsUpdatedAt(Instant.now());
+                }
+                configRepository.saveAndFlush(config);
+            });
+        } catch (org.springframework.dao.DataIntegrityViolationException e) {
+            throw new BillingConflictException("A payment gateway with the code " + code + " already exists.");
+        }
+        auditService.recordSuccess("PAYMENT_GATEWAY_ADDED", actor.keycloakSub(), actor.customerId(), null, "PaymentGateway", code, null,
+            d.name() + " added (configuration only" + (values.isEmpty() ? "" : "; credentials stored: " + String.join(", ", values.keySet())) + ")");
+        return detail(code);
+    }
+
+    /** Changes the definition of an added gateway. Stored credentials of a field that is removed are dropped; the others are kept. */
+    public GatewayDtos.Detail updateDefinition(GatewayActor actor, String code, GatewayDtos.Definition def) {
+        GatewayDescriptor current = requireCustom(code);
+        CustomGatewayDefinition definition = validatedDefinition(def);
+        GatewayDescriptor d = definition.toDescriptor(current.code(), def.name().trim());
+        tx.executeWithoutResult(s -> {
+            PaymentGatewayConfig config = configOf(current);
+            Map<String, String> kept = new LinkedHashMap<>(credentialStore.decrypt(config));
+            kept.keySet().removeIf(k -> d.fields().stream().noneMatch(f -> f.key().equals(k)));
+            credentialStore.write(config, kept);
+            config.setDisplayName(d.name());
+            config.setDefinition(toJson(definition));
+            if (config.getEnvironment() == null || !d.environments().contains(config.getEnvironment())) {
+                config.setEnvironment(d.environments().get(0));
+            }
+            config.setEnabledMethods(null);
+            config.setConfigVersion(config.getConfigVersion() + 1);
+            config.setUpdatedAt(Instant.now());
+            config.setUpdatedByCustomerId(actor.customerId());
+            configRepository.saveAndFlush(config);
+        });
+        auditService.recordSuccess("PAYMENT_GATEWAY_DEFINITION_CHANGED", actor.keycloakSub(), actor.customerId(), null, "PaymentGateway", current.code(), null,
+            "Definition of " + d.name() + " changed");
+        return detail(current.code());
+    }
+
+    /** Removes an added gateway and its stored credentials. A built-in provider cannot be removed. */
+    @Transactional
+    public void delete(GatewayActor actor, String code) {
+        GatewayDescriptor d = requireCustom(code);
+        configRepository.delete(configOf(d));
+        auditService.recordSuccess("PAYMENT_GATEWAY_REMOVED", actor.keycloakSub(), actor.customerId(), null, "PaymentGateway", d.code(), null,
+            d.name() + " removed with its stored credentials");
     }
 
     // ------------------------------------------------------------ webhook status
@@ -439,18 +537,16 @@ public class GatewayManagementService {
 
     private GatewayDtos.Gateway toGateway(GatewayDescriptor d, PaymentGatewayConfig config) {
         boolean implemented = d.implemented();
-        Map<String, String> resolved = implemented ? resolved(d, config) : Map.of();
-        ConnectionStatus missing = implemented ? missingStatus(d, resolved) : null;
-        String configurationStatus = !implemented ? "NOT_AVAILABLE"
-            : missing == null ? "CONFIGURED" : missing == ConnectionStatus.NOT_CONFIGURED ? "NOT_CONFIGURED" : "CONFIGURATION_INCOMPLETE";
+        ConnectionStatus missing = missingStatus(d, resolved(d, config));
+        String configurationStatus = missing == null ? "CONFIGURED" : missing == ConnectionStatus.NOT_CONFIGURED ? "NOT_CONFIGURED" : "CONFIGURATION_INCOMPLETE";
         String connection;
         String message = null;
         Instant testedAt = null;
-        if (!implemented) {
-            connection = ConnectionStatus.NOT_CONFIGURED.name();
-            message = "No integration exists for this provider yet.";
-        } else if (missing != null) {
+        if (missing != null) {
             connection = missing.name();
+        } else if (!implemented) {
+            connection = ConnectionStatus.NOT_TESTED.name();
+            message = "No payment integration exists for this gateway, so it cannot be tested or activated.";
         } else if (config.getTestStatus() == null || config.getTestedConfigVersion() == null || config.getTestedConfigVersion() != config.getConfigVersion()) {
             connection = ConnectionStatus.NOT_TESTED.name();
             message = config.getTestStatus() == null ? null : "The configuration changed since the last test.";
@@ -459,13 +555,94 @@ public class GatewayManagementService {
             message = config.getTestMessage();
             testedAt = config.getTestedAt();
         }
-        boolean configured = implemented && missing == null;
-        List<String> enabled = implemented ? enabledMethods(d.code()) : d.methods();
-        GatewayDtos.Actions actions = new GatewayDtos.Actions(implemented, configured, configured && !config.isActivated(),
-            implemented && config.isActivated(), config.isActivated() && !config.isDefaultGateway());
-        return new GatewayDtos.Gateway(d.code(), d.name(), d.description(), d.logo(), d.implementation().name(), d.methods(), enabled, d.currencies(),
-            d.countries(), implemented ? config.getEnvironment() : null, configurationStatus, connection, message, testedAt,
+        boolean configured = missing == null;
+        GatewayDtos.Actions actions = new GatewayDtos.Actions(true, implemented && configured, implemented && configured && !config.isActivated(),
+            implemented && config.isActivated(), implemented && config.isActivated() && !config.isDefaultGateway(), d.custom(), d.custom());
+        return new GatewayDtos.Gateway(d.code(), d.name(), d.description(), d.logo(), d.implementation().name(), d.custom(), d.methods(), enabledMethods(d.code()),
+            d.currencies(), d.countries(), config.getEnvironment(), configurationStatus, connection, message, testedAt,
             implemented && config.isActivated(), implemented && config.isDefaultGateway(), actions);
+    }
+
+    /** Trims and checks submitted credential values against the gateway's field list; blank values are left out (a blank keeps the stored one). */
+    private Map<String, String> cleanValues(GatewayDescriptor d, Map<String, String> raw) {
+        Map<String, String> clean = new LinkedHashMap<>();
+        if (raw != null) {
+            for (Map.Entry<String, String> e : raw.entrySet()) {
+                ConfigField field = d.fields().stream().filter(f -> f.key().equals(e.getKey())).findFirst()
+                    .orElseThrow(() -> new IllegalArgumentException("Unknown field: " + e.getKey()));
+                String value = e.getValue() == null ? "" : e.getValue().trim();
+                if (value.length() > MAX_FIELD_LENGTH || value.chars().anyMatch(Character::isISOControl)) {
+                    throw new IllegalArgumentException(field.label() + " is not valid.");
+                }
+                if (!value.isEmpty()) {
+                    clean.put(field.key(), value);
+                }
+            }
+        }
+        return clean;
+    }
+
+    private CustomGatewayDefinition validatedDefinition(GatewayDtos.Definition def) {
+        if (def == null || def.name() == null || def.name().isBlank() || def.name().trim().length() > 100) {
+            throw new IllegalArgumentException("The name is required (up to 100 characters).");
+        }
+        String description = def.description() == null ? "" : def.description().trim();
+        if (description.length() > 300) {
+            throw new IllegalArgumentException("The description can have up to 300 characters.");
+        }
+        List<String> currencies = upperList(def.currencies());
+        if (currencies.isEmpty() || currencies.size() > 20 || !currencies.stream().allMatch(c -> CURRENCY.matcher(c).matches())) {
+            throw new IllegalArgumentException("Enter at least one currency as a three-letter code, for example INR or USD.");
+        }
+        List<String> countries = upperList(def.countries());
+        if (countries.size() > 50 || !countries.stream().allMatch(c -> COUNTRY.matcher(c).matches())) {
+            throw new IllegalArgumentException("Countries must be two-letter codes, for example IN or US.");
+        }
+        List<String> methods = def.methods() == null ? List.of() : def.methods().stream().map(m -> m.trim().toLowerCase(Locale.ROOT)).distinct().toList();
+        if (methods.isEmpty() || !METHODS.containsAll(methods)) {
+            throw new IllegalArgumentException("Choose at least one payment method from " + String.join(", ", METHODS) + ".");
+        }
+        List<ConfigField> fields = new ArrayList<>();
+        if (def.fields() != null) {
+            for (GatewayDtos.FieldDefinition f : def.fields()) {
+                String key = f.key() == null ? "" : f.key().trim();
+                String label = f.label() == null ? "" : f.label().trim();
+                if (!FIELD_KEY.matcher(key).matches()) {
+                    throw new IllegalArgumentException("A credential name must start with a letter and use only letters and digits (up to 40).");
+                }
+                if (label.isEmpty() || label.length() > 60) {
+                    throw new IllegalArgumentException("Each credential needs a label of up to 60 characters.");
+                }
+                if (fields.stream().anyMatch(x -> x.key().equalsIgnoreCase(key))) {
+                    throw new IllegalArgumentException("The credential name " + key + " is used twice.");
+                }
+                fields.add(new ConfigField(key, label, f.secret(), f.required(), false, null, null));
+            }
+        }
+        if (fields.isEmpty() || fields.size() > 12 || fields.stream().noneMatch(ConfigField::required)) {
+            throw new IllegalArgumentException("Define 1 to 12 credentials, at least one of them required.");
+        }
+        String logo = def.logo() == null || def.logo().isBlank() ? null : def.logo().trim().toLowerCase(Locale.ROOT);
+        if (logo != null && !LOGO.matcher(logo).matches()) {
+            logo = null;
+        }
+        return new CustomGatewayDefinition(description, logo, countries, currencies, methods, List.of("TEST", "LIVE"), List.copyOf(fields));
+    }
+
+    private static List<String> upperList(List<String> values) {
+        return values == null ? List.of() : values.stream().filter(v -> v != null && !v.isBlank()).map(v -> v.trim().toUpperCase(Locale.ROOT)).distinct().toList();
+    }
+
+    private String toJson(CustomGatewayDefinition definition) {
+        try {
+            return objectMapper.writeValueAsString(definition);
+        } catch (com.fasterxml.jackson.core.JsonProcessingException e) {
+            throw new IllegalStateException("Could not store the gateway definition.", e);
+        }
+    }
+
+    private static String defaultMask(String value) {
+        return value.length() <= 8 ? "••••••" : value.substring(0, 4) + "••••••" + value.substring(value.length() - 4);
     }
 
     private GatewayDescriptor descriptor(String code) {
@@ -475,7 +652,15 @@ public class GatewayManagementService {
     private GatewayDescriptor requireImplemented(String code) {
         GatewayDescriptor d = descriptor(code);
         if (!d.implemented()) {
-            throw new BillingConflictException("The " + d.name() + " integration is planned and not available yet.");
+            throw new BillingConflictException(d.name() + " has no payment integration in EIS, so it can store credentials but cannot be tested, activated or used for payments.");
+        }
+        return d;
+    }
+
+    private GatewayDescriptor requireCustom(String code) {
+        GatewayDescriptor d = descriptor(code);
+        if (!d.custom()) {
+            throw new BillingConflictException(d.name() + " is a built-in provider; its definition cannot be changed or removed.");
         }
         return d;
     }

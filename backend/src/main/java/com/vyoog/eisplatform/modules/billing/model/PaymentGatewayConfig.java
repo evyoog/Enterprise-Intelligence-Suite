@@ -21,6 +21,17 @@ public class PaymentGatewayConfig {
     @Column(name = "provider_code", nullable = false, unique = true, length = 30)
     private String providerCode;
 
+    /** True for a gateway an administrator added from the screen (C99); its definition is {@link #definition}. Built-in providers are false. */
+    @Column(nullable = false)
+    private boolean custom = false;
+
+    @Column(name = "display_name", length = 100)
+    private String displayName;
+
+    /** JSON of the non-secret definition of a custom gateway (see CustomGatewayDefinition); null for a built-in provider. */
+    @Column(columnDefinition = "TEXT")
+    private String definition;
+
     /** TEST or LIVE; null until chosen (a configuration that predates this screen). */
     @Column(length = 10)
     private String environment;

@@ -42,6 +42,7 @@ import org.springframework.context.annotation.Import;
 import org.springframework.test.context.ActiveProfiles;
 
 import java.math.BigDecimal;
+import java.util.List;
 import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -105,33 +106,143 @@ class GatewayManagementServiceTest {
     // ------------------------------------------------------------------ registry and states
 
     @Test
-    void theRegistryListsRazorpayAsOperationalAndTheOthersAsPlannedWithNoActions() {
+    void theRegistryListsOnlyRealAndAdministratorAddedGatewaysNothingIsListedAsPlanned() {
         var all = gateways.list();
 
-        assertThat(all).extracting(GatewayDtos.Gateway::code).contains("RAZORPAY", "STRIPE", "PAYPAL", "PAYU", "CASHFREE");
+        assertThat(all).extracting(GatewayDtos.Gateway::code).containsExactlyInAnyOrder("RAZORPAY", "FAKEPAY");
         var razorpay = row("RAZORPAY");
         assertThat(razorpay.implementation()).isEqualTo("IMPLEMENTED");
+        assertThat(razorpay.custom()).isFalse();
         assertThat(razorpay.configurationStatus()).isEqualTo("CONFIGURED");   // the test profile supplies the keys through the environment
         assertThat(razorpay.activated()).as("an installation that predates the screen keeps taking payments").isTrue();
         assertThat(razorpay.defaultGateway()).isTrue();
         assertThat(razorpay.connectionStatus()).isEqualTo("NOT_TESTED");
-        for (String planned : new String[] {"STRIPE", "PAYPAL", "PAYU", "CASHFREE"}) {
-            var g = row(planned);
-            assertThat(g.implementation()).isEqualTo("PLANNED");
-            assertThat(g.configurationStatus()).isEqualTo("NOT_AVAILABLE");
-            assertThat(g.activated()).isFalse();
-            assertThat(g.actions().configure() || g.actions().test() || g.actions().activate()).as(planned).isFalse();
-            assertThatThrownBy(() -> gateways.test(ADMIN, g.code())).isInstanceOf(BillingConflictException.class);
-            assertThatThrownBy(() -> gateways.activate(ADMIN, g.code())).isInstanceOf(BillingConflictException.class);
-            assertThatThrownBy(() -> gateways.saveConfiguration(ADMIN, g.code(), new GatewayDtos.SaveConfiguration("TEST", Map.of())))
-                .isInstanceOf(BillingConflictException.class);
-        }
+        assertThat(razorpay.actions().edit() || razorpay.actions().remove()).as("a built-in provider's definition is fixed").isFalse();
         var summary = gateways.summary();
         assertThat(summary.registered()).isEqualTo(all.size());
         assertThat(summary.implemented()).isEqualTo(2);   // Razorpay and the test provider
         assertThat(summary.active()).isEqualTo(1);
         assertThat(gateways.detail("razorpay").gateway().code()).isEqualTo("RAZORPAY");
         assertThatThrownBy(() -> gateways.detail("NOPE")).isInstanceOf(ResourceNotFoundException.class);
+        assertThatThrownBy(() -> gateways.delete(ADMIN, "RAZORPAY")).isInstanceOf(BillingConflictException.class);
+    }
+
+    // ------------------------------------------------------------------ gateways added by an administrator (C99)
+
+    private GatewayDtos.Definition definition(String code, String name) {
+        return new GatewayDtos.Definition(code, name, "Cards in India", "stripe", List.of("IN"), List.of("inr", "USD"), List.of("card", "upi"),
+            List.of(new GatewayDtos.FieldDefinition("publicKey", "Public key", false, true),
+                new GatewayDtos.FieldDefinition("secretKey", "Secret key", true, true),
+                new GatewayDtos.FieldDefinition("note", "Account note", false, false)));
+    }
+
+    @Test
+    void anAdministratorCanAddAGatewayAndItsCredentialsAreStoredEncryptedAndNeverReturned() throws Exception {
+        var added = gateways.create(ADMIN, new GatewayDtos.CreateGateway(definition("acme_pay", "Acme Pay"), "test",
+            Map.of("publicKey", "pk_acme_visible_123", "secretKey", "sk-super-secret-value")));
+
+        assertThat(added.gateway().code()).isEqualTo("ACME_PAY");
+        assertThat(added.gateway().custom()).isTrue();
+        assertThat(added.gateway().implementation()).isEqualTo("CONFIGURATION_ONLY");
+        assertThat(added.gateway().currencies()).containsExactly("INR", "USD");
+        assertThat(added.gateway().environment()).isEqualTo("TEST");
+        assertThat(added.gateway().configurationStatus()).isEqualTo("CONFIGURED");
+        assertThat(added.gateway().activated()).isFalse();
+        assertThat(added.gateway().actions().configure()).isTrue();
+        assertThat(added.gateway().actions().test() || added.gateway().actions().activate() || added.gateway().actions().setDefault()).isFalse();
+        assertThat(added.gateway().actions().edit() && added.gateway().actions().remove()).isTrue();
+        assertThat(added.gateway().connectionMessage()).contains("No payment integration");
+        assertThat(added.fields()).filteredOn(f -> f.key().equals("secretKey")).singleElement().satisfies(f -> {
+            assertThat(f.configured()).isTrue();
+            assertThat(f.source()).isEqualTo("STORED");
+            assertThat(f.maskedValue()).isNull();
+        });
+        assertThat(added.fields()).filteredOn(f -> f.key().equals("publicKey")).singleElement()
+            .satisfies(f -> assertThat(f.maskedValue()).isEqualTo("pk_a••••••_123"));
+        String json = objectMapper.writeValueAsString(added) + objectMapper.writeValueAsString(gateways.list());
+        assertThat(json).doesNotContain("sk-super-secret-value").doesNotContain("pk_acme_visible_123");
+
+        var row = configRepository.findByProviderCode("ACME_PAY").orElseThrow();
+        assertThat(row.isCustom()).isTrue();
+        assertThat(row.getCredentialsEncrypted()).isNotBlank().doesNotContain("sk-super-secret-value").doesNotContain("pk_acme_visible_123");
+        assertThat(row.getDefinition()).doesNotContain("sk-super-secret-value").doesNotContain("pk_acme_visible_123");
+
+        assertThatThrownBy(() -> gateways.test(ADMIN, "ACME_PAY")).isInstanceOf(BillingConflictException.class).hasMessageContaining("no payment integration");
+        assertThatThrownBy(() -> gateways.activate(ADMIN, "ACME_PAY")).isInstanceOf(BillingConflictException.class);
+        assertThat(routing.find("INR", "card").map(r -> r.code()).orElse("")).as("a configuration-only gateway is never routed to").isEqualTo("RAZORPAY");
+        assertThat(gateways.summary().registered()).isEqualTo(3);
+        assertThat(gateways.summary().implemented()).isEqualTo(2);
+    }
+
+    @Test
+    void anAddedGatewayCanBeConfiguredLaterRotatedEditedAndRemoved() {
+        gateways.create(ADMIN, new GatewayDtos.CreateGateway(definition("ACME", "Acme"), null, null));
+        assertThat(row("ACME").configurationStatus()).isEqualTo("NOT_CONFIGURED");
+
+        gateways.saveConfiguration(ADMIN, "ACME", new GatewayDtos.SaveConfiguration("LIVE", Map.of("publicKey", "pk_live_aaaa1111")));
+        assertThat(row("ACME").configurationStatus()).isEqualTo("CONFIGURATION_INCOMPLETE");
+        assertThat(row("ACME").environment()).isEqualTo("LIVE");
+        gateways.saveConfiguration(ADMIN, "ACME", new GatewayDtos.SaveConfiguration("LIVE", Map.of("secretKey", "first-secret")));
+        assertThat(row("ACME").configurationStatus()).isEqualTo("CONFIGURED");
+        String first = configRepository.findByProviderCode("ACME").orElseThrow().getCredentialsEncrypted();
+        gateways.saveConfiguration(ADMIN, "ACME", new GatewayDtos.SaveConfiguration("LIVE", Map.of("secretKey", "second-secret")));
+        assertThat(configRepository.findByProviderCode("ACME").orElseThrow().getCredentialsEncrypted()).isNotEqualTo(first);
+        assertThat(gateways.detail("ACME").fields()).filteredOn(f -> f.key().equals("publicKey")).singleElement()
+            .satisfies(f -> assertThat(f.configured()).as("a blank keeps the stored value").isTrue());
+
+        var edited = new GatewayDtos.Definition("ACME", "Acme Payments", "New", null, List.of(), List.of("EUR"), List.of("card"),
+            List.of(new GatewayDtos.FieldDefinition("publicKey", "Public key", false, true), new GatewayDtos.FieldDefinition("apiToken", "API token", true, true)));
+        var after = gateways.updateDefinition(ADMIN, "ACME", edited);
+        assertThat(after.gateway().name()).isEqualTo("Acme Payments");
+        assertThat(after.gateway().currencies()).containsExactly("EUR");
+        assertThat(after.gateway().configurationStatus()).as("the new required credential is not set yet").isEqualTo("CONFIGURATION_INCOMPLETE");
+        assertThat(after.fields()).filteredOn(f -> f.key().equals("publicKey")).singleElement().satisfies(f -> assertThat(f.configured()).isTrue());
+        assertThat(after.fields()).extracting(GatewayDtos.Field::key).doesNotContain("secretKey");   // its stored value was dropped with the field
+
+        gateways.delete(ADMIN, "ACME");
+        assertThat(configRepository.findByProviderCode("ACME")).isEmpty();
+        assertThatThrownBy(() -> gateways.detail("ACME")).isInstanceOf(ResourceNotFoundException.class);
+        assertThat(gateways.list()).extracting(GatewayDtos.Gateway::code).doesNotContain("ACME");
+    }
+
+    @Test
+    void addingAGatewayValidatesTheDefinitionAndRefusesDuplicates() {
+        GatewayDtos.Definition ok = definition("OKPAY", "Ok Pay");
+        assertThatThrownBy(() -> gateways.create(ADMIN, new GatewayDtos.CreateGateway(definition("1bad", "x"), null, null))).isInstanceOf(IllegalArgumentException.class);
+        assertThatThrownBy(() -> gateways.create(ADMIN, new GatewayDtos.CreateGateway(definition("default", "x"), null, null))).as("reserved").isInstanceOf(IllegalArgumentException.class);
+        assertThatThrownBy(() -> gateways.create(ADMIN, new GatewayDtos.CreateGateway(new GatewayDtos.Definition("OKPAY", " ", null, null, null, List.of("INR"), List.of("card"), ok.fields()), null, null)))
+            .hasMessageContaining("name");
+        assertThatThrownBy(() -> gateways.create(ADMIN, new GatewayDtos.CreateGateway(new GatewayDtos.Definition("OKPAY", "Ok", null, null, null, List.of("RUPEE"), List.of("card"), ok.fields()), null, null)))
+            .hasMessageContaining("currency");
+        assertThatThrownBy(() -> gateways.create(ADMIN, new GatewayDtos.CreateGateway(new GatewayDtos.Definition("OKPAY", "Ok", null, null, null, List.of("INR"), List.of("crypto"), ok.fields()), null, null)))
+            .hasMessageContaining("method");
+        assertThatThrownBy(() -> gateways.create(ADMIN, new GatewayDtos.CreateGateway(new GatewayDtos.Definition("OKPAY", "Ok", null, null, null, List.of("INR"), List.of("card"), List.of()), null, null)))
+            .hasMessageContaining("credentials");
+        assertThatThrownBy(() -> gateways.create(ADMIN, new GatewayDtos.CreateGateway(new GatewayDtos.Definition("OKPAY", "Ok", null, null, null, List.of("INR"), List.of("card"),
+            List.of(new GatewayDtos.FieldDefinition("a", "A", false, true), new GatewayDtos.FieldDefinition("A", "B", false, true))), null, null)))
+            .hasMessageContaining("twice");
+        assertThatThrownBy(() -> gateways.create(ADMIN, new GatewayDtos.CreateGateway(ok, "SANDBOX", null))).hasMessageContaining("Environment");
+        assertThatThrownBy(() -> gateways.create(ADMIN, new GatewayDtos.CreateGateway(ok, "TEST", Map.of("unknown", "x")))).hasMessageContaining("Unknown field");
+        assertThat(configRepository.findByProviderCode("OKPAY")).as("nothing was saved by a rejected request").isEmpty();
+
+        gateways.create(ADMIN, new GatewayDtos.CreateGateway(ok, "TEST", null));
+        assertThatThrownBy(() -> gateways.create(ADMIN, new GatewayDtos.CreateGateway(ok, "TEST", null))).isInstanceOf(BillingConflictException.class);
+        assertThatThrownBy(() -> gateways.create(ADMIN, new GatewayDtos.CreateGateway(definition("razorpay", "Mine"), "TEST", null))).as("an adapter's code is taken")
+            .isInstanceOf(BillingConflictException.class);
+    }
+
+    @Test
+    void templatesPrefillTheFormButAreNotGatewaysAndDisappearOnceAdded() {
+        var templates = gateways.templates();
+        assertThat(templates).extracting(GatewayDtos.Template::code).contains("STRIPE", "PAYPAL", "PAYU", "CASHFREE").doesNotContain("RAZORPAY", "FAKEPAY");
+        assertThat(gateways.list()).extracting(GatewayDtos.Gateway::code).doesNotContain("STRIPE");
+        var stripe = templates.stream().filter(t -> t.code().equals("STRIPE")).findFirst().orElseThrow();
+        assertThat(stripe.fields()).extracting(GatewayDtos.FieldDefinition::key).contains("publishableKey", "secretKey");
+
+        gateways.create(ADMIN, new GatewayDtos.CreateGateway(new GatewayDtos.Definition(stripe.code(), stripe.name(), stripe.description(), stripe.logo(),
+            stripe.countries(), stripe.currencies(), stripe.methods(), stripe.fields()), "TEST", Map.of("secretKey", "sk_test_abc")));
+        assertThat(gateways.templates()).extracting(GatewayDtos.Template::code).doesNotContain("STRIPE");
+        assertThat(row("STRIPE").logo()).isEqualTo("stripe");
     }
 
     @Test

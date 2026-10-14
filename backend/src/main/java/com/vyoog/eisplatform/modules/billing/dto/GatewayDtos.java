@@ -11,14 +11,18 @@ public final class GatewayDtos {
     private GatewayDtos() {
     }
 
-    public record Actions(boolean configure, boolean test, boolean activate, boolean deactivate, boolean setDefault) {
+    public record Actions(boolean configure, boolean test, boolean activate, boolean deactivate, boolean setDefault,
+                          /** Edit the definition or remove the gateway: only for a gateway an administrator added. */
+                          boolean edit, boolean remove) {
     }
 
-    /** One row of the gateway list. {@code configurationStatus}: NOT_AVAILABLE (planned), NOT_CONFIGURED, CONFIGURATION_INCOMPLETE, CONFIGURED. */
+    /** One row of the gateway list. {@code configurationStatus}: NOT_CONFIGURED, CONFIGURATION_INCOMPLETE, CONFIGURED. */
     public record Gateway(
         String code, String name, String description, String logo,
-        /** IMPLEMENTED or PLANNED. */
+        /** IMPLEMENTED (a working integration exists) or CONFIGURATION_ONLY (added by an administrator: credentials are stored, nothing else). */
         String implementation,
+        /** True when an administrator added this gateway from the screen. */
+        boolean custom,
         List<String> supportedMethods, List<String> enabledMethods, List<String> currencies, List<String> countries,
         String environment, String configurationStatus,
         /** A ConnectionStatus name. */
@@ -71,6 +75,24 @@ public final class GatewayDtos {
 
     /** A blank value keeps the stored one. {@code environment} is TEST or LIVE. */
     public record SaveConfiguration(String environment, Map<String, String> fields) {
+    }
+
+    /** One credential a gateway needs: {@code key} is the stable name (letters and digits), {@code secret} makes it write-only. */
+    public record FieldDefinition(String key, String label, boolean secret, boolean required) {
+    }
+
+    /** What an administrator defines when adding a gateway (C99). Nothing here is a secret. */
+    public record Definition(String code, String name, String description, String logo, List<String> countries, List<String> currencies,
+                             List<String> methods, List<FieldDefinition> fields) {
+    }
+
+    /** Adds a gateway: its definition, the environment, and optionally the credential values (stored encrypted, never returned). */
+    public record CreateGateway(Definition definition, String environment, Map<String, String> values) {
+    }
+
+    /** A starting point for the Add form; not a gateway. */
+    public record Template(String code, String name, String description, String logo, List<String> countries, List<String> currencies,
+                           List<String> methods, List<FieldDefinition> fields) {
     }
 
     public record SetMethods(List<String> methods) {

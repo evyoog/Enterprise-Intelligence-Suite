@@ -1,17 +1,22 @@
 import { useCallback, useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { Alert, Box, Button, Chip, CircularProgress, Paper, Skeleton, Snackbar, Typography, useTheme } from '@mui/material'
+import {
+  Alert, Box, Button, Chip, CircularProgress, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, Paper, Skeleton, Snackbar, Typography, useTheme,
+} from '@mui/material'
+import { Plus } from 'lucide-react'
 import { ApiError } from '../../api/client'
 import { paymentGatewayApi, type Gateway, type GatewaySummary } from '../../api/paymentGatewayApi'
 import { GatewayConfigureDialog } from './GatewayConfigureDialog'
 import { GatewayDetailsDialog } from './GatewayDetailsDialog'
+import { GatewayFormDialog } from './GatewayFormDialog'
 import { GatewayLogo } from './GatewayLogo'
 import { configurationColor, connectionColor } from './gatewayStatus'
 
 /**
  * C98 / REQ-BIL-003: the provider-independent Payment Gateways list. Everything shown comes from the backend (the provider registry and the
- * saved configuration); nothing is hard-coded for a provider. A provider with a working integration is listed with its actions; one without is
- * listed under "Planned" and can only be read about, so nothing is ever shown as operational that is not.
+ * saved configuration); nothing is hard-coded for a provider. C99: an administrator adds any gateway with the Add form and its credentials are
+ * stored encrypted. A gateway with a working integration has the full set of actions; one added here has no integration, is labelled so, and can
+ * only be configured, edited or removed, so nothing is ever shown as operational that is not.
  */
 export function PaymentGatewayManagement() {
   const { t } = useTranslation()
@@ -23,6 +28,9 @@ export function PaymentGatewayManagement() {
   const [notice, setNotice] = useState<{ code: string; severity: 'success' | 'error' | 'warning'; text: string } | null>(null)
   const [configuring, setConfiguring] = useState<Gateway | null>(null)
   const [viewing, setViewing] = useState<Gateway | null>(null)
+  const [adding, setAdding] = useState(false)
+  const [editing, setEditing] = useState<Gateway | null>(null)
+  const [removing, setRemoving] = useState<Gateway | null>(null)
   const [toast, setToast] = useState<string | null>(null)
 
   const load = useCallback(() => Promise.all([paymentGatewayApi.list(), paymentGatewayApi.summary()])
@@ -63,8 +71,6 @@ export function PaymentGatewayManagement() {
   }
   if (!gateways || !summary) return <Skeleton variant="rounded" height={320} />
 
-  const operational = gateways.filter((g) => g.implementation === 'IMPLEMENTED')
-  const planned = gateways.filter((g) => g.implementation !== 'IMPLEMENTED')
   const stats: [string, number][] = [
     [t('admin.paymentGateway.stats.registered'), summary.registered],
     [t('admin.paymentGateway.stats.configured'), summary.configured],
@@ -96,7 +102,9 @@ export function PaymentGatewayManagement() {
           </Box>
           <Box sx={{ display: 'flex', gap: 0.75, flexWrap: 'wrap' }}>
             <Chip size="small" color={configurationColor(g.configurationStatus)} label={t(`admin.paymentGateway.configuration.${g.configurationStatus}`)} />
-            {g.configurationStatus === 'CONFIGURED' && (
+            {g.implementation === 'CONFIGURATION_ONLY' ? (
+              <Chip size="small" variant="outlined" label={t('admin.paymentGateway.noIntegrationChip')} title={g.connectionMessage} />
+            ) : g.configurationStatus === 'CONFIGURED' && (
               <Chip size="small" variant="outlined" color={connectionColor(g.connectionStatus)}
                 label={t(`admin.paymentGateway.connection.${g.connectionStatus}`)} title={g.connectionMessage} />
             )}
@@ -105,6 +113,9 @@ export function PaymentGatewayManagement() {
             {g.defaultGateway && <Chip size="small" color="secondary" label={t('admin.paymentGateway.default')} />}
           </Box>
         </Box>
+        {g.implementation === 'CONFIGURATION_ONLY' && (
+          <Typography variant="caption" sx={{ color: 'text.secondary', display: 'block', mt: 0.75 }}>{t('admin.paymentGateway.configurationOnlyLine')}</Typography>
+        )}
         {g.testedAt && g.configurationStatus === 'CONFIGURED' && (
           <Typography variant="caption" sx={{ color: 'text.secondary', display: 'block', mt: 0.75 }}>
             {t('admin.paymentGateway.lastTest', { date: new Date(g.testedAt).toLocaleString() })}{g.connectionMessage ? ` — ${g.connectionMessage}` : ''}
@@ -120,6 +131,8 @@ export function PaymentGatewayManagement() {
           {g.actions.deactivate && <Button size="small" color="warning" disabled={working} aria-label={t('admin.paymentGateway.deactivateNamed', { name: g.name })}
             onClick={() => void act(g, () => paymentGatewayApi.deactivate(g.code), t('admin.paymentGateway.deactivated', { name: g.name }))}>{t('admin.paymentGateway.deactivate')}</Button>}
           <Button size="small" onClick={() => setViewing(g)} aria-label={t('admin.paymentGateway.viewDetailsNamed', { name: g.name })}>{t('admin.paymentGateway.viewDetails')}</Button>
+          {g.actions.edit && <Button size="small" disabled={working} onClick={() => setEditing(g)} aria-label={t('admin.paymentGateway.editNamed', { name: g.name })}>{t('admin.paymentGateway.edit')}</Button>}
+          {g.actions.remove && <Button size="small" color="error" disabled={working} onClick={() => setRemoving(g)} aria-label={t('admin.paymentGateway.removeNamed', { name: g.name })}>{t('admin.paymentGateway.remove')}</Button>}
           {working && <CircularProgress size={16} aria-label={t('admin.paymentGateway.working')} />}
         </Box>
         {rowNotice && <Alert severity={rowNotice.severity} role="status" sx={{ mt: 1.5 }} onClose={() => setNotice(null)}>{rowNotice.text}</Alert>}
@@ -139,36 +152,35 @@ export function PaymentGatewayManagement() {
       </Box>
 
       <Box component="section" aria-labelledby="gw-list-title">
-        <Typography id="gw-list-title" component="h2" variant="subtitle1" sx={{ fontWeight: 700, mb: 1 }}>{t('admin.paymentGateway.configuredTitle')}</Typography>
-        <Box component="ul" sx={{ m: 0, p: 0, display: 'grid', gap: 1.5 }}>{operational.map(row)}</Box>
+        <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 2, flexWrap: 'wrap', mb: 1 }}>
+          <Typography id="gw-list-title" component="h2" variant="subtitle1" sx={{ fontWeight: 700 }}>{t('admin.paymentGateway.configuredTitle')}</Typography>
+          <Button variant="contained" startIcon={<Plus size={16} />} onClick={() => setAdding(true)}>{t('admin.paymentGateway.form.addButton')}</Button>
+        </Box>
+        <Box component="ul" sx={{ m: 0, p: 0, display: 'grid', gap: 1.5 }}>{gateways.map(row)}</Box>
         <Typography variant="caption" sx={{ color: 'text.secondary', display: 'block', mt: 1 }}>{t('admin.paymentGateway.routingNote')}</Typography>
       </Box>
-
-      {planned.length > 0 && (
-        <Box component="section" aria-labelledby="gw-planned-title">
-          <Typography id="gw-planned-title" component="h2" variant="subtitle1" sx={{ fontWeight: 700 }}>{t('admin.paymentGateway.plannedTitle')}</Typography>
-          <Typography variant="body2" sx={{ color: 'text.secondary', mb: 1 }}>{t('admin.paymentGateway.plannedBody')}</Typography>
-          <Box component="ul" sx={{ m: 0, p: 0, display: 'grid', gap: 1, gridTemplateColumns: { xs: '1fr', md: 'repeat(2, 1fr)' } }}>
-            {planned.map((g) => (
-              <Paper key={g.code} component="li" variant="outlined" aria-label={g.name} sx={{ listStyle: 'none', p: 1.5, borderRadius: 2.5, display: 'flex', alignItems: 'center', gap: 1.5 }}>
-                <Box sx={{ width: 40, display: 'grid', placeItems: 'center', flexShrink: 0 }}><GatewayLogo logo={g.logo} name={g.name} dark={theme.palette.mode === 'dark'} /></Box>
-                <Box sx={{ flex: 1, minWidth: 0 }}>
-                  <Typography component="h3" sx={{ fontWeight: 700 }}>{g.name}</Typography>
-                  <Typography variant="caption" sx={{ color: 'text.secondary' }}>{g.supportedMethods.map(methodLabel).join(', ')}</Typography>
-                </Box>
-                <Chip size="small" variant="outlined" label={t('admin.paymentGateway.planned')} />
-                <Button size="small" onClick={() => setViewing(g)} aria-label={t('admin.paymentGateway.viewDetailsNamed', { name: g.name })}>{t('admin.paymentGateway.viewDetails')}</Button>
-              </Paper>
-            ))}
-          </Box>
-        </Box>
-      )}
 
       {configuring && (
         <GatewayConfigureDialog code={configuring.code} name={configuring.name} onClose={() => setConfiguring(null)}
           onSaved={(message) => { setConfiguring(null); setToast(message); void load() }} />
       )}
-      {viewing && <GatewayDetailsDialog code={viewing.code} planned={viewing.implementation !== 'IMPLEMENTED'} onClose={() => setViewing(null)} onChanged={() => void load()} />}
+      {viewing && <GatewayDetailsDialog code={viewing.code} configurationOnly={viewing.implementation === 'CONFIGURATION_ONLY'} onClose={() => setViewing(null)} onChanged={() => void load()} />}
+      {adding && <GatewayFormDialog onClose={() => setAdding(false)} onSaved={(message) => { setAdding(false); setToast(message); void load() }} />}
+      {editing && <GatewayFormDialog code={editing.code} onClose={() => setEditing(null)} onSaved={(message) => { setEditing(null); setToast(message); void load() }} />}
+      {removing && (
+        <Dialog open onClose={() => setRemoving(null)} aria-labelledby="gw-remove-title">
+          <DialogTitle id="gw-remove-title">{t('admin.paymentGateway.removeTitle', { name: removing.name })}</DialogTitle>
+          <DialogContent><DialogContentText>{t('admin.paymentGateway.removeBody')}</DialogContentText></DialogContent>
+          <DialogActions>
+            <Button onClick={() => setRemoving(null)}>{t('admin.paymentGateway.cancel')}</Button>
+            <Button color="error" variant="contained" onClick={() => {
+              const g = removing
+              setRemoving(null)
+              void act(g, () => paymentGatewayApi.remove(g.code), t('admin.paymentGateway.removed', { name: g.name }))
+            }}>{t('admin.paymentGateway.remove')}</Button>
+          </DialogActions>
+        </Dialog>
+      )}
       <Snackbar open={Boolean(toast)} autoHideDuration={4000} onClose={() => setToast(null)} message={toast ?? ''} />
     </Box>
   )

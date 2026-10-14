@@ -17,6 +17,10 @@ const activate = vi.fn()
 const deactivate = vi.fn()
 const setMethods = vi.fn()
 const setDefault = vi.fn()
+const templates = vi.fn()
+const create = vi.fn()
+const updateDefinition = vi.fn()
+const remove = vi.fn()
 
 vi.mock('../../api/paymentGatewayApi', () => ({
   paymentGatewayApi: {
@@ -24,25 +28,27 @@ vi.mock('../../api/paymentGatewayApi', () => ({
     saveConfiguration: (c: string, b: unknown) => saveConfiguration(c, b), test: (c: string) => test(c),
     activate: (c: string) => activate(c), deactivate: (c: string) => deactivate(c),
     setMethods: (c: string, m: string[]) => setMethods(c, m), setDefault: (c: string) => setDefault(c),
+    templates: () => templates(), create: (b: unknown) => create(b), updateDefinition: (c: string, d: unknown) => updateDefinition(c, d), remove: (c: string) => remove(c),
   },
 }))
 
 const base: Gateway = {
-  code: 'RAZORPAY', name: 'Razorpay', description: 'Cards, UPI and netbanking.', logo: 'razorpay', implementation: 'IMPLEMENTED',
+  code: 'RAZORPAY', name: 'Razorpay', description: 'Cards, UPI and netbanking.', logo: 'razorpay', implementation: 'IMPLEMENTED', custom: false,
   supportedMethods: ['card', 'upi', 'netbanking', 'wallet'], enabledMethods: ['card', 'upi', 'netbanking', 'wallet'], currencies: ['INR', 'USD'], countries: ['IN'],
   environment: 'TEST', configurationStatus: 'CONFIGURED', connectionStatus: 'CONNECTION_SUCCESSFUL', connectionMessage: 'Razorpay accepted the credentials.',
   testedAt: '2026-10-14T05:00:00Z', activated: true, defaultGateway: true,
-  actions: { configure: true, test: true, activate: false, deactivate: true, setDefault: false },
+  actions: { configure: true, test: true, activate: false, deactivate: true, setDefault: false, edit: false, remove: false },
 }
 const second: Gateway = {
   ...base, code: 'FAKEPAY', name: 'FakePay', logo: 'fakepay', environment: undefined, configurationStatus: 'NOT_CONFIGURED', connectionStatus: 'NOT_CONFIGURED',
   connectionMessage: undefined, testedAt: undefined, activated: false, defaultGateway: false, supportedMethods: ['card'], enabledMethods: ['card'], currencies: ['INR'],
-  actions: { configure: true, test: false, activate: false, deactivate: false, setDefault: false },
+  actions: { configure: true, test: false, activate: false, deactivate: false, setDefault: false, edit: false, remove: false },
 }
-const planned: Gateway = {
-  ...base, code: 'STRIPE', name: 'Stripe', logo: 'stripe', implementation: 'PLANNED', configurationStatus: 'NOT_AVAILABLE', connectionStatus: 'NOT_CONFIGURED',
-  environment: undefined, activated: false, defaultGateway: false, supportedMethods: ['card', 'wallet'], enabledMethods: ['card', 'wallet'],
-  actions: { configure: false, test: false, activate: false, deactivate: false, setDefault: false },
+const added: Gateway = {
+  ...base, code: 'ACME', name: 'Acme Pay', logo: 'acme', implementation: 'CONFIGURATION_ONLY', custom: true, configurationStatus: 'CONFIGURED', connectionStatus: 'NOT_TESTED',
+  connectionMessage: 'No payment integration exists for this gateway, so it cannot be tested or activated.', testedAt: undefined, activated: false, defaultGateway: false,
+  supportedMethods: ['card'], enabledMethods: ['card'], currencies: ['INR'],
+  actions: { configure: true, test: false, activate: false, deactivate: false, setDefault: false, edit: true, remove: true },
 }
 const sum = { registered: 3, implemented: 2, configured: 1, active: 1, needsConfiguration: 1 }
 
@@ -61,12 +67,18 @@ const detailOf = (g: Gateway, over: Partial<GatewayDetail> = {}): GatewayDetail 
   ...over,
 })
 
-describe('AdminPaymentGatewayPage (C98, REQ-BIL-003)', () => {
+const tpls = [{
+  code: 'STRIPE', name: 'Stripe', description: 'Cards worldwide.', logo: 'stripe', countries: ['US'], currencies: ['USD', 'EUR'], methods: ['card', 'wallet'],
+  fields: [{ key: 'publishableKey', label: 'Publishable key', secret: false, required: true }, { key: 'secretKey', label: 'Secret key', secret: true, required: true }],
+}]
+
+describe('AdminPaymentGatewayPage (C98, C99, REQ-BIL-003)', () => {
   beforeEach(() => {
-    for (const m of [list, summary, detail, saveConfiguration, test, activate, deactivate, setMethods, setDefault]) m.mockReset()
-    list.mockResolvedValue([base, second, planned])
+    for (const m of [list, summary, detail, saveConfiguration, test, activate, deactivate, setMethods, setDefault, templates, create, updateDefinition, remove]) m.mockReset()
+    list.mockResolvedValue([base, second, added])
+    templates.mockResolvedValue(tpls)
     summary.mockResolvedValue(sum)
-    detail.mockImplementation(async (code: string) => detailOf(code === 'FAKEPAY' ? second : code === 'STRIPE' ? planned : base))
+    detail.mockImplementation(async (code: string) => detailOf(code === 'FAKEPAY' ? second : code === 'ACME' ? added : base))
   })
 
   it('shows the overview from the backend and each provider with only the actions valid for its state, with no axe violations', async () => {
@@ -95,14 +107,134 @@ describe('AdminPaymentGatewayPage (C98, REQ-BIL-003)', () => {
     expect(await axe(container)).toHaveNoViolations()
   })
 
-  it('lists a provider without an integration as planned, never operational', async () => {
+  it('labels a gateway added by an administrator as having no payment integration and offers only what works', async () => {
     renderWithProviders(<AdminPaymentGatewayPage />)
-    const stripe = await screen.findByRole('listitem', { name: 'Stripe' })
+    const acme = await screen.findByRole('listitem', { name: 'Acme Pay' })
 
-    expect(within(stripe).getByText('Integration planned')).toBeInTheDocument()
-    expect(within(stripe).queryByRole('button', { name: /Configure|Test|Activate/ })).not.toBeInTheDocument()
-    await userEvent.setup().click(within(stripe).getByRole('button', { name: 'View details of Stripe' }))
-    expect(await screen.findByText(/Stripe is not integrated yet/)).toBeInTheDocument()
+    expect(within(acme).getByText('No payment integration')).toBeInTheDocument()
+    expect(within(acme).getByText('Configured')).toBeInTheDocument()
+    expect(within(acme).getByText(/EIS has no payment integration for this gateway/)).toBeInTheDocument()
+    expect(within(acme).getByRole('button', { name: 'Configure Acme Pay' })).toBeInTheDocument()
+    expect(within(acme).getByRole('button', { name: 'Edit Acme Pay' })).toBeInTheDocument()
+    expect(within(acme).getByRole('button', { name: 'Remove Acme Pay' })).toBeInTheDocument()
+    expect(within(acme).queryByRole('button', { name: /Test the|Activate|default/ })).not.toBeInTheDocument()
+    expect(screen.queryByText(/Planned integrations/)).not.toBeInTheDocument()
+    await userEvent.setup().click(within(acme).getByRole('button', { name: 'View details of Acme Pay' }))
+    const dialog = await screen.findByRole('dialog', { name: /Acme Pay/ })
+    expect(within(dialog).getByText(/Acme Pay was added by an administrator/)).toBeInTheDocument()
+    expect(within(dialog).queryByRole('tab', { name: 'Webhook' })).not.toBeInTheDocument()
+    expect(within(dialog).queryByText('Verified by real activity')).not.toBeInTheDocument()
+  })
+
+  it('adds a gateway from the form: pre-fills from a template, hides secrets, sends the definition and values once', async () => {
+    create.mockResolvedValue(detailOf(added))
+    const { container } = renderWithProviders(<AdminPaymentGatewayPage />)
+    const user = userEvent.setup()
+    await screen.findByRole('listitem', { name: 'Razorpay' })
+
+    await user.click(screen.getByRole('button', { name: 'Add payment gateway' }))
+    const dialog = await screen.findByRole('dialog', { name: 'Add payment gateway' })
+    expect(within(dialog).getByText(/stored encrypted in the database and are never shown again/)).toBeInTheDocument()
+    expect(within(dialog).getByText(/no payment integration for a gateway added here/i)).toBeInTheDocument()
+    expect(within(dialog).getByRole('button', { name: 'Add gateway' })).toBeDisabled()
+    expect(await axe(container)).toHaveNoViolations()
+
+    await user.click(within(dialog).getByRole('combobox', { name: 'Start from' }))
+    await user.click(await screen.findByRole('option', { name: 'Stripe' }))
+    expect(within(dialog).getByLabelText('Gateway name', { exact: false })).toHaveValue('Stripe')
+    expect(within(dialog).getByLabelText('Gateway code', { exact: false })).toHaveValue('STRIPE')
+    expect(within(dialog).getByLabelText('Currencies', { exact: false })).toHaveValue('USD, EUR')
+    const groups = within(dialog).getAllByRole('group', { name: /Credential \d/ })
+    expect(groups).toHaveLength(2)
+    const secretValue = within(groups[1]).getByLabelText('Value') as HTMLInputElement
+    expect(secretValue.type).toBe('password')
+
+    await user.type(within(groups[0]).getByLabelText('Value'), 'pk_test_123')
+    await user.type(secretValue, 'sk_test_secret')
+    await user.click(within(dialog).getByRole('button', { name: 'Add gateway' }))
+
+    await waitFor(() => expect(create).toHaveBeenCalledTimes(1))
+    expect(create).toHaveBeenCalledWith({
+      definition: {
+        code: 'STRIPE', name: 'Stripe', description: 'Cards worldwide.', logo: 'stripe', countries: ['US'], currencies: ['USD', 'EUR'], methods: ['card', 'wallet'],
+        fields: [{ key: 'publishableKey', label: 'Publishable key', secret: false, required: true }, { key: 'secretKey', label: 'Secret key', secret: true, required: true }],
+      },
+      environment: 'TEST',
+      values: { publishableKey: 'pk_test_123', secretKey: 'sk_test_secret' },
+    })
+    expect(await screen.findByText('Stripe was added.')).toBeInTheDocument()
+    await waitFor(() => expect(list.mock.calls.length).toBeGreaterThan(1))
+  })
+
+  it('adds a gateway from scratch: derives the code and credential names and keeps the Add button off until the form is valid', async () => {
+    create.mockResolvedValue(detailOf(added))
+    renderWithProviders(<AdminPaymentGatewayPage />)
+    const user = userEvent.setup()
+    await user.click(await screen.findByRole('button', { name: 'Add payment gateway' }))
+    const dialog = await screen.findByRole('dialog', { name: 'Add payment gateway' })
+    const add = within(dialog).getByRole('button', { name: 'Add gateway' })
+
+    await user.type(within(dialog).getByLabelText('Gateway name', { exact: false }), 'My Local Bank')
+    expect(within(dialog).getByLabelText('Gateway code', { exact: false })).toHaveValue('MY_LOCAL_BANK')
+    expect(add).toBeDisabled()
+    expect(within(dialog).getByText('Every credential needs a label and a name (letters and digits, starting with a letter).')).toBeInTheDocument()
+
+    await user.type(within(dialog).getByLabelText('Label', { exact: false }), 'API secret key')
+    expect(within(dialog).getByLabelText(/^Name/)).toHaveValue('apiSecretKey')
+    expect(add).toBeEnabled()
+    await user.click(within(dialog).getByRole('button', { name: 'Add credential' }))
+    expect(within(dialog).getAllByRole('group', { name: /Credential \d/ })).toHaveLength(2)
+    await user.click(within(dialog).getByRole('button', { name: 'Remove credential 2' }))
+    await user.click(add)
+
+    await waitFor(() => expect(create).toHaveBeenCalledWith({
+      definition: expect.objectContaining({ code: 'MY_LOCAL_BANK', name: 'My Local Bank', currencies: ['INR'], methods: ['card'],
+        fields: [{ key: 'apiSecretKey', label: 'API secret key', secret: true, required: true }] }),
+      environment: 'TEST',
+      values: {},
+    }))
+  })
+
+  it('shows the server message when adding is refused', async () => {
+    create.mockRejectedValue(new ApiError(409, 'A payment gateway with the code ACME already exists.'))
+    renderWithProviders(<AdminPaymentGatewayPage />)
+    const user = userEvent.setup()
+    await user.click(await screen.findByRole('button', { name: 'Add payment gateway' }))
+    const dialog = await screen.findByRole('dialog', { name: 'Add payment gateway' })
+    await user.type(within(dialog).getByLabelText('Gateway name', { exact: false }), 'Acme')
+    await user.type(within(dialog).getByLabelText('Label', { exact: false }), 'Key')
+    await user.click(within(dialog).getByRole('button', { name: 'Add gateway' }))
+
+    expect(await within(dialog).findByText('A payment gateway with the code ACME already exists.')).toBeInTheDocument()
+    expect(screen.getByRole('dialog', { name: 'Add payment gateway' })).toBeInTheDocument()
+  })
+
+  it('edits the definition of an added gateway without asking for credential values, and removes it after confirmation', async () => {
+    updateDefinition.mockResolvedValue(detailOf(added))
+    remove.mockResolvedValue(undefined)
+    detail.mockImplementation(async () => detailOf(added, { fields: [{ key: 'apiKey', label: 'API key', secret: true, required: true, webhook: false, configured: true, source: 'STORED' }] }))
+    renderWithProviders(<AdminPaymentGatewayPage />)
+    const user = userEvent.setup()
+    await user.click(within(await screen.findByRole('listitem', { name: 'Acme Pay' })).getByRole('button', { name: 'Edit Acme Pay' }))
+    const dialog = await screen.findByRole('dialog', { name: 'Edit payment gateway' })
+
+    await waitFor(() => expect(within(dialog).getByLabelText('Gateway name', { exact: false })).toHaveValue('Acme Pay'))
+    expect(within(dialog).getByLabelText('Gateway code', { exact: false })).toBeDisabled()
+    expect(within(dialog).queryByLabelText('Value')).not.toBeInTheDocument()
+    expect(within(dialog).getByLabelText(/^Name/)).toBeDisabled()
+    await user.clear(within(dialog).getByLabelText('Gateway name', { exact: false }))
+    await user.type(within(dialog).getByLabelText('Gateway name', { exact: false }), 'Acme Payments')
+    await user.click(within(dialog).getByRole('button', { name: 'Save' }))
+    await waitFor(() => expect(updateDefinition).toHaveBeenCalledWith('ACME', expect.objectContaining({ code: 'ACME', name: 'Acme Payments',
+      fields: [{ key: 'apiKey', label: 'API key', secret: true, required: true }] })))
+    expect(await screen.findByText('Acme Payments was updated.')).toBeInTheDocument()
+
+    await user.click(within(screen.getByRole('listitem', { name: 'Acme Pay' })).getByRole('button', { name: 'Remove Acme Pay' }))
+    const confirm = await screen.findByRole('dialog', { name: 'Remove Acme Pay?' })
+    expect(within(confirm).getByText(/stored credentials are deleted/)).toBeInTheDocument()
+    await user.click(within(confirm).getByRole('button', { name: 'Remove' }))
+    await waitFor(() => expect(remove).toHaveBeenCalledWith('ACME'))
+    expect(await screen.findByText('Acme Pay was removed.')).toBeInTheDocument()
   })
 
   it('shows the real outcome of a connection test and reloads the list', async () => {
@@ -131,7 +263,7 @@ describe('AdminPaymentGatewayPage (C98, REQ-BIL-003)', () => {
 
   it('makes another active gateway the default and deactivates one', async () => {
     const other: Gateway = { ...second, configurationStatus: 'CONFIGURED', connectionStatus: 'CONNECTION_SUCCESSFUL', activated: true, defaultGateway: true,
-      actions: { configure: true, test: true, activate: false, deactivate: true, setDefault: false } }
+      actions: { configure: true, test: true, activate: false, deactivate: true, setDefault: false, edit: false, remove: false } }
     list.mockResolvedValue([{ ...base, defaultGateway: false, actions: { ...base.actions, setDefault: true } }, other])
     setDefault.mockResolvedValue([])
     deactivate.mockResolvedValue(detailOf(base))
