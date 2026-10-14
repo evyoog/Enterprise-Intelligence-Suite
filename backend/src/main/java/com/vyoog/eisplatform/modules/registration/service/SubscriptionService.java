@@ -67,6 +67,8 @@ public class SubscriptionService {
     private final com.vyoog.eisplatform.modules.offering.service.EligibilityService eligibilityService;
     /** REQ-TEN-005 (C90): organization entitlement changes recalculate member product access. */
     private final org.springframework.context.ApplicationEventPublisher eventPublisher;
+    /** C101 (SR-1 A): the subscription's service instance follows its status. */
+    private final com.vyoog.eisplatform.modules.serviceinstance.service.ServiceInstanceService serviceInstanceService;
 
     /** REQ-INT-002.8: IDs, status and dates only (BR-2). */
     private void publish(String eventType, ProductSubscription subscription) {
@@ -80,6 +82,7 @@ public class SubscriptionService {
         payload.put("status", subscription.getStatus() == null ? null : subscription.getStatus().name());
         payload.put("expiresAt", subscription.getExpiresAt() == null ? null : subscription.getExpiresAt().toString());
         outboxService.publish(eventType, PlatformEventTypes.AGGREGATE_SUBSCRIPTION, subscription.getId(), payload);
+        serviceInstanceService.syncFromSubscription(subscription);
     }
 
     /** Every mutation below starts here — resolves the subscription and

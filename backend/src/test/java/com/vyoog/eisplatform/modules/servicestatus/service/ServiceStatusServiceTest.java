@@ -37,6 +37,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 class ServiceStatusServiceTest {
 
     @Autowired private ServiceStatusService service;
+    @Autowired private com.vyoog.eisplatform.modules.serviceinstance.service.ServiceInstanceService serviceInstanceService;
     @Autowired private BusinessDashboardService businessDashboardService;
     @Autowired private ProductServiceStatusRepository statusRepository;
     @Autowired private ServiceIncidentRepository incidentRepository;
@@ -173,7 +174,7 @@ class ServiceStatusServiceTest {
     void theSettingTurnsTheCustomerViewOffButNotTheAdminView() {
         Product p = product("Hidden");
         ServiceStatusService off = new ServiceStatusService(statusRepository, incidentRepository, productRepository,
-            subscriptionRepository, memberRepository, auditService, false);
+            subscriptionRepository, memberRepository, auditService, serviceInstanceService, false);
 
         var view = off.customerView(null);
         assertThat(view.enabled()).isFalse();

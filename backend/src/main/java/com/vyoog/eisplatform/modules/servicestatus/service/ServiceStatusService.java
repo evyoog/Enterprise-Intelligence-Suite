@@ -10,6 +10,7 @@ import com.vyoog.eisplatform.modules.registration.model.ProductSubscription;
 import com.vyoog.eisplatform.modules.registration.model.SubscriptionStatus;
 import com.vyoog.eisplatform.modules.registration.repository.OrganizationMemberRepository;
 import com.vyoog.eisplatform.modules.registration.repository.ProductSubscriptionRepository;
+import com.vyoog.eisplatform.modules.serviceinstance.service.ServiceInstanceService;
 import com.vyoog.eisplatform.modules.servicestatus.dto.IncidentDto;
 import com.vyoog.eisplatform.modules.servicestatus.dto.IncidentRequest;
 import com.vyoog.eisplatform.modules.servicestatus.dto.ProductStatusDto;
@@ -55,6 +56,7 @@ public class ServiceStatusService {
     private final ProductSubscriptionRepository subscriptionRepository;
     private final OrganizationMemberRepository memberRepository;
     private final AuditService auditService;
+    private final ServiceInstanceService serviceInstanceService;
     private final boolean enabled;
 
     public ServiceStatusService(ProductServiceStatusRepository statusRepository,
@@ -63,6 +65,7 @@ public class ServiceStatusService {
                                 ProductSubscriptionRepository subscriptionRepository,
                                 OrganizationMemberRepository memberRepository,
                                 AuditService auditService,
+                                ServiceInstanceService serviceInstanceService,
                                 @Value("${app.status-page.enabled:true}") boolean enabled) {
         this.statusRepository = statusRepository;
         this.incidentRepository = incidentRepository;
@@ -70,6 +73,7 @@ public class ServiceStatusService {
         this.subscriptionRepository = subscriptionRepository;
         this.memberRepository = memberRepository;
         this.auditService = auditService;
+        this.serviceInstanceService = serviceInstanceService;
         this.enabled = enabled;
     }
 
@@ -204,15 +208,24 @@ public class ServiceStatusService {
             .orElseThrow(() -> new ResourceNotFoundException("Product not found"));
     }
 
+    /** C101 SR-3 B: the status is derived from the instances that reported recently, unless an admin has put the product in maintenance; with no recent
+     * report the admin's manual status is kept. */
     private ProductStatusDto toStatusDto(Product product, boolean purchased) {
         ProductServiceStatus status = statusRepository.findById(product.getId()).orElse(null);
+        ServiceStatusValue manual = status == null ? ServiceStatusValue.OPERATIONAL : status.getStatus();
+        var derived = manual == ServiceStatusValue.MAINTENANCE ? java.util.Optional.<ServiceInstanceService.Derived>empty()
+            : serviceInstanceService.derivedStatus(product.getId());
         return new ProductStatusDto(
             product.getId(), product.getName(),
-            status == null ? ServiceStatusValue.OPERATIONAL : status.getStatus(),
+            derived.map(ServiceInstanceService.Derived::status).orElse(manual),
             status == null ? null : status.getNote(),
             status == null ? null : status.getUpdatedAt(),
             purchased,
-            incidentRepository.countByProductIdAndEndedAtIsNull(product.getId()));
+            incidentRepository.countByProductIdAndEndedAtIsNull(product.getId()),
+            derived.isPresent() ? "INSTANCES" : "MANUAL",
+            derived.map(ServiceInstanceService.Derived::reporting).orElse(0),
+            derived.map(ServiceInstanceService.Derived::down).orElse(0),
+            derived.map(ServiceInstanceService.Derived::degraded).orElse(0));
     }
 
     private static IncidentDto toIncidentDto(ServiceIncident i, Map<Long, String> names) {

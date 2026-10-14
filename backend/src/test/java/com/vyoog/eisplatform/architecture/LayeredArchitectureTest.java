@@ -80,11 +80,12 @@ class LayeredArchitectureTest {
         // - ..modules.access.. (REQ-TEN-005, 05.03.02 Access management, sprint 2026.4.2, C90) reads the catalog to
         //   know which products are active and to name them on the screen — no second catalog.
         // - ..modules.wishlist.. (REQ-MKT-004, C94) checks that a product exists and is ACTIVE before it is saved.
+        // - ..modules.serviceinstance.. (REQ-SRM-001, C101) names a subscription's product on an instance and checks a reporter key's product exists.
         ArchRule rule = classes().that().resideInAPackage("..modules.product..")
             .should().onlyHaveDependentClassesThat().resideInAnyPackage(
                 "..modules.product..", "..modules.platform..", "..modules.registration..", "..modules.dashboard..",
                 "..modules.servicestatus..", "..modules.administration..", "..modules.search..", "..modules.reviews..",
-                "..modules.billing..", "..modules.cart..", "..modules.productcontent..", "..modules.orgdirectory..", "..modules.offering..", "..modules.project..", "..modules.access..", "..modules.wishlist..",
+                "..modules.billing..", "..modules.cart..", "..modules.productcontent..", "..modules.orgdirectory..", "..modules.offering..", "..modules.project..", "..modules.access..", "..modules.wishlist..", "..modules.serviceinstance..",
                 "com.vyoog.eisplatform", "..config.."
             );
 

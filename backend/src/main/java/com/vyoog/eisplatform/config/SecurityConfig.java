@@ -235,6 +235,8 @@ public class SecurityConfig {
                 // (BR-5/BR-6), verified inside PaymentService, never by a
                 // JWT here.
                 .requestMatchers(HttpMethod.POST, "/webhooks/*").permitAll()
+                // C101: products report instance health with a reporter key (X-Reporter-Key), checked in ServiceInstanceService.report.
+                .requestMatchers(HttpMethod.POST, "/product-reports/**").permitAll()
                 // Requesting/viewing/self-revoking privileged access (either
                 // scope — see PrivilegedAccessController) is deliberately
                 // covered by the existing /me/** authenticated() rule below,

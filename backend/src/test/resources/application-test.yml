@@ -65,6 +65,11 @@ app:
   # REQ-SUB-004: tests call RenewalService/RenewalReminderService directly.
   renewals:
     job-enabled: false
+  # C101: tests call the reconcile and SLA services directly.
+  service-instances:
+    job-enabled: false
+  sla:
+    job-enabled: false
   rate-limit:
     per-key: 1000000
     per-user: 1000000
