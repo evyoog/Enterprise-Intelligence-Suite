@@ -5,6 +5,8 @@ The end-to-end flow across subscriptions, orders and billing is in [docs/04-work
 ## Invoice states
 ```mermaid
 stateDiagram-v2
+    [*] --> DRAFT: Tax could not be determined (C96): no number, not payable, hidden from the customer
+    DRAFT --> OPEN: Retry tax issues it (number and due date set)
     [*] --> OPEN: Generated and finalized (subscription start / renewal / approved order)
     OPEN --> PAID: Payment verified (checkout signature or webhook)
     OPEN --> OPEN: Payment failed or cancelled (retry allowed)
@@ -13,7 +15,26 @@ stateDiagram-v2
     PAID --> REFUNDED: Full refund processed
     PARTIALLY_REFUNDED --> REFUNDED: Remaining amount refunded
 ```
+Payment reminders (BR-17) go out while an invoice is OPEN; they stop at PAID or REFUNDED.
+
 `VOID` is listed because an unpaid invoice must be cancellable in some way; who may void and when is **Not specified**.
+
+## When a purchase starts ([C97](../../../01-business/roadmap/open-decisions.md#c97) BI-1)
+```mermaid
+flowchart TD
+    A[Cart purchase of a paid plan] --> B[Subscription PENDING_SUBSCRIPTION<br/>invoice issued OPEN, or Draft if tax is blocked]
+    A2[Free plan, or product already active] --> ACT
+    A3[Approved organization order] --> ACT
+    B --> C{Customer's route}
+    C -- Card / UPI / Netbanking / Wallet --> D[Payment captured] --> E[Invoice PAID: markPaid]
+    C -- Pay by invoice<br/>enabled organization only --> F[Route OFFLINE, invoice stays OPEN<br/>due date shown] --> G[Activation event PAY_BY_INVOICE]
+    E --> H[Activation event PAID]
+    G --> ACT[Subscription ACTIVE, term starts]
+    H --> ACT
+    F --> I[Admin records the bank payment] --> E
+    B -. Draft: cannot be paid .-> B
+```
+A second activation event for a subscription that is already ACTIVE does nothing (BR-14).
 
 ## Payment states
 ```mermaid
@@ -33,6 +54,8 @@ Authorize and capture happen together (Razorpay auto-capture). Separate authoriz
 ## Actors
 | Step | Actor |
 |---|---|
-| Edit billing details, pay, add/remove payment methods | Customer, or organization billing user (Open question 5) |
-| Refund, reconcile, view all | Platform admin (`MANAGE_BILLING`) |
+| Edit billing details, pay, add/remove payment methods | Customer, or an organization member with Manage billing (BR-19) |
+| Add a purchase-order number | The invoice's owner, until it is paid (BR-22) |
+| Refund, reconcile, view all, choose the active gateway, enable Pay by invoice for an organization | Platform admin (`MANAGE_BILLING`) |
+| Send payment reminders | The invoice reminder job (every 30 minutes), BR-17 |
 | Payment confirmation | Razorpay (checkout result + webhook) |
