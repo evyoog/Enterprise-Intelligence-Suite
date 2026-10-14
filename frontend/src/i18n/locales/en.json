@@ -595,7 +595,7 @@
     },
     "admin": {
       "title": "Service status",
-      "subtitle": "Post each product's status and its incidents. Customers see them on the service status page.",
+      "subtitle": "Post each product's status. Customers see it on the service status page. Incidents are managed on the Incidents tab.",
       "disabled": "The customer status page is turned off (app.status-page.enabled). You can still prepare status and incidents here.",
       "productsTitle": "Product status",
       "current": "Current",
@@ -607,22 +607,6 @@
       "saveFor": "Save status for {{name}}",
       "statusSaved": "Status saved.",
       "saveError": "Could not save.",
-      "newIncident": "Post an incident",
-      "editIncident": "Edit incident",
-      "incidentTitle": "Title",
-      "message": "Message",
-      "start": "Start",
-      "end": "End",
-      "endHint": "Leave empty while the incident is still open.",
-      "postIncident": "Post incident",
-      "saveIncident": "Save incident",
-      "cancelEdit": "Cancel",
-      "incidentPosted": "Incident posted.",
-      "incidentUpdated": "Incident updated.",
-      "edit": "Edit",
-      "editFor": "Edit incident {{title}}",
-      "resolve": "Resolve now",
-      "resolveFor": "Resolve incident {{title}}",
       "actions": "Actions"
     }
   },
@@ -4858,6 +4842,223 @@
         "alertEmailsHint": "Type an address and press Enter. Up to {{max}}. The assignee is always warned.",
         "save": "Save business hours"
       }
+    }
+  },
+  "incidents": {
+    "title": "Incidents",
+    "subtitle": "One record for the status page and for support. Customers see only the public fields.",
+    "loadError": "Could not load the incidents.",
+    "loadErrorTitle": "Incidents unavailable",
+    "new": "New incident",
+    "edit": "Edit",
+    "view": "View",
+    "editFor": "Edit incident {{title}}",
+    "viewFor": "View incident {{title}}",
+    "createdToast": "Incident \"{{title}}\" created",
+    "savedToast": "Incident \"{{title}}\" saved",
+    "saveError": "Could not save the incident.",
+    "ongoing": "Ongoing",
+    "unassigned": "Unassigned",
+    "noProblem": "None",
+    "problemFallback": "Problem {{id}}",
+    "filter": {
+      "label": "Phase",
+      "open": "Not closed",
+      "all": "All phases"
+    },
+    "empty": {
+      "title": "No incidents",
+      "body": "Log an incident to post it on the status page and track it with support.",
+      "filtered": "No incidents in this phase. Choose another phase to see more."
+    },
+    "columns": {
+      "title": "Title",
+      "product": "Product",
+      "severity": "Severity",
+      "phase": "Phase",
+      "started": "Started",
+      "ended": "Ended",
+      "assignee": "Assignee",
+      "tickets": "Tickets",
+      "problem": "Problem",
+      "actions": "Actions"
+    },
+    "severity": {
+      "MINOR": "Minor",
+      "MAJOR": "Major",
+      "CRITICAL": "Critical"
+    },
+    "phase": {
+      "LOGGED": "Logged",
+      "INVESTIGATING": "Investigating",
+      "RESOLVED": "Resolved",
+      "CLOSED": "Closed"
+    },
+    "dialog": {
+      "newTitle": "New incident",
+      "editTitle": "Edit incident",
+      "viewTitle": "Incident (closed)",
+      "closedNote": "This incident is closed (since {{date}}) and cannot be changed.",
+      "public": {
+        "title": "Shown on the status page",
+        "hint": "Customers see these fields."
+      },
+      "internal": {
+        "title": "Internal only — never shown to customers",
+        "hint": "Only platform administrators see these fields."
+      },
+      "product": "Product",
+      "noProducts": "No products available.",
+      "incidentTitle": "Title",
+      "message": "Message",
+      "started": "Started",
+      "ended": "Ended",
+      "endedHint": "Leave empty to use the current time.",
+      "noEnd": "An incident that is logged or investigating has no end time.",
+      "severity": "Severity",
+      "phase": "Phase",
+      "phaseHint": "Only the phases allowed from here are offered.",
+      "reopen": "(reopen)",
+      "summary": "Resolution summary",
+      "summaryHint": "Required to mark the incident resolved.",
+      "notes": "Internal notes",
+      "assignee": "Assignee (customer ID)",
+      "assigneeHint": "The customer ID of the person handling it.",
+      "assigneeCurrent": "Currently assigned to {{name}}.",
+      "problem": "Part of problem:",
+      "cancel": "Cancel",
+      "close": "Close",
+      "save": "Save",
+      "create": "Create incident"
+    },
+    "errors": {
+      "product": "Choose a product.",
+      "title": "Enter a title.",
+      "message": "Enter the message customers will see.",
+      "started": "Set the start time.",
+      "endBeforeStart": "The end time must not be before the start time.",
+      "summary": "Write a resolution summary before marking the incident resolved.",
+      "assignee": "Enter a whole customer ID."
+    },
+    "tickets": {
+      "title": "Linked support tickets",
+      "hint": "Tickets from customers affected by this incident.",
+      "none": "No tickets linked yet.",
+      "pick": "Add a support ticket",
+      "noneToLink": "No other tickets to link.",
+      "link": "Link ticket",
+      "unlink": "Unlink",
+      "unlinkFor": "Unlink ticket {{id}}",
+      "ticketId": "Support ticket ID",
+      "ticketIdHint": "The ticket list is not available to you; enter the ticket ID.",
+      "ticketIdInvalid": "Enter a whole ticket ID."
+    }
+  },
+  "problems": {
+    "title": "Problems",
+    "subtitle": "A problem ties several incidents to one root cause and tracks the corrective actions.",
+    "loadError": "Could not load the problems.",
+    "loadErrorTitle": "Problems unavailable",
+    "new": "New problem",
+    "newTitle": "New problem",
+    "create": "Create problem",
+    "cancel": "Cancel",
+    "manage": "Open",
+    "view": "View",
+    "openFor": "Open problem {{title}}",
+    "viewFor": "View problem {{title}}",
+    "createdToast": "Problem \"{{title}}\" created",
+    "savedToast": "Problem saved",
+    "statusChangedToast": "Status changed to {{status}}",
+    "saveError": "Could not save the problem.",
+    "actionsCount": "{{open}} open / {{total}}",
+    "empty": {
+      "title": "No problems",
+      "body": "Create a problem when several incidents share one root cause."
+    },
+    "columns": {
+      "title": "Title",
+      "status": "Status",
+      "incidents": "Incidents",
+      "actions": "Actions (open / total)",
+      "created": "Created",
+      "open": "Details"
+    },
+    "status": {
+      "OPEN": "Open",
+      "ROOT_CAUSE_IDENTIFIED": "Root cause identified",
+      "RESOLVED": "Resolved",
+      "CLOSED": "Closed"
+    },
+    "blocked": {
+      "rootCause": "Cannot move to \"{{status}}\": write the root cause first.",
+      "resolvedFirst": "Cannot move to \"{{status}}\": only a resolved problem can be closed.",
+      "openActions_one": "Cannot move to \"{{status}}\": {{count}} corrective action is still open.",
+      "openActions_other": "Cannot move to \"{{status}}\": {{count}} corrective actions are still open."
+    },
+    "errors": {
+      "title": "Enter a title.",
+      "action": "Describe the action."
+    },
+    "form": {
+      "title": "Title",
+      "description": "Description",
+      "rootCause": "Root cause",
+      "rootCauseHint": "Needed before the problem can be marked root cause identified or resolved.",
+      "incidents": "Incidents to link (optional)",
+      "incidentsHint": "An incident can belong to only one problem, so only incidents not yet in a problem are listed.",
+      "noFreeIncidents": "Every incident already belongs to a problem."
+    },
+    "detail": {
+      "title": "Problem: {{title}}",
+      "loading": "Loading problem",
+      "close": "Close",
+      "closedNote": "This problem is closed (since {{date}}) and cannot be changed.",
+      "detailsTitle": "Details",
+      "detailsHint": "Title, description and root cause.",
+      "saveDetails": "Save details",
+      "statusTitle": "Status",
+      "statusHint": "Open, root cause identified, resolved, then closed.",
+      "moveTo": "Move to",
+      "changeStatus": "Change status",
+      "blockedTitle": "Why some moves are not available",
+      "incidentsTitle": "Linked incidents",
+      "incidentsHint": "The incidents caused by this problem.",
+      "noIncidents": "No incidents linked yet.",
+      "addIncident": "Add an incident",
+      "noFreeIncidents": "Every incident already belongs to a problem.",
+      "linkIncident": "Link incident",
+      "removeIncident": "Remove",
+      "removeIncidentFor": "Remove incident {{title}} from this problem",
+      "incidentLinkedToast": "Incident linked",
+      "incidentRemovedToast": "Incident removed"
+    },
+    "actions": {
+      "title": "Corrective actions",
+      "hint": "{{open}} open of {{total}}. Every action must be done before the problem can be closed.",
+      "none": "No corrective actions yet.",
+      "description": "Action",
+      "owner": "Owner",
+      "dueOn": "Due date",
+      "newDescription": "New action",
+      "newOwner": "Owner (optional)",
+      "newDueOn": "Due date (optional)",
+      "add": "Add action",
+      "save": "Save",
+      "edit": "Edit",
+      "delete": "Delete",
+      "editFor": "Edit action {{description}}",
+      "deleteFor": "Delete action {{description}}",
+      "doneFor": "Done: {{description}}",
+      "deleteTitle": "Delete this action?",
+      "ownerIs": "Owner: {{owner}}",
+      "noOwner": "No owner",
+      "dueIs": "Due {{date}}",
+      "noDue": "No due date",
+      "doneOn": "Done {{date}}",
+      "addedToast": "Action added",
+      "savedToast": "Action saved",
+      "deletedToast": "Action deleted"
     }
   }
 }

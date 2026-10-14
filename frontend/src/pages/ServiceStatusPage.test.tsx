@@ -11,8 +11,6 @@ import { ServiceStatusAdminPage } from './admin/ServiceStatusAdminPage'
 const get = vi.fn()
 const adminGet = vi.fn()
 const updateStatus = vi.fn()
-const createIncident = vi.fn()
-const updateIncident = vi.fn()
 
 vi.mock('../api/serviceStatusApi', async (importOriginal) => {
   const actual = await importOriginal<typeof import('../api/serviceStatusApi')>()
@@ -22,8 +20,6 @@ vi.mock('../api/serviceStatusApi', async (importOriginal) => {
     adminServiceStatusApi: {
       get: () => adminGet(),
       updateStatus: (id: number, s: string, n?: string) => updateStatus(id, s, n),
-      createIncident: (p: unknown) => createIncident(p),
-      updateIncident: (id: number, p: unknown) => updateIncident(id, p),
     },
   }
 })
@@ -80,7 +76,7 @@ describe('ServiceStatusPage (customer)', () => {
 
 describe('ServiceStatusAdminPage', () => {
   beforeEach(() => {
-    for (const m of [adminGet, updateStatus, createIncident, updateIncident]) m.mockReset()
+    for (const m of [adminGet, updateStatus]) m.mockReset()
     adminGet.mockResolvedValue({ enabled: true, products, incidents: [incident] })
   })
 
@@ -98,30 +94,11 @@ describe('ServiceStatusAdminPage', () => {
     expect(await screen.findByText('Status saved.')).toBeInTheDocument()
   })
 
-  it('posts an incident', async () => {
-    createIncident.mockResolvedValue(incident)
+  it('no longer has the incident form (incidents moved to the Incidents tab)', async () => {
     renderWithProviders(<ServiceStatusAdminPage />)
-
-    const user = userEvent.setup()
-    await user.click(await screen.findByRole('combobox', { name: /Product/ }))
-    await user.click(within(await screen.findByRole('listbox')).getByRole('option', { name: 'Valam.ai' }))
-    await user.type(screen.getByRole('textbox', { name: /Title/ }), 'Login errors')
-    await user.type(screen.getByRole('textbox', { name: /Message/ }), 'Investigating.')
-    await user.click(screen.getByRole('button', { name: 'Post incident' }))
-
-    expect(createIncident).toHaveBeenCalledWith(expect.objectContaining({ productId: 2, title: 'Login errors', message: 'Investigating.', endedAt: null }))
-    expect(await screen.findByText('Incident posted.')).toBeInTheDocument()
-  })
-
-  it('resolves an open incident and shows backend refusals', async () => {
-    updateIncident.mockRejectedValueOnce(new ApiError(400, 'The end time must be after the start time.'))
-    renderWithProviders(<ServiceStatusAdminPage />)
-
-    const user = userEvent.setup()
-    await user.click(await screen.findByRole('button', { name: 'Resolve incident Slow report exports' }))
-    await user.click(screen.getByRole('button', { name: 'Save incident' }))
-    expect(updateIncident).toHaveBeenCalledWith(7, expect.objectContaining({ productId: 1, endedAt: expect.any(String) }))
-    expect(await screen.findByText('The end time must be after the start time.')).toBeInTheDocument()
+    await screen.findByRole('button', { name: 'Save status for Yukth.ai' })
+    expect(screen.queryByRole('button', { name: 'Post incident' })).not.toBeInTheDocument()
+    expect(screen.queryByText('Slow report exports')).not.toBeInTheDocument()
   })
 
   it('has no detectable a11y violations', async () => {

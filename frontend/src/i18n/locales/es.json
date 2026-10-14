@@ -595,7 +595,7 @@
     },
     "admin": {
       "title": "Estado del servicio",
-      "subtitle": "Publique el estado de cada producto y sus incidentes. Los clientes los ven en la página de estado del servicio.",
+      "subtitle": "Publique el estado de cada producto. Los clientes lo ven en la página de estado del servicio. Los incidentes se gestionan en la pestaña Incidentes.",
       "disabled": "La página de estado para clientes está desactivada (app.status-page.enabled). Aun así puede preparar estados e incidentes aquí.",
       "productsTitle": "Estado de los productos",
       "current": "Actual",
@@ -607,22 +607,6 @@
       "saveFor": "Guardar el estado de {{name}}",
       "statusSaved": "Estado guardado.",
       "saveError": "No se pudo guardar.",
-      "newIncident": "Publicar un incidente",
-      "editIncident": "Editar incidente",
-      "incidentTitle": "Título",
-      "message": "Mensaje",
-      "start": "Inicio",
-      "end": "Fin",
-      "endHint": "Déjelo vacío mientras el incidente siga abierto.",
-      "postIncident": "Publicar incidente",
-      "saveIncident": "Guardar incidente",
-      "cancelEdit": "Cancelar",
-      "incidentPosted": "Incidente publicado.",
-      "incidentUpdated": "Incidente actualizado.",
-      "edit": "Editar",
-      "editFor": "Editar el incidente {{title}}",
-      "resolve": "Resolver ahora",
-      "resolveFor": "Resolver el incidente {{title}}",
       "actions": "Acciones"
     }
   },
@@ -4863,6 +4847,223 @@
         "alertEmailsHint": "Escribe una dirección y pulsa Intro. Hasta {{max}}. La persona asignada siempre recibe el aviso.",
         "save": "Guardar horario laboral"
       }
+    }
+  },
+  "incidents": {
+    "title": "Incidentes",
+    "subtitle": "Un solo registro para la página de estado y para soporte. Los clientes solo ven los campos públicos.",
+    "loadError": "No se pudieron cargar los incidentes.",
+    "loadErrorTitle": "Incidentes no disponibles",
+    "new": "Nuevo incidente",
+    "edit": "Editar",
+    "view": "Ver",
+    "editFor": "Editar el incidente {{title}}",
+    "viewFor": "Ver el incidente {{title}}",
+    "createdToast": "Incidente \"{{title}}\" creado",
+    "savedToast": "Incidente \"{{title}}\" guardado",
+    "saveError": "No se pudo guardar el incidente.",
+    "ongoing": "En curso",
+    "unassigned": "Sin asignar",
+    "noProblem": "Ninguno",
+    "problemFallback": "Problema {{id}}",
+    "filter": {
+      "label": "Fase",
+      "open": "No cerrados",
+      "all": "Todas las fases"
+    },
+    "empty": {
+      "title": "No hay incidentes",
+      "body": "Registre un incidente para publicarlo en la página de estado y hacerle seguimiento con soporte.",
+      "filtered": "No hay incidentes en esta fase. Elija otra fase para ver más."
+    },
+    "columns": {
+      "title": "Título",
+      "product": "Producto",
+      "severity": "Gravedad",
+      "phase": "Fase",
+      "started": "Inicio",
+      "ended": "Fin",
+      "assignee": "Responsable",
+      "tickets": "Tickets",
+      "problem": "Problema",
+      "actions": "Acciones"
+    },
+    "severity": {
+      "MINOR": "Menor",
+      "MAJOR": "Mayor",
+      "CRITICAL": "Crítica"
+    },
+    "phase": {
+      "LOGGED": "Registrado",
+      "INVESTIGATING": "En investigación",
+      "RESOLVED": "Resuelto",
+      "CLOSED": "Cerrado"
+    },
+    "dialog": {
+      "newTitle": "Nuevo incidente",
+      "editTitle": "Editar incidente",
+      "viewTitle": "Incidente (cerrado)",
+      "closedNote": "Este incidente está cerrado (desde {{date}}) y no se puede modificar.",
+      "public": {
+        "title": "Se muestra en la página de estado",
+        "hint": "Los clientes ven estos campos."
+      },
+      "internal": {
+        "title": "Solo interno — nunca se muestra a los clientes",
+        "hint": "Solo los administradores de la plataforma ven estos campos."
+      },
+      "product": "Producto",
+      "noProducts": "No hay productos disponibles.",
+      "incidentTitle": "Título",
+      "message": "Mensaje",
+      "started": "Inicio",
+      "ended": "Fin",
+      "endedHint": "Déjelo vacío para usar la hora actual.",
+      "noEnd": "Un incidente registrado o en investigación no tiene hora de fin.",
+      "severity": "Gravedad",
+      "phase": "Fase",
+      "phaseHint": "Solo se ofrecen las fases permitidas desde la actual.",
+      "reopen": "(reabrir)",
+      "summary": "Resumen de la resolución",
+      "summaryHint": "Obligatorio para marcar el incidente como resuelto.",
+      "notes": "Notas internas",
+      "assignee": "Responsable (ID de cliente)",
+      "assigneeHint": "El ID de cliente de la persona que lo atiende.",
+      "assigneeCurrent": "Asignado actualmente a {{name}}.",
+      "problem": "Forma parte del problema:",
+      "cancel": "Cancelar",
+      "close": "Cerrar",
+      "save": "Guardar",
+      "create": "Crear incidente"
+    },
+    "errors": {
+      "product": "Elija un producto.",
+      "title": "Escriba un título.",
+      "message": "Escriba el mensaje que verán los clientes.",
+      "started": "Indique la hora de inicio.",
+      "endBeforeStart": "La hora de fin no puede ser anterior a la de inicio.",
+      "summary": "Escriba un resumen de la resolución antes de marcar el incidente como resuelto.",
+      "assignee": "Introduzca un ID de cliente entero."
+    },
+    "tickets": {
+      "title": "Tickets de soporte vinculados",
+      "hint": "Tickets de los clientes afectados por este incidente.",
+      "none": "Aún no hay tickets vinculados.",
+      "pick": "Añadir un ticket de soporte",
+      "noneToLink": "No hay otros tickets para vincular.",
+      "link": "Vincular ticket",
+      "unlink": "Desvincular",
+      "unlinkFor": "Desvincular el ticket {{id}}",
+      "ticketId": "ID del ticket de soporte",
+      "ticketIdHint": "La lista de tickets no está disponible para usted; introduzca el ID del ticket.",
+      "ticketIdInvalid": "Introduzca un ID de ticket entero."
+    }
+  },
+  "problems": {
+    "title": "Problemas",
+    "subtitle": "Un problema une varios incidentes con una misma causa raíz y registra las acciones correctivas.",
+    "loadError": "No se pudieron cargar los problemas.",
+    "loadErrorTitle": "Problemas no disponibles",
+    "new": "Nuevo problema",
+    "newTitle": "Nuevo problema",
+    "create": "Crear problema",
+    "cancel": "Cancelar",
+    "manage": "Abrir",
+    "view": "Ver",
+    "openFor": "Abrir el problema {{title}}",
+    "viewFor": "Ver el problema {{title}}",
+    "createdToast": "Problema \"{{title}}\" creado",
+    "savedToast": "Problema guardado",
+    "statusChangedToast": "Estado cambiado a {{status}}",
+    "saveError": "No se pudo guardar el problema.",
+    "actionsCount": "{{open}} abiertas / {{total}}",
+    "empty": {
+      "title": "No hay problemas",
+      "body": "Cree un problema cuando varios incidentes compartan una misma causa raíz."
+    },
+    "columns": {
+      "title": "Título",
+      "status": "Estado",
+      "incidents": "Incidentes",
+      "actions": "Acciones (abiertas / total)",
+      "created": "Creado",
+      "open": "Detalles"
+    },
+    "status": {
+      "OPEN": "Abierto",
+      "ROOT_CAUSE_IDENTIFIED": "Causa raíz identificada",
+      "RESOLVED": "Resuelto",
+      "CLOSED": "Cerrado"
+    },
+    "blocked": {
+      "rootCause": "No se puede pasar a \"{{status}}\": escriba primero la causa raíz.",
+      "resolvedFirst": "No se puede pasar a \"{{status}}\": solo un problema resuelto puede cerrarse.",
+      "openActions_one": "No se puede pasar a \"{{status}}\": aún queda {{count}} acción correctiva abierta.",
+      "openActions_other": "No se puede pasar a \"{{status}}\": aún quedan {{count}} acciones correctivas abiertas."
+    },
+    "errors": {
+      "title": "Escriba un título.",
+      "action": "Describa la acción."
+    },
+    "form": {
+      "title": "Título",
+      "description": "Descripción",
+      "rootCause": "Causa raíz",
+      "rootCauseHint": "Se necesita antes de marcar el problema como causa raíz identificada o resuelto.",
+      "incidents": "Incidentes a vincular (opcional)",
+      "incidentsHint": "Un incidente solo puede pertenecer a un problema, por eso solo aparecen los que aún no están en ninguno.",
+      "noFreeIncidents": "Todos los incidentes ya pertenecen a un problema."
+    },
+    "detail": {
+      "title": "Problema: {{title}}",
+      "loading": "Cargando el problema",
+      "close": "Cerrar",
+      "closedNote": "Este problema está cerrado (desde {{date}}) y no se puede modificar.",
+      "detailsTitle": "Detalles",
+      "detailsHint": "Título, descripción y causa raíz.",
+      "saveDetails": "Guardar detalles",
+      "statusTitle": "Estado",
+      "statusHint": "Abierto, causa raíz identificada, resuelto y por último cerrado.",
+      "moveTo": "Pasar a",
+      "changeStatus": "Cambiar estado",
+      "blockedTitle": "Por qué algunos cambios no están disponibles",
+      "incidentsTitle": "Incidentes vinculados",
+      "incidentsHint": "Los incidentes causados por este problema.",
+      "noIncidents": "Aún no hay incidentes vinculados.",
+      "addIncident": "Añadir un incidente",
+      "noFreeIncidents": "Todos los incidentes ya pertenecen a un problema.",
+      "linkIncident": "Vincular incidente",
+      "removeIncident": "Quitar",
+      "removeIncidentFor": "Quitar el incidente {{title}} de este problema",
+      "incidentLinkedToast": "Incidente vinculado",
+      "incidentRemovedToast": "Incidente quitado"
+    },
+    "actions": {
+      "title": "Acciones correctivas",
+      "hint": "{{open}} abiertas de {{total}}. Todas las acciones deben estar hechas para poder cerrar el problema.",
+      "none": "Aún no hay acciones correctivas.",
+      "description": "Acción",
+      "owner": "Responsable",
+      "dueOn": "Fecha límite",
+      "newDescription": "Nueva acción",
+      "newOwner": "Responsable (opcional)",
+      "newDueOn": "Fecha límite (opcional)",
+      "add": "Añadir acción",
+      "save": "Guardar",
+      "edit": "Editar",
+      "delete": "Eliminar",
+      "editFor": "Editar la acción {{description}}",
+      "deleteFor": "Eliminar la acción {{description}}",
+      "doneFor": "Hecha: {{description}}",
+      "deleteTitle": "¿Eliminar esta acción?",
+      "ownerIs": "Responsable: {{owner}}",
+      "noOwner": "Sin responsable",
+      "dueIs": "Vence el {{date}}",
+      "noDue": "Sin fecha límite",
+      "doneOn": "Hecha el {{date}}",
+      "addedToast": "Acción añadida",
+      "savedToast": "Acción guardada",
+      "deletedToast": "Acción eliminada"
     }
   }
 }

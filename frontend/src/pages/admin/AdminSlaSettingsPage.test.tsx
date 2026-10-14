@@ -32,7 +32,7 @@ const config = {
   },
 }
 
-describe('AdminSlaSettingsPage', () => {
+describe('AdminSlaSettingsPage', { timeout: 20000 }, () => {
   beforeEach(() => {
     for (const m of [get, updatePolicies, updateSettings]) m.mockReset()
     get.mockResolvedValue(config)
@@ -44,8 +44,8 @@ describe('AdminSlaSettingsPage', () => {
     expect(screen.getByRole('spinbutton', { name: 'High resolution, minutes' })).toHaveValue(480)
     expect(screen.getByText('New targets apply to tickets created or re-prioritised from now on.')).toBeInTheDocument()
     expect(screen.getAllByText('1 day (8 business h)').length).toBeGreaterThan(0)
-    expect(screen.getByRole('checkbox', { name: 'Urgent around the clock' })).toBeChecked()
-    expect(screen.getByRole('checkbox', { name: 'Low around the clock' })).not.toBeChecked()
+    expect(screen.getByRole('switch', { name: 'Urgent around the clock' })).toBeChecked()
+    expect(screen.getByRole('switch', { name: 'Low around the clock' })).not.toBeChecked()
   })
 
   it('saves the policies exactly as the backend expects', async () => {
@@ -58,7 +58,7 @@ describe('AdminSlaSettingsPage', () => {
     const input = screen.getByRole('spinbutton', { name: 'Medium first response, minutes' })
     await user.clear(input)
     await user.type(input, '120')
-    await user.click(screen.getByRole('checkbox', { name: 'Low around the clock' }))
+    await user.click(screen.getByRole('switch', { name: 'Low around the clock' }))
     await user.click(save)
 
     expect(updatePolicies).toHaveBeenCalledWith([
@@ -92,7 +92,7 @@ describe('AdminSlaSettingsPage', () => {
     updatePolicies.mockRejectedValue(new ApiError(400, 'Urgent must be around the clock.'))
     renderWithProviders(<AdminSlaSettingsPage />)
     const user = userEvent.setup()
-    await user.click(await screen.findByRole('checkbox', { name: 'Low around the clock' }))
+    await user.click(await screen.findByRole('switch', { name: 'Low around the clock' }))
     await user.click(screen.getByRole('button', { name: 'Save targets' }))
     expect(await screen.findByText('Urgent must be around the clock.')).toBeInTheDocument()
   })

@@ -6,13 +6,11 @@ import {
 } from '@mui/material'
 import { ApiError } from '../../api/client'
 import { adminSlaApi, type BusinessDay, type SlaConfig, type SlaPolicy, type SlaSettings } from '../../api/slaApi'
-import type { TicketPriority } from '../../api/supportApi'
 import { TimeZonePicker } from '../../components/preferences/TimeZonePicker'
 import { formatSlaDuration } from '../../components/support/SlaChip'
 import { ErrorState } from '../../components/ui/ErrorState'
 import { FormSection } from '../../components/ui/FormSection'
 
-const PRIORITY_ORDER: TicketPriority[] = ['URGENT', 'HIGH', 'MEDIUM', 'LOW']
 const DAYS: BusinessDay[] = ['MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT', 'SUN']
 const MAX_EMAILS = 20
 const EMAIL_SHAPE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
@@ -76,8 +74,9 @@ export function AdminSlaSettingsPage() {
   }, [])
 
   const load = useCallback(() => {
-    setLoadError(null)
-    adminSlaApi.get().then(adopt).catch((e) => setLoadError(errorMessage(e, t('sla.settings.loadFailed'))))
+    adminSlaApi.get()
+      .then((c) => { adopt(c); setLoadError(null) })
+      .catch((e) => setLoadError(errorMessage(e, t('sla.settings.loadFailed'))))
   }, [adopt, t])
 
   useEffect(load, [load])

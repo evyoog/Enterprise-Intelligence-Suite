@@ -30,6 +30,9 @@ const openTicket = {
   description: 'MFA code never arrives.', priority: 'MEDIUM' as const, status: 'OPEN' as const, createdAt: '2027-02-01T00:00:00Z',
 }
 const resolvedTicket = { ...openTicket, id: 2, status: 'RESOLVED' as const }
+const sla = { firstRespondedAt: null, firstResponseDueAt: '2027-02-01T08:00:00Z', resolutionDueAt: '2027-02-03T08:00:00Z' }
+const warningTicket = { ...openTicket, id: 3, subject: 'Slow dashboard', ...sla, firstResponseState: 'WARNING' as const, resolutionState: 'ON_TRACK' as const }
+const breachedTicket = { ...openTicket, id: 4, subject: 'Payments down', status: 'ESCALATED' as const, ...sla, firstResponseState: 'BREACHED' as const, resolutionState: 'ON_TRACK' as const }
 
 describe('AdminSupportTicketsPage', () => {
   beforeEach(() => {
@@ -63,8 +66,44 @@ describe('AdminSupportTicketsPage', () => {
     expect(close).toHaveBeenCalledWith(2)
   })
 
+  it('shows both SLA chips with due times, and flags a breached ticket', async () => {
+    listAll.mockResolvedValue([openTicket, breachedTicket])
+    renderWithProviders(<AdminSupportTicketsPage />)
+
+    expect(await screen.findByText('First response: Breached')).toBeInTheDocument()
+    expect(screen.getByText('Resolution: On track')).toBeInTheDocument()
+    expect(screen.getAllByText(/^Due /)).toHaveLength(2)
+    expect(screen.getAllByText('SLA breached')).toHaveLength(1)
+  })
+
+  it('filters by SLA state', async () => {
+    listAll.mockResolvedValue([openTicket, warningTicket, breachedTicket])
+    renderWithProviders(<AdminSupportTicketsPage />)
+    const user = userEvent.setup()
+    expect(await screen.findByText('Slow dashboard')).toBeInTheDocument()
+
+    await user.click(screen.getByRole('button', { name: 'At risk (warning)' }))
+    expect(screen.getByText('Slow dashboard')).toBeInTheDocument()
+    expect(screen.queryByText('Payments down')).not.toBeInTheDocument()
+    expect(screen.queryByText("Can't log in")).not.toBeInTheDocument()
+
+    await user.click(screen.getByRole('button', { name: 'Breached' }))
+    expect(screen.getByText('Payments down')).toBeInTheDocument()
+    expect(screen.queryByText('Slow dashboard')).not.toBeInTheDocument()
+
+    await user.click(screen.getByRole('button', { name: 'All' }))
+    expect(screen.getAllByText(/Can't log in|Slow dashboard|Payments down/)).toHaveLength(3)
+  })
+
+  it('shows an empty state when nothing matches the SLA filter', async () => {
+    listAll.mockResolvedValue([openTicket])
+    renderWithProviders(<AdminSupportTicketsPage />)
+    await userEvent.setup().click(await screen.findByRole('button', { name: 'Breached' }))
+    expect(screen.getByText('No ticket has breached its SLA.')).toBeInTheDocument()
+  })
+
   it('has no detectable a11y violations', async () => {
-    listAll.mockResolvedValue([openTicket, resolvedTicket])
+    listAll.mockResolvedValue([openTicket, resolvedTicket, warningTicket, breachedTicket])
     const { container } = renderWithProviders(<AdminSupportTicketsPage />)
     await screen.findAllByText("Can't log in")
     expect(await axe(container)).toHaveNoViolations()

@@ -24,6 +24,7 @@ const CLOCK_DAY_MINUTES = 1440
  * day is 24 h there. Anything that is not a whole number of hours or days
  * falls back to "2 h 30 min".
  */
+// eslint-disable-next-line react-refresh/only-export-components
 export function formatSlaDuration(minutes: number, aroundTheClock: boolean, t: TFunction): string {
   if (!Number.isFinite(minutes) || minutes < 1) return ''
   const dayMinutes = aroundTheClock ? CLOCK_DAY_MINUTES : BUSINESS_DAY_MINUTES

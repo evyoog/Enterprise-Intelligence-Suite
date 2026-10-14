@@ -158,6 +158,7 @@ function IncidentDialog({ incident, products, onClose, onSaved, onChanged }: {
   onSaved: (saved: AdminIncident, created: boolean) => void; onChanged: () => void
 }) {
   const { t } = useTranslation()
+  const { formatDateTime } = useLocalePreference()
   // Kept in state so linking and unlinking tickets updates the dialog without closing it.
   const [current, setCurrent] = useState<AdminIncident | null>(incident)
   const closed = current?.phase === 'CLOSED'
@@ -227,7 +228,7 @@ function IncidentDialog({ incident, products, onClose, onSaved, onChanged }: {
     <Dialog open onClose={busy ? undefined : onClose} aria-labelledby="incident-dialog-title" maxWidth="md" fullWidth>
       <DialogTitle id="incident-dialog-title">{dialogTitle}</DialogTitle>
       <DialogContent sx={{ display: 'grid', gap: 2, pt: '8px !important' }}>
-        {closed && <Alert severity="info">{t('incidents.dialog.closedNote', { date: current?.closedAt ? new Date(current.closedAt).toLocaleString() : '' })}</Alert>}
+        {closed && <Alert severity="info">{t('incidents.dialog.closedNote', { date: current?.closedAt ? formatDateTime(current.closedAt) : '' })}</Alert>}
         {error && <Alert severity="error">{error}</Alert>}
 
         <FormSection id="incident-public" title={t('incidents.dialog.public.title')} description={t('incidents.dialog.public.hint')}>

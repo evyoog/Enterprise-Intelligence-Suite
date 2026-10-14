@@ -19,6 +19,8 @@ const ticket = {
   description: 'MFA code never arrives.', priority: 'MEDIUM' as const, status: 'OPEN' as const, createdAt: '2027-02-01T00:00:00Z',
 }
 
+const slaDates = { firstResponseDueAt: '2027-02-01T08:00:00Z', resolutionDueAt: '2027-02-03T08:00:00Z' }
+
 describe('MyTicketsPage', () => {
   beforeEach(() => {
     create.mockReset()
@@ -29,6 +31,30 @@ describe('MyTicketsPage', () => {
     myTickets.mockResolvedValue([ticket])
     renderWithProviders(<MyTicketsPage />)
     expect(await screen.findByText("Can't log in")).toBeInTheDocument()
+  })
+
+  it('shows the response and resolution targets for an open ticket, without SLA states', async () => {
+    myTickets.mockResolvedValue([{ ...ticket, ...slaDates, firstRespondedAt: null }])
+    renderWithProviders(<MyTicketsPage />)
+    expect(await screen.findByText(/We aim to respond by .*2027.* and resolve by .*2027/)).toBeInTheDocument()
+    expect(screen.queryByText(/Breached|At risk|On track/)).not.toBeInTheDocument()
+  })
+
+  it('shows only the resolution target once someone has responded', async () => {
+    myTickets.mockResolvedValue([{ ...ticket, ...slaDates, status: 'IN_PROGRESS', firstRespondedAt: '2027-02-01T05:00:00Z' }])
+    renderWithProviders(<MyTicketsPage />)
+    expect(await screen.findByText(/^We aim to resolve by .*2027/)).toBeInTheDocument()
+    expect(screen.queryByText(/respond by/)).not.toBeInTheDocument()
+  })
+
+  it('shows no targets for resolved or closed tickets or tickets without deadlines', async () => {
+    myTickets.mockResolvedValue([
+      { ...ticket, id: 2, subject: 'Done', ...slaDates, status: 'RESOLVED' },
+      { ...ticket, id: 3, subject: 'Old', status: 'OPEN' },
+    ])
+    renderWithProviders(<MyTicketsPage />)
+    await screen.findByText('Done')
+    expect(screen.queryByText(/We aim to/)).not.toBeInTheDocument()
   })
 
   it('creates a new ticket', async () => {
