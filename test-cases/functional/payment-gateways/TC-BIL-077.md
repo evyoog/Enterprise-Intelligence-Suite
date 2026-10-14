@@ -34,7 +34,7 @@ The stored text does not contain the secret or the key ID; two ciphertexts of th
 Not covered by an automated test: the server-side refusal (409 "Credentials cannot be stored because the encryption key is not configured…") of `saveConfiguration` when the key is missing (the test profile always has a key); and that no credential is ever written to a log (checked by code review: no log statement receives a value).
 
 ## Actual Result
-The automated tests listed above passed (backend: Surefire reports of 2026-10-14 (`backend/target/surefire-reports`, `mvn -B verify`): GatewayManagementServiceTest 14 tests, RazorpayGatewayTest 5, CredentialCipherTest 3, PaymentGatewayAuthorizationTest 4, BillingServiceTest 12, no failures; frontend: `npx vitest run` of AdminPaymentGatewayPage, AdminBillingSettingsPage and CheckoutPage tests on 2026-10-14, 44 passed). The parts listed as not covered have **not** been run.
+The automated tests listed above passed (backend: Surefire reports of 2026-10-14 (`backend/target/surefire-reports`, `mvn -B verify`): GatewayManagementServiceTest 18 tests, RazorpayGatewayTest 5, CredentialCipherTest 3, PaymentGatewayAuthorizationTest 4, BillingServiceTest 12, no failures; frontend: `npx vitest run` of AdminPaymentGatewayPage, AdminBillingSettingsPage and CheckoutPage tests on 2026-10-14, 48 passed). The parts listed as not covered have **not** been run.
 
 ## Status
 Passed for the automated part (2026-10-14); the not-covered part is Not Run

@@ -27,9 +27,9 @@ A PostgreSQL 16 copy of the schema at V037 with data.
 One Razorpay row (activated and default true); old webhook rows have provider RAZORPAY; the constraint `uq_payment_webhook_event_provider` exists and the old single-column unique is gone; the second run has no effect; Razorpay still takes payments.
 
 ## Automated coverage
-- `backend/src/test/java/com/vyoog/eisplatform/modules/billing/service/GatewayManagementServiceTest.java` — `theRegistryListsRazorpayAsOperationalAndTheOthersAsPlannedWithNoActions`
+- `backend/src/test/java/com/vyoog/eisplatform/modules/billing/service/GatewayManagementServiceTest.java` — `theRegistryListsOnlyRealAndAdministratorAddedGatewaysNothingIsListedAsPlanned`
 
-Manual only: the migration SQL itself is not executed by the automated tests (they run on in-memory H2, not PostgreSQL); `theRegistryListsRazorpayAsOperationalAndTheOthersAsPlannedWithNoActions` only shows that a missing Razorpay row is recreated active and default. **Not Run.**
+Manual only: the migration SQL itself is not executed by the automated tests (they run on in-memory H2, not PostgreSQL); `theRegistryListsOnlyRealAndAdministratorAddedGatewaysNothingIsListedAsPlanned` only shows that a missing Razorpay row is recreated active and default. **Not Run.**
 
 ## Actual Result
 Not run. Needs the environment described under Preconditions.

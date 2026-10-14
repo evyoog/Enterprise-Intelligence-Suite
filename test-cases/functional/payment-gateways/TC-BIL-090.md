@@ -31,7 +31,7 @@ Confirm and refund succeed through the deactivated provider; the webhook returns
 Not covered by an automated test: a webhook delivered while the provider is deactivated (the behaviour follows from `configured()` ignoring activation and was verified by code reading only). Manual step 3 is Not Run.
 
 ## Actual Result
-The automated tests listed above passed (backend: Surefire reports of 2026-10-14 (`backend/target/surefire-reports`, `mvn -B verify`): GatewayManagementServiceTest 14 tests, RazorpayGatewayTest 5, CredentialCipherTest 3, PaymentGatewayAuthorizationTest 4, BillingServiceTest 12, no failures). The parts listed as not covered have **not** been run.
+The automated tests listed above passed (backend: Surefire reports of 2026-10-14 (`backend/target/surefire-reports`, `mvn -B verify`): GatewayManagementServiceTest 18 tests, RazorpayGatewayTest 5, CredentialCipherTest 3, PaymentGatewayAuthorizationTest 4, BillingServiceTest 12, no failures). The parts listed as not covered have **not** been run.
 
 ## Status
 Passed for the automated part (2026-10-14); the not-covered part is Not Run

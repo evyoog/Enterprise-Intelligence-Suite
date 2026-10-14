@@ -31,7 +31,7 @@ The request is `{environment: TEST, fields: {webhookSecret}}` only; the success 
 - `frontend/src/pages/admin/AdminPaymentGatewayPage.test.tsx` — "refuses to save when the server has no encryption key"
 
 ## Actual Result
-The automated tests listed above passed (frontend: `npx vitest run` of AdminPaymentGatewayPage, AdminBillingSettingsPage and CheckoutPage tests on 2026-10-14, 44 passed).
+The automated tests listed above passed (frontend: `npx vitest run` of AdminPaymentGatewayPage, AdminBillingSettingsPage and CheckoutPage tests on 2026-10-14, 48 passed).
 
 ## Status
 Passed (automated run 2026-10-14)

@@ -32,7 +32,7 @@ After each step Razorpay is still active; after the last step the default flag h
 Not asserted: that saving one gateway leaves another gateway's stored credentials byte-for-byte unchanged.
 
 ## Actual Result
-The automated tests listed above passed (backend: Surefire reports of 2026-10-14 (`backend/target/surefire-reports`, `mvn -B verify`): GatewayManagementServiceTest 14 tests, RazorpayGatewayTest 5, CredentialCipherTest 3, PaymentGatewayAuthorizationTest 4, BillingServiceTest 12, no failures). The parts listed as not covered have **not** been run.
+The automated tests listed above passed (backend: Surefire reports of 2026-10-14 (`backend/target/surefire-reports`, `mvn -B verify`): GatewayManagementServiceTest 18 tests, RazorpayGatewayTest 5, CredentialCipherTest 3, PaymentGatewayAuthorizationTest 4, BillingServiceTest 12, no failures). The parts listed as not covered have **not** been run.
 
 ## Status
 Passed for the automated part (2026-10-14); the not-covered part is Not Run

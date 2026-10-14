@@ -14,7 +14,7 @@
 | Automated | Yes |
 
 ## Preconditions
-A checkout summary naming STRIPE, and a start-payment answer with provider STRIPE.
+A checkout summary naming STRIPE, and a start-payment answer with provider STRIPE. (Mocked: the test stands for a provider that has a working adapter but no launcher in the checkout screen. Since [C99](../../../docs/01-business/roadmap/open-decisions.md#c99) a gateway an administrator added is never routed to, so today this can only happen once a developer has added an adapter before its launcher.)
 
 ## Steps
 1. Open the Payment step.
@@ -30,7 +30,7 @@ The footer says "Stripe"; after Pay the failed state shows the message above; Ra
 - `backend/src/test/java/com/vyoog/eisplatform/modules/billing/service/GatewayManagementServiceTest.java` — `aPaymentKeepsTheProviderThatCreatedItWhateverIsDefaultLater`
 
 ## Actual Result
-The automated tests listed above passed (backend: Surefire reports of 2026-10-14 (`backend/target/surefire-reports`, `mvn -B verify`): GatewayManagementServiceTest 14 tests, RazorpayGatewayTest 5, CredentialCipherTest 3, PaymentGatewayAuthorizationTest 4, BillingServiceTest 12, no failures; frontend: `npx vitest run` of AdminPaymentGatewayPage, AdminBillingSettingsPage and CheckoutPage tests on 2026-10-14, 44 passed).
+The automated tests listed above passed (backend: Surefire reports of 2026-10-14 (`backend/target/surefire-reports`, `mvn -B verify`): GatewayManagementServiceTest 18 tests, RazorpayGatewayTest 5, CredentialCipherTest 3, PaymentGatewayAuthorizationTest 4, BillingServiceTest 12, no failures; frontend: `npx vitest run` of AdminPaymentGatewayPage, AdminBillingSettingsPage and CheckoutPage tests on 2026-10-14, 48 passed).
 
 ## Status
 Passed (automated run 2026-10-14)

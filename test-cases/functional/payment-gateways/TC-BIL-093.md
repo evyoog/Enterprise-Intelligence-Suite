@@ -28,7 +28,7 @@ Razorpay credentials in the test environment; no stored rows (the legacy state).
 Razorpay is configured (source ENVIRONMENT), active and default; a verified payment is CAPTURED, an invalid signature changes nothing; the webhook is processed once; the over-refund is refused; the status endpoint shows the masked Key ID and no secret; the checkout flows work.
 
 ## Automated coverage
-- `backend/src/test/java/com/vyoog/eisplatform/modules/billing/service/GatewayManagementServiceTest.java` — `theRegistryListsRazorpayAsOperationalAndTheOthersAsPlannedWithNoActions`
+- `backend/src/test/java/com/vyoog/eisplatform/modules/billing/service/GatewayManagementServiceTest.java` — `theRegistryListsOnlyRealAndAdministratorAddedGatewaysNothingIsListedAsPlanned`
 - `backend/src/test/java/com/vyoog/eisplatform/modules/billing/service/BillingServiceTest.java` — `payingAnInvoiceWithAVerifiedCapturedPaymentMarksItPaid`
 - `backend/src/test/java/com/vyoog/eisplatform/modules/billing/service/BillingServiceTest.java` — `anInvalidSignatureChangesNothing`
 - `backend/src/test/java/com/vyoog/eisplatform/modules/billing/service/BillingServiceTest.java` — `aWebhookEventIsProcessedAtMostOnce`
@@ -42,7 +42,7 @@ Razorpay is configured (source ENVIRONMENT), active and default; a verified paym
 Not covered by an automated test: the earlier `POST /admin/billing/gateway/test` and the alias `PUT /admin/billing/gateways/active`; a stored value overriding a secrets-file value for Razorpay; the saved-card (token) endpoints against a real Razorpay.
 
 ## Actual Result
-The automated tests listed above passed (backend: Surefire reports of 2026-10-14 (`backend/target/surefire-reports`, `mvn -B verify`): GatewayManagementServiceTest 14 tests, RazorpayGatewayTest 5, CredentialCipherTest 3, PaymentGatewayAuthorizationTest 4, BillingServiceTest 12, no failures; frontend: `npx vitest run` of AdminPaymentGatewayPage, AdminBillingSettingsPage and CheckoutPage tests on 2026-10-14, 44 passed). The parts listed as not covered have **not** been run.
+The automated tests listed above passed (backend: Surefire reports of 2026-10-14 (`backend/target/surefire-reports`, `mvn -B verify`): GatewayManagementServiceTest 18 tests, RazorpayGatewayTest 5, CredentialCipherTest 3, PaymentGatewayAuthorizationTest 4, BillingServiceTest 12, no failures; frontend: `npx vitest run` of AdminPaymentGatewayPage, AdminBillingSettingsPage and CheckoutPage tests on 2026-10-14, 48 passed). The parts listed as not covered have **not** been run.
 
 ## Status
 Passed for the automated part (2026-10-14); the not-covered part is Not Run

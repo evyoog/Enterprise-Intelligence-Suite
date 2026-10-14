@@ -24,7 +24,7 @@ FakePay and Razorpay configured; a CREATED payment.
 5. Confirm a payment with a forged checkout signature.
 
 ## Expected Result
-400 for each bad delivery and the payment stays CREATED; 200 for the signed one and the payment is CAPTURED, the invoice PAID; 404 for Stripe; the forged confirmation is refused and the invoice stays OPEN.
+400 for each bad delivery and the payment stays CREATED; 200 for the signed one and the payment is CAPTURED, the invoice PAID; 404 for Stripe (a code that is neither a built-in provider nor an added gateway; a gateway an administrator added has no webhook either, so it is 404 too); the forged confirmation is refused and the invoice stays OPEN.
 
 ## Automated coverage
 - `backend/src/test/java/com/vyoog/eisplatform/modules/billing/service/GatewayManagementServiceTest.java` — `webhooksAreVerifiedPerProviderProcessedOnceAndTrackedWithoutTrustingAnUnsignedCaller`
@@ -34,7 +34,7 @@ FakePay and Razorpay configured; a CREATED payment.
 - `backend/src/test/java/com/vyoog/eisplatform/modules/billing/service/BillingServiceTest.java` — `aWebhookWithAnInvalidSignatureIsRejected`
 
 ## Actual Result
-The automated tests listed above passed (backend: Surefire reports of 2026-10-14 (`backend/target/surefire-reports`, `mvn -B verify`): GatewayManagementServiceTest 14 tests, RazorpayGatewayTest 5, CredentialCipherTest 3, PaymentGatewayAuthorizationTest 4, BillingServiceTest 12, no failures).
+The automated tests listed above passed (backend: Surefire reports of 2026-10-14 (`backend/target/surefire-reports`, `mvn -B verify`): GatewayManagementServiceTest 18 tests, RazorpayGatewayTest 5, CredentialCipherTest 3, PaymentGatewayAuthorizationTest 4, BillingServiceTest 12, no failures).
 
 ## Status
 Passed (automated run 2026-10-14)

@@ -29,7 +29,7 @@ The tab is named "Payment gateways"; the tile shows "1 of 1 active"; the tab sho
 - `frontend/src/pages/admin/AdminBillingSettingsPage.test.tsx` — "shows the four overview tiles and the business tab, with no axe violations"
 
 ## Actual Result
-The automated tests listed above passed (frontend: `npx vitest run` of AdminPaymentGatewayPage, AdminBillingSettingsPage and CheckoutPage tests on 2026-10-14, 44 passed).
+The automated tests listed above passed (frontend: `npx vitest run` of AdminPaymentGatewayPage, AdminBillingSettingsPage and CheckoutPage tests on 2026-10-14, 48 passed).
 
 ## Status
 Passed (automated run 2026-10-14)

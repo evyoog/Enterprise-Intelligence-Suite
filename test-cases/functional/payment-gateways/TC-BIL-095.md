@@ -33,7 +33,7 @@ MockMvc security context with no JWT, a plain user and an administrator.
 Not covered by an automated test: the 401/403 of the `PUT …/methods` and `PUT …/default` routes, the `/gateways/active` alias and the legacy `/gateway/test` route.
 
 ## Actual Result
-The automated tests listed above passed (backend: Surefire reports of 2026-10-14 (`backend/target/surefire-reports`, `mvn -B verify`): GatewayManagementServiceTest 14 tests, RazorpayGatewayTest 5, CredentialCipherTest 3, PaymentGatewayAuthorizationTest 4, BillingServiceTest 12, no failures). The parts listed as not covered have **not** been run.
+The automated tests listed above passed (backend: Surefire reports of 2026-10-14 (`backend/target/surefire-reports`, `mvn -B verify`): GatewayManagementServiceTest 18 tests, RazorpayGatewayTest 5, CredentialCipherTest 3, PaymentGatewayAuthorizationTest 4, BillingServiceTest 12, no failures). The parts listed as not covered have **not** been run.
 
 ## Status
 Passed for the automated part (2026-10-14); the not-covered part is Not Run
