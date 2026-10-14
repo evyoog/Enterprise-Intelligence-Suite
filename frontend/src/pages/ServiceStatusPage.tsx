@@ -62,6 +62,11 @@ export function ServiceStatusPage() {
                       {!p.purchased && p.openIncidents > 0 && (
                         <>{p.note ? ' · ' : ''}{t('serviceStatus.notPurchased')}</>
                       )}
+                      {p.source === 'INSTANCES' && (
+                        <Typography variant="caption" component="div">
+                          {t('serviceInstances.statusCaption', { count: p.reportingInstances ?? 0, down: p.downInstances ?? 0, degraded: p.degradedInstances ?? 0 })}
+                        </Typography>
+                      )}
                     </TableCell>
                     <TableCell sx={{ color: 'text.secondary', whiteSpace: 'nowrap' }}>{p.updatedAt ? formatDate(p.updatedAt) : '—'}</TableCell>
                   </TableRow>

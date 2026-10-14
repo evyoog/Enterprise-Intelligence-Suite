@@ -7,12 +7,13 @@ import { ApiError } from '../api/client'
 import { knowledgeApi } from '../api/knowledgeApi'
 import { supportApi, type SupportTicket, type TicketStatus } from '../api/supportApi'
 import { PageHeader } from '../components/layout/PageHeader'
+import { formatDateTime } from '../components/tax/taxFormat'
 
 /** "/support/tickets" — 12.01.01 Ticket Management (sprint 2027.1.2), any
  * authenticated customer's own tickets. Not AI-driven — see
  * `SupportTicket`'s own backend javadoc. */
 export function MyTicketsPage() {
-  const { t } = useTranslation()
+  const { t, i18n } = useTranslation()
   const [tickets, setTickets] = useState<SupportTicket[] | null>(null)
   const [loadError, setLoadError] = useState<string | null>(null)
   // REQ-KNW-005.9 / BR-KCEN-002: a ticket started from a Knowledge Center
@@ -92,6 +93,16 @@ export function MyTicketsPage() {
               <TicketStatusChip status={ticket.status} />
             </Box>
             <Typography variant="body2" sx={{ color: 'text.secondary', mt: 0.5 }}>{ticket.description}</Typography>
+            {ticket.firstResponseDueAt && ticket.resolutionDueAt && ticket.status !== 'RESOLVED' && ticket.status !== 'CLOSED' && (
+              <Typography variant="body2" sx={{ color: 'text.secondary', mt: 1 }}>
+                {ticket.firstRespondedAt
+                  ? t('sla.customer.resolveBy', { resolve: formatDateTime(ticket.resolutionDueAt, i18n.language) })
+                  : t('sla.customer.aim', {
+                    respond: formatDateTime(ticket.firstResponseDueAt, i18n.language),
+                    resolve: formatDateTime(ticket.resolutionDueAt, i18n.language),
+                  })}
+              </Typography>
+            )}
             {ticket.resolutionNote && (
               <Typography variant="body2" sx={{ mt: 1 }}>{ticket.resolutionNote}</Typography>
             )}

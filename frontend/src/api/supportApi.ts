@@ -18,7 +18,16 @@ export interface SupportTicket {
   resolvedAt?: string
   closedAt?: string
   createdAt: string
+  /** C101 (SLA): when a person first took the ticket out of Open, and the two deadlines. Null for tickets created before SLA tracking. */
+  firstRespondedAt?: string | null
+  firstResponseDueAt?: string | null
+  resolutionDueAt?: string | null
+  /** Admin view only (null in the requester's own view). */
+  firstResponseState?: SlaState | null
+  resolutionState?: SlaState | null
 }
+
+export type SlaState = 'ON_TRACK' | 'WARNING' | 'BREACHED' | 'MET' | 'MET_LATE'
 
 // 12.01.01 Ticket Management (sprint 2027.1.2) — any authenticated customer's own tickets.
 export const supportApi = {

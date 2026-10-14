@@ -4620,5 +4620,249 @@
       "notFound": "Ningún cliente u organización tiene ese ID."
     },
     "readOnlyUntil": "Solo lectura hasta el {{date}}"
+  },
+  "serviceInstances": {
+    "title": "Instancias de servicio",
+    "subtitle": "Se crea una instancia por cada suscripción activa. Los productos informan de su estado cada minuto; también puede cambiarlo manualmente.",
+    "loadError": "No se pudieron cargar las instancias de servicio.",
+    "actionError": "No se pudo completar esta acción.",
+    "never": "Nunca",
+    "noRecentReport": "Sin informe reciente",
+    "statusCaption_one": "Basado en {{count}} instancia que informa ({{down}} caídas, {{degraded}} degradadas)",
+    "statusCaption_other": "Basado en {{count}} instancias que informan ({{down}} caídas, {{degraded}} degradadas)",
+    "summary": {
+      "total": "Instancias",
+      "healthy": "Saludables",
+      "degraded": "Degradadas",
+      "down": "Caídas",
+      "noRecentReport": "Sin informe reciente"
+    },
+    "filters": {
+      "label": "Filtrar instancias de servicio",
+      "product": "Producto",
+      "status": "Estado",
+      "health": "Salud",
+      "allProducts": "Todos los productos",
+      "allStatuses": "Todos los estados",
+      "allHealth": "Toda la salud"
+    },
+    "columns": {
+      "product": "Producto",
+      "owner": "Propietario",
+      "status": "Estado",
+      "health": "Salud",
+      "lastReport": "Último informe",
+      "changedBy": "Último cambio por",
+      "tenant": "Referencia del inquilino",
+      "actions": "Acciones"
+    },
+    "status": {
+      "PROVISIONING": "Aprovisionando",
+      "ACTIVE": "Activa",
+      "SUSPENDED": "Suspendida",
+      "FAILED": "Fallida",
+      "DEPROVISIONED": "Desaprovisionada"
+    },
+    "health": {
+      "HEALTHY": "Saludable",
+      "DEGRADED": "Degradada",
+      "DOWN": "Caída",
+      "UNKNOWN": "Desconocida"
+    },
+    "changedBy": {
+      "SYSTEM": "Sistema",
+      "PRODUCT": "Producto",
+      "ADMIN": "Administrador"
+    },
+    "ownerType": {
+      "ORGANIZATION": "Organización",
+      "INDIVIDUAL": "Individual"
+    },
+    "empty": {
+      "title": "No hay instancias de servicio",
+      "body": "Se crea una instancia cuando una suscripción pasa a estar activa.",
+      "filtered": "Ninguna instancia coincide con estos filtros."
+    },
+    "change": {
+      "action": "Cambiar manualmente",
+      "actionFor": "Cambiar manualmente {{product}} ({{owner}})",
+      "title": "Cambiar {{product}} manualmente",
+      "intro": "Establezca usted mismo el estado o la salud. La nota es obligatoria y el cambio se registra en la auditoría.",
+      "status": "Estado",
+      "health": "Salud",
+      "note": "Nota",
+      "noteHelp": "Indique por qué lo cambia.",
+      "noteRequired": "Escriba una nota.",
+      "nothingChanged": "Primero cambie el estado o la salud.",
+      "save": "Guardar cambio",
+      "saved": "Instancia actualizada."
+    },
+    "keys": {
+      "title": "Claves de informe",
+      "subtitle": "Cada producto informa de la salud de sus instancias con su propia clave de informe. El secreto se muestra una sola vez, al crear la clave.",
+      "howToPrefix": "Los productos envían la salud con un POST a",
+      "howToMiddle": "usando la cabecera",
+      "loadError": "No se pudieron cargar las claves de informe.",
+      "create": "Crear clave",
+      "createTitle": "Crear una clave de informe",
+      "product": "Producto",
+      "productRequired": "Elija un producto.",
+      "label": "Etiqueta (opcional)",
+      "labelHelp": "Por ejemplo, el entorno donde se usa la clave.",
+      "createSubmit": "Crear clave",
+      "columns": {
+        "product": "Producto",
+        "label": "Etiqueta",
+        "prefix": "Prefijo de la clave",
+        "created": "Creada",
+        "lastUsed": "Último uso",
+        "revoked": "Revocada"
+      },
+      "empty": {
+        "title": "No hay claves de informe",
+        "body": "Cree una clave para que un producto pueda informar de la salud de sus instancias."
+      },
+      "revoke": "Revocar",
+      "revokeFor": "Revocar la clave {{prefix}} de {{product}}",
+      "revokeTitle": "¿Revocar la clave de {{product}}?",
+      "revokeBody": "El producto ya no podrá informar de su salud con esta clave. No se puede deshacer.",
+      "revokedToast": "Clave de {{product}} revocada."
+    },
+    "secret": {
+      "title": "Clave de informe de {{product}}",
+      "warning": "Cópiela ahora. No se volverá a mostrar.",
+      "label": "Secreto de la clave de informe",
+      "copy": "Copiar",
+      "copied": "Copiado",
+      "copiedNote": "Copiado al portapapeles.",
+      "copyFailed": "No se pudo copiar. Seleccione el texto y cópielo manualmente.",
+      "done": "Ya la he copiado"
+    },
+    "org": {
+      "title": "Instancias de servicio",
+      "subtitle": "Las instancias de las suscripciones de su organización y su salud.",
+      "loadError": "No se pudieron cargar sus instancias de servicio.",
+      "accessUrl": "URL de acceso",
+      "empty": {
+        "title": "Aún no hay instancias de servicio",
+        "body": "Una instancia aparece aquí cuando una de sus suscripciones pasa a estar activa."
+      }
+    }
+  },
+  "sla": {
+    "due": "Vence {{date}}",
+    "firstResponse": "Primera respuesta",
+    "resolution": "Resolución",
+    "sectionLabel": "Objetivos de nivel de servicio",
+    "breachedFlag": "SLA incumplido",
+    "state": {
+      "ON_TRACK": "En plazo",
+      "WARNING": "En riesgo",
+      "BREACHED": "Incumplido",
+      "MET": "Cumplido",
+      "MET_LATE": "Cumplido tarde"
+    },
+    "priority": {
+      "LOW": "Baja",
+      "MEDIUM": "Media",
+      "HIGH": "Alta",
+      "URGENT": "Urgente"
+    },
+    "day": {
+      "short": {
+        "MON": "Lun",
+        "TUE": "Mar",
+        "WED": "Mié",
+        "THU": "Jue",
+        "FRI": "Vie",
+        "SAT": "Sáb",
+        "SUN": "Dom"
+      },
+      "long": {
+        "MON": "Lunes",
+        "TUE": "Martes",
+        "WED": "Miércoles",
+        "THU": "Jueves",
+        "FRI": "Viernes",
+        "SAT": "Sábado",
+        "SUN": "Domingo"
+      }
+    },
+    "duration": {
+      "minutes_one": "{{count}} min",
+      "minutes_many": "{{count}} min",
+      "minutes_other": "{{count}} min",
+      "hours_one": "{{count}} h",
+      "hours_many": "{{count}} h",
+      "hours_other": "{{count}} h",
+      "hoursMinutes": "{{hours}} h {{minutes}} min",
+      "days_one": "{{count}} día ({{hours}} h)",
+      "days_many": "{{count}} días ({{hours}} h)",
+      "days_other": "{{count}} días ({{hours}} h)",
+      "businessDays_one": "{{count}} día ({{hours}} h laborables)",
+      "businessDays_many": "{{count}} días ({{hours}} h laborables)",
+      "businessDays_other": "{{count}} días ({{hours}} h laborables)"
+    },
+    "filter": {
+      "label": "SLA",
+      "ALL": "Todos",
+      "WARNING": "En riesgo (aviso)",
+      "BREACHED": "Incumplidos",
+      "emptyTitle": "Ningún ticket coincide con este filtro de SLA",
+      "empty": {
+        "WARNING": "Ningún ticket está cerca de su plazo ahora mismo.",
+        "BREACHED": "Ningún ticket ha incumplido su SLA."
+      }
+    },
+    "customer": {
+      "aim": "Nuestro objetivo es responder antes de {{respond}} y resolver antes de {{resolve}}.",
+      "resolveBy": "Nuestro objetivo es resolverlo antes de {{resolve}}."
+    },
+    "settings": {
+      "title": "SLA de soporte",
+      "intro": "Objetivos de respuesta y resolución según la prioridad del ticket, iguales para todos los clientes y planes.",
+      "note": "Los nuevos objetivos se aplican a los tickets creados o repriorizados a partir de ahora.",
+      "loading": "Cargando la configuración de SLA",
+      "loadFailedTitle": "No se pudo cargar la configuración de SLA",
+      "loadFailed": "No se pudo cargar la configuración de SLA.",
+      "saveFailed": "No se pudo guardar. Inténtalo de nuevo.",
+      "policiesSaved": "Objetivos de SLA guardados.",
+      "settingsSaved": "Horario laboral y alertas guardados.",
+      "errMinutes": "Introduce un número entero de minutos, 1 o más.",
+      "errOrder": "La primera respuesta no puede ser posterior a la resolución.",
+      "errDays": "Elige al menos un día laborable.",
+      "errHours": "La hora de fin debe ser posterior a la de inicio.",
+      "errWarn": "Introduce un número entero de 1 a 99.",
+      "errZone": "Elige una zona horaria.",
+      "errEmail": "\"{{email}}\" no es una dirección de correo válida.",
+      "errEmailMax": "Como máximo {{max}} direcciones de correo.",
+      "targets": {
+        "title": "Objetivos por prioridad",
+        "description": "El reloj empieza al crear el ticket y no se detiene. Las prioridades que no son 24x7 cuentan solo horas laborables.",
+        "priority": "Prioridad",
+        "firstResponse": "Primera respuesta (minutos)",
+        "resolution": "Resolución (minutos)",
+        "aroundTheClock": "24x7",
+        "firstResponseFor": "{{priority}}: primera respuesta, minutos",
+        "resolutionFor": "{{priority}}: resolución, minutos",
+        "aroundTheClockFor": "{{priority}}: 24x7",
+        "unitHint": "Introduce minutos. Un día laborable son 8 horas laborables (480 minutos).",
+        "save": "Guardar objetivos"
+      },
+      "hours": {
+        "title": "Horario laboral y alertas",
+        "description": "Cuándo corre el reloj en las prioridades que no son 24x7 y a quién se avisa cuando se acerca un plazo.",
+        "days": "Días laborables",
+        "start": "Hora de inicio",
+        "end": "Hora de fin",
+        "timeZone": "Zona horaria",
+        "timeZoneHint": "El horario laboral se interpreta en esta zona horaria.",
+        "warnAt": "Avisar al",
+        "warnAtHint": "Envía un aviso cuando haya transcurrido este porcentaje de un objetivo.",
+        "alertEmails": "Correos de alerta",
+        "alertEmailsHint": "Escribe una dirección y pulsa Intro. Hasta {{max}}. La persona asignada siempre recibe el aviso.",
+        "save": "Guardar horario laboral"
+      }
+    }
   }
 }

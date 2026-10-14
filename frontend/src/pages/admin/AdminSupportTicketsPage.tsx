@@ -1,16 +1,26 @@
-import { LifeBuoy as PHLifeBuoy } from 'lucide-react'
+import { AlertTriangle, LifeBuoy as PHLifeBuoy } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import {
-  Alert, Box, Button, FormControl, InputLabel, MenuItem, Paper, Select,
-  type SelectChangeEvent, TextField, Typography,
+  Alert, Box, Button, Chip, FormControl, InputLabel, MenuItem, Paper, Select,
+  type SelectChangeEvent, TextField, ToggleButton, ToggleButtonGroup, Typography,
 } from '@mui/material'
 import { ApiError } from '../../api/client'
 import { adminSupportApi, type SupportTicket, type TicketPriority } from '../../api/supportApi'
 import { PageHeader } from '../../components/layout/PageHeader'
+import { SlaChip } from '../../components/support/SlaChip'
+import { EmptyState } from '../../components/ui/EmptyState'
 import { TicketStatusChip } from '../MyTicketsPage'
 
 const PRIORITIES: TicketPriority[] = ['LOW', 'MEDIUM', 'HIGH', 'URGENT']
+
+type SlaFilter = 'ALL' | 'WARNING' | 'BREACHED'
+const SLA_FILTERS: SlaFilter[] = ['ALL', 'WARNING', 'BREACHED']
+
+/** C101: a ticket is "breached" while either target is past its deadline and
+ * unmet, and "at risk" while either is in its warning window. */
+const isBreached = (ticket: SupportTicket) => ticket.firstResponseState === 'BREACHED' || ticket.resolutionState === 'BREACHED'
+const isAtRisk = (ticket: SupportTicket) => ticket.firstResponseState === 'WARNING' || ticket.resolutionState === 'WARNING'
 
 /** "/admin/support/tickets" — MANAGE_SUPPORT_TICKETS. */
 export function AdminSupportTicketsPage() {
@@ -21,6 +31,7 @@ export function AdminSupportTicketsPage() {
   const [categoryDrafts, setCategoryDrafts] = useState<Record<number, string>>({})
   const [assigneeDrafts, setAssigneeDrafts] = useState<Record<number, string>>({})
   const [noteDrafts, setNoteDrafts] = useState<Record<number, string>>({})
+  const [slaFilter, setSlaFilter] = useState<SlaFilter>('ALL')
 
   const load = () => {
     adminSupportApi.listAll()
@@ -86,21 +97,51 @@ export function AdminSupportTicketsPage() {
     }
   }
 
+  const visible = tickets?.filter((ticket) =>
+    slaFilter === 'ALL' || (slaFilter === 'BREACHED' ? isBreached(ticket) : isAtRisk(ticket)))
+
   return (
     <Box>
       <PageHeader icon={PHLifeBuoy} accent="rose" area="support" title={t('support.admin.title')} />
       {loadError && <Alert severity="error" sx={{ mb: 2 }}>{loadError}</Alert>}
 
+      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, flexWrap: 'wrap', mb: 2 }}>
+        <Typography id="sla-filter-label" variant="body2" sx={{ fontWeight: 600 }}>{t('sla.filter.label')}</Typography>
+        <ToggleButtonGroup
+          exclusive size="small" color="primary" aria-labelledby="sla-filter-label" value={slaFilter}
+          onChange={(_, value: SlaFilter | null) => value && setSlaFilter(value)}
+        >
+          {SLA_FILTERS.map((f) => <ToggleButton key={f} value={f}>{t(`sla.filter.${f}`)}</ToggleButton>)}
+        </ToggleButtonGroup>
+      </Box>
+      {tickets && visible?.length === 0 && slaFilter !== 'ALL' && (
+        <EmptyState title={t('sla.filter.emptyTitle')} description={t(`sla.filter.empty.${slaFilter}`)} />
+      )}
+
       <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
-        {tickets?.map((ticket) => {
+        {visible?.map((ticket) => {
           const terminal = ticket.status === 'RESOLVED' || ticket.status === 'CLOSED'
+          const breached = isBreached(ticket)
           return (
-            <Paper key={ticket.id} variant="outlined" sx={{ p: 2 }}>
+            <Paper
+              key={ticket.id} variant="outlined"
+              sx={{ p: 2, ...(breached && { borderColor: 'error.main', borderLeftWidth: 4 }) }}
+            >
               <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 1, flexWrap: 'wrap' }}>
                 <Typography sx={{ fontWeight: 700 }}>{ticket.subject}</Typography>
-                <TicketStatusChip status={ticket.status} />
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                  {breached && <Chip size="small" color="error" icon={<AlertTriangle size={14} />} label={t('sla.breachedFlag')} />}
+                  <TicketStatusChip status={ticket.status} />
+                </Box>
               </Box>
               <Typography variant="body2" sx={{ color: 'text.secondary', mt: 0.5, mb: 1.5 }}>{ticket.description}</Typography>
+
+              {(ticket.firstResponseDueAt || ticket.resolutionDueAt) && (
+                <Box sx={{ display: 'flex', gap: 3, flexWrap: 'wrap', mb: 1.5 }} aria-label={t('sla.sectionLabel')} role="group">
+                  <SlaChip caption={t('sla.firstResponse')} state={ticket.firstResponseState} dueAt={ticket.firstResponseDueAt} />
+                  <SlaChip caption={t('sla.resolution')} state={ticket.resolutionState} dueAt={ticket.resolutionDueAt} />
+                </Box>
+              )}
 
               <Box sx={{ display: 'flex', gap: 1.5, flexWrap: 'wrap', alignItems: 'center' }}>
                 <TextField

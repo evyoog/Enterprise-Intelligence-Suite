@@ -52,6 +52,18 @@ describe('ServiceStatusPage (customer)', () => {
     expect(screen.queryByText(/Valam.ai —/)).not.toBeInTheDocument()
   })
 
+  it('shows how a status was worked out when it is based on instance reports', async () => {
+    get.mockResolvedValue({
+      enabled: true, incidents: [],
+      products: [{ ...products[0], source: 'INSTANCES', reportingInstances: 3, downInstances: 1, degradedInstances: 0 },
+        { ...products[2], source: 'INSTANCES', reportingInstances: 1, downInstances: 0, degradedInstances: 0 }, products[1]],
+    })
+    renderWithProviders(<ServiceStatusPage />)
+    expect(await screen.findByText('Based on 3 reporting instances (1 down, 0 degraded)')).toBeInTheDocument()
+    expect(screen.getByText('Based on 1 reporting instance (0 down, 0 degraded)')).toBeInTheDocument()
+    expect(screen.getAllByText(/Based on/)).toHaveLength(2)
+  })
+
   it('says so when the page is turned off', async () => {
     get.mockResolvedValue({ enabled: false, products: [], incidents: [] })
     renderWithProviders(<ServiceStatusPage />)

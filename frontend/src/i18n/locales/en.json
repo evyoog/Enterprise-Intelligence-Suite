@@ -4619,5 +4619,245 @@
       "notFound": "No customer or organization has that ID."
     },
     "readOnlyUntil": "Read-only until {{date}}"
+  },
+  "serviceInstances": {
+    "title": "Service instances",
+    "subtitle": "One instance is created for every active subscription. Products report its health every minute; you can also change it by hand.",
+    "loadError": "Could not load the service instances.",
+    "actionError": "Could not complete this action.",
+    "never": "Never",
+    "noRecentReport": "No recent report",
+    "statusCaption_one": "Based on {{count}} reporting instance ({{down}} down, {{degraded}} degraded)",
+    "statusCaption_other": "Based on {{count}} reporting instances ({{down}} down, {{degraded}} degraded)",
+    "summary": {
+      "total": "Instances",
+      "healthy": "Healthy",
+      "degraded": "Degraded",
+      "down": "Down",
+      "noRecentReport": "No recent report"
+    },
+    "filters": {
+      "label": "Filter service instances",
+      "product": "Product",
+      "status": "Status",
+      "health": "Health",
+      "allProducts": "All products",
+      "allStatuses": "All statuses",
+      "allHealth": "All health"
+    },
+    "columns": {
+      "product": "Product",
+      "owner": "Owner",
+      "status": "Status",
+      "health": "Health",
+      "lastReport": "Last report",
+      "changedBy": "Last changed by",
+      "tenant": "Tenant reference",
+      "actions": "Actions"
+    },
+    "status": {
+      "PROVISIONING": "Provisioning",
+      "ACTIVE": "Active",
+      "SUSPENDED": "Suspended",
+      "FAILED": "Failed",
+      "DEPROVISIONED": "Deprovisioned"
+    },
+    "health": {
+      "HEALTHY": "Healthy",
+      "DEGRADED": "Degraded",
+      "DOWN": "Down",
+      "UNKNOWN": "Unknown"
+    },
+    "changedBy": {
+      "SYSTEM": "System",
+      "PRODUCT": "Product",
+      "ADMIN": "Administrator"
+    },
+    "ownerType": {
+      "ORGANIZATION": "Organization",
+      "INDIVIDUAL": "Individual"
+    },
+    "empty": {
+      "title": "No service instances",
+      "body": "An instance is created when a subscription becomes active.",
+      "filtered": "No instances match these filters."
+    },
+    "change": {
+      "action": "Change by hand",
+      "actionFor": "Change {{product}} ({{owner}}) by hand",
+      "title": "Change {{product}} by hand",
+      "intro": "Set the status or health yourself. A note is required and the change is recorded in the audit log.",
+      "status": "Status",
+      "health": "Health",
+      "note": "Note",
+      "noteHelp": "Say why you are changing it.",
+      "noteRequired": "Enter a note.",
+      "nothingChanged": "Change the status or the health first.",
+      "save": "Save change",
+      "saved": "Instance updated."
+    },
+    "keys": {
+      "title": "Reporter keys",
+      "subtitle": "Each product reports instance health with its own reporter key. The secret is shown only once, when you create the key.",
+      "howToPrefix": "Products send health with a POST to",
+      "howToMiddle": "using the header",
+      "loadError": "Could not load the reporter keys.",
+      "create": "Create key",
+      "createTitle": "Create a reporter key",
+      "product": "Product",
+      "productRequired": "Choose a product.",
+      "label": "Label (optional)",
+      "labelHelp": "For example, the environment the key is used in.",
+      "createSubmit": "Create key",
+      "columns": {
+        "product": "Product",
+        "label": "Label",
+        "prefix": "Key prefix",
+        "created": "Created",
+        "lastUsed": "Last used",
+        "revoked": "Revoked"
+      },
+      "empty": {
+        "title": "No reporter keys",
+        "body": "Create a key so a product can report the health of its instances."
+      },
+      "revoke": "Revoke",
+      "revokeFor": "Revoke the {{product}} key {{prefix}}",
+      "revokeTitle": "Revoke the {{product}} key?",
+      "revokeBody": "The product can no longer report health with this key. This cannot be undone.",
+      "revokedToast": "Key for {{product}} revoked."
+    },
+    "secret": {
+      "title": "Reporter key for {{product}}",
+      "warning": "Copy it now. It will not be shown again.",
+      "label": "Reporter key secret",
+      "copy": "Copy",
+      "copied": "Copied",
+      "copiedNote": "Copied to the clipboard.",
+      "copyFailed": "Could not copy. Select the text and copy it by hand.",
+      "done": "I have copied it"
+    },
+    "org": {
+      "title": "Service instances",
+      "subtitle": "The instances of your organization's subscriptions and their health.",
+      "loadError": "Could not load your service instances.",
+      "accessUrl": "Access URL",
+      "empty": {
+        "title": "No service instances yet",
+        "body": "An instance appears here when one of your subscriptions becomes active."
+      }
+    }
+  },
+  "sla": {
+    "due": "Due {{date}}",
+    "firstResponse": "First response",
+    "resolution": "Resolution",
+    "sectionLabel": "Service level targets",
+    "breachedFlag": "SLA breached",
+    "state": {
+      "ON_TRACK": "On track",
+      "WARNING": "At risk",
+      "BREACHED": "Breached",
+      "MET": "Met",
+      "MET_LATE": "Met late"
+    },
+    "priority": {
+      "LOW": "Low",
+      "MEDIUM": "Medium",
+      "HIGH": "High",
+      "URGENT": "Urgent"
+    },
+    "day": {
+      "short": {
+        "MON": "Mon",
+        "TUE": "Tue",
+        "WED": "Wed",
+        "THU": "Thu",
+        "FRI": "Fri",
+        "SAT": "Sat",
+        "SUN": "Sun"
+      },
+      "long": {
+        "MON": "Monday",
+        "TUE": "Tuesday",
+        "WED": "Wednesday",
+        "THU": "Thursday",
+        "FRI": "Friday",
+        "SAT": "Saturday",
+        "SUN": "Sunday"
+      }
+    },
+    "duration": {
+      "minutes_one": "{{count}} min",
+      "minutes_other": "{{count}} min",
+      "hours_one": "{{count}} h",
+      "hours_other": "{{count}} h",
+      "hoursMinutes": "{{hours}} h {{minutes}} min",
+      "days_one": "{{count}} day ({{hours}} h)",
+      "days_other": "{{count}} days ({{hours}} h)",
+      "businessDays_one": "{{count}} day ({{hours}} business h)",
+      "businessDays_other": "{{count}} days ({{hours}} business h)"
+    },
+    "filter": {
+      "label": "SLA",
+      "ALL": "All",
+      "WARNING": "At risk (warning)",
+      "BREACHED": "Breached",
+      "emptyTitle": "No tickets match this SLA filter",
+      "empty": {
+        "WARNING": "No ticket is close to its deadline right now.",
+        "BREACHED": "No ticket has breached its SLA."
+      }
+    },
+    "customer": {
+      "aim": "We aim to respond by {{respond}} and resolve by {{resolve}}.",
+      "resolveBy": "We aim to resolve by {{resolve}}."
+    },
+    "settings": {
+      "title": "Support SLA",
+      "intro": "Response and resolution targets by ticket priority, the same for every customer and plan.",
+      "note": "New targets apply to tickets created or re-prioritised from now on.",
+      "loading": "Loading SLA settings",
+      "loadFailedTitle": "Could not load the SLA settings",
+      "loadFailed": "Could not load the SLA settings.",
+      "saveFailed": "Could not save. Please try again.",
+      "policiesSaved": "SLA targets saved.",
+      "settingsSaved": "Business hours and alerts saved.",
+      "errMinutes": "Enter a whole number of minutes, 1 or more.",
+      "errOrder": "First response cannot be later than resolution.",
+      "errDays": "Pick at least one business day.",
+      "errHours": "The end time must be after the start time.",
+      "errWarn": "Enter a whole number from 1 to 99.",
+      "errZone": "Choose a time zone.",
+      "errEmail": "\"{{email}}\" is not a valid email address.",
+      "errEmailMax": "At most {{max}} email addresses.",
+      "targets": {
+        "title": "Targets by priority",
+        "description": "The clock starts when the ticket is created and does not pause. Priorities that are not around the clock count business hours only.",
+        "priority": "Priority",
+        "firstResponse": "First response (minutes)",
+        "resolution": "Resolution (minutes)",
+        "aroundTheClock": "Around the clock",
+        "firstResponseFor": "{{priority}} first response, minutes",
+        "resolutionFor": "{{priority}} resolution, minutes",
+        "aroundTheClockFor": "{{priority}} around the clock",
+        "unitHint": "Enter minutes. One business day is 8 business hours (480 minutes).",
+        "save": "Save targets"
+      },
+      "hours": {
+        "title": "Business hours and alerts",
+        "description": "When the clock runs for priorities that are not around the clock, and who is told as a deadline gets close.",
+        "days": "Business days",
+        "start": "Start time",
+        "end": "End time",
+        "timeZone": "Time zone",
+        "timeZoneHint": "Business hours are read in this time zone.",
+        "warnAt": "Warn at",
+        "warnAtHint": "Send a warning when this share of a target has passed.",
+        "alertEmails": "Alert email addresses",
+        "alertEmailsHint": "Type an address and press Enter. Up to {{max}}. The assignee is always warned.",
+        "save": "Save business hours"
+      }
+    }
   }
 }
