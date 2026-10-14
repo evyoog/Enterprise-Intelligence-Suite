@@ -108,6 +108,10 @@ vyoog:
       key-id: ${RAZORPAY_KEY_ID:}
       key-secret: ${RAZORPAY_KEY_SECRET:}
       webhook-secret: ${RAZORPAY_WEBHOOK_SECRET:}
+    # C98 (REQ-BIL-003.5): master key (base64, 32 bytes) that encrypts payment gateway credentials stored through the Payment Gateways page.
+    # Empty = nothing can be stored there; credentials in the secrets file above keep working.
+    gateway:
+      encryption-key: ${PAYMENT_GATEWAY_ENCRYPTION_KEY:}
 
   # C96 (REQ-BIL-002.32, BR-30): external tax provider credentials, from the common secrets file. Empty = not configured.
   tax:

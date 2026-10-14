@@ -41,7 +41,6 @@ public class AdminBillingController {
     private final GatewayStatusService gatewayStatusService;
     private final OfflinePaymentService offlinePaymentService;
     private final BillingSettingsService billingSettingsService;
-    private final com.vyoog.eisplatform.modules.billing.service.PaymentGatewayService paymentGatewayService;
 
     @GetMapping("/invoices")
     public Page<InvoiceDto> invoices(@RequestParam(defaultValue = "0") int page) {
@@ -159,22 +158,5 @@ public class AdminBillingController {
     @PostMapping("/gateway/test")
     public void testGateway() {
         gatewayStatusService.testConnection();
-    }
-
-    /** C97 BI-8: the payment gateways that can be linked, and which one checkout uses. */
-    @GetMapping("/gateways")
-    public java.util.List<com.vyoog.eisplatform.modules.billing.dto.PaymentGatewayDto> gateways() {
-        return paymentGatewayService.list();
-    }
-
-    @PutMapping("/gateways/active")
-    public java.util.List<com.vyoog.eisplatform.modules.billing.dto.PaymentGatewayDto> setActiveGateway(@AuthenticationPrincipal Jwt jwt,
-            @Valid @RequestBody com.vyoog.eisplatform.modules.billing.dto.SetActiveGatewayRequest request) {
-        return paymentGatewayService.setActive(currentCustomerResolver.resolve(jwt).getId(), request.code());
-    }
-
-    @PostMapping("/gateways/{code}/test")
-    public void testGatewayByCode(@PathVariable String code) {
-        paymentGatewayService.test(code);
     }
 }

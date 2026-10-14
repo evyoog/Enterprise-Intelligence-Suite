@@ -10,7 +10,6 @@ import com.vyoog.eisplatform.modules.billing.service.CheckoutService;
 import com.vyoog.eisplatform.modules.billing.service.InvoiceService;
 import com.vyoog.eisplatform.modules.billing.service.PaymentMethodService;
 import com.vyoog.eisplatform.modules.billing.service.PaymentService;
-import com.vyoog.eisplatform.modules.billing.service.razorpay.RazorpayProperties;
 import com.vyoog.eisplatform.modules.registration.model.Customer;
 import com.vyoog.eisplatform.modules.registration.model.OrganizationMember;
 import com.vyoog.eisplatform.modules.registration.service.CurrentCustomerResolver;
@@ -43,7 +42,7 @@ public class OrganizationBillingController {
     private final com.vyoog.eisplatform.modules.billing.service.CreditNoteService creditNoteService;
     private final PaymentService paymentService;
     private final PaymentMethodService paymentMethodService;
-    private final RazorpayProperties razorpayProperties;
+    private final com.vyoog.eisplatform.modules.billing.service.GatewayRoutingService gatewayRouting;
     private final CheckoutService checkoutService;
     private final BillingSettingsService billingSettingsService;
     private final OfflinePaymentService offlinePaymentService;
@@ -64,7 +63,7 @@ public class OrganizationBillingController {
             invoiceService.spentInPeriod(null, orgId, now.minus(60, ChronoUnit.DAYS), now.minus(30, ChronoUnit.DAYS)),
             paymentMethodService.defaultForOrganization(orgId),
             recent,
-            razorpayProperties.isConfigured()
+            gatewayRouting.available(null)
         );
     }
 
@@ -156,7 +155,7 @@ public class OrganizationBillingController {
         if (request != null && request.paymentMethodId() != null) {
             paymentMethodService.requireUsableForPayment(null, member.getOrganizationId(), request.paymentMethodId());
         }
-        return paymentService.createPaymentForInvoice(null, member.getOrganizationId(), invoiceId);
+        return paymentService.createPaymentForInvoice(null, member.getOrganizationId(), invoiceId, request == null ? null : request.method());
     }
 
     @PostMapping("/payments/{paymentId}/confirm")

@@ -950,12 +950,14 @@ CREATE TABLE billing_settings (
 
 CREATE TABLE payment_webhook_event (
     id BIGSERIAL PRIMARY KEY,
-    provider_event_id VARCHAR(100) NOT NULL UNIQUE,
+    provider VARCHAR(30) NOT NULL DEFAULT 'RAZORPAY',
+    provider_event_id VARCHAR(100) NOT NULL,
     event_type VARCHAR(50) NOT NULL,
     payment_id BIGINT REFERENCES payment(id),
     received_at TIMESTAMP NOT NULL DEFAULT now(),
     processed_at TIMESTAMP,
-    payload_summary VARCHAR(500)
+    payload_summary VARCHAR(500),
+    CONSTRAINT uq_payment_webhook_event_provider UNIQUE (provider, provider_event_id)
 );
 
 -- C59 (REQ-MKT-003): the signed-in user's server-side cart.
@@ -1889,3 +1891,29 @@ CREATE TABLE IF NOT EXISTS invoice_reminder (
 -- SC-1: a downgrade is scheduled and takes effect at the next renewal; an upgrade is immediate.
 ALTER TABLE product_subscription ADD COLUMN IF NOT EXISTS pending_plan_id BIGINT;
 ALTER TABLE product_subscription ADD COLUMN IF NOT EXISTS pending_plan_requested_at TIMESTAMP;
+
+-- C98 / REQ-BIL-003: provider-independent payment gateways. Mirrors database/migrations/V038__payment_gateways.sql.
+CREATE TABLE IF NOT EXISTS payment_gateway_config (
+    id BIGSERIAL PRIMARY KEY,
+    provider_code VARCHAR(30) NOT NULL UNIQUE,
+    environment VARCHAR(10) CHECK (environment IN ('TEST', 'LIVE')),
+    activated BOOLEAN NOT NULL DEFAULT false,
+    default_gateway BOOLEAN NOT NULL DEFAULT false,
+    credentials_encrypted TEXT,
+    credentials_updated_at TIMESTAMP,
+    config_version INTEGER NOT NULL DEFAULT 1,
+    enabled_methods VARCHAR(100),
+    test_status VARCHAR(30),
+    test_message VARCHAR(300),
+    tested_at TIMESTAMP,
+    tested_config_version INTEGER,
+    last_webhook_at TIMESTAMP,
+    last_webhook_event_type VARCHAR(50),
+    last_webhook_failure_at TIMESTAMP,
+    last_webhook_failure_reason VARCHAR(300),
+    webhook_failure_count INTEGER NOT NULL DEFAULT 0,
+    created_at TIMESTAMP NOT NULL DEFAULT now(),
+    updated_at TIMESTAMP NOT NULL DEFAULT now(),
+    updated_by_customer_id BIGINT
+);
+INSERT INTO payment_gateway_config (provider_code, activated, default_gateway) VALUES ('RAZORPAY', true, true) ON CONFLICT (provider_code) DO NOTHING;

@@ -87,6 +87,9 @@ vyoog:
       key-id: rzp_test_1234567890
       key-secret: test-key-secret
       webhook-secret: test-webhook-secret
+    gateway:
+      # Test-only key (base64 of 32 bytes), so stored credentials can be exercised.
+      encryption-key: dGVzdC1nYXRld2F5LWVuY3J5cHRpb24ta2V5LTMyYnk=
 
 # Knowledge Center: no scheduled jobs and no real storage in tests (tests that
 # need storage use an in-memory MediaStorageService).

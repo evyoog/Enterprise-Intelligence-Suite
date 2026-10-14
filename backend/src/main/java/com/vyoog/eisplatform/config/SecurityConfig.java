@@ -234,7 +234,7 @@ public class SecurityConfig {
                 // on that request. Trusted only via its own signature
                 // (BR-5/BR-6), verified inside PaymentService, never by a
                 // JWT here.
-                .requestMatchers(HttpMethod.POST, "/webhooks/razorpay").permitAll()
+                .requestMatchers(HttpMethod.POST, "/webhooks/*").permitAll()
                 // Requesting/viewing/self-revoking privileged access (either
                 // scope — see PrivilegedAccessController) is deliberately
                 // covered by the existing /me/** authenticated() rule below,

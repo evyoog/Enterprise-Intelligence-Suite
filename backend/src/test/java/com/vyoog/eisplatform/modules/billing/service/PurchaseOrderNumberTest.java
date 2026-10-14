@@ -27,40 +27,19 @@ import java.math.BigDecimal;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-/** C97 BI-8 (gateway-neutral payment screens) and BI-9 (optional purchase-order number). */
+/** C97 BI-9 (optional purchase-order number); the gateway list tests moved to GatewayManagementServiceTest (C98). */
 @SpringBootTest
 @ActiveProfiles("test")
 @Import(TaxTestSupport.class)
-class PaymentGatewayAndPoTest {
+class PurchaseOrderNumberTest {
 
     @Autowired private TaxTestSupport tax;
-    @Autowired private PaymentGatewayService gateways;
     @Autowired private InvoiceService invoiceService;
     @Autowired private CheckoutService checkoutService;
     @Autowired private ProductRepository productRepository;
     @Autowired private CustomerRepository customerRepository;
     @Autowired private ProductSubscriptionRepository subscriptionRepository;
     @MockBean private RazorpayClient razorpayClient;
-
-    @Test
-    void razorpayIsTheFirstGatewayAndTheListNeverCarriesASecret() {
-        var list = gateways.list();
-
-        assertThat(list).extracting(g -> g.code()).contains("RAZORPAY");
-        var razorpay = list.stream().filter(g -> g.code().equals("RAZORPAY")).findFirst().orElseThrow();
-        assertThat(razorpay.active()).isTrue();
-        assertThat(razorpay.methods()).contains("card", "upi", "netbanking", "wallet");
-        assertThat(razorpay.status().toString()).doesNotContain("secret=");
-        assertThat(gateways.activeName()).isEqualTo("Razorpay");
-        assertThatThrownBy(() -> gateways.test("NOPE")).isInstanceOf(ResourceNotFoundException.class);
-    }
-
-    @Test
-    void aConfiguredGatewayCanBeMadeActiveAndAnUnknownOneIsRefused() {
-        var list = gateways.setActive(1L, "razorpay");
-        assertThat(list).filteredOn(g -> g.active()).extracting(g -> g.code()).containsExactly("RAZORPAY");
-        assertThatThrownBy(() -> gateways.setActive(1L, "STRIPE")).isInstanceOf(ResourceNotFoundException.class);
-    }
 
     private Invoice invoiceFor(Customer c) {
         Product p = new Product();

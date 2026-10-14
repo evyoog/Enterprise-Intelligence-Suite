@@ -189,7 +189,7 @@ class BillingServiceTest {
         paymentService.processWebhook(body, "sig");
         paymentService.processWebhook(body, "sig");
 
-        assertThat(webhookEventRepository.findByProviderEventId("evt_dup_1")).isPresent();
+        assertThat(webhookEventRepository.findByProviderAndProviderEventId("RAZORPAY", "evt_dup_1")).isPresent();
         assertThat(webhookEventRepository.findAll().stream().filter(e -> "evt_dup_1".equals(e.getProviderEventId())).count()).isEqualTo(1);
     }
 
