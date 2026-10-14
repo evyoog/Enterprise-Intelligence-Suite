@@ -512,7 +512,8 @@
       "offerings": "Ofertas",
       "accessManagement": "Gestión de accesos",
       "entitlementsLookup": "Consulta de derechos de uso",
-      "coupons": "Cupones"
+      "coupons": "Cupones",
+      "taxConfiguration": "Configuración de impuestos"
     },
     "catalogTitle": "Catálogo de productos",
     "catalogSubtitle": "Busque y filtre los productos disponibles en la plataforma.",

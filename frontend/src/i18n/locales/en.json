@@ -512,7 +512,8 @@
       "offerings": "Offerings",
       "accessManagement": "Access management",
       "entitlementsLookup": "Entitlements lookup",
-      "coupons": "Coupons"
+      "coupons": "Coupons",
+      "taxConfiguration": "Tax configuration"
     },
     "catalogTitle": "Product catalog",
     "catalogSubtitle": "Search and filter the products available on the platform.",
