@@ -36,6 +36,23 @@ flowchart TD
 ```
 A second activation event for a subscription that is already ACTIVE does nothing (BR-14).
 
+## Invoice with a coupon ([C100](../../../01-business/roadmap/open-decisions.md#c100), REQ-BIL-001.35)
+```mermaid
+flowchart TD
+    A[Invoice creation for a cart or an approved/direct organization purchase] --> B{Coupon code on the cart?}
+    B -- No --> D[Lines at full amount]
+    B -- Yes --> C{Check again: exists, enabled, not expired,<br/>currency, worth less than the subtotal}
+    C -- No --> X[Refused with the reason; nothing created]
+    C -- Yes --> E[Discount shared across the lines;<br/>redeemedCount + 1]
+    E --> D2[Lines carry their discount; subtotal = gross − discount]
+    D --> T[Tax on the line amounts minus their discount share]
+    D2 --> T
+    T --> F{Tax calculated?}
+    F -- Yes --> O[Invoice OPEN: total = subtotal + tax]
+    F -- No --> DR[Invoice DRAFT: total = subtotal; the coupon stays counted]
+```
+A seat-increase invoice and a renewal invoice never take a coupon.
+
 ## Payment states
 ```mermaid
 stateDiagram-v2
@@ -56,6 +73,6 @@ Authorize and capture happen together (Razorpay auto-capture). Separate authoriz
 |---|---|
 | Edit billing details, pay, add/remove payment methods | Customer, or an organization member with Manage billing (BR-19) |
 | Add a purchase-order number | The invoice's owner, until it is paid (BR-22) |
-| Refund, reconcile, view all, choose the active gateway, enable Pay by invoice for an organization | Platform admin (`MANAGE_BILLING`) |
+| Refund, reconcile, view all, choose the active gateway, enable Pay by invoice for an organization, create, edit, disable and delete coupons | Platform admin (`MANAGE_BILLING`) |
 | Send payment reminders | The invoice reminder job (every 30 minutes), BR-17 |
 | Payment confirmation | Razorpay (checkout result + webhook) |
