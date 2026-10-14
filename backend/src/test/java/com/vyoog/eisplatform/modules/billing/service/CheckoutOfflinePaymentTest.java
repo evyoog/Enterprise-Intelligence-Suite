@@ -14,15 +14,18 @@ import com.vyoog.eisplatform.modules.product.model.Product;
 import com.vyoog.eisplatform.modules.product.model.ProductStatus;
 import com.vyoog.eisplatform.modules.product.repository.ProductRepository;
 import com.vyoog.eisplatform.modules.registration.model.Customer;
+import com.vyoog.eisplatform.modules.registration.model.Organization;
 import com.vyoog.eisplatform.modules.registration.model.ProductSubscription;
 import com.vyoog.eisplatform.modules.registration.model.RegistrationOwnerType;
 import com.vyoog.eisplatform.modules.registration.model.SubscriptionStatus;
 import com.vyoog.eisplatform.modules.registration.repository.CustomerRepository;
 import com.vyoog.eisplatform.modules.registration.repository.ProductSubscriptionRepository;
+import com.vyoog.eisplatform.modules.billing.tax.service.TaxTestSupport;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.context.annotation.Import;
 import org.springframework.test.context.ActiveProfiles;
 
 import java.math.BigDecimal;
@@ -37,9 +40,13 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
  * the network. */
 @SpringBootTest
 @ActiveProfiles("test")
+@Import(TaxTestSupport.class)
 class CheckoutOfflinePaymentTest {
 
+    @Autowired private TaxTestSupport tax;
+
     @Autowired private CheckoutService checkoutService;
+    @Autowired private BillingSettingsService billingSettingsService;
     @Autowired private OfflinePaymentService offlinePaymentService;
     @Autowired private InvoiceService invoiceService;
     @Autowired private InvoiceRepository invoiceRepository;
@@ -55,7 +62,9 @@ class CheckoutOfflinePaymentTest {
         customer.setEmail("checkout-" + System.nanoTime() + "@example.com");
         customer.setFirstName("Check");
         customer.setLastName("Out");
-        return customerRepository.save(customer);
+        customer = customerRepository.save(customer);
+        tax.readyToInvoiceInIndia(customer);   // an issued invoice needs a supplier, a rule and billing details
+        return customer;
     }
 
     private ProductSubscription newSubscription(Customer customer, BigDecimal price) {
@@ -76,6 +85,21 @@ class CheckoutOfflinePaymentTest {
         return invoiceService.generateForSubscription(newSubscription(customer, BigDecimal.valueOf(1220.80)).getId());
     }
 
+    /** C97 BI-4: Pay by invoice is only for an organization the platform admin enabled. */
+    private Invoice newOrgInvoice(Organization org) {
+        Product product = new Product();
+        product.setName("Org Product " + System.nanoTime());
+        product.setPrice(BigDecimal.valueOf(1220.80));
+        product.setStatus(ProductStatus.ACTIVE);
+        product = productRepository.save(product);
+        ProductSubscription subscription = new ProductSubscription();
+        subscription.setProductId(product.getId());
+        subscription.setOwnerType(RegistrationOwnerType.ORGANIZATION);
+        subscription.setOwnerOrganizationId(org.getId());
+        subscription.setStatus(SubscriptionStatus.ACTIVE);
+        return invoiceService.generateForSubscription(subscriptionRepository.save(subscription).getId());
+    }
+
     @Test
     void checkoutSummaryBySubscriptionShowsTheOpenInvoiceAndItsItem() {
         Customer customer = newCustomer();
@@ -88,9 +112,10 @@ class CheckoutOfflinePaymentTest {
         assertThat(summary.total()).isEqualTo(1999L);
         assertThat(summary.items()).hasSize(1);
         assertThat(summary.items().get(0).quantity()).isNull();
-        assertThat(summary.taxLines()).isEmpty();
+        // C96: the zero-rate rule set up for this test is shown as an explicit 0% line, never as a missing tax.
+        assertThat(summary.taxLines()).singleElement().satisfies(t -> assertThat(t.amount()).isZero());
         assertThat(summary.billingEmail()).isEqualTo(customer.getEmail());
-        assertThat(summary.payByInvoiceAllowed()).isTrue();
+        assertThat(summary.payByInvoiceAllowed()).isFalse();   // BI-4: an individual customer always pays online
     }
 
     @Test
@@ -118,24 +143,26 @@ class CheckoutOfflinePaymentTest {
     @Test
     void payByInvoiceSetsTheOfflineRouteAndKeepsTheInvoiceOpen() {
         Customer customer = newCustomer();
-        Invoice invoice = newOpenInvoice(customer);
+        Organization org = tax.organizationReadyToInvoice(customer, true);
+        Invoice invoice = newOrgInvoice(org);
 
-        OfflineInvoiceResultDto result = checkoutService.chooseOffline(customer.getId(), null, customer.getId(), invoice.getId());
+        OfflineInvoiceResultDto result = checkoutService.chooseOffline(null, org.getId(), customer.getId(), invoice.getId());
 
         Invoice reloaded = invoiceRepository.findById(invoice.getId()).orElseThrow();
         assertThat(reloaded.getPaymentRoute()).isEqualTo(PaymentRoute.OFFLINE);
         assertThat(reloaded.getStatus()).isEqualTo(InvoiceStatus.OPEN);
         assertThat(result.invoiceNumber()).isEqualTo(invoice.getInvoiceNumber());
         assertThat(result.total()).isEqualTo(122080L);
-        assertThat(result.billingEmail()).isEqualTo(customer.getEmail());
+        assertThat(result.billingEmail()).isNotBlank();
     }
 
     @Test
     void recordingTheFullAmountMarksTheInvoicePaidWithAnOfflinePayment() {
         Customer customer = newCustomer();
         Customer admin = newCustomer();
-        Invoice invoice = newOpenInvoice(customer);
-        checkoutService.chooseOffline(customer.getId(), null, customer.getId(), invoice.getId());
+        Organization org = tax.organizationReadyToInvoice(customer, true);
+        Invoice invoice = newOrgInvoice(org);
+        checkoutService.chooseOffline(null, org.getId(), customer.getId(), invoice.getId());
 
         InvoiceDto paid = offlinePaymentService.recordOfflinePayment(admin.getId(), invoice.getId(),
             new RecordOfflinePaymentRequest(122080L, LocalDate.now(), OfflinePaymentMethod.NEFT_RTGS, "UTR123", "Received"));
@@ -151,13 +178,14 @@ class CheckoutOfflinePaymentTest {
     @Test
     void aWrongAmountAFutureDateOrAnOnlineRouteInvoiceIsRefused() {
         Customer customer = newCustomer();
-        Invoice invoice = newOpenInvoice(customer);
+        Organization org = tax.organizationReadyToInvoice(customer, true);
+        Invoice invoice = newOrgInvoice(org);
 
         assertThatThrownBy(() -> offlinePaymentService.recordOfflinePayment(1L, invoice.getId(),
             new RecordOfflinePaymentRequest(122080L, LocalDate.now(), OfflinePaymentMethod.CHEQUE, "CHQ1", null)))
             .isInstanceOf(BillingConflictException.class);
 
-        checkoutService.chooseOffline(customer.getId(), null, customer.getId(), invoice.getId());
+        checkoutService.chooseOffline(null, org.getId(), customer.getId(), invoice.getId());
         assertThatThrownBy(() -> offlinePaymentService.recordOfflinePayment(1L, invoice.getId(),
             new RecordOfflinePaymentRequest(100000L, LocalDate.now(), OfflinePaymentMethod.CHEQUE, "CHQ1", null)))
             .isInstanceOf(IllegalArgumentException.class);
@@ -175,11 +203,34 @@ class CheckoutOfflinePaymentTest {
                 null, null, null, null, null, null, null, null, null));
 
         Customer customer = newCustomer();
-        Invoice invoice = newOpenInvoice(customer);
-        OfflineInvoiceResultDto result = checkoutService.chooseOffline(customer.getId(), null, customer.getId(), invoice.getId());
+        Organization org = tax.organizationReadyToInvoice(customer, true);
+        Invoice invoice = newOrgInvoice(org);
+        OfflineInvoiceResultDto result = checkoutService.chooseOffline(null, org.getId(), customer.getId(), invoice.getId());
 
         assertThat(result.bankDetails().bankName()).isEqualTo("HDFC Bank");
         assertThat(result.bankDetails().ifsc()).isEqualTo("HDFC0001234");
         assertThat(result.bankDetails().swiftBic()).isNull();
+    }
+
+    @Test
+    void payByInvoiceIsRefusedForAnIndividualAndForAnOrganizationThePlatformAdminHasNotEnabled() {
+        Customer customer = newCustomer();
+        Invoice individualInvoice = newOpenInvoice(customer);
+        assertThatThrownBy(() -> checkoutService.chooseOffline(customer.getId(), null, customer.getId(), individualInvoice.getId()))
+            .isInstanceOf(com.vyoog.eisplatform.common.exception.ForbiddenException.class);
+
+        Organization org = tax.organizationReadyToInvoice(customer, false);
+        Invoice orgInvoice = newOrgInvoice(org);
+        assertThat(checkoutService.summaryForInvoice(null, org.getId(), orgInvoice.getId()).payByInvoiceAllowed()).isFalse();
+        assertThatThrownBy(() -> checkoutService.chooseOffline(null, org.getId(), customer.getId(), orgInvoice.getId()))
+            .isInstanceOf(com.vyoog.eisplatform.common.exception.ForbiddenException.class);
+
+        billingSettingsService.setOrganizationPayByInvoice(customer.getId(), org.getId(), true);
+        assertThat(checkoutService.summaryForInvoice(null, org.getId(), orgInvoice.getId()).payByInvoiceAllowed()).isTrue();
+        assertThat(billingSettingsService.payByInvoiceOrganizations()).extracting(o -> o.id()).contains(org.getId());
+        assertThat(billingSettingsService.searchOrganizations(org.getName().substring(0, 10))).extracting(o -> o.id()).contains(org.getId());
+
+        billingSettingsService.setOrganizationPayByInvoice(customer.getId(), org.getId(), false);
+        assertThat(checkoutService.summaryForInvoice(null, org.getId(), orgInvoice.getId()).payByInvoiceAllowed()).isFalse();
     }
 }

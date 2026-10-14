@@ -85,6 +85,8 @@ public class RbacSeeder implements ApplicationRunner {
             // distinct, sensitive responsibility from every other admin
             // capability above.
             "MANAGE_BILLING",
+            // REQ-SUB-002 (C97 EN-3): read-only support lookup of any customer's or organization's entitlements.
+            "VIEW_ENTITLEMENTS",
             // Platform admin dashboard (C53): a read-only, platform-wide
             // overview spanning every domain above (organizations, catalog,
             // subscriptions, billing, support, reviews) — its own permission

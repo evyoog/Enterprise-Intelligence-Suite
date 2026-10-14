@@ -219,6 +219,8 @@ public class SecurityConfig {
                 // customer's invoices is a distinct, sensitive
                 // responsibility from every other admin capability above.
                 .requestMatchers("/admin/billing/**").access(permissions.platformPermission("MANAGE_BILLING"))
+                // REQ-SUB-002 (C97 EN-3): read-only entitlement lookup for support — its own permission.
+                .requestMatchers("/admin/entitlements/**").access(permissions.platformPermission("VIEW_ENTITLEMENTS"))
                 // Platform admin dashboard (C53): a read-only, cross-domain
                 // overview — its own permission, distinct from every single-
                 // domain admin capability above (see RbacSeeder's own comment).
@@ -232,7 +234,7 @@ public class SecurityConfig {
                 // on that request. Trusted only via its own signature
                 // (BR-5/BR-6), verified inside PaymentService, never by a
                 // JWT here.
-                .requestMatchers(HttpMethod.POST, "/webhooks/razorpay").permitAll()
+                .requestMatchers(HttpMethod.POST, "/webhooks/*").permitAll()
                 // Requesting/viewing/self-revoking privileged access (either
                 // scope — see PrivilegedAccessController) is deliberately
                 // covered by the existing /me/** authenticated() rule below,

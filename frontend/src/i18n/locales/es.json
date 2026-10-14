@@ -14,7 +14,8 @@
     "viewAllProducts": "Ver todos los productos →",
     "openMenu": "Abrir menú",
     "closeMenu": "Cerrar menú",
-    "skipToContent": "Saltar al contenido"
+    "skipToContent": "Saltar al contenido",
+    "taxConfiguration": "Configuración de impuestos"
   },
   "auth": {
     "signIn": "Iniciar sesión",
@@ -486,7 +487,7 @@
       "partners": "Socios",
       "billing": "Facturación",
       "billingInvoicesPayments": "Facturas y pagos",
-      "paymentGateway": "Pasarela de pago",
+      "paymentGateway": "Pasarelas de pago",
       "billingSettings": "Configuración de facturación",
       "integrations": "Integraciones",
       "platformEvents": "Eventos de la plataforma",
@@ -509,7 +510,8 @@
       "peopleStructure": "Personas y estructura",
       "organizationsDirectory": "Organizaciones",
       "offerings": "Ofertas",
-      "accessManagement": "Gestión de accesos"
+      "accessManagement": "Gestión de accesos",
+      "entitlementsLookup": "Consulta de derechos de uso"
     },
     "catalogTitle": "Catálogo de productos",
     "catalogSubtitle": "Busque y filtre los productos disponibles en la plataforma.",
@@ -703,7 +705,8 @@
     "changePlanDialog": {
       "title": "Cambiar plan de {{product}}",
       "planLabel": "Plan",
-      "save": "Guardar"
+      "save": "Guardar",
+      "rule": "Una mejora de plan se aplica ahora. Una rebaja se aplica en tu próxima renovación."
     },
     "confirmCancel": "Esto cancela permanentemente tu suscripción a {{product}}. ¿Continuar?",
     "seats": {
@@ -730,6 +733,11 @@
       "changeReminders": "Cambiar la configuración de recordatorios",
       "nextReminder": "Próximo recordatorio: {{date}}",
       "noReminderLeft": "No hay recordatorio antes de esta renovación."
+    },
+    "scheduledChange": {
+      "notice": "Tu plan cambiará a {{plan}} el {{date}}, en tu próxima renovación. Conservas tu plan actual hasta entonces.",
+      "keep": "Mantener el plan actual",
+      "nextRenewal": "tu próxima renovación"
     }
   },
   "orders": {
@@ -1008,7 +1016,9 @@
       "pay": "Pagar",
       "downloadInvoice": "Descargar factura",
       "downloadReceipt": "Descargar recibo",
-      "empty": "Aún no hay facturas."
+      "empty": "Aún no hay facturas.",
+      "tax": "Impuestos",
+      "creditNotes": "Notas de crédito"
     },
     "pay": {
       "title": "Pagar factura",
@@ -1034,7 +1044,7 @@
       "title": "Agregar método de pago",
       "card": "Tarjeta",
       "upi": "UPI",
-      "consent": "Acepto guardar esta tarjeta de forma segura con Razorpay para futuros pagos",
+      "consent": "Acepto guardar esta tarjeta de forma segura con nuestro proveedor de pagos para futuros pagos",
       "makeDefault": "Establecer como predeterminado",
       "continue": "Continuar a entrada segura",
       "saved": "Método de pago guardado.",
@@ -1055,8 +1065,18 @@
       "postalCode": "Código postal",
       "country": "País",
       "taxId": "ID fiscal",
-      "saved": "Datos de facturación guardados."
-    }
+      "saved": "Datos de facturación guardados.",
+      "taxIdHelpIndia": "Para un cliente de la India, un GSTIN de 15 caracteres, por ejemplo 33ABCDE1234F1Z5.",
+      "taxIdInvalid": "Introduzca un GSTIN válido de 15 caracteres, por ejemplo 33ABCDE1234F1Z5."
+    },
+    "creditNotes": {
+      "title": "Notas de crédito de {{number}}",
+      "empty": "Esta factura no tiene notas de crédito.",
+      "subtotal": "Subtotal abonado",
+      "download": "Descargar nota de crédito",
+      "close": "Cerrar"
+    },
+    "noPermission": "Solo los miembros con el permiso Gestionar facturación pueden ver la facturación de tu organización. Pide a un administrador de la organización que te lo conceda."
   },
   "admin": {
     "billing": {
@@ -1099,31 +1119,151 @@
       "routes": {
         "ONLINE": "En línea",
         "OFFLINE": "Sin conexión"
-      }
+      },
+      "resolveTax": "Resolver impuestos"
     },
     "paymentGateway": {
-      "title": "Pasarela de pago",
-      "subtitle": "Estado de la conexión con Razorpay — solo lectura.",
-      "provider": "Proveedor",
-      "status": "Estado",
-      "configured": "Configurado",
-      "notConfigured": "No configurado",
-      "mode": "Modo",
-      "live": "Producción",
-      "test": "Prueba",
-      "keyId": "ID de clave",
-      "keySecret": "Clave secreta",
-      "webhookSecret": "Secreto del webhook",
-      "webhookUrl": "URL del webhook",
-      "lastWebhook": "Último webhook recibido",
-      "never": "Nunca",
-      "set": "Configurado",
-      "notSet": "No configurado",
-      "copy": "Copiar",
+      "title": "Pasarelas de pago",
+      "subtitle": "Configura y administra los proveedores de pago con los que EIS cobra las suscripciones.",
+      "loadError": "No se pudieron cargar las pasarelas de pago.",
+      "retry": "Reintentar",
+      "working": "Trabajando",
+      "stats": {
+        "registered": "Pasarelas registradas",
+        "configured": "Configuradas",
+        "active": "Activas",
+        "needsConfiguration": "Requieren configuración",
+        "activeOf": "{{active}} de {{total}} activas"
+      },
+      "noneActive": "Ninguna activa",
+      "configured": "Configurada",
+      "configuredTitle": "Pasarelas de pago",
+      "routingNote": "Los pagos nuevos van a una pasarela activa que admita la moneda de la factura y el método de pago; primero se prueba la predeterminada. Los pagos ya realizados siguen siempre con la pasarela que los cobró.",
+      "plannedTitle": "Integraciones previstas",
+      "plannedBody": "Estos proveedores pueden añadirse a EIS pero aún no tienen integración. No se pueden configurar, probar ni activar.",
+      "planned": "Integración prevista",
+      "plannedNote": "{{name}} aún no está integrado. Aquí se ve lo que necesitará; nada de esto se puede configurar ni usar.",
+      "configuration": {
+        "NOT_AVAILABLE": "No disponible",
+        "NOT_CONFIGURED": "Sin configurar",
+        "CONFIGURATION_INCOMPLETE": "Configuración incompleta",
+        "CONFIGURED": "Configurada"
+      },
+      "connection": {
+        "NOT_CONFIGURED": "Sin configurar",
+        "CONFIGURATION_INCOMPLETE": "Configuración incompleta",
+        "NOT_TESTED": "Sin probar",
+        "CONNECTION_SUCCESSFUL": "Conexión correcta",
+        "AUTHENTICATION_FAILED": "Error de autenticación",
+        "PROVIDER_UNAVAILABLE": "Proveedor no disponible",
+        "UNSUPPORTED_CONFIGURATION": "Configuración no compatible",
+        "TEST_FAILED": "La prueba falló"
+      },
+      "active": "Activa",
+      "inactive": "Inactiva",
+      "default": "Predeterminada",
+      "lastTest": "Última prueba: {{date}}",
+      "env": {
+        "TEST": "Pruebas",
+        "LIVE": "Producción"
+      },
+      "envNotSet": "Entorno sin definir",
+      "methods": {
+        "card": "Tarjetas",
+        "upi": "UPI",
+        "netbanking": "Banca en línea",
+        "wallet": "Monederos",
+        "bank_transfer": "Transferencia bancaria",
+        "paypal": "PayPal"
+      },
+      "configure": "Configurar",
+      "configureNamed": "Configurar {{name}}",
       "testConnection": "Probar conexión",
-      "connected": "Conectado.",
-      "testFailed": "No se pudo conectar con Razorpay.",
-      "notConfiguredGuidance": "Agregue las credenciales de Razorpay al archivo común de secretos y reinicie el backend."
+      "testNamed": "Probar la conexión de {{name}}",
+      "activate": "Activar",
+      "activateNamed": "Activar {{name}}",
+      "deactivate": "Desactivar",
+      "deactivateNamed": "Desactivar {{name}}",
+      "makeDefault": "Hacer predeterminada",
+      "makeDefaultNamed": "Hacer de {{name}} la pasarela predeterminada",
+      "viewDetails": "Ver detalles",
+      "viewDetailsNamed": "Ver los detalles de {{name}}",
+      "activated": "{{name}} está activa.",
+      "deactivated": "{{name}} está inactiva. Los pagos ya realizados con ella no cambian.",
+      "defaultSet": "{{name}} es ahora la predeterminada para pagos nuevos.",
+      "testFailed": "No se pudo ejecutar la prueba de conexión.",
+      "saveFailed": "No se pudo guardar. Inténtalo de nuevo.",
+      "configureTitle": "Configurar {{name}}",
+      "configureHelp": "Introduce las credenciales del panel del proveedor. Se guardan cifradas y no se vuelven a mostrar; deja un campo en blanco para conservar lo guardado.",
+      "rotationNote": "Esta pasarela está activa, así que las credenciales nuevas se prueban primero. Si la prueba falla no se guarda nada y las credenciales actuales siguen funcionando.",
+      "noEncryptionKey": "No se pueden guardar credenciales porque el servidor no tiene clave de cifrado (PAYMENT_GATEWAY_ENCRYPTION_KEY). Pídela a quien administra el servidor. Las credenciales del archivo de secretos siguen funcionando.",
+      "unreadable": "Las credenciales guardadas no se pueden leer con la clave de cifrado actual del servidor. Vuelve a introducirlas.",
+      "environment": "Entorno",
+      "keepSecret": "•••••• guardado — déjalo en blanco para conservarlo",
+      "fieldSet": "Definido ({{source}})",
+      "fieldNotSet": "Sin definir",
+      "current": "Actual: {{value}}",
+      "source": {
+        "STORED": "guardado aquí",
+        "ENVIRONMENT": "archivo de secretos",
+        "NONE": "sin definir"
+      },
+      "save": "Guardar",
+      "saved": "Configuración de {{name}} guardada.",
+      "cancel": "Cancelar",
+      "close": "Cerrar",
+      "detailTabs": "Detalles de la pasarela",
+      "tabs": {
+        "overview": "Resumen",
+        "webhook": "Webhook",
+        "activity": "Actividad"
+      },
+      "regions": "Países y monedas",
+      "capabilities": "Admite",
+      "cap": {
+        "webhooks": "Webhooks",
+        "refunds": "Reembolsos",
+        "recurring": "Pagos recurrentes"
+      },
+      "paymentMethods": "Métodos de pago",
+      "methodsHelp": "Desactiva un método para dejar de ofrecerlo con esta pasarela. Debe quedar al menos uno.",
+      "fields": "Campos de configuración",
+      "secretField": "Secreto",
+      "publicField": "Identificador",
+      "evidence": "Comprobado con actividad real",
+      "evidenceHelp": "Es independiente de la prueba de conexión: que pase no demuestra que los pagos, webhooks o reembolsos funcionen.",
+      "evidenceItems": {
+        "authenticated": "Credenciales aceptadas",
+        "webhookReceived": "Webhook firmado recibido",
+        "paymentCaptured": "Pago capturado",
+        "refundMade": "Reembolso realizado"
+      },
+      "seen": "Sí",
+      "notSeen": "Aún no",
+      "endpoint": "URL del webhook",
+      "copy": "Copiar",
+      "copied": "Copiado",
+      "copyEndpoint": "Copiar la URL del webhook",
+      "localUrl": "Esta URL apunta a este equipo, así que el proveedor no puede alcanzarla. Define la dirección pública del backend (BACKEND_URL) para este entorno.",
+      "hookSecretSet": "Secreto del webhook definido",
+      "hookSecretMissing": "Falta el secreto del webhook",
+      "signature": {
+        "VERIFIED": "Firma verificada",
+        "NOT_SEEN": "Aún no hay evento firmado",
+        "NOT_APPLICABLE": "Sin webhooks"
+      },
+      "hookFailures": "{{count}} webhook(s) rechazado(s)",
+      "lastEvent": "Último evento recibido",
+      "never": "Nunca",
+      "lastFailure": "Último webhook rechazado ({{date}})",
+      "subscribeTo": "Suscribe el webhook a",
+      "setupSteps": "Pasos de configuración",
+      "recentEvents": "Eventos de webhook recientes",
+      "noEvents": "No se ha recibido ningún webhook.",
+      "history": "Cambios de los administradores",
+      "noHistory": "Aún no hay cambios registrados.",
+      "configVersion": "Versión de configuración {{version}}",
+      "credentialsUpdated": "credenciales actualizadas {{date}}"
     },
     "billingSettings": {
       "eyebrow": "Facturación",
@@ -1134,7 +1274,7 @@
         "business": "Empresa y facturas",
         "offline": "Pagos sin conexión",
         "methods": "Métodos de pago",
-        "gateway": "Pasarela Razorpay",
+        "gateway": "Pasarelas de pago",
         "reminders": "Recordatorios de renovación"
       },
       "overview": {
@@ -1215,7 +1355,10 @@
         "payByInvoiceEnabled": "Pagar con factura",
         "checkoutDisplayName": "Nombre en Razorpay Checkout",
         "checkoutDescription": "Descripción en Razorpay Checkout",
-        "checkoutThemeColor": "Color del pago"
+        "checkoutThemeColor": "Color del pago",
+        "termsUrl": "Página de Términos y condiciones",
+        "privacyUrl": "Página de Política de privacidad",
+        "refundPolicyUrl": "Página de Política de reembolsos"
       },
       "h": {
         "prefix": "Las facturas nuevas se numeran PREFIJO-AÑO-NÚMERO. Los números emitidos no cambian.",
@@ -1263,7 +1406,9 @@
         "offlineMethod": "Pago sin conexión",
         "offlineMethodBody": "Permite pagar contra una factura en lugar de en línea.",
         "appearance": "Apariencia de Razorpay Checkout",
-        "appearanceBody": "Cómo aparece tu empresa en la ventana de pago de Razorpay. No son secretos."
+        "appearanceBody": "Cómo aparece tu empresa en la ventana de pago de Razorpay. No son secretos.",
+        "policies": "Páginas de políticas",
+        "policiesBody": "Enlaces a las páginas de Términos, Privacidad y Reembolsos del sitio evyoog.com. El pago los enlaza y las facturas los imprimen."
       },
       "preview": {
         "invoiceTitle": "Vista previa de la factura",
@@ -1278,40 +1423,6 @@
         "checkoutTitle": "Vista previa del pago",
         "checkoutDescription": "Pago de suscripción",
         "checkoutNote": "Los métodos desactivados no se muestran en el pago."
-      },
-      "gateway": {
-        "statusTitle": "Credenciales de Razorpay",
-        "statusBody": "Si cada clave está en el archivo de secretos. Los valores nunca se muestran aquí.",
-        "present": "Presente",
-        "missing": "Falta",
-        "provider": "Proveedor: {{provider}}",
-        "webhookTitle": "Webhook",
-        "webhookBody": "Registra esta URL en el panel de Razorpay con tu secreto de webhook, para confirmar los pagos aunque el cliente cierre la ventana.",
-        "copyWebhook": "Copiar la URL del webhook",
-        "copyVariable": "Copiar {{name}}",
-        "setupTitle": "Añadir o renovar las claves",
-        "setupBody": "Las claves solo están en el archivo común de secretos (BR-SEC-001).",
-        "step1": {
-          "title": "Genera las claves en Razorpay",
-          "body": "En el panel de Razorpay, crea una clave de prueba (o una real al pasar a producción) y un secreto de webhook."
-        },
-        "step2": {
-          "title": "Ponlas en config/secrets.env",
-          "body": "Rellena estas variables en el servidor. El archivo nunca se sube al repositorio."
-        },
-        "step3": {
-          "title": "Registra el webhook",
-          "body": "Añade la URL del webhook anterior en el panel de Razorpay con el mismo secreto."
-        },
-        "step4": {
-          "title": "Reinicia el backend",
-          "body": "El backend lee el archivo de secretos al arrancar."
-        },
-        "step5": {
-          "title": "Prueba la conexión",
-          "body": "Usa Probar conexión. Los métodos en línea se activan para los clientes automáticamente."
-        },
-        "securityNote": "Por seguridad, las claves de Razorpay nunca se escriben, guardan ni muestran en esta pantalla. Solo si cada clave está configurada y el ID de clave enmascarado."
       },
       "reminders": {
         "title": "Valores predeterminados de recordatorios",
@@ -1331,6 +1442,18 @@
         "daysLeft_other": "{{count}} días antes",
         "renewalDay": "Renovación",
         "saveError": "No se pudieron guardar los valores predeterminados."
+      },
+      "loading": "Cargando…",
+      "payByInvoiceOrgs": {
+        "title": "Organizaciones que pueden pagar con factura",
+        "subtitle": "Pagar con factura es solo para las organizaciones que actives aquí. Los clientes individuales siempre pagan en línea.",
+        "body": "Una organización ve la opción de pagar con factura solo cuando el interruptor de arriba está activo y la organización está habilitada abajo.",
+        "enabledTitle": "Organizaciones habilitadas",
+        "none": "Aún no hay organizaciones habilitadas.",
+        "search": "Buscar una organización",
+        "searchHelp": "Escribe al menos 2 letras de su nombre.",
+        "noMatch": "Ninguna organización coincide.",
+        "switchLabel": "Pagar con factura para {{name}}"
       }
     },
     "events": {
@@ -1482,6 +1605,358 @@
       "inCatalog": "En el catálogo",
       "explore": "Gestionar aplicaciones",
       "editLabel": "Editar {{name}}"
+    },
+    "tax": {
+      "eyebrow": "Facturación",
+      "title": "Configuración de impuestos",
+      "subtitle": "Elija cómo se calculan los impuestos en las facturas y gestione las reglas, las clases y el proveedor.",
+      "loadError": "No se pudo cargar la configuración de impuestos.",
+      "retry": "Reintentar",
+      "saved": "Guardado.",
+      "engine": {
+        "title": "Motor de impuestos externo",
+        "description": "Active o desactive el cálculo de impuestos externo para las transacciones de facturación.",
+        "switch": "Motor de impuestos externo",
+        "on": "Activado",
+        "off": "Desactivado",
+        "helperOn": "Las nuevas facturas se calculan con el proveedor externo. EIS nunca usa sus propias reglas si el proveedor falla.",
+        "helperOff": "Las nuevas facturas se calculan con el motor interno de EIS, con las reglas aprobadas más abajo.",
+        "activeMode": "Modo de cálculo activo",
+        "internal": "Motor de impuestos interno de EIS",
+        "external": "Proveedor de impuestos externo",
+        "statusLabel": "Estado",
+        "status": {
+          "READY": "Listo",
+          "ATTENTION": "Requiere atención",
+          "BLOCKING": "Bloquea facturas"
+        },
+        "version": "Versión de configuración {{version}}",
+        "changed": "Cambiado {{when}} por {{who}}",
+        "neverChanged": "Sin cambios: es el valor predeterminado.",
+        "waiting": "{{count}} factura(s) esperan el cálculo de impuestos",
+        "rulesInForce": "{{count}} regla(s) aprobada(s) en vigor",
+        "confirmOnTitle": "¿Cambiar al proveedor de impuestos externo?",
+        "confirmOnBody": "EIS prueba primero al proveedor. Después, las nuevas facturas se calculan con él. Las facturas ya emitidas no cambian. Si el proveedor falla, las facturas esperan como borrador; EIS no usa sus propias reglas en su lugar.",
+        "confirmOffTitle": "¿Cambiar al motor de impuestos interno de EIS?",
+        "confirmOffBody": "Las nuevas facturas se calculan con las reglas aprobadas en EIS. Las facturas ya emitidas no cambian.",
+        "confirm": "Cambiar",
+        "switchedOn": "Ahora se usa el proveedor de impuestos externo para las nuevas facturas.",
+        "switchedOff": "Ahora se usa el motor interno de EIS para las nuevas facturas.",
+        "refusedTitle": "No se activó el motor externo",
+        "refusedBody": "No se cambió nada. Corrija estas comprobaciones e inténtelo de nuevo.",
+        "switchError": "No se pudo cambiar el ajuste."
+      },
+      "tabs": {
+        "label": "Secciones de la configuración de impuestos",
+        "rules": "Reglas",
+        "classification": "Clasificación",
+        "exemptions": "Exenciones",
+        "registrations": "Registros",
+        "provider": "Proveedor externo",
+        "blocked": "Facturas en borrador"
+      },
+      "rules": {
+        "title": "Reglas de impuestos",
+        "description": "Se usan cuando el motor externo está desactivado. Solo se aplican reglas aprobadas, activas y vigentes en la fecha de la factura. EIS no incluye ninguna tasa.",
+        "new": "Nueva regla",
+        "empty": "Aún no hay reglas. Cree una por cada país, estado y condición en los que cobra impuestos. Hasta que se apruebe una regla, las facturas esperan como borrador.",
+        "selfApproval": "Permitir que el mismo administrador apruebe",
+        "selfApprovalHelp": "Desactivado por defecto: otro administrador distinto del que editó la regla debe aprobarla.",
+        "columns": {
+          "rule": "Regla",
+          "where": "Dónde",
+          "conditions": "Condiciones",
+          "components": "Componentes",
+          "dates": "Vigencia",
+          "status": "Estado",
+          "actions": "Acciones"
+        },
+        "anywhere": "Todo el país",
+        "any": "Cualquiera",
+        "version": "Versión {{version}}",
+        "active": "Activa",
+        "inactive": "Inactiva",
+        "notYetInForce": "No vigente hoy",
+        "inForce": "Vigente hoy",
+        "from": "Desde {{date}}",
+        "until": "hasta {{date}}",
+        "noEnd": "sin fecha de fin",
+        "rejectedBecause": "Rechazada: {{reason}}",
+        "status": {
+          "DRAFT": "Borrador",
+          "PENDING_APPROVAL": "Pendiente de aprobación",
+          "APPROVED": "Aprobada",
+          "REJECTED": "Rechazada"
+        },
+        "action": {
+          "edit": "Editar",
+          "submit": "Enviar a aprobación",
+          "approve": "Aprobar",
+          "reject": "Rechazar",
+          "activate": "Activar",
+          "deactivate": "Desactivar",
+          "newVersion": "Nueva versión",
+          "delete": "Eliminar"
+        },
+        "done": {
+          "submit": "Enviada a aprobación.",
+          "approve": "Aprobada y activa.",
+          "reject": "Rechazada.",
+          "activate": "Activada.",
+          "deactivate": "Desactivada.",
+          "newVersion": "Se creó un borrador de la siguiente versión.",
+          "delete": "Eliminada."
+        },
+        "rejectTitle": "Rechazar esta regla",
+        "rejectReason": "Motivo",
+        "rejectConfirm": "Rechazar regla",
+        "deleteTitle": "¿Eliminar esta regla?",
+        "deleteBody": "Se puede eliminar una regla en borrador o rechazada. No se puede deshacer.",
+        "deleteConfirm": "Eliminar regla",
+        "actionError": "No se pudo completar la acción."
+      },
+      "ruleForm": {
+        "createTitle": "Nueva regla de impuestos",
+        "editTitle": "Editar regla de impuestos",
+        "name": "Nombre de la regla",
+        "country": "País",
+        "state": "Estado o provincia (opcional)",
+        "stateHelp": "Déjelo vacío para todo el país.",
+        "jurisdiction": "Jurisdicción (opcional)",
+        "taxType": "Tipo de impuesto",
+        "taxClass": "Clase de impuesto (opcional)",
+        "anyClass": "Cualquier clase",
+        "customerType": "Tipo de cliente",
+        "supplyType": "Suministro",
+        "taxIdCondition": "Identificación fiscal del cliente",
+        "treatment": "Tratamiento",
+        "effectiveFrom": "Vigente desde",
+        "effectiveTo": "Vigente hasta (opcional)",
+        "notes": "Notas (opcional)",
+        "components": "Componentes del impuesto",
+        "componentsHelp": "Un componente por impuesto, por ejemplo CGST y SGST juntos, o solo IGST.",
+        "componentCode": "Código",
+        "componentName": "Nombre",
+        "componentRate": "Tasa (%)",
+        "compound": "Se aplica sobre la base más los componentes anteriores",
+        "addComponent": "Añadir componente",
+        "removeComponent": "Quitar el componente {{n}}",
+        "noComponents": "Una regla {{treatment}} no tiene componentes.",
+        "save": "Guardar como borrador",
+        "totalRate": "Tasa total: {{rate}}%",
+        "errors": {
+          "name": "Introduzca el nombre de la regla.",
+          "country": "Elija un país.",
+          "from": "Elija la fecha de inicio.",
+          "to": "La fecha de fin no puede ser anterior a la de inicio.",
+          "components": "Añada al menos un componente.",
+          "code": "Cada componente necesita un código (letras y dígitos).",
+          "componentName": "Cada componente necesita un nombre.",
+          "rate": "Una tasa va de 0 a 100 con hasta 4 decimales.",
+          "duplicate": "Los códigos de los componentes deben ser distintos."
+        }
+      },
+      "taxType": {
+        "GST": "GST",
+        "VAT": "IVA",
+        "SALES_TAX": "Impuesto sobre ventas",
+        "OTHER": "Otro"
+      },
+      "treatment": {
+        "TAXABLE": "Gravable",
+        "EXEMPT": "Exento",
+        "ZERO_RATED": "Tasa cero",
+        "NIL_RATED": "Tasa nula",
+        "REVERSE_CHARGE": "Inversión del sujeto pasivo",
+        "OUT_OF_SCOPE": "Fuera de alcance"
+      },
+      "customerType": {
+        "ANY": "Cualquier cliente",
+        "INDIVIDUAL": "Particular",
+        "BUSINESS": "Empresa"
+      },
+      "supplyType": {
+        "ANY": "Cualquier suministro",
+        "INTRA_STATE": "Dentro del estado del vendedor",
+        "INTER_STATE": "Entre estados",
+        "CROSS_BORDER": "Transfronterizo"
+      },
+      "taxIdCondition": {
+        "ANY": "Cualquiera",
+        "PROVIDED": "Con identificación fiscal",
+        "NOT_PROVIDED": "Sin identificación fiscal"
+      },
+      "preview": {
+        "title": "Probar un cálculo",
+        "description": "Aplica las reglas internas a una transacción ficticia. No se crea nada.",
+        "amount": "Importe (sin impuestos)",
+        "currency": "Moneda",
+        "country": "País del cliente",
+        "state": "Estado del cliente",
+        "taxClass": "Clase de impuesto",
+        "customerType": "Tipo de cliente",
+        "taxId": "Identificación fiscal del cliente",
+        "run": "Calcular",
+        "placeOfSupply": "Lugar de suministro: {{place}}",
+        "total": "Total con impuestos",
+        "totalTax": "Total de impuestos",
+        "blocked": "Bloqueado: {{message}}",
+        "error": "No se pudo ejecutar el cálculo."
+      },
+      "classes": {
+        "title": "Clases de impuestos",
+        "description": "Una clase (por ejemplo un código SAC) agrupa productos que tributan igual. Las reglas pueden limitarse a una clase, y un proveedor externo necesita una para cada producto.",
+        "new": "Nueva clase",
+        "empty": "Aún no hay clases de impuestos.",
+        "code": "Código",
+        "name": "Nombre",
+        "sac": "Código SAC / HSN",
+        "descriptionField": "Descripción",
+        "enabled": "Activada",
+        "products": "{{count}} producto(s)",
+        "save": "Guardar clase",
+        "edit": "Editar",
+        "codeLocked": "El código no se puede cambiar.",
+        "productsTitle": "Clasificación de productos",
+        "productsDescription": "Elija la clase de impuesto de cada producto. Un producto sin clase solo coincide con reglas no limitadas a una clase, y el proveedor externo no lo calculará.",
+        "product": "Producto",
+        "classFor": "Clase de impuesto de {{name}}",
+        "none": "Sin clase",
+        "errors": {
+          "code": "Introduzca un código (letras, dígitos, - y _).",
+          "name": "Introduzca un nombre."
+        },
+        "productsColumn": "Productos"
+      },
+      "exemptions": {
+        "title": "Exenciones de impuestos",
+        "description": "Un certificado de exención aprobado hace que las facturas de un cliente queden exentas en ese país, con el motivo impreso. Lo aprueba otro administrador.",
+        "new": "Nueva exención",
+        "empty": "No hay exenciones.",
+        "columns": {
+          "owner": "Cliente u organización",
+          "country": "País",
+          "reason": "Motivo",
+          "dates": "Vigencia",
+          "status": "Estado",
+          "actions": "Acciones"
+        },
+        "ownerType": "Se aplica a",
+        "customer": "Cliente",
+        "organization": "Organización",
+        "ownerId": "ID del cliente o de la organización",
+        "countryField": "País",
+        "reason": "Motivo (por ejemplo, unidad SEZ)",
+        "certificate": "Número de certificado (opcional)",
+        "from": "Vigente desde",
+        "to": "Vigente hasta (opcional)",
+        "save": "Guardar exención",
+        "status": {
+          "PENDING_APPROVAL": "Pendiente de aprobación",
+          "APPROVED": "Aprobada",
+          "REVOKED": "Revocada"
+        },
+        "approve": "Aprobar",
+        "revoke": "Revocar",
+        "errors": {
+          "ownerId": "Introduzca el ID numérico.",
+          "country": "Elija un país.",
+          "reason": "Introduzca el motivo.",
+          "from": "Elija la fecha de inicio."
+        }
+      },
+      "registrations": {
+        "title": "Registros fiscales del proveedor",
+        "description": "Sus registros fiscales, que se envían a un proveedor externo con cada factura. El GSTIN de la configuración de facturación se incluye automáticamente.",
+        "new": "Añadir registro",
+        "empty": "No hay registros. Se usa el GSTIN de la configuración de facturación si existe.",
+        "country": "País",
+        "state": "Estado (opcional)",
+        "taxType": "Tipo de impuesto",
+        "number": "Número de registro",
+        "from": "Vigente desde (opcional)",
+        "to": "Vigente hasta (opcional)",
+        "enabled": "Activado",
+        "save": "Guardar registro",
+        "delete": "Eliminar",
+        "fromProfile": "De la configuración de facturación",
+        "deleteTitle": "¿Eliminar este registro?",
+        "deleteBody": "Dejará de enviarse al proveedor.",
+        "deleteConfirm": "Eliminar",
+        "errors": {
+          "country": "Elija un país.",
+          "number": "Introduzca el número de registro."
+        }
+      },
+      "provider": {
+        "title": "Proveedor de impuestos externo",
+        "description": "Se usa cuando el motor externo está activado. La dirección y las credenciales del proveedor se configuran en el servidor, nunca aquí.",
+        "select": "Proveedor",
+        "none": "Elija un proveedor",
+        "company": "Código de empresa (opcional)",
+        "environment": "Entorno",
+        "sandbox": "Pruebas",
+        "production": "Producción",
+        "timeout": "Tiempo de espera (segundos)",
+        "attempts": "Intentos por cálculo",
+        "attemptsHelp": "Solo se reintentan los fallos temporales, con la misma clave de idempotencia.",
+        "save": "Guardar ajustes",
+        "credentialsTitle": "Credenciales en el servidor",
+        "credentialsBody": "EIS lee estos valores de su entorno (config/secrets.env). Nunca se muestran ni se envían a esta pantalla: solo si cada uno está definido.",
+        "set": "Definido",
+        "notSet": "No definido",
+        "host": "Host del proveedor",
+        "test": "Probar la conexión y validar capacidades",
+        "testing": "Probando…",
+        "validationTitle": "Última validación",
+        "validationNone": "El proveedor aún no se ha validado.",
+        "validated": "Validado {{when}}",
+        "status": {
+          "NOT_VALIDATED": "Sin validar",
+          "PASSED": "Superada",
+          "FAILED": "Fallida"
+        },
+        "countries": "Países admitidos",
+        "currencies": "Monedas admitidas",
+        "types": "Tipos de transacción",
+        "passed": "Superada",
+        "failed": "Fallida",
+        "rulesNote": "Mientras el motor externo está activado, los nuevos ajustes solo se guardan si el proveedor sigue superando la validación.",
+        "error": "No se pudieron guardar los ajustes del proveedor."
+      },
+      "blocked": {
+        "title": "Facturas en borrador",
+        "description": "Una factura cuyo impuesto no se pudo determinar con seguridad queda como borrador: no tiene número, no se puede pagar y no se muestra al cliente. Corrija la causa y reintente.",
+        "empty": "Ninguna factura espera el cálculo de impuestos.",
+        "columns": {
+          "invoice": "Factura",
+          "owner": "Cliente",
+          "amount": "Importe",
+          "reason": "Motivo",
+          "engine": "Motor",
+          "actions": "Acciones"
+        },
+        "retry": "Reintentar impuestos",
+        "retrying": "Reintentando…",
+        "issued": "Se emitió la factura {{number}}.",
+        "stillBlocked": "Sigue bloqueada: {{reason}}",
+        "draftNumber": "Borrador n.º {{id}}",
+        "codes": {
+          "NO_MATCHING_RULE": "Ninguna regla coincide",
+          "AMBIGUOUS_RULES": "Reglas ambiguas",
+          "MISSING_CUSTOMER_COUNTRY": "Falta el país del cliente",
+          "MISSING_SUPPLIER_PROFILE": "Perfil de empresa incompleto",
+          "MISSING_TAX_CLASS": "El producto no tiene clase de impuesto",
+          "PROVIDER_NOT_CONFIGURED": "Proveedor sin configurar",
+          "PROVIDER_NOT_VALIDATED": "Proveedor sin validar",
+          "PROVIDER_UNSUPPORTED": "No admitido por el proveedor",
+          "PROVIDER_UNAVAILABLE": "Proveedor no disponible",
+          "PROVIDER_REJECTED": "El proveedor rechazó la solicitud",
+          "PROVIDER_INVALID_RESPONSE": "Respuesta del proveedor no válida",
+          "ENGINE_ERROR": "Error de cálculo"
+        }
+      },
+      "close": "Cerrar"
     }
   },
   "checkout": {
@@ -1541,7 +2016,7 @@
       }
     },
     "card": {
-      "lead": "Introducirás los datos de tu tarjeta en la ventana segura de Razorpay después de pulsar Pagar.",
+      "lead": "Introducirás los datos de tu tarjeta en la ventana segura del proveedor de pagos después de pulsar Pagar.",
       "number": "Número de tarjeta",
       "name": "Nombre en la tarjeta",
       "expiry": "Caducidad (MM/AA)",
@@ -1552,7 +2027,7 @@
       "accepted": "Tarjetas aceptadas"
     },
     "upi": {
-      "note": "Pagarás con tu ID de UPI o una app UPI en la ventana segura de Razorpay.",
+      "note": "Pagarás con tu ID de UPI o una app UPI en la ventana segura del proveedor de pagos.",
       "apps": "Apps UPI",
       "saved": "ID de UPI guardados"
     },
@@ -1570,10 +2045,12 @@
       "subtotal": "Subtotal",
       "noTax": "Impuestos: ninguno para esta región",
       "total": "Total",
-      "trust": "Los pagos se procesan de forma segura con Razorpay.",
+      "trust": "Los pagos se procesan de forma segura con nuestro proveedor de pagos.",
       "qty": "Cant. {{qty}}",
       "toggle": "Total {{total}} · {{count}} artículos",
-      "editCart": "Editar carrito"
+      "editCart": "Editar carrito",
+      "taxPending": "Impuestos: calculándose",
+      "placeOfSupply": "Lugar de suministro: {{place}}"
     },
     "period": {
       "MONTHLY": "Mensual",
@@ -1617,6 +2094,10 @@
         "body": "El administrador de tu organización aprueba los pedidos antes del pago. Podrás pagar cuando se apruebe.",
         "viewOrders": "Ver mis pedidos",
         "browse": "Explorar productos"
+      },
+      "taxPending": {
+        "title": "Estamos preparando su factura",
+        "body": "Todavía no hemos podido terminar el cálculo de impuestos de este pedido, así que ahora no se puede pagar nada. Su pedido está guardado. Le enviaremos un correo en cuanto la factura esté lista, y también la encontrará en Facturación."
       }
     },
     "bank": {
@@ -1648,10 +2129,10 @@
       "changeLabel": "Cambiar {{field}}"
     },
     "netbanking": {
-      "note": "Elegirás tu banco en la ventana segura de Razorpay."
+      "note": "Elegirás tu banco en la ventana segura del proveedor de pagos."
     },
     "wallets": {
-      "note": "Elegirás tu monedero en la ventana segura de Razorpay."
+      "note": "Elegirás tu monedero en la ventana segura del proveedor de pagos."
     },
     "savedCards": {
       "title": "Tarjetas guardadas",
@@ -1671,7 +2152,24 @@
       "stepBack": "Paso anterior",
       "completeOrder": "Completar pedido"
     },
-    "poweredBy": "Con la tecnología de"
+    "poweredBy": "Con la tecnología de",
+    "consentLead": "Acepto los",
+    "consentTerms": "Términos y condiciones",
+    "consentRefund": "la Política de reembolsos",
+    "consentAnd": "y la",
+    "consentPrivacy": "Política de privacidad",
+    "purchaseOrder": {
+      "label": "Número de orden de compra (opcional)",
+      "help": "Se imprime en la factura. Puedes dejarlo vacío.",
+      "invalid": "Usa hasta 50 letras, dígitos, espacios o . / _ -"
+    },
+    "methods": {
+      "card": "Tarjetas",
+      "upi": "UPI",
+      "netbanking": "Banca en línea",
+      "wallet": "Monederos"
+    },
+    "providerUnsupported": "Este pago se dirigió a una pasarela que esta pantalla aún no puede abrir. No se cobró nada. Prueba otro método o contacta con soporte."
   },
   "cart": {
     "title": "Tu carrito",
@@ -3890,5 +4388,33 @@
     "browse": "Ver productos",
     "open": "Lista de deseos",
     "openCount": "Lista de deseos ({{count}})"
+  },
+  "entitlements": {
+    "title": "Qué incluyen tus planes",
+    "body": "Solo lectura: proviene de tus suscripciones activas y sus planes. Cada producto cuenta su propio uso.",
+    "none": "No tienes suscripciones activas.",
+    "loadError": "No se pudieron cargar tus derechos de uso.",
+    "until": "Activo hasta el {{date}}",
+    "noEnd": "Sin fecha de fin",
+    "limit": "Límite: {{limit}}",
+    "noLimit": "Sin límite definido",
+    "features": "Funciones incluidas",
+    "owner": {
+      "INDIVIDUAL": "Personal",
+      "ORGANIZATION": "Organización"
+    },
+    "admin": {
+      "title": "Consulta de derechos de uso",
+      "subtitle": "Solo lectura: a qué tiene derecho ahora un cliente u organización. Cada consulta queda en el registro de auditoría.",
+      "kind": "Consultar",
+      "customer": "Cliente",
+      "organization": "Organización",
+      "id": "ID",
+      "idHelp": "El ID numérico",
+      "idInvalid": "Introduce un número",
+      "lookUp": "Consultar",
+      "none": "No hay nada activo para este cliente u organización.",
+      "notFound": "Ningún cliente u organización tiene ese ID."
+    }
   }
 }

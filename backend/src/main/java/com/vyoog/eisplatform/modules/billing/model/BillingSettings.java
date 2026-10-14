@@ -84,13 +84,13 @@ public class BillingSettings {
     private String businessWebsite;
 
     // ---- C60: invoicing ----
-    /** Prefix of new invoice numbers ({@code <prefix>-<year>-<id>}); existing numbers never change (BR-3). */
+    /** Prefix of new invoice numbers ({@code <prefix>/<financial year>/<number>}, for example EIS/26-27/000123); existing numbers never change (BR-3). C97 BI-2: default EIS. */
     @Column(name = "invoice_prefix", nullable = false, length = 10)
-    private String invoicePrefix = "INV";
+    private String invoicePrefix = "EIS";
 
-    /** Days from issue to due date for new invoices. 0 = due on issue (the C47 default). */
+    /** Days from issue to due date for new invoices. C97 BI-2: default 15 (0 = due on issue, the earlier C47 default). */
     @Column(name = "payment_terms_days", nullable = false)
-    private int paymentTermsDays = 0;
+    private int paymentTermsDays = 15;
 
     @Column(name = "invoice_footer_note", length = 500)
     private String invoiceFooterNote;
@@ -166,6 +166,19 @@ public class BillingSettings {
     /** REQ-SUB-004.7: used when a recipient has no time zone preference (proposed default — confirm). */
     @Column(name = "reminder_time_zone", nullable = false, length = 64)
     private String reminderTimeZone = "Asia/Kolkata";
+
+    // ---- C97: legal pages (BI-7) and the payment gateway taking online payments (BI-8) ----
+    @Column(name = "terms_url", length = 500)
+    private String termsUrl;
+
+    @Column(name = "privacy_url", length = 500)
+    private String privacyUrl;
+
+    @Column(name = "refund_policy_url", length = 500)
+    private String refundPolicyUrl;
+
+    @Column(name = "active_gateway", nullable = false, length = 30)
+    private String activeGateway = "RAZORPAY";
 
     @LastModifiedDate
     @Column(name = "updated_at")

@@ -22,4 +22,9 @@ public interface OrganizationRepository extends JpaRepository<Organization, Long
     /** Platform admin dashboard: organizations currently usable (not
      * SUSPENDED/CLOSED) — see OrganizationLifecycleStatus's own javadoc. */
     long countByLifecycleStatus(OrganizationLifecycleStatus lifecycleStatus);
+
+    /** C97 BI-4: the organizations that may pay by invoice, and a name search for enabling more. */
+    java.util.List<Organization> findByPayByInvoiceEnabledTrueOrderByNameAsc();
+
+    java.util.List<Organization> findTop20ByNameContainingIgnoreCaseOrderByNameAsc(String name);
 }

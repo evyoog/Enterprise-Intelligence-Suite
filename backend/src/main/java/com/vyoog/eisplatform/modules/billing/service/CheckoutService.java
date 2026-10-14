@@ -14,7 +14,6 @@ import com.vyoog.eisplatform.modules.billing.model.InvoiceStatus;
 import com.vyoog.eisplatform.modules.billing.model.PaymentRoute;
 import com.vyoog.eisplatform.modules.billing.repository.BillingDetailsRepository;
 import com.vyoog.eisplatform.modules.billing.repository.InvoiceRepository;
-import com.vyoog.eisplatform.modules.billing.service.razorpay.RazorpayProperties;
 import com.vyoog.eisplatform.modules.notification.model.NotificationCategory;
 import com.vyoog.eisplatform.modules.notification.model.NotificationSeverity;
 import com.vyoog.eisplatform.modules.notification.service.NotificationService;
@@ -53,18 +52,16 @@ public class CheckoutService {
     private final ProductPlanRepository productPlanRepository;
     private final BillingDetailsRepository billingDetailsRepository;
     private final CustomerRepository customerRepository;
-    private final RazorpayProperties razorpayProperties;
+    private final GatewayRoutingService gatewayRouting;
     private final OfflinePaymentService offlinePaymentService;
     private final NotificationService notificationService;
     private final AuditService auditService;
     private final BillingSettingsService billingSettingsService;
 
-    /** FRD Open question 9 (who may use Pay by invoice) is unanswered.
-     * C55 default: every customer and organization may. C60: a billing
-     * administrator can switch Pay by invoice off for everyone in Billing
-     * settings. Still the one place to change when the product owner decides. */
+    /** C97 BI-4: Pay by invoice is only for organizations the platform admin has enabled (and only while the global
+     * switch in Billing settings is on). Individual customers always pay online. */
     public boolean payByInvoiceAllowed(Long customerId, Long organizationId) {
-        return billingSettingsService.payByInvoiceEnabled();
+        return billingSettingsService.payByInvoiceAllowedFor(organizationId);
     }
 
     @Transactional(readOnly = true)
@@ -100,6 +97,8 @@ public class CheckoutService {
         }
         invoice.setPaymentRoute(PaymentRoute.OFFLINE);
         invoice = invoiceRepository.save(invoice);
+        // C97 BI-1: pay by invoice starts the purchase at once, with the invoice's due date.
+        invoiceService.publishActivation(invoice, com.vyoog.eisplatform.modules.billing.event.InvoiceActivationEvent.PAY_BY_INVOICE);
 
         var bank = offlinePaymentService.bankDetails();
         String billingEmail = billingEmail(customerId, organizationId, actingCustomerId);
@@ -163,11 +162,16 @@ public class CheckoutService {
             items = List.of();
         }
 
-        List<TaxLineDto> taxLines = invoice != null && invoice.getTaxAmount() > 0
-            ? List.of(new TaxLineDto("Tax", null, invoice.getTaxAmount()))
-            : List.of();
+        // C96: the components copied onto the invoice, summed over its lines per component and rate.
+        List<TaxLineDto> taxLines = invoice == null ? List.of()
+            : invoiceService.taxLinesOf(invoice.getId()).stream()
+                .filter(t -> t.taxAmount() > 0 || t.rate() != null)
+                .collect(java.util.stream.Collectors.groupingBy(t -> t.code() + "|" + t.rate(), java.util.LinkedHashMap::new, java.util.stream.Collectors.toList()))
+                .values().stream().map(group -> new TaxLineDto(group.get(0).name(), group.get(0).rate(),
+                    group.stream().mapToLong(t -> t.taxAmount()).sum())).toList();
         String currency = invoice != null ? invoice.getCurrency().name()
             : plan != null ? plan.getCurrency().name() : "USD";
+        var preferred = gatewayRouting.preferred(currency).orElse(null);
 
         return new CheckoutSummaryDto(
             invoice != null ? invoice.getId() : null,
@@ -182,12 +186,23 @@ public class CheckoutService {
             invoice != null ? invoice.getTotal() : 0,
             invoice != null ? invoice.getDueAt() : null,
             billingEmail(customerId, organizationId, customerId),
-            razorpayProperties.isConfigured(),
+            gatewayRouting.available(currency),
             payByInvoiceAllowed(customerId, organizationId),
-            billingSettingsService.enabledOnlineMethods(),
+            offeredMethods(currency),
             settings.getCheckoutDisplayName(),
             settings.getCheckoutDescription(),
-            settings.getCheckoutThemeColor());
+            settings.getCheckoutThemeColor(),
+            invoice != null && invoice.getStatus() == InvoiceStatus.DRAFT,
+            invoice != null ? invoice.getPlaceOfSupply() : null,
+            settings.getTermsUrl(), settings.getPrivacyUrl(), settings.getRefundPolicyUrl(),
+            invoice != null ? invoice.getPurchaseOrderNumber() : null,
+            preferred == null ? null : preferred.code(), preferred == null ? null : preferred.name());
+    }
+
+    /** C98: a method is offered only if Billing settings allow it and an eligible gateway offers it (the tile order of Billing settings is kept). */
+    private List<String> offeredMethods(String currency) {
+        java.util.Set<String> byGateway = gatewayRouting.offeredMethods(currency);
+        return billingSettingsService.enabledOnlineMethods().stream().filter(byGateway::contains).toList();
     }
 
     private String billingEmail(Long customerId, Long organizationId, Long fallbackCustomerId) {

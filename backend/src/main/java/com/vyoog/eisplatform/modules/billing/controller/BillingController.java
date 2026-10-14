@@ -9,7 +9,6 @@ import com.vyoog.eisplatform.modules.billing.service.CheckoutService;
 import com.vyoog.eisplatform.modules.billing.service.InvoiceService;
 import com.vyoog.eisplatform.modules.billing.service.PaymentMethodService;
 import com.vyoog.eisplatform.modules.billing.service.PaymentService;
-import com.vyoog.eisplatform.modules.billing.service.razorpay.RazorpayProperties;
 import com.vyoog.eisplatform.modules.registration.model.Customer;
 import com.vyoog.eisplatform.modules.registration.service.CurrentCustomerResolver;
 import jakarta.validation.Valid;
@@ -41,9 +40,10 @@ public class BillingController {
     private final CurrentCustomerResolver currentCustomerResolver;
     private final BillingDetailsService billingDetailsService;
     private final InvoiceService invoiceService;
+    private final com.vyoog.eisplatform.modules.billing.service.CreditNoteService creditNoteService;
     private final PaymentService paymentService;
     private final PaymentMethodService paymentMethodService;
-    private final RazorpayProperties razorpayProperties;
+    private final com.vyoog.eisplatform.modules.billing.service.GatewayRoutingService gatewayRouting;
     private final CheckoutService checkoutService;
     private final BillingSettingsService billingSettingsService;
     private final OfflinePaymentService offlinePaymentService;
@@ -62,7 +62,7 @@ public class BillingController {
             invoiceService.spentInPeriod(customer.getId(), null, now.minus(60, ChronoUnit.DAYS), now.minus(30, ChronoUnit.DAYS)),
             paymentMethodService.defaultForCustomer(customer.getId()),
             recent,
-            razorpayProperties.isConfigured()
+            gatewayRouting.available(null)
         );
     }
 
@@ -115,7 +115,27 @@ public class BillingController {
             @AuthenticationPrincipal Jwt jwt, @PathVariable Long invoiceId, @RequestParam String type) {
         Customer customer = currentCustomerResolver.resolve(jwt);
         var invoice = invoiceService.resolveOwn(customer.getId(), null, invoiceId);
-        return InvoiceDocuments.render(invoice, type, billingSettingsService.businessProfile(), offlinePaymentService.bankDetails());
+        return InvoiceDocuments.render(invoice, type, billingSettingsService.businessProfile(), offlinePaymentService.bankDetails(), invoiceService.taxLinesOf(invoice.getId()));
+    }
+
+    /** TX-6: the credit notes issued against one of the customer's invoices. */
+    @PutMapping("/invoices/{invoiceId}/purchase-order")
+    public InvoiceDto purchaseOrder(@AuthenticationPrincipal Jwt jwt, @PathVariable Long invoiceId,
+                                    @jakarta.validation.Valid @RequestBody com.vyoog.eisplatform.modules.billing.dto.SavePurchaseOrderRequest request) {
+        return invoiceService.setPurchaseOrder(currentCustomerResolver.resolve(jwt).getId(), null, invoiceId, request.purchaseOrderNumber());
+    }
+
+    @GetMapping("/invoices/{invoiceId}/credit-notes")
+    public java.util.List<com.vyoog.eisplatform.modules.billing.tax.dto.CreditNoteDto> creditNotes(@AuthenticationPrincipal Jwt jwt, @PathVariable Long invoiceId) {
+        Customer customer = currentCustomerResolver.resolve(jwt);
+        return creditNoteService.listForInvoice(invoiceService.resolveOwn(customer.getId(), null, invoiceId));
+    }
+
+    @GetMapping(value = "/invoices/{invoiceId}/credit-notes/{creditNoteId}/document", produces = MediaType.TEXT_PLAIN_VALUE)
+    public org.springframework.http.ResponseEntity<byte[]> creditNoteDocument(@AuthenticationPrincipal Jwt jwt, @PathVariable Long invoiceId, @PathVariable Long creditNoteId) {
+        Customer customer = currentCustomerResolver.resolve(jwt);
+        var invoice = invoiceService.resolveOwn(customer.getId(), null, invoiceId);
+        return CreditNoteDocuments.render(creditNoteService.get(invoice, creditNoteId), invoice.getIssuerSnapshot(), billingSettingsService.businessProfile(), invoice.getBillToSnapshot());
     }
 
     @PostMapping("/invoices/{invoiceId}/payments")
@@ -128,7 +148,7 @@ public class BillingController {
         if (request != null && request.paymentMethodId() != null) {
             paymentMethodService.requireUsableForPayment(customer.getId(), null, request.paymentMethodId());
         }
-        return paymentService.createPaymentForInvoice(customer.getId(), null, invoiceId);
+        return paymentService.createPaymentForInvoice(customer.getId(), null, invoiceId, request == null ? null : request.method());
     }
 
     @PostMapping("/payments/{paymentId}/confirm")

@@ -48,6 +48,11 @@ public class Product {
     @Column(name = "banner_image_url")
     private String bannerImageUrl;
 
+    /** C96 (REQ-BIL-002.19): the tax class code (see TaxClass) used to tax this product's invoice lines. Set from
+     * Tax Configuration, not from the product form. */
+    @Column(name = "tax_class_code", length = 40)
+    private String taxClassCode;
+
     /** Where the "Launch" button on this product's card should open. */
     private String launchUrl;
 

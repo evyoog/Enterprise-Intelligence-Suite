@@ -10,7 +10,6 @@ import com.vyoog.eisplatform.modules.billing.service.CheckoutService;
 import com.vyoog.eisplatform.modules.billing.service.InvoiceService;
 import com.vyoog.eisplatform.modules.billing.service.PaymentMethodService;
 import com.vyoog.eisplatform.modules.billing.service.PaymentService;
-import com.vyoog.eisplatform.modules.billing.service.razorpay.RazorpayProperties;
 import com.vyoog.eisplatform.modules.registration.model.Customer;
 import com.vyoog.eisplatform.modules.registration.model.OrganizationMember;
 import com.vyoog.eisplatform.modules.registration.service.CurrentCustomerResolver;
@@ -29,8 +28,8 @@ import java.util.List;
 /** An organization's billing — REQ-BIL-001, "/organization/me" scope. Who
  * may act (organization admins only, via {@code MANAGE_ORGANIZATION}) is
  * enforced by {@link BillingOwnerResolver#requireManageOrganizationBilling}
- * for every write; reads are allowed to any active member of the
- * organization, same as the rest of {@code /organization/me/**}. */
+ * for every call, reads included (C97 BI-5: organization billing needs the separate
+ * "Manage billing" permission; a plain member sees no invoices or payment methods). */
 @RestController
 @RequestMapping("/organization/me/billing")
 @RequiredArgsConstructor
@@ -40,9 +39,10 @@ public class OrganizationBillingController {
     private final BillingOwnerResolver ownerResolver;
     private final BillingDetailsService billingDetailsService;
     private final InvoiceService invoiceService;
+    private final com.vyoog.eisplatform.modules.billing.service.CreditNoteService creditNoteService;
     private final PaymentService paymentService;
     private final PaymentMethodService paymentMethodService;
-    private final RazorpayProperties razorpayProperties;
+    private final com.vyoog.eisplatform.modules.billing.service.GatewayRoutingService gatewayRouting;
     private final CheckoutService checkoutService;
     private final BillingSettingsService billingSettingsService;
     private final OfflinePaymentService offlinePaymentService;
@@ -50,7 +50,7 @@ public class OrganizationBillingController {
     @GetMapping("/overview")
     public BillingOverviewResponse overview(@AuthenticationPrincipal Jwt jwt) {
         Customer customer = currentCustomerResolver.resolve(jwt);
-        OrganizationMember member = ownerResolver.resolveMembership(customer.getId());
+        OrganizationMember member = ownerResolver.requireManageOrganizationBilling(customer.getId());
         Long orgId = member.getOrganizationId();
         Instant now = Instant.now();
         var recent = invoiceService.listForOrganization(orgId, PageRequest.of(0, 5)).getContent();
@@ -63,7 +63,7 @@ public class OrganizationBillingController {
             invoiceService.spentInPeriod(null, orgId, now.minus(60, ChronoUnit.DAYS), now.minus(30, ChronoUnit.DAYS)),
             paymentMethodService.defaultForOrganization(orgId),
             recent,
-            razorpayProperties.isConfigured()
+            gatewayRouting.available(null)
         );
     }
 
@@ -72,7 +72,7 @@ public class OrganizationBillingController {
     public CheckoutSummaryDto checkout(@AuthenticationPrincipal Jwt jwt,
                                        @RequestParam(required = false) Long invoiceId,
                                        @RequestParam(required = false) Long subscriptionId) {
-        Long orgId = ownerResolver.resolveMembership(currentCustomerResolver.resolve(jwt).getId()).getOrganizationId();
+        Long orgId = ownerResolver.requireManageOrganizationBilling(currentCustomerResolver.resolve(jwt).getId()).getOrganizationId();
         if (invoiceId != null) {
             return checkoutService.summaryForInvoice(null, orgId, invoiceId);
         }
@@ -92,7 +92,7 @@ public class OrganizationBillingController {
 
     @GetMapping("/details")
     public BillingDetailsDto getDetails(@AuthenticationPrincipal Jwt jwt) {
-        Long orgId = ownerResolver.resolveMembership(currentCustomerResolver.resolve(jwt).getId()).getOrganizationId();
+        Long orgId = ownerResolver.requireManageOrganizationBilling(currentCustomerResolver.resolve(jwt).getId()).getOrganizationId();
         return billingDetailsService.getForOrganization(orgId);
     }
 
@@ -105,22 +105,43 @@ public class OrganizationBillingController {
 
     @GetMapping("/invoices")
     public Page<InvoiceDto> invoices(@AuthenticationPrincipal Jwt jwt, @RequestParam(defaultValue = "0") int page) {
-        Long orgId = ownerResolver.resolveMembership(currentCustomerResolver.resolve(jwt).getId()).getOrganizationId();
+        Long orgId = ownerResolver.requireManageOrganizationBilling(currentCustomerResolver.resolve(jwt).getId()).getOrganizationId();
         return invoiceService.listForOrganization(orgId, PageRequest.of(page, 20));
     }
 
     @GetMapping("/invoices/{invoiceId}")
     public InvoiceDto invoiceDetail(@AuthenticationPrincipal Jwt jwt, @PathVariable Long invoiceId) {
-        Long orgId = ownerResolver.resolveMembership(currentCustomerResolver.resolve(jwt).getId()).getOrganizationId();
+        Long orgId = ownerResolver.requireManageOrganizationBilling(currentCustomerResolver.resolve(jwt).getId()).getOrganizationId();
         return invoiceService.getOwnInvoiceDetail(null, orgId, invoiceId);
     }
 
     @GetMapping("/invoices/{invoiceId}/document")
     public org.springframework.http.ResponseEntity<byte[]> invoiceDocument(
             @AuthenticationPrincipal Jwt jwt, @PathVariable Long invoiceId, @RequestParam String type) {
-        Long orgId = ownerResolver.resolveMembership(currentCustomerResolver.resolve(jwt).getId()).getOrganizationId();
+        Long orgId = ownerResolver.requireManageOrganizationBilling(currentCustomerResolver.resolve(jwt).getId()).getOrganizationId();
         var invoice = invoiceService.resolveOwn(null, orgId, invoiceId);
-        return InvoiceDocuments.render(invoice, type, billingSettingsService.businessProfile(), offlinePaymentService.bankDetails());
+        return InvoiceDocuments.render(invoice, type, billingSettingsService.businessProfile(), offlinePaymentService.bankDetails(), invoiceService.taxLinesOf(invoice.getId()));
+    }
+
+    @PutMapping("/invoices/{invoiceId}/purchase-order")
+    public InvoiceDto purchaseOrder(@AuthenticationPrincipal Jwt jwt, @PathVariable Long invoiceId,
+                                    @Valid @RequestBody com.vyoog.eisplatform.modules.billing.dto.SavePurchaseOrderRequest request) {
+        Customer customer = currentCustomerResolver.resolve(jwt);
+        OrganizationMember member = ownerResolver.requireManageOrganizationBilling(customer.getId());
+        return invoiceService.setPurchaseOrder(null, member.getOrganizationId(), invoiceId, request.purchaseOrderNumber());
+    }
+
+    @GetMapping("/invoices/{invoiceId}/credit-notes")
+    public java.util.List<com.vyoog.eisplatform.modules.billing.tax.dto.CreditNoteDto> creditNotes(@AuthenticationPrincipal Jwt jwt, @PathVariable Long invoiceId) {
+        Long orgId = ownerResolver.requireManageOrganizationBilling(currentCustomerResolver.resolve(jwt).getId()).getOrganizationId();
+        return creditNoteService.listForInvoice(invoiceService.resolveOwn(null, orgId, invoiceId));
+    }
+
+    @GetMapping("/invoices/{invoiceId}/credit-notes/{creditNoteId}/document")
+    public org.springframework.http.ResponseEntity<byte[]> creditNoteDocument(@AuthenticationPrincipal Jwt jwt, @PathVariable Long invoiceId, @PathVariable Long creditNoteId) {
+        Long orgId = ownerResolver.requireManageOrganizationBilling(currentCustomerResolver.resolve(jwt).getId()).getOrganizationId();
+        var invoice = invoiceService.resolveOwn(null, orgId, invoiceId);
+        return CreditNoteDocuments.render(creditNoteService.get(invoice, creditNoteId), invoice.getIssuerSnapshot(), billingSettingsService.businessProfile(), invoice.getBillToSnapshot());
     }
 
     @PostMapping("/invoices/{invoiceId}/payments")
@@ -134,7 +155,7 @@ public class OrganizationBillingController {
         if (request != null && request.paymentMethodId() != null) {
             paymentMethodService.requireUsableForPayment(null, member.getOrganizationId(), request.paymentMethodId());
         }
-        return paymentService.createPaymentForInvoice(null, member.getOrganizationId(), invoiceId);
+        return paymentService.createPaymentForInvoice(null, member.getOrganizationId(), invoiceId, request == null ? null : request.method());
     }
 
     @PostMapping("/payments/{paymentId}/confirm")
@@ -146,13 +167,13 @@ public class OrganizationBillingController {
 
     @GetMapping("/payments")
     public Page<PaymentDto> payments(@AuthenticationPrincipal Jwt jwt, @RequestParam(defaultValue = "0") int page) {
-        Long orgId = ownerResolver.resolveMembership(currentCustomerResolver.resolve(jwt).getId()).getOrganizationId();
+        Long orgId = ownerResolver.requireManageOrganizationBilling(currentCustomerResolver.resolve(jwt).getId()).getOrganizationId();
         return paymentService.listForOrganization(orgId, PageRequest.of(page, 20));
     }
 
     @GetMapping("/payment-methods")
     public List<PaymentMethodDto> paymentMethods(@AuthenticationPrincipal Jwt jwt) {
-        Long orgId = ownerResolver.resolveMembership(currentCustomerResolver.resolve(jwt).getId()).getOrganizationId();
+        Long orgId = ownerResolver.requireManageOrganizationBilling(currentCustomerResolver.resolve(jwt).getId()).getOrganizationId();
         return paymentMethodService.listForOrganization(orgId);
     }
 

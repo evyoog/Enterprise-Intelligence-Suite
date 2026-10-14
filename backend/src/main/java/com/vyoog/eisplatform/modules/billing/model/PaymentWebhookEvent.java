@@ -9,7 +9,7 @@ import java.time.Instant;
 /** BR-6: each Razorpay webhook event is processed at most once, identified
  * by {@link #providerEventId}. */
 @Entity
-@Table(name = "payment_webhook_event")
+@Table(name = "payment_webhook_event", uniqueConstraints = @UniqueConstraint(name = "uq_payment_webhook_event_provider", columnNames = {"provider", "provider_event_id"}))
 @Getter
 @Setter
 public class PaymentWebhookEvent {
@@ -18,7 +18,11 @@ public class PaymentWebhookEvent {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "provider_event_id", nullable = false, unique = true, length = 100)
+    /** C98: the provider whose webhook this was; an event id is unique per provider. */
+    @Column(nullable = false, length = 30)
+    private String provider = "RAZORPAY";
+
+    @Column(name = "provider_event_id", nullable = false, length = 100)
     private String providerEventId;
 
     @Column(name = "event_type", nullable = false, length = 50)

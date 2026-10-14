@@ -36,6 +36,7 @@ public class AdminBillingController {
 
     private final CurrentCustomerResolver currentCustomerResolver;
     private final InvoiceService invoiceService;
+    private final com.vyoog.eisplatform.modules.billing.service.CreditNoteService creditNoteService;
     private final PaymentService paymentService;
     private final GatewayStatusService gatewayStatusService;
     private final OfflinePaymentService offlinePaymentService;
@@ -49,6 +50,11 @@ public class AdminBillingController {
     @GetMapping("/invoices/{invoiceId}")
     public InvoiceDto invoiceDetail(@PathVariable Long invoiceId) {
         return invoiceService.getAdminInvoiceDetail(invoiceId);
+    }
+
+    @GetMapping("/invoices/{invoiceId}/credit-notes")
+    public java.util.List<com.vyoog.eisplatform.modules.billing.tax.dto.CreditNoteDto> creditNotes(@PathVariable Long invoiceId) {
+        return creditNoteService.listForInvoice(invoiceService.getById(invoiceId));
     }
 
     /** C55 (REQ-BIL-001.20). */
@@ -108,6 +114,19 @@ public class AdminBillingController {
                                                               @Valid @RequestBody SavePaymentMethodSettingsRequest request) {
         Customer admin = currentCustomerResolver.resolve(jwt);
         return billingSettingsService.savePaymentMethods(admin.getId(), request);
+    }
+
+    @GetMapping("/settings/pay-by-invoice/organizations")
+    public java.util.List<com.vyoog.eisplatform.modules.billing.dto.PayByInvoiceOrganizationDto> payByInvoiceOrganizations(
+            @RequestParam(required = false) String search) {
+        return search == null || search.isBlank() ? billingSettingsService.payByInvoiceOrganizations() : billingSettingsService.searchOrganizations(search);
+    }
+
+    @PutMapping("/settings/pay-by-invoice/organizations/{organizationId}")
+    public com.vyoog.eisplatform.modules.billing.dto.PayByInvoiceOrganizationDto setPayByInvoice(@AuthenticationPrincipal Jwt jwt,
+            @PathVariable Long organizationId, @RequestBody com.vyoog.eisplatform.modules.billing.dto.SetPayByInvoiceRequest request) {
+        Customer admin = currentCustomerResolver.resolve(jwt);
+        return billingSettingsService.setOrganizationPayByInvoice(admin.getId(), organizationId, request.enabled());
     }
 
     @GetMapping("/payments")

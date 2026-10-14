@@ -8,6 +8,19 @@ import com.vyoog.eisplatform.modules.billing.model.BillingDetails;
 import com.vyoog.eisplatform.modules.billing.model.Invoice;
 import com.vyoog.eisplatform.modules.billing.model.InvoiceLine;
 import com.vyoog.eisplatform.modules.billing.model.InvoiceStatus;
+import com.vyoog.eisplatform.modules.billing.model.InvoiceTaxLine;
+import com.vyoog.eisplatform.modules.billing.repository.InvoiceTaxLineRepository;
+import com.vyoog.eisplatform.modules.billing.tax.calc.TaxCalculationRequest;
+import com.vyoog.eisplatform.modules.billing.tax.calc.TaxCalculationResult;
+import com.vyoog.eisplatform.modules.billing.tax.calc.TaxModeSnapshot;
+import com.vyoog.eisplatform.modules.billing.tax.dto.TaxComponentDto;
+import com.vyoog.eisplatform.modules.billing.tax.model.InvoiceTaxStatus;
+import com.vyoog.eisplatform.modules.billing.tax.model.TaxClass;
+import com.vyoog.eisplatform.modules.billing.tax.model.TransactionType;
+import com.vyoog.eisplatform.modules.billing.tax.service.TaxCalculationService;
+import com.vyoog.eisplatform.modules.billing.tax.service.TaxClassService;
+import com.vyoog.eisplatform.modules.billing.tax.service.TaxRequestAssembler;
+import com.vyoog.eisplatform.modules.billing.tax.support.TaxIdValidator;
 import com.vyoog.eisplatform.modules.billing.repository.BillingDetailsRepository;
 import com.vyoog.eisplatform.modules.billing.repository.InvoiceRepository;
 import com.vyoog.eisplatform.modules.billing.repository.PaymentRepository;
@@ -56,6 +69,12 @@ public class InvoiceService {
     private final NotificationService notificationService;
     private final AuditService auditService;
     private final BillingSettingsService billingSettingsService;
+    private final TaxCalculationService taxCalculationService;
+    private final TaxRequestAssembler taxRequestAssembler;
+    private final TaxClassService taxClassService;
+    private final InvoiceTaxLineRepository invoiceTaxLineRepository;
+    private final InvoiceNumberService invoiceNumberService;
+    private final org.springframework.context.ApplicationEventPublisher eventPublisher;
     /** REQ-INT-002 (C62): InvoiceGenerated. */
     private final com.vyoog.eisplatform.modules.integration.service.OutboxService outboxService;
 
@@ -108,15 +127,18 @@ public class InvoiceService {
         }
         long total = billed.stream().mapToLong(Billed::amount).sum();
 
+        // C96: the invoice is created as a Draft; it is finalized (number, issue date, due date, event) only when its tax
+        // has been calculated safely (BR-40).
         Invoice invoice = new Invoice();
         invoice.setSubscriptionId(first.getId());
         invoice.setOwnerCustomerId(first.getOwnerCustomerId());
         invoice.setOwnerOrganizationId(first.getOwnerOrganizationId());
-        invoice.setStatus(InvoiceStatus.OPEN);
+        invoice.setStatus(InvoiceStatus.DRAFT);
         invoice.setCurrency(currency);
         invoice.setSubtotal(total);
         invoice.setTaxAmount(0);
         invoice.setTotal(total);
+        invoice.setTaxStatus(InvoiceTaxStatus.BLOCKED);
         invoice.setPeriodStart(first.getStartedAt() != null ? first.getStartedAt() : Instant.now());
         invoice.setPeriodEnd(first.getExpiresAt());
         BillingDetails billingDetails = first.getOwnerCustomerId() != null
@@ -135,29 +157,105 @@ public class InvoiceService {
             line.setUnitAmount(b.amount());
             line.setAmount(b.amount());
             line.setSubscriptionId(b.subscription().getId());
+            TaxClass taxClass = taxClassService.classOf(b.product());
+            line.setTaxClassCode(b.product().getTaxClassCode());
+            line.setHsnSacCode(taxClass == null ? null : taxClass.getHsnSacCode());
             invoice.getLines().add(line);
         }
+        invoice = invoiceRepository.saveAndFlush(invoice);
+        return calculateTaxAndFinalize(invoice);
+    }
 
-        // C60: due date = issue date + the payment terms set in Billing settings (0 = due on issue, as C47).
+    /** REQ-BIL-002.31 and .40 to .42: calculate the tax with the engine the switch names NOW (pinned for this whole call), then
+     * either finalize the invoice or leave it as a Draft with the reason. Never throws for a tax problem. Used for a new invoice
+     * and for "Retry tax" (a retry restarts with the mode in force at that moment, BR-41). */
+    private Invoice calculateTaxAndFinalize(Invoice invoice) {
+        TaxModeSnapshot pinned = taxCalculationService.pin();
+        List<TaxCalculationRequest.Line> lines = invoice.getLines().stream().map(l -> new TaxCalculationRequest.Line(String.valueOf(l.getId()),
+            l.getDescription(), l.getTaxClassCode(), l.getHsnSacCode(), l.getAmount(), l.getQuantity())).toList();
+        String ref = taxCalculationService.nextTransactionRef(invoice.getId());
+        TaxCalculationRequest request = taxRequestAssembler.assemble(ref, TransactionType.SALE, java.time.LocalDate.now(ZoneOffset.UTC),
+            invoice.getCurrency().name(), invoice.getOwnerCustomerId(), invoice.getOwnerOrganizationId(), lines);
+        TaxCalculationResult result = taxCalculationService.calculate(request, pinned);
+        var calculation = taxCalculationService.record(invoice.getId(), request, result);
+        invoice.setTaxEngine(result.engine());
+        invoice.setTaxConfigVersion(result.configVersion());
+        invoice.setTaxCalculationId(calculation.getId());
+
+        if (!result.isCalculated()) {
+            invoice.setStatus(InvoiceStatus.DRAFT);
+            invoice.setTaxStatus(InvoiceTaxStatus.BLOCKED);
+            invoice.setTaxBlockCode(result.blockCode().name());
+            invoice.setTaxBlockReason(result.blockMessage() == null ? null : result.blockMessage().length() > 500 ? result.blockMessage().substring(0, 500) : result.blockMessage());
+            invoice.setTaxAmount(0);
+            invoice.setTotal(invoice.getSubtotal());
+            invoice = invoiceRepository.save(invoice);
+            auditService.record("INVOICE_TAX_BLOCKED", null, invoice.getOwnerCustomerId(), null, "Invoice", invoice.getId().toString(),
+                invoice.getOwnerOrganizationId(), "FAILURE", "Invoice " + invoice.getId() + " is a Draft: " + result.blockCode() + " - " + result.blockMessage());
+            return invoice;
+        }
+
+        invoiceTaxLineRepository.deleteByInvoiceId(invoice.getId());
+        int order = 0;
+        for (TaxCalculationResult.LineResult lineResult : result.lines()) {
+            InvoiceLine line = invoice.getLines().stream().filter(l -> String.valueOf(l.getId()).equals(lineResult.lineRef())).findFirst().orElseThrow();
+            line.setTaxAmount(lineResult.tax());
+            for (TaxCalculationResult.Component c : lineResult.components()) {
+                InvoiceTaxLine row = new InvoiceTaxLine();
+                row.setInvoiceId(invoice.getId());
+                row.setInvoiceLineId(line.getId());
+                row.setSortOrder(order++);
+                row.setComponentCode(c.code());
+                row.setComponentName(c.name());
+                row.setTaxType(c.taxType());
+                row.setJurisdiction(c.jurisdiction());
+                row.setTreatment(c.treatment());
+                row.setRate(c.rate());
+                row.setTaxableAmount(c.taxableAmount());
+                row.setTaxAmount(c.taxAmount());
+                row.setRuleId(c.ruleId());
+                row.setRuleVersion(c.ruleVersion());
+                row.setNote(c.note());
+                invoiceTaxLineRepository.save(row);
+            }
+        }
+        invoice.setTaxAmount(result.totalTax());
+        invoice.setTotal(invoice.getSubtotal() + result.totalTax());
+        invoice.setTaxStatus(InvoiceTaxStatus.CALCULATED);
+        invoice.setTaxBlockCode(null);
+        invoice.setTaxBlockReason(null);
+        invoice.setPlaceOfSupply(result.placeOfSupply());
+        TaxCalculationRequest.Customer customer = request.customer();
+        invoice.setCustomerTaxId(customer.hasTaxId() ? customer.taxId().trim().toUpperCase(java.util.Locale.ROOT) : null);
+        return finalizeInvoice(invoice);
+    }
+
+    /** BR-40: number, issue date, due date, issuer snapshot, notification, audit and the InvoiceGenerated event. */
+    private Invoice finalizeInvoice(Invoice invoice) {
         var settings = billingSettingsService.current();
-        Instant issued = invoice.getIssuedAt() != null ? invoice.getIssuedAt() : Instant.now();
+        Instant issued = Instant.now();
+        invoice.setStatus(InvoiceStatus.OPEN);
+        invoice.setIssuedAt(issued);
+        // C60/BI-2: due date = issue date + the payment terms set in Billing settings (default 15 days).
         invoice.setDueAt(issued.plus(settings.getPaymentTermsDays(), java.time.temporal.ChronoUnit.DAYS));
-        invoice = invoiceRepository.save(invoice);
-        invoice.setInvoiceNumber(formatInvoiceNumber(invoice, settings.getInvoicePrefix()));
+        invoice.setInvoiceNumber(invoiceNumberService.next(InvoiceNumberService.INVOICE_SERIES, settings.getInvoicePrefix(), issued));
+        invoice.setIssuerSnapshot(issuerSnapshot(settings));
         invoice = invoiceRepository.save(invoice);
 
-        String productNames = String.join(", ", billed.stream().map(b -> b.product().getName()).toList());
+        String productNames = String.join(", ", invoice.getLines().stream().map(InvoiceLine::getDescription).toList());
         notifyOwner(invoice, productNames);
         auditService.recordSuccess("INVOICE_GENERATED", null, invoice.getOwnerCustomerId(), null,
             "Invoice", invoice.getId().toString(), invoice.getOwnerOrganizationId(),
-            "Invoice " + invoice.getInvoiceNumber() + " generated for " + productNames);
+            "Invoice " + invoice.getInvoiceNumber() + " generated for " + productNames + " (tax " + invoice.getTaxAmount() + ", " + invoice.getTaxEngine() + " engine)");
         java.util.Map<String, Object> payload = new java.util.LinkedHashMap<>();
         payload.put("invoiceId", invoice.getId());
         payload.put("invoiceNumber", invoice.getInvoiceNumber());
         payload.put("ownerCustomerId", invoice.getOwnerCustomerId());
         payload.put("ownerOrganizationId", invoice.getOwnerOrganizationId());
-        payload.put("subscriptionIds", billed.stream().map(b -> b.subscription().getId()).toList());
+        payload.put("subscriptionIds", invoice.getLines().stream().map(InvoiceLine::getSubscriptionId).filter(java.util.Objects::nonNull).toList());
         payload.put("currency", invoice.getCurrency().name());
+        payload.put("subtotal", invoice.getSubtotal());
+        payload.put("taxAmount", invoice.getTaxAmount());
         payload.put("total", invoice.getTotal());
         payload.put("dueAt", invoice.getDueAt() == null ? null : invoice.getDueAt().toString());
         outboxService.publish(com.vyoog.eisplatform.modules.integration.service.PlatformEventTypes.INVOICE_GENERATED,
@@ -165,15 +263,60 @@ public class InvoiceService {
         return invoice;
     }
 
-    /** Decision C47: no invoice-number format was specified in the FRD —
-     * this pass uses {@code INV-<year>-<id, zero-padded to 6>}, unique and
-     * immutable once set (BR-3), easy to read, and never needs a separate
-     * per-year counter since the id itself is already unique. */
-    private String formatInvoiceNumber(Invoice invoice, String prefix) {
-        int year = invoice.getIssuedAt().atZone(ZoneOffset.UTC).getYear();
-        // C60: the prefix is set in Billing settings (default "INV"); numbers already issued never change.
-        String p = prefix == null || prefix.isBlank() ? "INV" : prefix;
-        return p + "-" + year + "-" + String.format("%06d", invoice.getId());
+    /** BI-3: the issuer's legal name, address, GSTIN and PAN as they are when the invoice is finalized. */
+    private String issuerSnapshot(com.vyoog.eisplatform.modules.billing.model.BillingSettings p) {
+        if (p.getBusinessLegalName() == null || p.getBusinessLegalName().isBlank()) {
+            return null;
+        }
+        StringBuilder sb = new StringBuilder(p.getBusinessLegalName());
+        java.util.function.BiConsumer<String, String> add = (label, value) -> {
+            if (value != null && !value.isBlank()) {
+                sb.append('\n').append(label).append(value);
+            }
+        };
+        add.accept("", String.join(", ", java.util.stream.Stream.of(p.getBusinessAddressLine1(), p.getBusinessAddressLine2(), p.getBusinessCity(),
+            p.getBusinessState(), p.getBusinessPostalCode(), p.getBusinessCountry()).filter(v -> v != null && !v.isBlank()).toList()));
+        add.accept("GSTIN: ", p.getBusinessGstin());
+        add.accept("PAN: ", p.getBusinessPan());
+        add.accept("CIN: ", p.getBusinessCin());
+        String text = sb.toString();
+        return text.length() > 1500 ? text.substring(0, 1500) : text;
+    }
+
+    /** REQ-BIL-002.42: a platform administrator presses "Retry tax" on a Draft after fixing the cause. */
+    @Transactional
+    public Invoice retryTax(Long invoiceId, String actorSub) {
+        Invoice invoice = getById(invoiceId);
+        if (invoice.getStatus() != InvoiceStatus.DRAFT) {
+            throw new com.vyoog.eisplatform.common.exception.BillingConflictException("Only a Draft invoice can have its tax recalculated. An issued invoice never changes.");
+        }
+        Invoice result = calculateTaxAndFinalize(invoice);
+        auditService.recordSuccess("INVOICE_TAX_RETRIED", actorSub, null, null, "Invoice", invoiceId.toString(), invoice.getOwnerOrganizationId(),
+            "Tax recalculated for Draft invoice " + invoiceId + ": " + (result.getStatus() == InvoiceStatus.DRAFT ? "still blocked (" + result.getTaxBlockCode() + ")" : "invoice " + result.getInvoiceNumber() + " issued"));
+        return result;
+    }
+
+    /** REQ-BIL-002.42: the Drafts waiting for tax, oldest first, for Tax Configuration. */
+    @Transactional(readOnly = true)
+    public List<com.vyoog.eisplatform.modules.billing.tax.dto.BlockedInvoiceDto> listBlocked() {
+        return invoiceRepository.findByStatusOrderByIdAsc(InvoiceStatus.DRAFT).stream().map(i -> new com.vyoog.eisplatform.modules.billing.tax.dto.BlockedInvoiceDto(
+            i.getId(), ownerLabel(i), i.getCurrency().name(), i.getSubtotal(), i.getIssuedAt(), i.getTaxBlockCode(), i.getTaxBlockReason(),
+            i.getTaxEngine() == null ? null : i.getTaxEngine().name())).toList();
+    }
+
+    /** After a customer or organization saves its billing details, its Draft invoices are tried again. */
+    @Transactional(propagation = org.springframework.transaction.annotation.Propagation.REQUIRES_NEW)
+    public int retryDraftsForOwner(Long customerId, Long organizationId) {
+        List<Invoice> drafts = customerId != null
+            ? invoiceRepository.findByOwnerCustomerIdAndStatusOrderByIdAsc(customerId, InvoiceStatus.DRAFT)
+            : invoiceRepository.findByOwnerOrganizationIdAndStatusOrderByIdAsc(organizationId, InvoiceStatus.DRAFT);
+        int issued = 0;
+        for (Invoice draft : drafts) {
+            if (calculateTaxAndFinalize(draft).getStatus() != InvoiceStatus.DRAFT) {
+                issued++;
+            }
+        }
+        return issued;
     }
 
     private long toMinorUnits(BigDecimal price) {
@@ -190,26 +333,29 @@ public class InvoiceService {
     }
 
     public Page<InvoiceDto> listForCustomer(Long customerId, Pageable pageable) {
-        return invoiceRepository.findByOwnerCustomerIdOrderByIssuedAtDesc(customerId, pageable).map(i -> toDto(i, false, null));
+        // C96: a Draft (tax not determined) is not an invoice yet; customers do not see it in their list.
+        return invoiceRepository.findByOwnerCustomerIdAndStatusNotOrderByIssuedAtDesc(customerId, InvoiceStatus.DRAFT, pageable).map(i -> toDto(i, false, null, false));
     }
 
     public Page<InvoiceDto> listForOrganization(Long organizationId, Pageable pageable) {
-        return invoiceRepository.findByOwnerOrganizationIdOrderByIssuedAtDesc(organizationId, pageable).map(i -> toDto(i, false, null));
+        return invoiceRepository.findByOwnerOrganizationIdAndStatusNotOrderByIssuedAtDesc(organizationId, InvoiceStatus.DRAFT, pageable).map(i -> toDto(i, false, null, false));
     }
 
     public Page<InvoiceDto> listForAdmin(Pageable pageable) {
-        return invoiceRepository.findAllByOrderByIssuedAtDesc(pageable).map(i -> toDto(i, false, ownerLabel(i)));
+        return invoiceRepository.findAllByOrderByIssuedAtDesc(pageable).map(i -> toDto(i, false, ownerLabel(i), true));
     }
 
+    @Transactional(readOnly = true)
     public InvoiceDto getOwnInvoiceDetail(Long customerId, Long organizationId, Long invoiceId) {
         Invoice invoice = resolveOwn(customerId, organizationId, invoiceId);
-        return toDto(invoice, true, null);
+        return toDto(invoice, true, null, false);
     }
 
+    @Transactional(readOnly = true)
     public InvoiceDto getAdminInvoiceDetail(Long invoiceId) {
         Invoice invoice = invoiceRepository.findById(invoiceId)
             .orElseThrow(() -> new ResourceNotFoundException("Invoice not found"));
-        return toDto(invoice, true, ownerLabel(invoice));
+        return toDto(invoice, true, ownerLabel(invoice), true);
     }
 
     public Invoice resolveOwn(Long customerId, Long organizationId, Long invoiceId) {
@@ -223,6 +369,20 @@ public class InvoiceService {
         return invoice;
     }
 
+    /** C97 BI-9: an optional purchase-order number the customer can add (or clear) until the invoice is paid. */
+    @Transactional
+    public InvoiceDto setPurchaseOrder(Long customerId, Long organizationId, Long invoiceId, String purchaseOrderNumber) {
+        Invoice invoice = resolveOwn(customerId, organizationId, invoiceId);
+        if (invoice.getStatus() != InvoiceStatus.OPEN && invoice.getStatus() != InvoiceStatus.DRAFT) {
+            throw new com.vyoog.eisplatform.common.exception.BillingConflictException("A purchase-order number can only be changed before the invoice is paid.");
+        }
+        invoice.setPurchaseOrderNumber(purchaseOrderNumber == null || purchaseOrderNumber.isBlank() ? null : purchaseOrderNumber.trim());
+        invoice = invoiceRepository.save(invoice);
+        auditService.recordSuccess("INVOICE_PO_NUMBER_SET", null, customerId, null, "Invoice", invoice.getId().toString(),
+            invoice.getOwnerOrganizationId(), "Purchase-order number " + (invoice.getPurchaseOrderNumber() == null ? "cleared" : "set") + " on " + invoice.getInvoiceNumber());
+        return toDto(invoice, true, null, false);
+    }
+
     public Invoice getById(Long invoiceId) {
         return invoiceRepository.findById(invoiceId).orElseThrow(() -> new ResourceNotFoundException("Invoice not found"));
     }
@@ -231,6 +391,17 @@ public class InvoiceService {
     public void markPaid(Invoice invoice) {
         invoice.setStatus(InvoiceStatus.PAID);
         invoiceRepository.save(invoice);
+        publishActivation(invoice, com.vyoog.eisplatform.modules.billing.event.InvoiceActivationEvent.PAID);
+    }
+
+    /** C97 BI-1: tells the subscription module that the purchases on this invoice may start. */
+    public void publishActivation(Invoice invoice, String reason) {
+        List<Long> subscriptionIds = new ArrayList<>(invoice.getLines().stream().map(InvoiceLine::getSubscriptionId)
+            .filter(java.util.Objects::nonNull).distinct().toList());
+        if (subscriptionIds.isEmpty() && invoice.getSubscriptionId() != null) {
+            subscriptionIds.add(invoice.getSubscriptionId());
+        }
+        eventPublisher.publishEvent(new com.vyoog.eisplatform.modules.billing.event.InvoiceActivationEvent(invoice.getId(), subscriptionIds, reason));
     }
 
     @Transactional
@@ -293,17 +464,29 @@ public class InvoiceService {
         return "Organization #" + invoice.getOwnerOrganizationId();
     }
 
-    private InvoiceDto toDto(Invoice invoice, boolean withDetail, String ownerLabel) {
+    private InvoiceDto toDto(Invoice invoice, boolean withDetail, String ownerLabel, boolean admin) {
         List<InvoiceLineDto> lines = withDetail
             ? invoice.getLines().stream().map(l -> new InvoiceLineDto(l.getDescription(), l.getPeriodStart(), l.getPeriodEnd(),
-                l.getQuantity(), l.getUnitAmount(), l.getAmount())).toList()
+                l.getQuantity(), l.getUnitAmount(), l.getAmount(), l.getTaxAmount(), l.getTaxClassCode(), l.getHsnSacCode())).toList()
             : null;
         List<com.vyoog.eisplatform.modules.billing.dto.PaymentDto> payments = withDetail
             ? paymentRepository.findByInvoiceId(invoice.getId()).stream().map(this::toBarePaymentDto).toList()
             : null;
+        List<TaxComponentDto> taxLines = withDetail ? taxLinesOf(invoice.getId()) : null;
         return new InvoiceDto(invoice.getId(), invoice.getInvoiceNumber(), invoice.getStatus(), invoice.getCurrency(),
             invoice.getSubtotal(), invoice.getTaxAmount(), invoice.getTotal(), invoice.getPeriodStart(), invoice.getPeriodEnd(),
-            invoice.getIssuedAt(), invoice.getDueAt(), invoice.getBillToSnapshot(), invoice.getPaymentRoute(), ownerLabel, lines, payments);
+            invoice.getIssuedAt(), invoice.getDueAt(), invoice.getBillToSnapshot(), invoice.getPaymentRoute(), ownerLabel, lines, payments,
+            invoice.getTaxStatus().name(), invoice.getTaxEngine() == null ? null : invoice.getTaxEngine().name(), invoice.getPlaceOfSupply(),
+            invoice.getCustomerTaxId(), withDetail ? invoice.getIssuerSnapshot() : null, taxLines,
+            admin ? invoice.getTaxBlockCode() : null, admin ? invoice.getTaxBlockReason() : null,
+            invoice.getPurchaseOrderNumber());
+    }
+
+    /** The tax components copied onto an invoice when it was calculated (REQ-BIL-002.43), summed per component. */
+    public List<TaxComponentDto> taxLinesOf(Long invoiceId) {
+        return invoiceTaxLineRepository.findByInvoiceIdOrderBySortOrderAscIdAsc(invoiceId).stream()
+            .map(t -> new TaxComponentDto(t.getComponentCode(), t.getComponentName(), t.getTaxType() == null ? null : t.getTaxType().name(), t.getJurisdiction(),
+                t.getTreatment().name(), t.getRate(), t.getTaxableAmount(), t.getTaxAmount(), t.getNote())).toList();
     }
 
     private com.vyoog.eisplatform.modules.billing.dto.PaymentDto toBarePaymentDto(com.vyoog.eisplatform.modules.billing.model.Payment p) {

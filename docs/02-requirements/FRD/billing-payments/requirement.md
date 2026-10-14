@@ -1,10 +1,10 @@
 # REQ-BIL-001 — Billing & Payments (Razorpay, screens first)
 
-**Status:** Draft
+**Status:** Approved
 **BRD:** Not specified
 **Owner:** Product owner
-**Approved by / on:** Not yet approved. Cannot be approved until the open questions below marked **Blocks approval** are answered.
-**Decision:** [C46](../../../01-business/roadmap/open-decisions.md#c46), [C50](../../../01-business/roadmap/open-decisions.md#c50) (billing scope), [C51](../../../01-business/roadmap/open-decisions.md#c51) (tax, see REQ-BIL-002), [C55](../../../01-business/roadmap/open-decisions.md#c55) (checkout, pay by invoice)
+**Approved by / on:** Product owner, 2026-10-13 ([C97](../../../01-business/roadmap/open-decisions.md#c97), answers BI-1 to BI-9). Every open question that blocked approval (3, 4, 5, 8, 9, 10, 11, 12) is answered below.
+**Decision:** [C97](../../../01-business/roadmap/open-decisions.md#c97) (sprint 2026.4.3 answers, 2026-10-13), [C46](../../../01-business/roadmap/open-decisions.md#c46), [C50](../../../01-business/roadmap/open-decisions.md#c50) (billing scope), [C51](../../../01-business/roadmap/open-decisions.md#c51) (tax, see REQ-BIL-002), [C55](../../../01-business/roadmap/open-decisions.md#c55) (checkout, pay by invoice)
 
 | Field | Value |
 |---|---|
@@ -14,7 +14,7 @@
 | Application code | `APP-BIL` |
 | Priority | P0 ([C4](../../../01-business/roadmap/open-decisions.md#c4), [C5](../../../01-business/roadmap/open-decisions.md#c5)) |
 | AI required | No ([C12](../../../01-business/roadmap/open-decisions.md#c12)) |
-| Payment provider | Razorpay ([C46](../../../01-business/roadmap/open-decisions.md#c46)). Credentials: provided later by the product owner |
+| Payment provider | Razorpay is the first gateway ([C46](../../../01-business/roadmap/open-decisions.md#c46)); the payment screens are gateway-neutral and the product owner may add others ([C97](../../../01-business/roadmap/open-decisions.md#c97) BI-8, REQ-BIL-001.31). Credentials: provided later by the product owner |
 
 ## Source functions
 | Function ID | Function | Covered here |
@@ -31,7 +31,7 @@
 Not covered: 08.01 Pricing (price books, promotions), 08.02.01 Usage billing — later, per [C50](../../../01-business/roadmap/open-decisions.md#c50) (not MVP); 08.05.01 Tax — see [REQ-BIL-002](../tax-rules/requirement.md); 08.05.02 Convert currency — Not specified.
 
 ## Summary
-Customers (individuals, and organization admins for their organization) can keep billing details, see invoices, pay them through **Razorpay Checkout**, save and manage payment methods, see payment history, and download invoice and receipt documents. Platform administrators can see all invoices and payments, refund payments, and see whether the payment gateway is configured.
+Customers (individuals, and organization members with the **Manage billing** permission for their organization) can keep billing details, see invoices, pay them through **Razorpay Checkout**, save and manage payment methods, see payment history, and download invoice and receipt documents. Platform administrators can see all invoices and payments, refund payments, and see whether the payment gateway is configured.
 
 The screens and backend are built **now**, before Razorpay credentials exist. Until the credentials are placed in the common secrets file ([BR-SEC-001](../../../03-business-rules/BR-SEC-001-central-secrets-file.md)), the platform runs in **Not configured** mode: everything works except actions that need Razorpay, which are disabled with a clear message.
 
@@ -39,8 +39,8 @@ EIS never collects, transmits or stores full card numbers or CVV ([BR-BIL-001](.
 
 ## Actors
 - Individual customer — own billing details, invoices, payment methods and payments
-- Organization admin — the organization's billing (permission: see Open question 5; delegable under [C65](../../../01-business/roadmap/open-decisions.md#c65))
-- Platform administrator (new permission `MANAGE_BILLING`) — all invoices and payments, refunds, gateway status
+- Organization member with **Manage billing** (`MANAGE_ORGANIZATION_BILLING`) — the organization's billing; organization admins have it by default and can give it to others ([C97](../../../01-business/roadmap/open-decisions.md#c97) BI-5, [C65](../../../01-business/roadmap/open-decisions.md#c65))
+- Platform administrator (new permission `MANAGE_BILLING`) — all invoices and payments, refunds, gateway status and choice, which organizations may pay by invoice
 - Razorpay — checkout window, tokenized payment methods, webhooks
 
 ## Functional requirements
@@ -64,12 +64,21 @@ EIS never collects, transmits or stores full card numbers or CVV ([BR-BIL-001](.
 | REQ-BIL-001.16 | The business dashboard's spending card (01.02.01) shows the total paid in the current and previous period from paid invoices, replacing the current "not available" note. | Must |
 | REQ-BIL-001.17 | Every payment, refund, reconcile, payment-method change and billing-details change is written to the audit log. | Must |
 | REQ-BIL-001.18 | **Checkout payment screen** ([C55](../../../01-business/roadmap/open-decisions.md#c55), layout redesigned by [C59](../../../01-business/roadmap/open-decisions.md#c59)): one screen with the breadcrumb steps **Cart › Billing details › Payment › Complete**, used (a) when an individual proceeds from the cart ([REQ-MKT-003.8](../cart-checkout/requirement.md)), (b) when paying an OPEN invoice from Billing, and (c) after an organization order is approved and its invoice is issued. The Payment step shows a billing-details summary with **Change** links, an **Amount due** badge (display only — no partial payments), and a row of payment-method tiles: **Card**, **UPI**, **Netbanking**, **Wallets** (all through Razorpay) and **Pay by invoice** (offline, REQ-BIL-001.19). Card entry follows BR-BIL-001: Pay opens Razorpay Checkout with the selected method preselected (see C55 for why; the card fields on the EIS page are read-only placeholders). A Terms & Conditions, Refund policy and Privacy policy consent checkbox must be ticked before Pay. Screen: [checkout-payment.md](../../../05-ui/screen-requirements/checkout-payment.md). | Must |
-| REQ-BIL-001.19 | **Offline pay-by-invoice:** selecting Pay by invoice generates and finalizes the invoice (if not already issued), records the route OFFLINE on it, shows payment instructions and the offline bank details (REQ-BIL-001.21), and emails the invoice to the billing email. The invoice stays OPEN until a payment is recorded (REQ-BIL-001.20). Who may use it: Open question 9. Due date: Open question 4. | Must |
+| REQ-BIL-001.19 | **Offline pay-by-invoice:** selecting Pay by invoice generates and finalizes the invoice (if not already issued), records the route OFFLINE on it, shows payment instructions and the offline bank details (REQ-BIL-001.21), and emails the invoice to the billing email. The invoice stays OPEN until a payment is recorded (REQ-BIL-001.20). Who may use it: REQ-BIL-001.28. Due date: REQ-BIL-001.26 (15 days). | Must |
 | REQ-BIL-001.20 | **Record offline payment** (platform admin, `MANAGE_BILLING`): on an OPEN invoice, record amount received, date received (not in the future), method (bank transfer, NEFT/RTGS, cheque), reference number (required) and an optional note. The amount must equal the open amount (partial offline payments: Not specified). Recording marks the invoice PAID, creates a payment with method type OFFLINE, makes the receipt available, and is audited. | Must |
 | REQ-BIL-001.21 | **Offline bank details:** the bank details printed on offline invoices and on the checkout's offline result are maintained by a platform billing administrator (`MANAGE_BILLING`) in admin settings. Fields: account name, bank name, account number, IFSC, SWIFT/BIC — to confirm (Open question 11). They are not secrets and are not stored in the common secrets file. | Must |
 | REQ-BIL-001.22 | **Saved methods at checkout** ([C59](../../../01-business/roadmap/open-decisions.md#c59)): under the Card tile the customer's saved cards are listed (network logo, `•••• •••• •••• {last4}`, name on card if Razorpay returns it, expiry, an **Expired** chip when past expiry) and can be chosen for the payment; **Remove** is in each card's overflow menu (the same delete as REQ-BIL-001.10). **+ Use another card** pays with a new card in Razorpay's window, with the "Save this card securely with Razorpay" consent. Saved UPI IDs are listed under the UPI tile only if Razorpay returns them (Open question 18). Only display fields from Razorpay are shown (BR-BIL-001). | Must |
 | REQ-BIL-001.23 | **Payment brand logos** ([C59](../../../01-business/roadmap/open-decisions.md#c59)): card network, UPI and UPI app logos and the "Powered by Razorpay" badge are official assets stored in the app, shown only for methods EIS offers, used under each brand's guidelines and licence ([payment-brand-assets.md](../../../05-ui/screen-requirements/payment-brand-assets.md)). Wallets show a generic icon until the wallet list is decided (Open question 19). | Should |
 | REQ-BIL-001.24 | **Billing settings** ([C60](../../../01-business/roadmap/open-decisions.md#c60)): a billing administrator maintains the business profile printed on invoices (legal name, registrations, address, contact), the invoice number prefix, payment terms and footer note, the full offline payment details and accepted offline methods, which checkout methods are offered, and the Razorpay Checkout name, description and colour. Razorpay keys are shown only as set / not set (BR-SEC-001). Screen: [admin-billing-settings.md](../../../05-ui/screen-requirements/admin-billing-settings.md). | Must |
+| REQ-BIL-001.25 | **A purchase starts after payment** ([C97](../../../01-business/roadmap/open-decisions.md#c97) BI-1 C). A card, UPI, netbanking or wallet purchase from the cart stays **PENDING_SUBSCRIPTION** until its invoice is PAID, then becomes ACTIVE (the term starts then). A purchase paid by invoice (Pay by invoice) and an approved organization order become ACTIVE **immediately**, with the invoice's due date. A free plan, and a plan the customer already has active, start at once. Activation happens once however many times the payment event arrives. A purchase whose invoice is a tax-blocked Draft stays pending. | Must |
+| REQ-BIL-001.26 | **Invoice number and terms** ([C97](../../../01-business/roadmap/open-decisions.md#c97) BI-2 A; built with the tax work, [C96](../../../01-business/roadmap/open-decisions.md#c96)). The number is `PREFIX/YY-YY/NNNNNN` — for example `EIS/26-27/000123`: the prefix, the financial year April to March, and a six-digit sequence that restarts each financial year. The default payment terms are **15 days** (due date = issue date + 15). Both come from Billing settings (prefix, payment terms). The invoice also prints the legal fields of [BI-3](../../../01-business/roadmap/open-decisions.md#c97) (see [tax-rules](../tax-rules/requirement.md)). | Must |
+| REQ-BIL-001.27 | **Invoice payment reminders** ([C97](../../../01-business/roadmap/open-decisions.md#c97) BI-2 A): an OPEN invoice with a due date gets a reminder **3 days before** the due date, **on** the due date and **7 days after** it, each kind **once** per invoice. Reminders stop when the invoice is paid or refunded, and never go out for a Draft. They are an in-app notification and an e-mail to the billing e-mail (individual: the customer; organization: its administrators). | Must |
+| REQ-BIL-001.28 | **Pay by invoice only for enabled organizations** ([C97](../../../01-business/roadmap/open-decisions.md#c97) BI-4 C). The platform administrator (`MANAGE_BILLING`) enables Pay by invoice organization by organization. An individual customer can **never** pay by invoice. The global Pay by invoice switch in Billing settings (REQ-BIL-001.24) still applies: with it off, no one can. The checkout shows the tile, and the API accepts the offline route, only when both the switch and the organization's setting are on. Enabling and disabling are audited. | Must |
+| REQ-BIL-001.29 | **Organization billing needs Manage billing** ([C97](../../../01-business/roadmap/open-decisions.md#c97) BI-5 A). Every `/organization/me/billing/**` call, **reads included**, requires the separate **Manage billing** permission (`MANAGE_ORGANIZATION_BILLING`); a member without it gets 403 and the Billing screen explains why. | Must |
+| REQ-BIL-001.30 | **Terms, Privacy and Refund pages** ([C97](../../../01-business/roadmap/open-decisions.md#c97) BI-7 A). They are pages on the evyoog.com website. Their three URLs are set by the billing administrator in Billing settings → Business & invoicing; the checkout consent sentence links to them; the invoice document prints them. A URL not set is shown as plain text and not printed. | Must |
+| REQ-BIL-001.31 | **Gateway-neutral payment screens** ([C97](../../../01-business/roadmap/open-decisions.md#c97) BI-8). The backend has a `PaymentGateway` interface; Razorpay is its first implementation. The administrator sees a list of gateways, which one is active, and can test each and make a configured one active. The checkout summary carries `gatewayCode` and `gatewayName`; the screens say nothing gateway-specific. Creating and confirming a payment is still Razorpay-specific in `PaymentService`; a second gateway extends that when it is chosen (how to add one: [billing-payments API](../../../06-api/api-requirements/billing-payments.md#how-to-add-another-payment-gateway)). | Must |
+| REQ-BIL-001.32 | **Optional purchase-order number** ([C97](../../../01-business/roadmap/open-decisions.md#c97) BI-9 A). A customer may give a purchase-order number (up to 50 characters) for an invoice until it is paid; it is printed on the invoice and never required. | Should |
+| REQ-BIL-001.33 | **Refunds, methods, bank payments and fees** ([C97](../../../01-business/roadmap/open-decisions.md#c97) BI-9 A, BI-6 A). Refunds are made by platform administrators only, full or partial (REQ-BIL-001.12). Online methods are cards, UPI, netbanking and wallets. A bank payment recorded by an administrator must equal the open amount: **no partial bank payments** (REQ-BIL-001.20). The bank details shown are account name, bank name, account number, IFSC and SWIFT/BIC (REQ-BIL-001.21). **No fees line** is added to any invoice or checkout summary. | Must |
 
 ## Out of scope
 - Collecting card numbers, CVV or bank details in any EIS screen or API ([BR-BIL-001](../../../03-business-rules/BR-BIL-001-no-raw-card-data.md)).
@@ -77,14 +86,16 @@ EIS never collects, transmits or stores full card numbers or CVV ([BR-BIL-001](.
 - Price books, promotions, coupons, usage billing — later, per [C50](../../../01-business/roadmap/open-decisions.md#c50).
 - Tax calculation rules — see [REQ-BIL-002](../tax-rules/requirement.md).
 - Adjusting or crediting invoices, credit notes — Not specified.
-- A second payment provider (for example Stripe for international customers) — Not specified.
+- A second payment provider's payment creation, confirmation and webhooks: the gateway list and interface exist ([REQ-BIL-001.31](#functional-requirements)), but only Razorpay can take a payment today. Which gateways follow Razorpay is Not specified ([C97](../../../01-business/roadmap/open-decisions.md#c97)).
+- Partial offline (bank) payments and a fees line — decided out ([C97](../../../01-business/roadmap/open-decisions.md#c97) BI-9).
 - Partner payouts and revenue sharing (14.03).
 - Editing gateway credentials in the UI — they live only in the common secrets file ([BR-SEC-001](../../../03-business-rules/BR-SEC-001-central-secrets-file.md)).
 
 ## Dependencies
 - Existing subscription flows (REQ-SUB-001), organization orders (REQ-ORD-001), platform currencies and regions (REQ-GOV-001), `AuditService`, `NotificationService`.
 - New tables described in [07-database/data-model/billing-payments.md](../../../07-database/data-model/billing-payments.md).
-- New permission `MANAGE_BILLING` (platform ADMIN).
+- New permission `MANAGE_BILLING` (platform ADMIN) and the organization permission `MANAGE_ORGANIZATION_BILLING` ("Manage billing", REQ-TEN-005).
+- Migration [V037__billing_rules_sprint_2026_4_3.sql](../../../../database/migrations/V037__billing_rules_sprint_2026_4_3.sql) (apply by hand: Flyway is disabled).
 - Razorpay account and credentials (provided later by the product owner): [09-integrations/razorpay.md](../../../09-integrations/razorpay.md).
 - Common secrets file: [BR-SEC-001](../../../03-business-rules/BR-SEC-001-central-secrets-file.md).
 
@@ -104,23 +115,34 @@ EIS never collects, transmits or stores full card numbers or CVV ([BR-BIL-001](.
 |---|---|---|
 | 1 | ~~Tax (D4)~~ — **Answered — [C51](../../../01-business/roadmap/open-decisions.md#c51).** Tax rules and calculation are specified in [REQ-BIL-002](../tax-rules/requirement.md) (Admin rate or Tax service per region, admin rate as fallback). REQ-BIL-002 has its own open questions that block its approval. | No |
 | 2 | ~~Billing scope (D3)~~ — **Answered — [C50](../../../01-business/roadmap/open-decisions.md#c50).** The MVP includes recurring subscription billing, invoices, card/UPI payments, tax and currency; price books, promotions and usage billing are later, not MVP. | No |
-| 3 | **Activation vs payment:** should a subscription or approved order become active only after its first invoice is paid, or immediately (with the invoice due later)? Today activation happens on subscribe / approval. | Yes |
-| 4 | **Invoice number format and due date:** format (for example a prefix plus sequence per financial year) and payment terms (days until due) are Not specified. | Yes |
-| 5 | **Who handles organization billing (D16):** D16 is decided by [C65](../../../01-business/roadmap/open-decisions.md#c65): organization admins by default, delegable through feature permissions ([REQ-TEN-005](../access-management/requirement.md)). Proposal — **confirm:** organization billing becomes its own assignable feature permission, **Manage billing** (REQ-TEN-005 Open question 2). Until then the built default is `MANAGE_ORGANIZATION` ([C47](../../../01-business/roadmap/open-decisions.md#c47)). | Yes |
-| 6 | **Refund policy:** who may request refunds (admins only?), and are partial refunds allowed? This FRD assumes admins only, full or partial. | No — confirm in review |
-| 7 | **Payment methods offered:** cards and UPI are assumed. Netbanking, wallets? | No — confirm in review |
-| 8 | **Invoice document legal fields:** which company details, registration and tax numbers must appear on invoices and receipts. | Yes |
-| 9 | **Who may use Pay by invoice ([C55](../../../01-business/roadmap/open-decisions.md#c55)):** all customers, organizations only, selected organizations, or above an amount? | Yes |
-| 10 | **Payment terms for offline invoices:** days until due, and whether reminder emails are sent. (Extends Open question 4 for the offline route.) | Yes |
-| 11 | **Offline bank details fields:** confirm account name, bank name, account number, IFSC, SWIFT/BIC, and that they are maintained in admin settings (not the secrets file). | Yes |
-| 12 | **Terms & Conditions and Privacy Policy URLs** for the checkout consent checkbox — no legal routes exist in the app today. | Yes |
-| 13 | **Purchase-order number:** is a PO number field needed at checkout for organizations? | No — confirm in review |
+| 3 | ~~**Activation vs payment**~~ — **Answered — [C97](../../../01-business/roadmap/open-decisions.md#c97) BI-1 C.** A card or UPI purchase becomes active after payment; an approved organization order and a pay-by-invoice purchase become active immediately, with a due date ([REQ-BIL-001.25](#functional-requirements)). | No |
+| 4 | ~~**Invoice number format and due date**~~ — **Answered — [C97](../../../01-business/roadmap/open-decisions.md#c97) BI-2 A.** Number `EIS/26-27/000123`; due in 15 days; reminders 3 days before, on the due date and 7 days after ([REQ-BIL-001.26, .27](#functional-requirements)). | No |
+| 5 | ~~**Who handles organization billing (D16)**~~ — **Answered — [C97](../../../01-business/roadmap/open-decisions.md#c97) BI-5 A.** A separate **Manage billing** permission (`MANAGE_ORGANIZATION_BILLING`), needed for every organization billing call including reads ([REQ-BIL-001.29](#functional-requirements)). Organization admins hold it by default. | No |
+| 6 | ~~**Refund policy**~~ — **Answered — [C97](../../../01-business/roadmap/open-decisions.md#c97) BI-9 A.** Refunds by administrators only, full or partial. | No |
+| 7 | ~~**Payment methods offered**~~ — **Answered — [C97](../../../01-business/roadmap/open-decisions.md#c97) BI-9 A.** Cards, UPI, netbanking and wallets. | No |
+| 8 | ~~**Invoice document legal fields**~~ — **Answered — [C97](../../../01-business/roadmap/open-decisions.md#c97) BI-3 A.** Legal name, address, GSTIN and PAN; invoice number and date; place of supply; SAC code; the customer's name, address and GSTIN (built with the tax work, [tax-rules](../tax-rules/requirement.md)). | No |
+| 9 | ~~**Who may use Pay by invoice**~~ — **Answered — [C97](../../../01-business/roadmap/open-decisions.md#c97) BI-4 C.** Only organizations the platform administrator enables; never an individual ([REQ-BIL-001.28](#functional-requirements)). | No |
+| 10 | ~~**Payment terms for offline invoices**~~ — **Answered — [C97](../../../01-business/roadmap/open-decisions.md#c97) BI-2 A.** 15 days; reminders are sent ([REQ-BIL-001.26, .27](#functional-requirements)). | No |
+| 11 | ~~**Offline bank details fields**~~ — **Answered — [C97](../../../01-business/roadmap/open-decisions.md#c97) BI-6 A.** Account name, bank name, account number, IFSC and SWIFT/BIC, kept in the admin Billing settings (as built). | No |
+| 12 | ~~**Terms & Conditions and Privacy Policy URLs**~~ — **Answered — [C97](../../../01-business/roadmap/open-decisions.md#c97) BI-7 A.** The pages are on the evyoog.com website; EIS links to them; the URLs are set in Billing settings ([REQ-BIL-001.30](#functional-requirements)). The URLs themselves are **Not specified** until the product owner supplies them. | No |
+| 13 | ~~**Purchase-order number**~~ — **Answered — [C97](../../../01-business/roadmap/open-decisions.md#c97) BI-9 A.** Optional ([REQ-BIL-001.32](#functional-requirements)). | No |
 | 14 | **Other online methods:** which methods (netbanking, wallets, others) the "Other online methods" option offers. (Refines Open question 7.) | No — confirm in review |
 | 15 | **Card-panel approach:** re-verify against Razorpay's current documentation that no provider-hosted embeddable card fields exist; if they do, the card panel uses them instead of placeholder fields (C55). | No — confirm before Phase 2 build |
-| 16 | **Partial offline payments:** may an admin record less than the open amount? Today the amount must equal it. | No — confirm in review |
+| 16 | ~~**Partial offline payments**~~ — **Answered — [C97](../../../01-business/roadmap/open-decisions.md#c97) BI-9 A.** No partial bank payments; the amount must equal the open amount. | No |
 | 17 | **Netbanking and wallets as separate tiles** ([C59](../../../01-business/roadmap/open-decisions.md#c59)) replace the single "Other online methods" option (Open question 14). Which banks and which wallets Razorpay offers on the EIS account: provider-defined; confirm before showing any wallet brand. | No — confirm in review |
 | 18 | **Saved UPI IDs and UPI ID entry:** whether Razorpay returns saved UPI IDs for a customer, and whether a UPI ID typed on the EIS page can be passed to Razorpay Standard Checkout (otherwise it is typed in Razorpay's window). Not verified (razorpay.com not reachable from the build environment). | No — confirm in review |
 | 19 | **Wallet brands** to show as logos. Until decided, a generic wallet icon. | No — confirm in review |
-| 20 | **Refund policy URL** (added to the consent text and footer, with Terms and Privacy — Open question 12). | No — confirm in review |
-| 21 | **Fees line** (for example payment-processing fees) in the checkout summary: none assumed. | No — confirm in review |
+| 20 | ~~**Refund policy URL**~~ — **Answered — [C97](../../../01-business/roadmap/open-decisions.md#c97) BI-7 A.** One of the three links in Billing settings ([REQ-BIL-001.30](#functional-requirements)). | No |
+| 21 | ~~**Fees line**~~ — **Answered — [C97](../../../01-business/roadmap/open-decisions.md#c97) BI-9 A.** No fees line. | No |
 | 22 | **Breadcrumb "Cart" step for an invoice paid from Billing** (entry b, c): shown as a link to the cart, or hidden? Proposed: hidden when the checkout did not start from the cart. | No — confirm in review |
+
+Questions 14, 15, 17, 18, 19 and 22 were not part of the C97 answers and stay as written above; none blocks approval. Question 14 is superseded by the Netbanking and Wallets tiles (question 17).
+
+## Defaults applied (not asked)
+Recorded because C97 did not specify them:
+- **Pay by invoice backfill:** organizations that already had an OFFLINE-route invoice when migration V037 ran keep Pay by invoice (their open invoices stay payable); every other organization starts disabled.
+- **Reminder timing:** the day is the UTC calendar day; if the job was down, only the most advanced reminder that applies is sent, never a burst; the job runs every 30 minutes (first run 2 minutes after start) and is off when `app.renewals.job-enabled=false`.
+- **Purchase order number format:** letters, digits, spaces and `. / _ -`, 1 to 50 characters, starting with a letter or digit; blank clears it; changeable while the invoice is OPEN or a Draft.
+- **Policy URLs:** `http://` or `https://`, up to 480 characters after the scheme check, stored up to 500.
+- **Active gateway:** only a gateway whose credentials are set can be made active; changing it affects new payments only; an unknown saved code falls back to the first gateway in the list.
+- **Already active subscription:** a repeat purchase of a product the customer already has active keeps running while the new invoice is paid.

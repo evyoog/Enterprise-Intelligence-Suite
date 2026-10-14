@@ -32,6 +32,7 @@ public class BillingSettingsService {
 
     private final BillingSettingsRepository settingsRepository;
     private final AuditService auditService;
+    private final com.vyoog.eisplatform.modules.registration.repository.OrganizationRepository organizationRepository;
 
     /** The saved row, or an unsaved one holding the defaults. */
     public BillingSettings current() {
@@ -91,6 +92,9 @@ public class BillingSettingsService {
         s.setInvoicePrefix(r.invoicePrefix().trim().toUpperCase(Locale.ROOT));
         s.setPaymentTermsDays(r.paymentTermsDays());
         s.setInvoiceFooterNote(blankToNull(r.invoiceFooterNote()));
+        s.setTermsUrl(blankToNull(r.termsUrl()));
+        s.setPrivacyUrl(blankToNull(r.privacyUrl()));
+        s.setRefundPolicyUrl(blankToNull(r.refundPolicyUrl()));
         s.setUpdatedByCustomerId(adminCustomerId);
         s = settingsRepository.save(s);
         auditService.recordSuccess("BILLING_BUSINESS_PROFILE_SAVED", null, adminCustomerId, null,
@@ -139,6 +143,48 @@ public class BillingSettingsService {
         return current().isMethodPayByInvoiceEnabled();
     }
 
+    /** C97 BI-4: pay by invoice is only for organizations the platform admin enables, and only while the global switch is on. */
+    public boolean payByInvoiceAllowedFor(Long organizationId) {
+        if (organizationId == null || !payByInvoiceEnabled()) {
+            return false;
+        }
+        return organizationRepository.findById(organizationId)
+            .map(com.vyoog.eisplatform.modules.registration.model.Organization::isPayByInvoiceEnabled).orElse(false);
+    }
+
+    @Transactional(readOnly = true)
+    public List<com.vyoog.eisplatform.modules.billing.dto.PayByInvoiceOrganizationDto> payByInvoiceOrganizations() {
+        return organizationRepository.findByPayByInvoiceEnabledTrueOrderByNameAsc().stream().map(this::toOrgDto).toList();
+    }
+
+    @Transactional(readOnly = true)
+    public List<com.vyoog.eisplatform.modules.billing.dto.PayByInvoiceOrganizationDto> searchOrganizations(String query) {
+        if (query == null || query.isBlank()) {
+            return List.of();
+        }
+        return organizationRepository.findTop20ByNameContainingIgnoreCaseOrderByNameAsc(query.trim()).stream().map(this::toOrgDto).toList();
+    }
+
+    @Transactional
+    public com.vyoog.eisplatform.modules.billing.dto.PayByInvoiceOrganizationDto setOrganizationPayByInvoice(
+            Long adminCustomerId, Long organizationId, boolean enabled) {
+        var org = organizationRepository.findById(organizationId)
+            .orElseThrow(() -> new com.vyoog.eisplatform.common.exception.ResourceNotFoundException("Organization not found"));
+        if (org.isPayByInvoiceEnabled() != enabled) {
+            org.setPayByInvoiceEnabled(enabled);
+            org = organizationRepository.save(org);
+            auditService.recordSuccess(enabled ? "ORG_PAY_BY_INVOICE_ENABLED" : "ORG_PAY_BY_INVOICE_DISABLED", null, adminCustomerId,
+                null, "Organization", org.getId().toString(), org.getId(),
+                "Pay by invoice " + (enabled ? "enabled" : "disabled") + " for " + org.getName());
+        }
+        return toOrgDto(org);
+    }
+
+    private com.vyoog.eisplatform.modules.billing.dto.PayByInvoiceOrganizationDto toOrgDto(
+            com.vyoog.eisplatform.modules.registration.model.Organization o) {
+        return new com.vyoog.eisplatform.modules.billing.dto.PayByInvoiceOrganizationDto(o.getId(), o.getName(), o.getCode(), o.isPayByInvoiceEnabled());
+    }
+
     /** A start-payment request naming a method the admin switched off is refused. */
     public void requireOnlineMethodEnabled(String method) {
         if (method != null && !enabledOnlineMethods().contains(method)) {
@@ -150,7 +196,7 @@ public class BillingSettingsService {
         return new BusinessProfileDto(s.getBusinessLegalName(), s.getBusinessTradeName(), s.getBusinessGstin(), s.getBusinessPan(),
             s.getBusinessCin(), s.getBusinessAddressLine1(), s.getBusinessAddressLine2(), s.getBusinessCity(), s.getBusinessState(),
             s.getBusinessPostalCode(), s.getBusinessCountry(), s.getBusinessEmail(), s.getBusinessPhone(), s.getBusinessWebsite(),
-            s.getInvoicePrefix(), s.getPaymentTermsDays(), s.getInvoiceFooterNote(), s.getUpdatedAt());
+            s.getInvoicePrefix(), s.getPaymentTermsDays(), s.getInvoiceFooterNote(), s.getTermsUrl(), s.getPrivacyUrl(), s.getRefundPolicyUrl(), s.getUpdatedAt());
     }
 
     private PaymentMethodSettingsDto toMethodsDto(BillingSettings s) {

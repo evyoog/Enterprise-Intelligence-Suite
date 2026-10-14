@@ -13,6 +13,7 @@ import { PageHeader } from '../components/layout/PageHeader'
 import { renewalsApi, type Renewal } from '../api/renewalsApi'
 import { useLocalePreference } from '../theming/LocalePreferenceProvider'
 import { OrganizationSubscriptionsSection } from '../components/subscriptions/OrganizationSubscriptionsSection'
+import { EntitlementsSection } from '../components/subscriptions/EntitlementsSection'
 
 type Action = 'suspend' | 'reactivate' | 'cancel' | 'renew'
 
@@ -45,6 +46,19 @@ export function MySubscriptionsPage() {
       .then((list) => setRenewals(Object.fromEntries(list.map((r) => [r.subscriptionId, r]))))
       .catch(() => setRenewals({}))
   }, [])
+
+  const withdrawScheduledChange = async (subscription: Subscription) => {
+    setBusyId(subscription.id)
+    setActionError(null)
+    try {
+      const updated = await myProductsApi.cancelScheduledPlanChange(subscription.id)
+      setSubscriptions((prev) => prev?.map((s) => (s.id === updated.id ? updated : s)) ?? prev)
+    } catch (e) {
+      setActionError(e instanceof ApiError ? e.message : 'That action could not be completed.')
+    } finally {
+      setBusyId(null)
+    }
+  }
 
   const runAction = async (subscription: Subscription, action: Action) => {
     setBusyId(subscription.id)
@@ -92,12 +106,16 @@ export function MySubscriptionsPage() {
             busy={busyId === subscription.id}
             onAction={(action) => runAction(subscription, action)}
             onChangePlan={() => setPlanDialogFor(subscription)}
+            onWithdrawScheduledChange={() => withdrawScheduledChange(subscription)}
           />
         ))}
       </Box>
 
       {/* REQ-SUB-003 (C63): organization subscriptions and their seats (MANAGE_ORGANIZATION only). */}
       <OrganizationSubscriptionsSection />
+
+      {/* REQ-SUB-002 (C97 EN-1): what the active subscriptions include; read-only. */}
+      <EntitlementsSection />
 
       {planDialogFor && (
         <ChangePlanDialog
@@ -119,12 +137,13 @@ function statusColor(status: SubscriptionStatus): 'success' | 'warning' | 'defau
   return 'default'
 }
 
-function SubscriptionRow({ subscription, renewal, busy, onAction, onChangePlan }: {
+function SubscriptionRow({ subscription, renewal, busy, onAction, onChangePlan, onWithdrawScheduledChange }: {
   subscription: Subscription
   renewal?: Renewal
   busy: boolean
   onAction: (action: Action) => void
   onChangePlan: () => void
+  onWithdrawScheduledChange: () => void
 }) {
   const { t } = useTranslation()
   const { formatDate, formatDateTime } = useLocalePreference()
@@ -148,6 +167,15 @@ function SubscriptionRow({ subscription, renewal, busy, onAction, onChangePlan }
           )}
           {renewal && <Chip size="small" variant="outlined" label={t('subscriptions.renewal.renewsOn', { date: formatDate(renewal.renewalDate) })} />}
         </Box>
+        {subscription.pendingPlanId != null && (
+          <Alert severity="info" sx={{ mt: 1.5 }}
+            action={<Button color="inherit" size="small" disabled={busy} onClick={onWithdrawScheduledChange}>{t('subscriptions.scheduledChange.keep')}</Button>}>
+            {t('subscriptions.scheduledChange.notice', {
+              plan: subscription.pendingPlanName ?? '',
+              date: subscription.expiresAt ? formatDate(subscription.expiresAt) : t('subscriptions.scheduledChange.nextRenewal'),
+            })}
+          </Alert>
+        )}
         {renewal && (
           <Typography variant="body2" sx={{ color: 'text.secondary', mt: 1, display: 'flex', alignItems: 'center', gap: 0.75 }}>
             <BellRing size={14} aria-hidden />
@@ -224,6 +252,7 @@ function ChangePlanDialog({ subscription, onClose, onChanged }: {
       <DialogTitle>{t('subscriptions.changePlanDialog.title', { product: subscription.productName })}</DialogTitle>
       <DialogContent>
         {error && <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>}
+        <Typography variant="body2" sx={{ color: 'text.secondary', mb: 1 }}>{t('subscriptions.changePlanDialog.rule')}</Typography>
         {plans === null ? (
           <Box sx={{ display: 'flex', justifyContent: 'center', py: 2 }}><CircularProgress size={24} /></Box>
         ) : (

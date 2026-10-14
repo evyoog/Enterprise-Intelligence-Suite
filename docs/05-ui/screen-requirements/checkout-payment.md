@@ -22,7 +22,7 @@ Shared presentation rules (theme, status chips, money formatting, loading/empty/
   - **Left — steps** (about 62 %).
   - **Right — cart summary** (about 38 %), on a light-grey surface (`background.default` / `action.hover`, so it adapts to dark mode).
 - **Header (left column):** the EIS logo and name (in place of the reference's "MERCHANT NAME"), and below it a **breadcrumb stepper**: **Cart › Billing details › Payment › Complete**. The current step is bold; earlier steps are links back to them; later steps are plain text. When the checkout did not start from the cart (paying an invoice from Billing), the **Cart** crumb is hidden (proposed — REQ-BIL-001 Open question 22).
-- **Below the card:** "Powered by Razorpay" badge on the left ([payment-brand-assets.md](payment-brand-assets.md)); links **Refund policy · Privacy policy · Terms of service** on the right (URLs Not specified — REQ-BIL-001 Open questions 12 and 20; until known the links are not rendered).
+- **Below the card:** a "Powered by" badge on the left — the Razorpay logo when the gateway the backend would use first (`gatewayCode` of the checkout summary) is Razorpay or none is named, otherwise that gateway's name ([payment-brand-assets.md](payment-brand-assets.md); [C97](../../01-business/roadmap/open-decisions.md#c97) BI-8, [C98](../../01-business/roadmap/open-decisions.md#c98)); the Terms, Refund and Privacy links are in the consent sentence (below).
 
 ### Tablet (600–1023 px)
 Same card; the right column narrows. If the content does not fit, the summary moves above the steps as on mobile. Not otherwise specified.
@@ -76,7 +76,7 @@ A horizontal row of equal-size tiles, each with an icon or logo and a label. The
 | **UPI** | `checkout.option.upi` | UPI logo, with Google Pay, PhonePe, Paytm and BHIM logos | Saved UPI IDs, if Razorpay returns any (REQ-BIL-001 Open question 18). Then **Pay with UPI ID** or **Pay with a UPI app** (QR on desktop, app intent on mobile) — both happen in Razorpay's window unless a UPI ID typed on the EIS page can be passed to Razorpay Standard Checkout (Open question 18). |
 | **Netbanking** | `checkout.option.netbanking` | Bank-building icon (MUI icon, no bank logos) | "You'll choose your bank in Razorpay's secure window." Which banks: provider-defined. |
 | **Wallets** | `checkout.option.wallets` | Wallet icon (MUI icon). No wallet brand logos until the wallet list is confirmed (REQ-BIL-001 Open question 19) | "You'll choose your wallet in Razorpay's secure window." |
-| **Pay by invoice** | `checkout.option.offline` | Invoice/document icon | C55 content: "We'll issue an invoice now. Pay by bank transfer, NEFT/RTGS or cheque, quoting the invoice number." The billing email the invoice will be sent to. Payment terms: Not specified until decided (REQ-BIL-001 Open question 10). **Shown only to customers allowed to use it** (Open question 9; built default: everyone). |
+| **Pay by invoice** | `checkout.option.offline` | Invoice/document icon | C55 content: "We'll issue an invoice now. Pay by bank transfer, NEFT/RTGS or cheque, quoting the invoice number." The billing email the invoice will be sent to. Payment terms: 15 days by default (BI-2). **Shown only to organizations the platform administrator enabled** ([C97](../../01-business/roadmap/open-decisions.md#c97) BI-4); never to an individual. Pay by invoice starts the purchase at once (BI-1); the due date is the issue date plus 15 days (default). |
 
 **Netbanking** and **Wallets** replace the single C55 "Other online methods" option (REQ-BIL-001 Open question 17).
 
@@ -91,12 +91,21 @@ Mandatory rule: no EIS frontend state, API, log, database column or analytics ev
 - If Razorpay is later confirmed to offer embeddable secure fields (REQ-BIL-001 Open question 15), they replace the placeholders in the same layout.
 
 ### Terms and Pay
-- Above the button, a required checkbox, unticked: **"I agree to the Terms & Conditions, Refund policy and Privacy policy"** (`checkout.consent`). The three are links once their URLs exist (Not specified — Open questions 12 and 20); until then, plain text.
+- Above the checkbox, an optional **Purchase order number** field ([C97](../../01-business/roadmap/open-decisions.md#c97) BI-9; see [billing-pay-invoice.md](billing-pay-invoice.md)); it saves when the field loses focus, never blocks Pay and is printed on the invoice.
+- Above the button, a required checkbox, unticked: **"I agree to the Terms & Conditions, Refund policy and Privacy policy."** ([C97](../../01-business/roadmap/open-decisions.md#c97) BI-7). The three names are links (new tab) to the pages set in Billing settings (`termsUrl`, `refundPolicyUrl`, `privacyUrl` in the checkout summary); a page whose URL is not set is plain text.
 - At the bottom-right of the payment box: **"Pay | {total}"** (`checkout.pay`, for example "Pay | ₹105.00") — label and total separated by a thin divider; **"Generate invoice"** (`checkout.generateInvoice`) when Pay by invoice is selected.
 - Disabled until a method is ready (a tile selected; for Card, a saved card selected or **Use another card** open) **and** the terms checkbox is ticked. While a request is in progress the button is disabled and shows a spinner (double-click protection).
 
 ### Gateway not configured
-Card, UPI, Netbanking and Wallets tiles appear **disabled** with a tooltip "Online payments are not available yet." and the shared banner (`billing.gateway.notConfigured`, [billing-ui-standards.md](billing-ui-standards.md#gateway-banner)). Pay by invoice stays available if allowed. If no tile is enabled, the Pay button stays disabled.
+Card, UPI, Netbanking and Wallets tiles appear **disabled** with a tooltip "Online payments are not available yet." and the shared banner (`billing.gateway.notConfigured`, [billing-ui-standards.md](billing-ui-standards.md#gateway-banner)). This is shown when the summary's `gatewayConfigured` is false, that is, when **no active, fully configured gateway can take the invoice's currency** ([C98](../../01-business/roadmap/open-decisions.md#c98)). Pay by invoice stays available if allowed. If no tile is enabled, the Pay button stays disabled.
+
+### Gateway chosen by the backend (C98)
+The checkout never chooses a gateway ([REQ-BIL-003.12](../../02-requirements/FRD/payment-gateways/requirement.md), [BR-10](../../02-requirements/FRD/payment-gateways/business-rules.md)).
+- **Tiles offered** are the methods Billing settings allow **and** that at least one eligible gateway offers for the invoice's currency (`enabledMethods` in the checkout summary).
+- **Pay** starts the payment (`POST …/invoices/{id}/payments` with the chosen tile as `method`). The backend routes it and answers with the chosen `provider`, the public `keyId` and a public `clientConfig`. If no gateway can take it, the request fails with 503 and the screen shows the server's message ("No payment gateway is available for {currency} {method} payments."); nothing is created.
+- **The window that opens belongs to the provider the backend chose.** The screen has a launcher only for Razorpay (Razorpay Checkout). If the backend routes the payment to a provider the screen has no launcher for, **no payment window opens, nothing is charged and the payment is not confirmed**; the result is the failed state with the text "This payment was routed to a gateway this screen cannot open yet. Nothing was charged. Please try another method or contact support." (`checkout.providerUnsupported`). Adding a launcher for a new provider is part of adding that provider (see [09-integrations/payment-gateways.md](../../09-integrations/payment-gateways.md#how-to-add-a-new-provider)).
+- **Footer "Powered by"** names the gateway in `gatewayName` (the Razorpay logo for Razorpay).
+- Saved cards and the "Save this card" consent stay **Razorpay-only** ([C98](../../01-business/roadmap/open-decisions.md#c98) defaults).
 
 ### Footer bar (bottom of the left column)
 - Left: **‹ Step back** — to the previous step (Billing details; from Billing details, to the cart).
@@ -104,7 +113,7 @@ Card, UPI, Netbanking and Wallets tiles appear **disabled** with a tooltip "Onli
 
 ## Cart summary (right column)
 - **Subtotal**; **one line per tax** with its name and rate, for example **"GST (18 %)"** ([REQ-BIL-002](../../02-requirements/FRD/tax-rules/requirement.md)), or **"Tax: none for this region"**; **Total** in large type in the primary colour.
-- **No shipping row** (subscription software) and **no fees row** unless a fee rule exists (Not specified — REQ-BIL-001 Open question 21). No coupon field ([C50](../../01-business/roadmap/open-decisions.md#c50)).
+- **No shipping row** (subscription software) and **no fees row** ([C97](../../01-business/roadmap/open-decisions.md#c97) BI-9: no fees line). No coupon field ([C50](../../01-business/roadmap/open-decisions.md#c50)).
 - **Items:** product image (catalog media; generic product icon if none) with a small count badge, product name, plan, price. Quantity is not shown (D14 not decided).
 - **Edit cart** link to `/cart` (only when the checkout started from the cart). Items are read-only here; Remove happens on the cart page.
 - The summary stays visible on every step.
@@ -114,7 +123,7 @@ Focus moves to the result heading. Status changes are announced with `aria-live=
 
 | Result | Content | Actions | i18n key |
 |---|---|---|---|
-| **Online payment successful** | Success check, "Payment successful", invoice number, amount paid, method (for example "Visa •••• 4242" or "UPI" — display fields from Razorpay only), date | **Download receipt**, **Download invoice**, **Go to my products**, **View billing** | `checkout.result.success` |
+| **Online payment successful** (the purchase is active now, BI-1) | Success check, "Payment successful", invoice number, amount paid, method (for example "Visa •••• 4242" or "UPI" — display fields from Razorpay only), date | **Download receipt**, **Download invoice**, **Go to my products**, **View billing** | `checkout.result.success` |
 | **Online payment pending** | Spinner, "Confirming your payment…". Polls every **5 seconds** for up to **2 minutes** (C55 default), then "This is taking longer than usual…" with **View billing** | — | `checkout.result.pending` |
 | **Online payment failed / cancelled** | Error icon, the provider's reason, "Your invoice is still open." | **Try again** (back to Payment with the same tile), **Choose another method** | `checkout.result.failed` |
 | **Invoice generated (offline)** | Document icon, "Invoice generated", invoice number, total, due date (Open question 10), **bank details** (account name, bank, account number, IFSC, SWIFT/BIC — [admin-billing-settings.md](admin-billing-settings.md)) each with a **Copy** button; "Quote invoice number {number} as the payment reference"; "We've emailed the invoice to {billing email}"; subscription status | **Download invoice**, **View billing** | `checkout.result.offline` |

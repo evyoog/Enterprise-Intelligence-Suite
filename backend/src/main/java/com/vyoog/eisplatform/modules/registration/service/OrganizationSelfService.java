@@ -85,6 +85,11 @@ public class OrganizationSelfService {
      * organization itself is in good standing. A customer can't out-argue
      * their own organization being CANCELLED/EXPIRED by having an ACTIVE
      * membership row — both facts must hold. */
+    /** The caller's organization id, with the same good-standing checks as every other organization-self call. */
+    public Long myOrganizationId(Long customerId) {
+        return resolveMembership(customerId).getOrganizationId();
+    }
+
     private OrganizationMember resolveMembership(Long customerId) {
         OrganizationMember member = memberRepository.findFirstByCustomerIdAndStatus(customerId, MembershipStatus.ACTIVE)
             .orElseThrow(() -> new ResourceNotFoundException("You are not a member of an organization"));
@@ -324,7 +329,10 @@ public class OrganizationSelfService {
                 subscription.getPlanId() == null ? null
                     : productPlanRepository.findById(subscription.getPlanId()).map(ProductPlan::getName).orElse(null),
                 subscription.getQuantity(),
-                subscription.isAutoRenew()
+                subscription.isAutoRenew(),
+                subscription.getPendingPlanId(),
+                subscription.getPendingPlanId() == null ? null
+                    : productPlanRepository.findById(subscription.getPendingPlanId()).map(ProductPlan::getName).orElse(null)
             ))
             .toList();
     }

@@ -37,3 +37,12 @@ Local and CI: automated tests. Manual checks: dev environment with a local Postg
 | [TC-SUB-010](TC-SUB-010.md) | AC-10 | P0 | Yes |
 | [TC-SUB-011](TC-SUB-011.md) | AC-11 | P0 | Yes |
 | [TC-SUB-012](TC-SUB-012.md) | AC-12 | P0 | Yes |
+| [TC-SUB-038](TC-SUB-038.md) | AC-13 downgrade scheduled (C97 SC-1) | P0 | Yes |
+| [TC-SUB-039](TC-SUB-039.md) | AC-14 upgrade immediate | P0 | Yes |
+| [TC-SUB-040](TC-SUB-040.md) | AC-15 withdraw | P0 | Yes |
+| [TC-SUB-041](TC-SUB-041.md) | AC-16 applied at automatic renewal | P0 | Yes |
+| [TC-SUB-042](TC-SUB-042.md) | AC-17 applied at manual renewal | P1 | No |
+| [TC-SUB-043](TC-SUB-043.md) | AC-18 compared per month | P1 | Yes |
+| [TC-SUB-044](TC-SUB-044.md) | AC-19 My subscriptions notice | P1 | Yes |
+
+TC-SUB-038 to TC-SUB-044 were added with the scheduled plan change ([C97](../../../docs/01-business/roadmap/open-decisions.md#c97) SC-1); the Scope line above ("quantity/scheduled changes" out of scope) no longer applies to plan changes.

@@ -22,10 +22,12 @@ import com.vyoog.eisplatform.modules.registration.repository.ProductSubscription
 import jakarta.validation.Validation;
 import jakarta.validation.Validator;
 import org.junit.jupiter.api.AfterEach;
+import com.vyoog.eisplatform.modules.billing.tax.service.TaxTestSupport;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.context.annotation.Import;
 import org.springframework.test.context.ActiveProfiles;
 
 import java.math.BigDecimal;
@@ -40,7 +42,10 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
  * the whole test context, so every test here deletes it afterwards. */
 @SpringBootTest
 @ActiveProfiles("test")
+@Import(TaxTestSupport.class)
 class BillingSettingsServiceTest {
+
+    @Autowired private TaxTestSupport tax;
 
     @Autowired private BillingSettingsService billingSettingsService;
     @Autowired private OfflinePaymentService offlinePaymentService;
@@ -65,7 +70,9 @@ class BillingSettingsServiceTest {
         customer.setEmail("settings-" + System.nanoTime() + "@example.com");
         customer.setFirstName("Set");
         customer.setLastName("Tings");
-        return customerRepository.save(customer);
+        customer = customerRepository.save(customer);
+        tax.readyToInvoiceInIndia(customer);   // an issued invoice needs a supplier, a rule and billing details
+        return customer;
     }
 
     private Invoice newInvoice(Customer customer) {
@@ -82,16 +89,30 @@ class BillingSettingsServiceTest {
         return invoiceService.generateForSubscription(subscriptionRepository.save(subscription).getId());
     }
 
+    private Invoice newOrgInvoice(com.vyoog.eisplatform.modules.registration.model.Organization org) {
+        Product product = new Product();
+        product.setName("Settings Org Product " + System.nanoTime());
+        product.setPrice(BigDecimal.valueOf(500));
+        product.setStatus(ProductStatus.ACTIVE);
+        product = productRepository.save(product);
+        ProductSubscription subscription = new ProductSubscription();
+        subscription.setProductId(product.getId());
+        subscription.setOwnerType(RegistrationOwnerType.ORGANIZATION);
+        subscription.setOwnerOrganizationId(org.getId());
+        subscription.setStatus(SubscriptionStatus.ACTIVE);
+        return invoiceService.generateForSubscription(subscriptionRepository.save(subscription).getId());
+    }
+
     private SaveBusinessProfileRequest profile(String prefix, int terms) {
         return new SaveBusinessProfileRequest("eVyoog Technologies Pvt Ltd", "eVyoog", "29abcde1234f1z5", "abcde1234f",
             "U72900KA2020PTC123456", "12 MG Road", null, "Bengaluru", "Karnataka", "560001", "India",
-            "billing@evyoog.example", "+91 80 1234 5678", "https://www.evyoog.example", prefix, terms, "Thank you for your business.");
+            "billing@evyoog.example", "+91 80 1234 5678", "https://www.evyoog.example", prefix, terms, "Thank you for your business.", "https://www.evyoog.example/terms", null, "");
     }
 
     @Test
     void defaultsKeepTheBehaviourBeforeC60() {
-        assertThat(billingSettingsService.businessProfile().invoicePrefix()).isEqualTo("INV");
-        assertThat(billingSettingsService.businessProfile().paymentTermsDays()).isZero();
+        assertThat(billingSettingsService.businessProfile().invoicePrefix()).isEqualTo("EIS");
+        assertThat(billingSettingsService.businessProfile().paymentTermsDays()).isEqualTo(15);
         assertThat(billingSettingsService.enabledOnlineMethods()).containsExactly("card", "upi", "netbanking", "wallet");
         assertThat(billingSettingsService.payByInvoiceEnabled()).isTrue();
         assertThat(offlinePaymentService.bankDetails().chequeEnabled()).isTrue();
@@ -107,16 +128,16 @@ class BillingSettingsServiceTest {
         assertThat(saved.invoicePrefix()).isEqualTo("EVY");
 
         Invoice invoice = newInvoice(newCustomer());
-        assertThat(invoice.getInvoiceNumber()).startsWith("EVY-");
+        assertThat(invoice.getInvoiceNumber()).startsWith("EVY/");
         assertThat(Duration.between(invoice.getIssuedAt(), invoice.getDueAt()).toDays()).isEqualTo(15);
     }
 
     @Test
     void invalidRegistrationNumbersAndPrefixesAreRefused() {
         var bad = new SaveBusinessProfileRequest("X", null, "12345", "ABC", "NOPE", "a", null, "c", "s", "1", "In",
-            "not-an-email", "abc", "ftp://x", "a", 400, null);
+            "not-an-email", "abc", "ftp://x", "a", 400, null, "terms", null, null);
         assertThat(validator.validate(bad)).extracting(v -> v.getPropertyPath().toString())
-            .contains("gstin", "pan", "cin", "email", "phone", "website", "invoicePrefix", "paymentTermsDays");
+            .contains("gstin", "pan", "cin", "email", "phone", "website", "invoicePrefix", "paymentTermsDays", "termsUrl");
         assertThat(validator.validate(profile("INV", 30))).isEmpty();
     }
 
@@ -126,15 +147,16 @@ class BillingSettingsServiceTest {
         billingSettingsService.savePaymentMethods(admin.getId(),
             new SavePaymentMethodSettingsRequest(true, false, true, false, false, "eVyoog Store", "Subscriptions", "#4c63ff"));
         Customer customer = newCustomer();
-        Invoice invoice = newInvoice(customer);
+        var org = tax.organizationReadyToInvoice(customer, true);
+        Invoice invoice = newOrgInvoice(org);
 
-        CheckoutSummaryDto summary = checkoutService.summaryForInvoice(customer.getId(), null, invoice.getId());
+        CheckoutSummaryDto summary = checkoutService.summaryForInvoice(null, org.getId(), invoice.getId());
 
         assertThat(summary.enabledMethods()).containsExactly("card", "netbanking");
         assertThat(summary.payByInvoiceAllowed()).isFalse();
         assertThat(summary.checkoutName()).isEqualTo("eVyoog Store");
         assertThat(summary.checkoutThemeColor()).isEqualTo("#4C63FF");
-        assertThatThrownBy(() -> checkoutService.chooseOffline(customer.getId(), null, customer.getId(), invoice.getId()))
+        assertThatThrownBy(() -> checkoutService.chooseOffline(null, org.getId(), customer.getId(), invoice.getId()))
             .isInstanceOf(ForbiddenException.class);
         assertThatThrownBy(() -> billingSettingsService.requireOnlineMethodEnabled("upi"))
             .isInstanceOf(IllegalArgumentException.class);
@@ -157,8 +179,9 @@ class BillingSettingsServiceTest {
         assertThat(saved.chequeEnabled()).isFalse();
 
         Customer customer = newCustomer();
-        Invoice invoice = newInvoice(customer);
-        checkoutService.chooseOffline(customer.getId(), null, customer.getId(), invoice.getId());
+        var org = tax.organizationReadyToInvoice(customer, true);
+        Invoice invoice = newOrgInvoice(org);
+        checkoutService.chooseOffline(null, org.getId(), customer.getId(), invoice.getId());
         assertThatThrownBy(() -> offlinePaymentService.recordOfflinePayment(admin.getId(), invoice.getId(),
             new RecordOfflinePaymentRequest(invoice.getTotal(), LocalDate.now(), OfflinePaymentMethod.CHEQUE, "CHQ1", null)))
             .isInstanceOf(IllegalArgumentException.class);

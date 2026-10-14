@@ -1,5 +1,7 @@
 # Screen section: Plan & entitlements
 
+> **Superseded by [entitlements.md](entitlements.md)** ([C97](../../01-business/roadmap/open-decisions.md#c97), built 2026-10-13). The built card has no status chip (only ACTIVE subscriptions appear) and no "Usage tracking is not available yet" note; the section sits at the bottom of My subscriptions. Kept as the record of the first draft.
+
 | Field | Value |
 |---|---|
 | Requirement | [REQ-SUB-002](../../02-requirements/FRD/entitlements/requirement.md) |

@@ -5,9 +5,9 @@ Requirement: [REQ-BIL-001](../../02-requirements/FRD/billing-payments/requiremen
 ## Scopes
 Every customer endpoint exists in two scopes with the same behaviour:
 - **Individual:** `/me/billing/...` — the signed-in customer's own billing.
-- **Organization:** `/organization/me/billing/...` — the caller's organization; allowed for the users in FRD Open question 5.
+- **Organization:** `/organization/me/billing/...` — the caller's organization. **Every call, reads included, needs the `MANAGE_ORGANIZATION_BILLING` ("Manage billing") permission** ([C97](../../01-business/roadmap/open-decisions.md#c97) BI-5); a member without it gets **403** "You do not have permission to do this". Organization admins have it by default.
 
-Another customer's or organization's record returns a generic **404**. When the gateway is not configured, Razorpay-dependent endpoints return **503** with code `PAYMENT_GATEWAY_NOT_CONFIGURED`.
+Another customer's or organization's record returns a generic **404**. When no payment gateway can take a payment (none active and fully configured for the invoice's currency and method), or a payment's own provider is no longer fully configured, the provider-dependent endpoints return **503** with code `PAYMENT_GATEWAY_NOT_CONFIGURED`. Which gateway takes a payment is decided by the backend ([REQ-BIL-003](../../02-requirements/FRD/payment-gateways/requirement.md), [payment-gateways.md](payment-gateways.md)); Razorpay is the only implemented provider today.
 
 ## Customer endpoints (both scopes)
 | Method | Path (individual scope shown) | Purpose | Razorpay needed |
@@ -18,16 +18,17 @@ Another customer's or organization's record returns a generic **404**. When the 
 | GET | `/me/billing/invoices` | List invoices (`status`, `from`, `to`, `page`) | No |
 | GET | `/me/billing/invoices/{invoiceId}` | Invoice detail with lines and payments | No |
 | GET | `/me/billing/invoices/{invoiceId}/document` | Download document; `type=invoice` (any finalized invoice) or `type=receipt` (PAID only) | No |
-| POST | `/me/billing/invoices/{invoiceId}/payments` | Start a payment: creates a Razorpay order for the invoice total; returns the order ID, amount, currency and the public key ID for Checkout. Optional body ([C59](../../01-business/roadmap/open-decisions.md#c59), REQ-BIL-001.22, Draft): `paymentMethodId` (a saved method of the caller; refused if expired) and `method` (`card`, `upi`, `netbanking`, `wallet`) for the Checkout preselection; a method switched off in Billing settings is refused with 400 (C60). No card data is ever accepted (BR-BIL-001) | Yes |
-| POST | `/me/billing/payments/{paymentId}/confirm` | Submit the Checkout result (Razorpay order ID, payment ID, signature); backend verifies the signature, then records the payment | Yes |
+| POST | `/me/billing/invoices/{invoiceId}/payments` | Start a payment: the backend **routes** it to a gateway ([C98](../../01-business/roadmap/open-decisions.md#c98), see [payment-gateways.md](payment-gateways.md#changes-to-the-customer-payment-endpoints)) and creates that provider's order for the invoice total; returns the order ID, amount, currency, the public key ID (`keyId`), the chosen `provider` and a public `clientConfig` map for that provider's payment window. 503 `PAYMENT_GATEWAY_NOT_CONFIGURED` when no gateway can take it. Optional body ([C59](../../01-business/roadmap/open-decisions.md#c59), REQ-BIL-001.22, Draft): `paymentMethodId` (a saved method of the caller; refused if expired) and `method` (`card`, `upi`, `netbanking`, `wallet`) for the Checkout preselection; a method switched off in Billing settings is refused with 400 (C60). No card data is ever accepted (BR-BIL-001) | Yes |
+| POST | `/me/billing/payments/{paymentId}/confirm` | Submit the Checkout result (provider order ID, payment ID, signature); the backend verifies the signature **with the payment's own provider**, then records the payment | Yes |
 | GET | `/me/billing/payments` | Payment history (`status`, `from`, `to`, `page`) | No |
 | GET | `/me/billing/payment-methods` | Saved payment methods (display fields only) | No |
 | POST | `/me/billing/payment-methods/setup` | Start saving a method: body `type` (CARD, UPI), `consent` (required true for CARD), `makeDefault`; returns what Razorpay Checkout needs | Yes |
 | POST | `/me/billing/payment-methods/setup/confirm` | Submit the Razorpay result; backend verifies it, then stores the token reference and display fields | Yes |
 | POST | `/me/billing/payment-methods/{methodId}/default` | Set as default (refused for expired cards) | No |
 | DELETE | `/me/billing/payment-methods/{methodId}` | Remove; also deletes the token at Razorpay | Yes |
-| GET | `/me/billing/checkout?subscriptionId=…` or `?invoiceId=…` | **Checkout summary** (REQ-BIL-001.18, C55): items (product, plan, billing period, term dates, amount; quantity only if one exists), subtotal, tax lines from REQ-BIL-002 (name, rate, amount), total, currency, the invoice it pays, available payment options, `gatewayConfigured`, `payByInvoiceAllowed` (rule: FRD Open question 9) | No |
-| POST | `/me/billing/invoices/{invoiceId}/offline` | **Choose Pay by invoice** (REQ-BIL-001.19): sets the invoice route to OFFLINE, keeps it OPEN, sends the invoice email to the billing email; returns invoice number, due date (rule Not specified), bank details (REQ-BIL-001.21; empty if not set yet) and the document download link. Refused with 403 if the caller may not use Pay by invoice | No |
+| GET | `/me/billing/checkout?subscriptionId=…` or `?invoiceId=…` | **Checkout summary** (REQ-BIL-001.18, C55): items (product, plan, billing period, term dates, amount; quantity only if one exists), subtotal, tax lines from REQ-BIL-002 (name, rate, amount), total, currency, the invoice it pays, available payment options, `gatewayConfigured`, `payByInvoiceAllowed` (true only for an enabled organization while the global switch is on — BR-18), the links `termsUrl`, `privacyUrl`, `refundPolicyUrl` (BI-7, null when not set), `purchaseOrderNumber` (BI-9), and `gatewayCode` / `gatewayName` of the gateway the backend would use first for the invoice's currency (BI-8, [C98](../../01-business/roadmap/open-decisions.md#c98); the screens use these instead of a hard-coded name), and offered payment options limited to methods an eligible gateway offers | No |
+| POST | `/me/billing/invoices/{invoiceId}/offline` | **Choose Pay by invoice** (REQ-BIL-001.19): sets the invoice route to OFFLINE, keeps it OPEN, **starts the purchase at once** ([C97](../../01-business/roadmap/open-decisions.md#c97) BI-1: the subscriptions on the invoice become ACTIVE), sends the invoice email to the billing email; returns invoice number, due date (issue date + payment terms, default 15 days), bank details (REQ-BIL-001.21; empty if not set yet) and the document download link. Refused with 403 `PAY_BY_INVOICE_NOT_ALLOWED` unless the global switch is on and the caller is an **organization the platform administrator enabled** (BI-4); an individual is always refused. 409 if the invoice is not OPEN (a Draft included) | No |
+| PUT | `/me/billing/invoices/{invoiceId}/purchase-order` | **Purchase-order number** (REQ-BIL-001.32, [C97](../../01-business/roadmap/open-decisions.md#c97) BI-9). Body `{"purchaseOrderNumber": "PO-2026/17"}`: up to 50 characters, letters, digits, spaces and `. / _ -`, starting with a letter or digit; blank or null clears it. Only while the invoice is OPEN or Draft (409 once paid); another owner's invoice is 404. Returns the invoice (`purchaseOrderNumber`). Printed on the invoice document. Audited `INVOICE_PO_NUMBER_SET` | No | No |
 
 The existing `POST /me/billing/invoices/{invoiceId}/payments` is used by the Card, UPI and Other online options; its response tells the UI which Razorpay method to preselect (body field `method`: `card`, `upi` or `other`). No request to EIS ever carries a card number, expiry or CVV ([BR-BIL-001](../../03-business-rules/BR-BIL-001-no-raw-card-data.md)).
 
@@ -38,22 +39,27 @@ The existing `POST /me/billing/invoices/{invoiceId}/payments` is used by the Car
 | GET | `/admin/billing/invoices/{invoiceId}` | Invoice detail | No |
 | GET | `/admin/billing/payments` | All payments (`status`, `from`, `to`, `q`, `page`) | No |
 | GET | `/admin/billing/payments/{paymentId}` | Payment detail with refunds and webhook events | No |
-| POST | `/admin/billing/payments/{paymentId}/refunds` | Refund: body `amount`, `reason` (rules BR-7) | Yes |
-| POST | `/admin/billing/payments/{paymentId}/reconcile` | Fetch current status from Razorpay and update | Yes |
-| GET | `/admin/billing/gateway` | Gateway status (never returns secrets; key ID masked) | No |
-| POST | `/admin/billing/gateway/test` | Test connection | Yes |
+| POST | `/admin/billing/payments/{paymentId}/refunds` | Refund: body `amount`, `reason` (rules BR-7); sent to the payment's own provider | Yes |
+| POST | `/admin/billing/payments/{paymentId}/reconcile` | Fetch current status from the payment's own provider and update | Yes |
+| GET | `/admin/billing/gateway` | Razorpay gateway status (never returns secrets; key ID masked). Still present; the credentials in force (stored over secrets file) | No |
+| POST | `/admin/billing/gateway/test` | Test the Razorpay connection (200 empty, 503 or 502). Still present; the screen now uses `/gateways/{code}/test` | Yes |
+| GET, PUT, POST | `/admin/billing/gateways/**` | **Payment gateways** ([C98](../../01-business/roadmap/open-decisions.md#c98), REQ-BIL-003), replacing the [C97](../../01-business/roadmap/open-decisions.md#c97) BI-8 endpoints `GET /gateways`, `PUT /gateways/active` and `POST /gateways/{code}/test`: list, summary, details, save configuration, test, activate, deactivate, payment methods, default. `PUT /gateways/active` remains as an alias of `PUT /gateways/default`. Full specification: **[payment-gateways.md](payment-gateways.md)** | Yes (test) |
+| GET | `/admin/billing/settings/pay-by-invoice/organizations` | **Organizations allowed to pay by invoice** ([C97](../../01-business/roadmap/open-decisions.md#c97) BI-4). Without `search`: the enabled organizations by name. With `?search=` (a name fragment): up to 20 organizations matching it, enabled or not; a blank search returns an empty list. Entries `{id, name, code, enabled}` | No |
+| PUT | `/admin/billing/settings/pay-by-invoice/organizations/{organizationId}` | Body `{"enabled": true}`. 404 for an unknown organization. Audited `ORG_PAY_BY_INVOICE_ENABLED` / `ORG_PAY_BY_INVOICE_DISABLED` (nothing is audited when the value does not change). Returns the entry | No |
 | POST | `/admin/billing/invoices/{invoiceId}/offline-payments` | **Record offline payment** (REQ-BIL-001.20): body `amount`, `receivedOn` (date, not in the future), `method` (`BANK_TRANSFER`, `NEFT_RTGS`, `CHEQUE`), `reference` (required), `note` (optional). Amount must equal the open amount. Marks the invoice PAID, creates a payment with method type OFFLINE, audited | No |
 | GET | `/admin/billing/settings/offline` | Offline bank details (REQ-BIL-001.21) | No |
 | PUT | `/admin/billing/settings/offline` | Save offline payment details: `accountName`*, `bankName`*, `branchName`, `accountNumber`*, `accountType` (CURRENT/SAVINGS), `ifsc`, `micr`, `swiftBic`, `iban`, `upiId`, `chequePayableTo`, `chequeAddress`, `instructions`, `bankTransferEnabled`, `neftRtgsEnabled`, `chequeEnabled` (at least one on) — C60 | No |
 | GET | `/admin/billing/settings/business` | Business profile and invoicing (C60) | No |
-| PUT | `/admin/billing/settings/business` | Save `legalName`*, `tradeName`, `gstin`, `pan`, `cin`, `addressLine1`*, `addressLine2`, `city`*, `state`*, `postalCode`*, `country`*, `email`*, `phone`, `website`, `invoicePrefix`* (2–10 letters/digits), `paymentTermsDays`* (0–365), `invoiceFooterNote` | No |
+| PUT | `/admin/billing/settings/business` | Save `legalName`*, `tradeName`, `gstin`, `pan`, `cin`, `addressLine1`*, `addressLine2`, `city`*, `state`*, `postalCode`*, `country`*, `email`*, `phone`, `website`, `invoicePrefix`* (2–10 letters/digits), `paymentTermsDays`* (0–365), `invoiceFooterNote`, and the policy links `termsUrl`, `privacyUrl`, `refundPolicyUrl` (each blank or starting with `http://` / `https://`, [C97](../../01-business/roadmap/open-decisions.md#c97) BI-7). The GET returns the same fields | No |
 | GET | `/admin/billing/settings/payment-methods` | Checkout methods and Razorpay Checkout appearance (C60) | No |
 | PUT | `/admin/billing/settings/payment-methods` | Save `cardEnabled`, `upiEnabled`, `netbankingEnabled`, `walletEnabled`, `payByInvoiceEnabled` (at least one on), `checkoutDisplayName`, `checkoutDescription`, `checkoutThemeColor` (`#RRGGBB`) | No |
 
 ## Webhook endpoint
 | Method | Path | Authentication | Purpose |
 |---|---|---|---|
-| POST | `/webhooks/razorpay` | No user token. Accepted only if the `X-Razorpay-Signature` header verifies against the webhook secret | Receive `payment.captured`, `payment.failed`, `refund.processed`; each event ID processed once |
+| POST | `/webhooks/{provider}` | No user token. Accepted only if the provider's own signature verifies against the raw body (for Razorpay, `/webhooks/razorpay`: the `X-Razorpay-Signature` header against the webhook secret) | Receive the provider's events (Razorpay: `payment.captured`, `payment.failed`, `refund.processed`); each event ID processed once **per provider**; accepted for a configured provider even when it is deactivated |
+
+Since [C98](../../01-business/roadmap/open-decisions.md#c98) there is one endpoint per provider and the Razorpay URL is unchanged. Responses: 200 accepted or repeat; 400 `SIGNATURE_INVALID` (bad or missing signature, provider not configured, body not understood; counted on the gateway); 404 unknown or planned provider. Full specification: [payment-gateways.md](payment-gateways.md#webhook-endpoint).
 
 Security configuration must allow this path without a user token; every other billing path requires authentication.
 
@@ -64,7 +70,19 @@ Security configuration must allow this path without a user token; every other bi
 | 404 | `NOT_FOUND` | Not the caller's record, or does not exist |
 | 409 | `INVALID_STATE` | Paying a non-OPEN invoice; refunding more than refundable; defaulting an expired card; recording an offline payment on a non-OPEN invoice |
 | 400 | `VALIDATION_ERROR` | Offline payment amount not equal to the open amount, date in the future, missing reference |
-| 403 | `PAY_BY_INVOICE_NOT_ALLOWED` | Caller may not use Pay by invoice (FRD Open question 9) |
-| 400 | `SIGNATURE_INVALID` | Checkout or setup result fails signature verification |
-| 503 | `PAYMENT_GATEWAY_NOT_CONFIGURED` | Razorpay credentials missing |
+| 403 | `PAY_BY_INVOICE_NOT_ALLOWED` | Caller may not use Pay by invoice: an individual, an organization not enabled by the platform administrator, or the global switch is off (BR-18) |
+| 403 | — | Organization billing call by a member without `MANAGE_ORGANIZATION_BILLING` (BR-19), reads included |
+| 409 | `INVALID_STATE` | Changing a purchase-order number after the invoice is paid (BR-22) |
+| 400 | `VALIDATION_ERROR` | Malformed purchase-order number or policy URL |
+| 400 | `SIGNATURE_INVALID` | Checkout or setup result fails signature verification; a webhook that is unsigned, badly signed or not understood |
+| 503 | `PAYMENT_GATEWAY_NOT_CONFIGURED` | No gateway can take the payment (none active and fully configured for the currency and method), or the provider credentials are missing |
 | 502 | `PAYMENT_GATEWAY_ERROR` | Razorpay returned an error (its message is passed through) |
+
+Errors of the gateway management endpoints (400, 404, 409) are listed in [payment-gateways.md](payment-gateways.md#errors-gateway-endpoints).
+
+## Purchase start and reminders (no endpoint)
+- **Activation** ([C97](../../01-business/roadmap/open-decisions.md#c97) BI-1): when an invoice becomes PAID (checkout confirmation, webhook, or an administrator recording an offline payment) or Pay by invoice is chosen, the billing module publishes an `InvoiceActivationEvent` (`PAID` or `PAY_BY_INVOICE`) and the subscription module starts the subscriptions still PENDING_SUBSCRIPTION. The subscription's `status` in the subscription DTOs is `PENDING_SUBSCRIPTION` until then. Repeats change nothing.
+- **Invoice reminders** (BI-2): the job `InvoiceReminderJob` (every 30 minutes) sends a notification and e-mail 3 days before, on and 7 days after the due date, once per kind (table `invoice_reminder`). Audit: none; the table is the record.
+
+## How to add another payment gateway
+Moved and rewritten for [C98](../../01-business/roadmap/open-decisions.md#c98): see [09-integrations/payment-gateways.md](../../09-integrations/payment-gateways.md#how-to-add-a-new-provider). In short: implement `PaymentGateway` as a Spring bean (it carries the descriptor, credential fields, signature rules and API calls), delete the provider's entry from `PlannedProviders`, add a logo key, and write tests with the `FakeGateway` pattern. The list, the configure form, routing and the webhook endpoint need no change. The C97 steps (the `billing_settings.active_gateway` code, "creating payments is still Razorpay-specific") no longer apply: `PaymentService` is provider-independent.

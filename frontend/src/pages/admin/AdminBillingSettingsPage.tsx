@@ -13,13 +13,15 @@ import {
   Smartphone, Wallet, Banknote, ListChecks, MessageSquareText,
 } from 'lucide-react'
 import {
-  adminBillingApi, type BusinessProfile, type GatewayStatus, type OfflineBankDetails, type PaymentMethodSettings,
+  adminBillingApi, type BusinessProfile, type OfflineBankDetails, type PaymentMethodSettings,
 } from '../../api/billingApi'
 import { PageHeader } from '../../components/layout/PageHeader'
 import { FieldGrid, SettingsSection, StatusTile } from '../../components/settings/SettingsSection'
+import { PayByInvoiceOrganizations } from '../../components/settings/PayByInvoiceOrganizations'
+import { PaymentGatewayManagement } from '../../components/payments/PaymentGatewayManagement'
+import { paymentGatewayApi, type GatewaySummary } from '../../api/paymentGatewayApi'
 import { SaveBar } from '../../components/settings/SaveBar'
 import { useSettingsForm } from '../../components/settings/useSettingsForm'
-import { RazorpayGatewayPanel } from '../../components/settings/RazorpayGatewayPanel'
 import { accentColor } from '../../theming/accents'
 
 type TabKey = 'business' | 'offline' | 'methods' | 'gateway' | 'reminders'
@@ -32,6 +34,7 @@ const RE = {
   email: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
   phone: /^[+0-9 ()-]{6,30}$/,
   website: /^https?:\/\/\S{3,250}$/,
+  url: /^https?:\/\/\S{3,480}$/,
   prefix: /^[A-Z0-9]{2,10}$/i,
   ifsc: /^[A-Z]{4}0[A-Z0-9]{6}$/i,
   swift: /^[A-Z0-9]{8}([A-Z0-9]{3})?$/i,
@@ -58,12 +61,12 @@ export function AdminBillingSettingsPage() {
   const setTab = (next: TabKey) => setParams({ tab: next }, { replace: true })
 
   // Overview tiles read the same endpoints the tabs edit.
-  const [overview, setOverview] = useState<{ business?: BusinessProfile; offline?: OfflineBankDetails; methods?: PaymentMethodSettings; gateway?: GatewayStatus }>({})
+  const [overview, setOverview] = useState<{ business?: BusinessProfile; offline?: OfflineBankDetails; methods?: PaymentMethodSettings; gateway?: GatewaySummary }>({})
   const refreshOverview = useCallback(() => {
     adminBillingApi.businessProfile().then((business) => setOverview((o) => ({ ...o, business }))).catch(() => {})
     adminBillingApi.offlineBankDetails().then((offline) => setOverview((o) => ({ ...o, offline }))).catch(() => {})
     adminBillingApi.paymentMethodSettings().then((methods) => setOverview((o) => ({ ...o, methods }))).catch(() => {})
-    adminBillingApi.gatewayStatus().then((gateway) => setOverview((o) => ({ ...o, gateway }))).catch(() => {})
+    paymentGatewayApi.summary().then((gateway) => setOverview((o) => ({ ...o, gateway }))).catch(() => {})
   }, [])
   useEffect(() => { refreshOverview() }, [refreshOverview])
   const [toast, setToast] = useState<string | null>(null)
@@ -93,9 +96,9 @@ export function AdminBillingSettingsPage() {
           value={methodsOn == null ? '—' : t('admin.billingSettings.overview.methodsOn', { count: methodsOn, total: 5 })}
           status={methodsOn ? t('admin.billingSettings.overview.ready') : undefined} statusColor="success" />
         <StatusTile icon={PlugZap} accent="amber" label={t('admin.billingSettings.tabs.gateway')} selected={tab === 'gateway'} onClick={() => setTab('gateway')}
-          value={overview.gateway ? (overview.gateway.liveMode ? t('admin.paymentGateway.live') : t('admin.paymentGateway.test')) : '—'}
-          status={overview.gateway ? (overview.gateway.configured ? t('admin.paymentGateway.configured') : t('admin.paymentGateway.notConfigured')) : undefined}
-          statusColor={overview.gateway?.configured ? 'success' : 'error'} />
+          value={overview.gateway ? t('admin.paymentGateway.stats.activeOf', { active: overview.gateway.active, total: overview.gateway.implemented }) : '—'}
+          status={overview.gateway ? (overview.gateway.active > 0 ? t('admin.paymentGateway.configured') : t('admin.paymentGateway.noneActive')) : undefined}
+          statusColor={overview.gateway && overview.gateway.active > 0 ? 'success' : 'error'} />
       </Box>
 
       <Paper variant="outlined" sx={{ borderRadius: 3, mb: 3 }}>
@@ -111,8 +114,8 @@ export function AdminBillingSettingsPage() {
       <Box role="tabpanel" id={`panel-${tab}`} aria-labelledby={`tab-${tab}`}>
         {tab === 'business' && <BusinessTab onSaved={onSaved} />}
         {tab === 'offline' && <OfflineTab onSaved={onSaved} />}
-        {tab === 'methods' && <MethodsTab onSaved={onSaved} gatewayConfigured={overview.gateway?.configured ?? true} />}
-        {tab === 'gateway' && <RazorpayGatewayPanel onStatus={(gateway) => setOverview((o) => ({ ...o, gateway }))} />}
+        {tab === 'methods' && <MethodsTab onSaved={onSaved} gatewayConfigured={overview.gateway ? overview.gateway.active > 0 : true} />}
+        {tab === 'gateway' && <PaymentGatewayManagement />}
         {tab === 'reminders' && <RenewalReminderDefaultsPanel onSaved={onSaved} />}
       </Box>
 
@@ -159,6 +162,7 @@ type BusinessForm = {
   legalName: string; tradeName: string; gstin: string; pan: string; cin: string
   addressLine1: string; addressLine2: string; city: string; state: string; postalCode: string; country: string
   email: string; phone: string; website: string; invoicePrefix: string; paymentTermsDays: string; invoiceFooterNote: string
+  termsUrl: string; privacyUrl: string; refundPolicyUrl: string
 }
 
 const businessToForm = (b: BusinessProfile): BusinessForm => ({
@@ -166,6 +170,7 @@ const businessToForm = (b: BusinessProfile): BusinessForm => ({
   addressLine1: b.addressLine1 ?? '', addressLine2: b.addressLine2 ?? '', city: b.city ?? '', state: b.state ?? '',
   postalCode: b.postalCode ?? '', country: b.country ?? '', email: b.email ?? '', phone: b.phone ?? '', website: b.website ?? '',
   invoicePrefix: b.invoicePrefix ?? 'INV', paymentTermsDays: String(b.paymentTermsDays ?? 0), invoiceFooterNote: b.invoiceFooterNote ?? '',
+  termsUrl: b.termsUrl ?? '', privacyUrl: b.privacyUrl ?? '', refundPolicyUrl: b.refundPolicyUrl ?? '',
 })
 
 function BusinessTab({ onSaved }: { onSaved: () => void }) {
@@ -187,6 +192,9 @@ function BusinessTab({ onSaved }: { onSaved: () => void }) {
     invoicePrefix: !RE.prefix.test(f.invoicePrefix) ? t('admin.billingSettings.v.prefix') : undefined,
     paymentTermsDays: !/^\d{1,3}$/.test(f.paymentTermsDays) || Number(f.paymentTermsDays) > 365 ? t('admin.billingSettings.v.terms') : undefined,
     invoiceFooterNote: f.invoiceFooterNote.length > 500 ? t('admin.billingSettings.tooLong', { max: 500 }) : undefined,
+    termsUrl: f.termsUrl && !RE.url.test(f.termsUrl) ? t('admin.billingSettings.v.website') : undefined,
+    privacyUrl: f.privacyUrl && !RE.url.test(f.privacyUrl) ? t('admin.billingSettings.v.website') : undefined,
+    refundPolicyUrl: f.refundPolicyUrl && !RE.url.test(f.refundPolicyUrl) ? t('admin.billingSettings.v.website') : undefined,
   }), [t, req])
   const s = useSettingsForm<BusinessProfile, BusinessForm>({
     load: adminBillingApi.businessProfile,
@@ -276,6 +284,13 @@ function BusinessTab({ onSaved }: { onSaved: () => void }) {
               ))}
             </Box>
             {field('invoiceFooterNote', { max: 500, full: true, multiline: true, helper: t('admin.billingSettings.h.footer') })}
+          </FieldGrid>
+        </SettingsSection>
+        <SettingsSection id="policies" icon={FileText} accent="rose" title={t('admin.billingSettings.s.policies')} description={t('admin.billingSettings.s.policiesBody')}>
+          <FieldGrid>
+            {field('termsUrl', { max: 500, full: true, placeholder: 'https://www.evyoog.com/terms' })}
+            {field('privacyUrl', { max: 500, full: true, placeholder: 'https://www.evyoog.com/privacy' })}
+            {field('refundPolicyUrl', { max: 500, full: true, placeholder: 'https://www.evyoog.com/refunds' })}
           </FieldGrid>
         </SettingsSection>
       </WithPreview>
@@ -504,6 +519,9 @@ function MethodsTab({ onSaved, gatewayConfigured }: { onSaved: () => void; gatew
         <SettingsSection id="offline-method" icon={FileText} accent="teal" title={t('admin.billingSettings.s.offlineMethod')} description={t('admin.billingSettings.s.offlineMethodBody')}>
           {methodCard('payByInvoiceEnabled', FileText, 'teal', false)}
           {s.shownError('cardEnabled') && <Alert severity="error" sx={{ mt: 1.5 }}>{s.shownError('cardEnabled')}</Alert>}
+        </SettingsSection>
+        <SettingsSection id="invoice-orgs" icon={Building2} accent="indigo" title={t('admin.billingSettings.payByInvoiceOrgs.title')} description={t('admin.billingSettings.payByInvoiceOrgs.subtitle')}>
+          <PayByInvoiceOrganizations />
         </SettingsSection>
         <SettingsSection id="appearance" icon={Palette} accent="amber" title={t('admin.billingSettings.s.appearance')} description={t('admin.billingSettings.s.appearanceBody')}>
           <FieldGrid>

@@ -136,7 +136,7 @@ public class RazorpayHttpClient implements RazorpayClient {
         };
         HttpResponse<String> response = httpClient.send(builder.build(), HttpResponse.BodyHandlers.ofString());
         if (response.statusCode() >= 400) {
-            throw new RazorpayApiException("Razorpay returned an error (HTTP " + response.statusCode() + ").");
+            throw new RazorpayApiException("Razorpay returned an error (HTTP " + response.statusCode() + ").", response.statusCode());
         }
         return response;
     }

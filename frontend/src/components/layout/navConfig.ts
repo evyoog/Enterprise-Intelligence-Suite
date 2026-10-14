@@ -2,7 +2,7 @@ import type { ComponentType } from 'react'
 import {
   Activity, BookOpen, Cable, ClipboardList, CreditCard, FolderTree, Handshake, KeyRound, Landmark, LayoutDashboard,
   LayoutGrid, Layers, LifeBuoy, NotebookPen, Package, PlugZap, Radio, ScrollText, SearchCheck, ShieldCheck, Star,
-  Boxes, Building2, Store, UserCheck, UserCog, UsersRound, Wrench, FileText, Receipt, Gauge,
+  Boxes, Building2, Store, UserCheck, UserCog, UsersRound, Wrench, FileText, Receipt, Gauge, Percent,
 } from 'lucide-react'
 
 /**
@@ -183,6 +183,7 @@ export const NAV_CONFIG: NavDef[] = [
       { id: 'adminBillingInvoices', labelKey: 'billingInvoicesPayments', icon: Receipt, group: 'operations', to: '/admin/billing', when: platform('MANAGE_BILLING') },
       { id: 'adminPaymentGateway', labelKey: 'paymentGateway', icon: PlugZap, group: 'operations', to: '/admin/billing/payment-gateway', when: platform('MANAGE_BILLING') },
       { id: 'adminBillingSettings', labelKey: 'billingSettings', icon: Landmark, group: 'operations', to: '/admin/billing/settings', when: platform('MANAGE_BILLING') },
+      { id: 'adminTaxConfiguration', labelKey: 'taxConfiguration', icon: Percent, group: 'operations', to: '/admin/billing/tax', when: platform('MANAGE_BILLING') },
     ],
   },
   {
@@ -195,6 +196,7 @@ export const NAV_CONFIG: NavDef[] = [
     when: { any: [platform('MANAGE_SUPPORT_TICKETS'), { customer: true }] },
     groupOverrides: [{ when: { any: [platform('MANAGE_SUPPORT_TICKETS'), orgAdmin] }, group: 'operations' }],
   },
+  { id: 'adminEntitlements', labelKey: 'entitlementsLookup', icon: ShieldCheck, group: 'operations', to: '/admin/entitlements', when: platform('VIEW_ENTITLEMENTS') },
   { id: 'reviews', labelKey: 'reviews', icon: Star, group: 'operations', to: '/admin/reviews', when: platform('MANAGE_REVIEWS') },
   { id: 'partners', labelKey: 'partners', icon: Handshake, group: 'operations', to: '/admin/partners', when: platform('MANAGE_PARTNERS') },
   { id: 'auditLog', labelKey: 'auditLog', icon: ScrollText, group: 'operations', to: '/admin/audit-log', when: platform('VIEW_AUDIT_LOG') },

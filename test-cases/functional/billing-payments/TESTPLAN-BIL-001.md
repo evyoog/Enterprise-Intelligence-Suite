@@ -16,3 +16,20 @@ TC-BIL-019 to TC-BIL-023 cover the redesigned Payment step (breadcrumb, billing 
 
 ## Billing settings (C60, REQ-BIL-001.24)
 TC-BIL-024 to TC-BIL-028: business profile and invoicing (prefix, payment terms, issuer on documents), full offline details and accepted methods, payment-method switches and Razorpay Checkout appearance, the Razorpay credentials view (BR-SEC-001), accessibility.
+
+## Sprint 2026.4.3 answers ([C97](../../../docs/01-business/roadmap/open-decisions.md#c97), REQ-BIL-001.25 to .33)
+TC-BIL-060 to TC-BIL-070 (acceptance criteria AC-36 to AC-46): purchase starts after payment (BI-1: TC-BIL-060 to 062), invoice number, terms and reminders (BI-2: TC-BIL-063 to 065), pay by invoice for enabled organizations (BI-4: TC-BIL-066), the Manage billing permission (BI-5: TC-BIL-067), policy links (BI-7: TC-BIL-068), the payment gateways list (BI-8: TC-BIL-069) and the purchase-order number (BI-9: TC-BIL-070). BI-9's refunds by administrators only, equal-amount bank payments and no fees line (AC-47) are covered by the existing [TC-BIL-005](TC-BIL-005.md) and [TC-BIL-016](TC-BIL-016.md). Invoice tax, credit notes and the tax engine are in [tax-rules](../tax-rules/).
+
+| Test Case ID | Title | Priority | Automated? |
+|---|---|---|---|
+| [TC-BIL-060](TC-BIL-060.md) | Online purchase pending until paid, starts once | P0 | Yes |
+| [TC-BIL-061](TC-BIL-061.md) | Pay by invoice starts an enabled organization's purchase | P0 | Yes |
+| [TC-BIL-062](TC-BIL-062.md) | Tax-blocked Draft cannot be paid | P1 | Yes (partly) |
+| [TC-BIL-063](TC-BIL-063.md) | Reminder kind by days left | P0 | Yes |
+| [TC-BIL-064](TC-BIL-064.md) | Each reminder once, stops when paid | P0 | Yes |
+| [TC-BIL-065](TC-BIL-065.md) | Invoice number format and 15-day terms | P1 | Yes |
+| [TC-BIL-066](TC-BIL-066.md) | Pay by invoice only for enabled organizations | P0 | Yes |
+| [TC-BIL-067](TC-BIL-067.md) | Manage billing permission, reads included | P0 | Yes |
+| [TC-BIL-068](TC-BIL-068.md) | Policy links: settings, checkout, invoice | P1 | Yes |
+| [TC-BIL-069](TC-BIL-069.md) | Payment gateways list and active gateway | P1 | Yes |
+| [TC-BIL-070](TC-BIL-070.md) | Purchase-order number | P1 | Yes |

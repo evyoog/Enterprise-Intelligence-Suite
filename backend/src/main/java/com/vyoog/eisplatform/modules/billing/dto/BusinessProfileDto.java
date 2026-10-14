@@ -24,6 +24,10 @@ public record BusinessProfileDto(
     String invoicePrefix,
     int paymentTermsDays,
     String invoiceFooterNote,
+    /** C97 BI-7: pages on the evyoog.com website that EIS links to (not stored here). */
+    String termsUrl,
+    String privacyUrl,
+    String refundPolicyUrl,
     Instant updatedAt
 ) {
     public boolean isComplete() {

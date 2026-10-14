@@ -22,7 +22,7 @@ public class GatewayStatusService {
     private String backendUrl;
 
     public GatewayStatusDto getStatus() {
-        var lastEvent = webhookEventRepository.findFirstByOrderByReceivedAtDesc();
+        var lastEvent = webhookEventRepository.findTop20ByProviderOrderByReceivedAtDesc("RAZORPAY").stream().findFirst().orElse(null);
         return new GatewayStatusDto(
             "Razorpay",
             properties.isConfigured(),

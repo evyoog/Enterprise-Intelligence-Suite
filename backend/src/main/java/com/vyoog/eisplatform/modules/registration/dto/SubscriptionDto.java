@@ -16,6 +16,9 @@ public record SubscriptionDto(
     /** REQ-SUB-003: seats (1 for individual subscriptions). */
     int quantity,
     /** REQ-SUB-004: renewed automatically on {@code expiresAt}. */
-    boolean autoRenew
+    boolean autoRenew,
+    /** C97 SC-1: a downgrade chosen by the customer, taking effect at the next renewal; null when none is scheduled. */
+    Long pendingPlanId,
+    String pendingPlanName
 ) {
 }

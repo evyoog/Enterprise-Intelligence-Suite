@@ -148,6 +148,12 @@ public class OrganizationController {
         return subscriptionSeatService.changePlan(currentCustomerResolver.resolve(jwt).getId(), subscriptionId, request);
     }
 
+    /** C97 SC-1: withdraws a downgrade scheduled for the next renewal. */
+    @DeleteMapping("/subscriptions/{subscriptionId}/plan/scheduled")
+    public SubscriptionDto cancelScheduledPlanChange(@AuthenticationPrincipal Jwt jwt, @PathVariable Long subscriptionId) {
+        return subscriptionSeatService.cancelScheduledPlanChange(currentCustomerResolver.resolve(jwt).getId(), subscriptionId);
+    }
+
     @GetMapping("/subscription")
     public List<SubscriptionDto> myOrgSubscription(@AuthenticationPrincipal Jwt jwt) {
         Customer customer = currentCustomerResolver.resolve(jwt);

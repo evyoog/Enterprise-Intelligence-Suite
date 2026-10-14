@@ -33,6 +33,8 @@ type Result =
   | { kind: 'offline'; offline: OfflineInvoiceResult }
   | { kind: 'free' }
   | { kind: 'orders'; orderIds: number[] }
+  /** C96: the invoice is a Draft because its tax could not be determined yet. */
+  | { kind: 'taxPending' }
 
 interface Details {
   billingName: string; billingEmail: string; addressLine1: string; addressLine2: string
@@ -197,6 +199,7 @@ export function CheckoutPage() {
   // A paid invoice reached directly shows its result instead of a second payment (FRD BR-4).
   const settledResult = useMemo<Result | null>(() => {
     if (!summary?.invoiceStatus || summary.invoiceStatus === 'OPEN') return null
+    if (summary.taxPending || summary.invoiceStatus === 'DRAFT') return { kind: 'taxPending' }
     return summary.invoiceStatus === 'PAID'
       ? { kind: 'success', payment: { amount: summary.total, currency: summary.currency } as Payment }
       : { kind: 'failed', reason: summary.invoiceStatus, cancelled: false }
@@ -292,6 +295,8 @@ export function CheckoutPage() {
       const method = RAZORPAY_METHOD[option]
       const paymentMethodId = option === 'card' && typeof selectedCard === 'number' ? selectedCard : undefined
       const order = await api.createPayment(invoice, { method, ...(paymentMethodId ? { paymentMethodId } : {}) })
+      // C98: the backend chose the gateway. This screen can open only the providers it has a launcher for; any other leaves the payment unstarted.
+      if (order.provider && order.provider !== 'RAZORPAY') throw new Error('unsupported-provider')
       const razorpay = await openRazorpayCheckout({
         keyId: order.keyId, orderId: order.providerOrderId, amount: order.amount, currency: order.currency,
         // C60: name, description and colour come from Billing settings when set.
@@ -318,7 +323,8 @@ export function CheckoutPage() {
         return
       }
       const cancelled = e instanceof Error && e.message === 'cancelled'
-      setResult({ kind: 'failed', cancelled, reason: cancelled ? t('checkout.result.cancelled') : (e instanceof ApiError ? e.message : t('checkout.genericError')) })
+      const unsupported = e instanceof Error && e.message === 'unsupported-provider'
+      setResult({ kind: 'failed', cancelled, reason: cancelled ? t('checkout.result.cancelled') : unsupported ? t('checkout.providerUnsupported') : (e instanceof ApiError ? e.message : t('checkout.genericError')) })
       setToast({ message: t('checkout.toast.failed'), severity: 'error' })
       goTo('complete')
     } finally {
@@ -377,7 +383,7 @@ export function CheckoutPage() {
 
   const showSummary = shownResult?.kind !== 'orders' && items.length > 0
   const cartSummary = showSummary ? (
-    <CartSummary items={items} subtotal={subtotal} total={total} taxLines={summary?.taxLines ?? []} money={money}
+    <CartSummary items={items} subtotal={subtotal} total={total} taxLines={summary?.taxLines ?? []} taxPending={Boolean(summary?.taxPending)} placeOfSupply={summary?.placeOfSupply} money={money}
       editCart={fromCart && shownStep !== 'complete'} />
   ) : null
 
@@ -435,6 +441,7 @@ export function CheckoutPage() {
                     selectedCard={selectedCard} setSelectedCard={setSelectedCard} onRemoveMethod={removeSavedMethod}
                     saveCard={saveCard} setSaveCard={setSaveCard} consent={consent} setConsent={setConsent}
                     busy={busy} total={money(total)} onPay={pay}
+                    savePurchaseOrder={async (po) => { if (summary.invoiceId != null) await api.setPurchaseOrder(summary.invoiceId, po) }}
                   />
                 )}
                 {shownStep === 'payment' && !summary && (
@@ -477,9 +484,11 @@ export function CheckoutPage() {
         <Box sx={{ position: 'relative', maxWidth: 1180, mx: 'auto', mt: 2, display: 'flex', alignItems: 'center', gap: 1, color: 'common.white' }}>
           <Lock size={14} aria-hidden />
           <Typography variant="caption" sx={{ opacity: 0.9 }}>{t('checkout.poweredBy')}</Typography>
-          <Box sx={{ bgcolor: 'background.paper', borderRadius: 1, px: 0.5, py: 0.25 }}>
-            <PaymentLogo brand="razorpay" height={18} dark={theme.palette.mode === 'dark'} />
-          </Box>
+          {(!summary?.gatewayCode || summary.gatewayCode === 'RAZORPAY') ? (
+            <Box sx={{ bgcolor: 'background.paper', borderRadius: 1, px: 0.5, py: 0.25 }}>
+              <PaymentLogo brand="razorpay" height={18} dark={theme.palette.mode === 'dark'} />
+            </Box>
+          ) : <Typography variant="caption" sx={{ fontWeight: 700 }}>{summary.gatewayName}</Typography>}
         </Box>
       </Box>
 
@@ -536,9 +545,10 @@ function Breadcrumb({ step, fromCart, onDetails }: { step: Step; fromCart: boole
   )
 }
 
-function CartSummary({ items, subtotal, total, taxLines, money, editCart }: {
+function CartSummary({ items, subtotal, total, taxLines, taxPending = false, placeOfSupply, money, editCart }: {
   items: { productName: string; imageUrl?: string; planName?: string; billingPeriod?: string; amount: number; quantity?: number }[]
   subtotal: number; total: number; taxLines: { name: string; ratePercent?: number; amount: number }[]; money: (v: number) => string
+  taxPending?: boolean; placeOfSupply?: string
   editCart: boolean
 }) {
   const { t } = useTranslation()
@@ -551,10 +561,11 @@ function CartSummary({ items, subtotal, total, taxLines, money, editCart }: {
       <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
         <SummaryRow label={t('checkout.summary.subtotal')} value={money(subtotal)} />
         {taxLines.length === 0
-          ? <Typography variant="body2" sx={{ color: 'text.secondary' }}>{t('checkout.summary.noTax')}</Typography>
+          ? <Typography variant="body2" sx={{ color: 'text.secondary' }}>{t(taxPending ? 'checkout.summary.taxPending' : 'checkout.summary.noTax')}</Typography>
           : taxLines.map((line) => (
-            <SummaryRow key={line.name} label={line.ratePercent != null ? `${line.name} (${line.ratePercent} %)` : line.name} value={money(line.amount)} />
+            <SummaryRow key={`${line.name}-${line.ratePercent}`} label={line.ratePercent != null ? `${line.name} (${Number(line.ratePercent)} %)` : line.name} value={money(line.amount)} />
           ))}
+        {placeOfSupply && <Typography variant="caption" sx={{ color: 'text.secondary' }}>{t('checkout.summary.placeOfSupply', { place: placeOfSupply })}</Typography>}
         <Divider sx={{ my: 1 }} />
         <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline' }}>
           <Typography sx={{ fontWeight: 600 }}>{t('checkout.summary.total')}</Typography>
@@ -672,9 +683,41 @@ const OPTIONS: { key: OptionKey; icon: typeof CreditCard; brands?: PaymentBrand[
   { key: 'offline', icon: FileText },
 ]
 
+/** C97 BI-7: the consent sentence links to the Terms, Refund and Privacy pages on evyoog.com (set in Billing settings). */
+function ConsentText({ summary }: { summary: CheckoutSummary }) {
+  const { t } = useTranslation()
+  const link = (url: string | undefined, text: string) => (url
+    ? <Link href={url} target="_blank" rel="noopener noreferrer" onClick={(e) => e.stopPropagation()}>{text}</Link>
+    : <span>{text}</span>)
+  return (
+    <Typography variant="body2">
+      {t('checkout.consentLead')} {link(summary.termsUrl, t('checkout.consentTerms'))}, {link(summary.refundPolicyUrl, t('checkout.consentRefund'))} {t('checkout.consentAnd')} {link(summary.privacyUrl, t('checkout.consentPrivacy'))}.
+    </Typography>
+  )
+}
+
+/** C97 BI-9: an optional purchase-order number, saved on the invoice when the field loses focus. Not required to pay. */
+function PurchaseOrderField({ initial, save }: { initial: string; save: (purchaseOrderNumber: string) => Promise<void> }) {
+  const { t } = useTranslation()
+  const [value, setValue] = useState(initial)
+  const [saved, setSaved] = useState(initial)
+  const [error, setError] = useState<string | null>(null)
+  const valid = value === '' || /^[A-Za-z0-9][A-Za-z0-9 ./_-]{0,49}$/.test(value)
+  const commit = () => {
+    if (!valid || value === saved) return
+    save(value.trim()).then(() => { setSaved(value); setError(null) })
+      .catch((e) => setError(e instanceof ApiError ? e.message : t('checkout.genericError')))
+  }
+  return (
+    <TextField label={t('checkout.purchaseOrder.label')} value={value} onChange={(e) => setValue(e.target.value)} onBlur={commit}
+      error={!valid || Boolean(error)} helperText={!valid ? t('checkout.purchaseOrder.invalid') : error ?? t('checkout.purchaseOrder.help')}
+      size="small" fullWidth sx={{ mt: 2 }} slotProps={{ htmlInput: { maxLength: 50 } }} />
+  )
+}
+
 function PaymentStep({
   summary, details, onChangeDetails, option, setOption, savedMethods, selectedCard, setSelectedCard, onRemoveMethod,
-  saveCard, setSaveCard, consent, setConsent, busy, total, onPay,
+  saveCard, setSaveCard, consent, setConsent, busy, total, onPay, savePurchaseOrder,
 }: {
   summary: CheckoutSummary; details: Details; onChangeDetails: () => void
   option: OptionKey | null; setOption: (o: OptionKey) => void
@@ -682,6 +725,7 @@ function PaymentStep({
   onRemoveMethod: (id: number) => void
   saveCard: boolean; setSaveCard: (v: boolean) => void; consent: boolean; setConsent: (v: boolean) => void
   busy: boolean; total: string; onPay: () => void
+  savePurchaseOrder: (purchaseOrderNumber: string) => Promise<void>
 }) {
   const { t } = useTranslation()
   const theme = useTheme()
@@ -825,10 +869,12 @@ function PaymentStep({
         </Paper>
       )}
 
+      {summary.invoiceId != null && <PurchaseOrderField initial={summary.purchaseOrderNumber ?? ''} save={savePurchaseOrder} />}
+
       <FormControlLabel
         sx={{ mt: 2, alignItems: 'flex-start' }}
         control={<Checkbox checked={consent} onChange={(e) => setConsent(e.target.checked)} sx={{ pt: 0.25 }} />}
-        label={<Typography variant="body2">{t('checkout.consent')}</Typography>}
+        label={<ConsentText summary={summary} />}
       />
 
       <Box sx={isMobile ? {
@@ -1016,6 +1062,15 @@ function ResultStep({ result, headingRef, money, summary, isOrganization, api, o
             <Button variant="contained" onClick={onTryAgain}>{t('checkout.result.tryAgain')}</Button>
             <Button variant="outlined" onClick={onChooseAnother}>{t('checkout.result.chooseAnother')}</Button>
           </Box>
+        </>
+      )}
+
+      {result.kind === 'taxPending' && (
+        <>
+          <Box sx={{ color: 'warning.main' }}><Lock size={56} aria-hidden /></Box>
+          {heading(t('checkout.result.taxPending.title'))}
+          <Typography sx={{ color: 'text.secondary', mt: 1, mb: 2, maxWidth: 480, mx: 'auto' }}>{t('checkout.result.taxPending.body')}</Typography>
+          <Button variant="contained" component={RouterLink} to={billingPath}>{t('checkout.actions.viewBilling')}</Button>
         </>
       )}
 

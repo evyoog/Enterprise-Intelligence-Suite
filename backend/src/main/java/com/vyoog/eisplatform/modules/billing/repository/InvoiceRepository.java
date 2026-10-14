@@ -15,6 +15,8 @@ import java.util.List;
 public interface InvoiceRepository extends JpaRepository<Invoice, Long> {
     Page<Invoice> findByOwnerCustomerIdOrderByIssuedAtDesc(Long ownerCustomerId, Pageable pageable);
     Page<Invoice> findByOwnerOrganizationIdOrderByIssuedAtDesc(Long ownerOrganizationId, Pageable pageable);
+    Page<Invoice> findByOwnerCustomerIdAndStatusNotOrderByIssuedAtDesc(Long ownerCustomerId, InvoiceStatus status, Pageable pageable);
+    Page<Invoice> findByOwnerOrganizationIdAndStatusNotOrderByIssuedAtDesc(Long ownerOrganizationId, InvoiceStatus status, Pageable pageable);
     Page<Invoice> findAllByOrderByIssuedAtDesc(Pageable pageable);
     List<Invoice> findByOwnerCustomerIdAndStatus(Long ownerCustomerId, InvoiceStatus status);
     List<Invoice> findByOwnerOrganizationIdAndStatus(Long ownerOrganizationId, InvoiceStatus status);
@@ -26,6 +28,15 @@ public interface InvoiceRepository extends JpaRepository<Invoice, Long> {
      * as {@link com.vyoog.eisplatform.modules.billing.service.InvoiceService#spentInPeriod},
      * just without a single owner to scope the query by. */
     List<Invoice> findByStatusIn(List<InvoiceStatus> statuses);
+
+    /** C96: Draft invoices (tax could not be determined) — counted on Tax Configuration, listed for retry. */
+    long countByStatus(InvoiceStatus status);
+
+    List<Invoice> findByStatusOrderByIdAsc(InvoiceStatus status);
+
+    List<Invoice> findByOwnerCustomerIdAndStatusOrderByIdAsc(Long ownerCustomerId, InvoiceStatus status);
+
+    List<Invoice> findByOwnerOrganizationIdAndStatusOrderByIdAsc(Long ownerOrganizationId, InvoiceStatus status);
 
     /** C55: the checkout's invoice for a subscription, newest first. */
     List<Invoice> findBySubscriptionIdOrderByIssuedAtDescIdDesc(Long subscriptionId);

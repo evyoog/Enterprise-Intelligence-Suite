@@ -7,4 +7,9 @@ public class PaymentGatewayNotConfiguredException extends RuntimeException {
     public PaymentGatewayNotConfiguredException() {
         super("Online payments are not available yet.");
     }
+
+    /** C98: no eligible gateway for this payment (none active and configured for the currency and method). */
+    public PaymentGatewayNotConfiguredException(String message) {
+        super(message);
+    }
 }

@@ -19,12 +19,11 @@ import java.util.List;
  * (display/catalog price), since billing arithmetic (refund remainders,
  * partial refunds) is exact only in integer minor units.
  *
- * <p>Tax is not calculated in this pass (decision C47, FRD Open question 1:
- * D4 tax rule not yet decided) — {@link #taxAmount} is always zero and
- * exists only so the column/API shape doesn't need to change once a real
- * tax rule is decided. Invoice numbers are due immediately (no net terms —
- * FRD Open question 4 payment terms not yet decided): {@link #dueAt} equals
- * {@link #issuedAt}. */
+ * <p>C96 (REQ-BIL-002): {@link #taxAmount} comes from the engine chosen on Tax Configuration
+ * (internal rules or external provider), recorded in {@link #taxEngine} and {@link #taxConfigVersion}. When tax cannot be
+ * determined the invoice is a {@link InvoiceStatus#DRAFT} with {@link #taxStatus} BLOCKED and the reason; it gets its
+ * number, issue date and due date only when it is finalized (BR-40). Before C96 every invoice had tax 0 and tax status
+ * LEGACY. */
 @Entity
 @Table(name = "invoice")
 @EntityListeners(AuditingEntityListener.class)
@@ -71,8 +70,9 @@ public class Invoice {
 
     private Instant periodEnd;
 
+    /** Set when the invoice is created and again when a Draft is finalized (the invoice date is the finalization date). */
     @CreatedDate
-    @Column(name = "issued_at", updatable = false)
+    @Column(name = "issued_at")
     private Instant issuedAt;
 
     @Column(name = "due_at")
@@ -90,6 +90,44 @@ public class Invoice {
     @Enumerated(EnumType.STRING)
     @Column(name = "payment_route", length = 10)
     private PaymentRoute paymentRoute;
+
+    // ---- C96: tax ----
+    @Enumerated(EnumType.STRING)
+    @Column(name = "tax_engine", length = 10)
+    private com.vyoog.eisplatform.modules.billing.tax.model.TaxEngineType taxEngine;
+
+    @Column(name = "tax_config_version")
+    private Integer taxConfigVersion;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "tax_status", nullable = false, length = 12)
+    private com.vyoog.eisplatform.modules.billing.tax.model.InvoiceTaxStatus taxStatus
+        = com.vyoog.eisplatform.modules.billing.tax.model.InvoiceTaxStatus.LEGACY;
+
+    @Column(name = "tax_block_code", length = 40)
+    private String taxBlockCode;
+
+    @Column(name = "tax_block_reason", length = 500)
+    private String taxBlockReason;
+
+    @Column(name = "tax_calculation_id")
+    private Long taxCalculationId;
+
+    /** BI-3: the state (or country) the supply is made to, printed on the invoice. */
+    @Column(name = "place_of_supply", length = 100)
+    private String placeOfSupply;
+
+    /** BI-3: the issuer's legal name, address, GSTIN and PAN as they were when the invoice was finalized. */
+    @Column(name = "issuer_snapshot", length = 1500)
+    private String issuerSnapshot;
+
+    /** C97 BI-9: an optional purchase order number the customer gives, printed on the invoice. */
+    @Column(name = "purchase_order_number", length = 50)
+    private String purchaseOrderNumber;
+
+    /** BI-3: the customer's tax ID (for example GSTIN) as it was when the invoice was finalized. */
+    @Column(name = "customer_tax_id", length = 50)
+    private String customerTaxId;
 
     @LastModifiedDate
     @Column(name = "updated_at")

@@ -28,6 +28,19 @@ public record InvoiceDto(
     PaymentRoute paymentRoute,
     String ownerLabel,
     List<InvoiceLineDto> lines,
-    List<PaymentDto> payments
+    List<PaymentDto> payments,
+    /** C96: LEGACY (issued before tax calculation), CALCULATED or BLOCKED (a Draft). */
+    String taxStatus,
+    String taxEngine,
+    String placeOfSupply,
+    String customerTaxId,
+    String issuerSnapshot,
+    /** The tax components, detail view only. */
+    List<com.vyoog.eisplatform.modules.billing.tax.dto.TaxComponentDto> taxLines,
+    /** Admin views only: why a Draft is blocked. Never shown to the customer. */
+    String taxBlockCode,
+    String taxBlockReason,
+    /** C97 BI-9: optional customer purchase-order number, printed on the invoice. */
+    String purchaseOrderNumber
 ) {
 }

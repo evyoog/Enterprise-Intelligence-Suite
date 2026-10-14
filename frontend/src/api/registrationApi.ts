@@ -93,6 +93,25 @@ export interface Subscription {
   quantity?: number
   /** REQ-SUB-004: renewed automatically on `expiresAt`. */
   autoRenew?: boolean
+  /** C97 SC-1: a downgrade chosen by the customer, applied at the next renewal. */
+  pendingPlanId?: number
+  pendingPlanName?: string
+}
+
+/** REQ-SUB-002 (C97 EN-1): one read-only entitlement, derived from an ACTIVE subscription and its plan. */
+export interface Entitlement {
+  subscriptionId: number
+  productId: number
+  productName: string
+  ownerType: 'INDIVIDUAL' | 'ORGANIZATION'
+  planId?: number
+  planName?: string
+  status: string
+  expiresAt?: string
+  includedFeatures: string[]
+  /** The plan's limit only (C97 EN-5); each product counts its own usage. */
+  usageLimit?: number
+  quantity: number
 }
 
 /** REQ-SUB-003 (C63): an organization subscription's seats. */
@@ -173,6 +192,17 @@ export const myProductsApi = {
   // 07.01.02 Change plan (sprint 2026.4.3) — null planId clears the plan.
   changePlan: (subscriptionId: number, planId: number | null) =>
     apiRequest<Subscription>(`/me/subscriptions/${subscriptionId}/plan`, { method: 'PATCH', body: JSON.stringify({ planId }) }),
+  /** C97 SC-1: withdraws a downgrade scheduled for the next renewal. */
+  cancelScheduledPlanChange: (subscriptionId: number) =>
+    apiRequest<Subscription>(`/me/subscriptions/${subscriptionId}/plan/scheduled`, { method: 'DELETE' }),
+}
+
+/** REQ-SUB-002 (C97 EN-1, EN-3): read-only entitlements. The admin lookup needs `VIEW_ENTITLEMENTS`. */
+export const entitlementsApi = {
+  mine: () => apiRequest<Entitlement[]>('/me/entitlements'),
+  organization: () => apiRequest<Entitlement[]>('/organization/me/entitlements'),
+  adminCustomer: (customerId: number) => apiRequest<Entitlement[]>(`/admin/entitlements/customers/${customerId}`),
+  adminOrganization: (organizationId: number) => apiRequest<Entitlement[]>(`/admin/entitlements/organizations/${organizationId}`),
 }
 
 // Authenticated — always scoped to the caller's own organization on the backend.
