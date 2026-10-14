@@ -16,6 +16,9 @@ public interface SupportTicketRepository extends JpaRepository<SupportTicket, Lo
     /** Platform admin dashboard (C53): tickets still needing attention —
      * every status except the terminal RESOLVED/CLOSED pair (TicketStatus's
      * own javadoc). */
+    /** C101: tickets the SLA check still has to watch. */
+    List<SupportTicket> findByStatusNotInAndResolutionDueAtIsNotNull(Collection<TicketStatus> statuses);
+
     long countByStatusIn(Collection<TicketStatus> statuses);
 
     /** Demo data seeding (C54, {@code DemoDataSeeder}) idempotency check —

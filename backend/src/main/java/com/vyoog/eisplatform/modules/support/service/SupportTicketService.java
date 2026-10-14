@@ -40,6 +40,8 @@ public class SupportTicketService {
     private final CustomerRepository customerRepository;
     private final NotificationService notificationService;
     private final AuditService auditService;
+    /** C101 / REQ-SUP-002: deadlines on create and on a priority change. */
+    private final SlaService slaService;
 
     @Transactional
     public SupportTicketDto createTicket(Long customerId, CreateTicketRequest request) {
@@ -48,14 +50,16 @@ public class SupportTicketService {
         ticket.setSubject(request.subject());
         ticket.setDescription(request.description());
         ticket = ticketRepository.save(ticket);
+        slaService.applyDeadlines(ticket);   // the clock starts now (createdAt is set by the save above)
+        ticket = ticketRepository.save(ticket);
 
         auditService.recordSuccess("TICKET_CREATED", null, customerId, null,
             "SupportTicket", ticket.getId().toString(), null, "Ticket created: " + request.subject());
-        return toDto(ticket);
+        return toDto(ticket, false);
     }
 
     public List<SupportTicketDto> listMyTickets(Long customerId) {
-        return ticketRepository.findByRequestedByCustomerIdOrderByCreatedAtDesc(customerId).stream().map(this::toDto).toList();
+        return ticketRepository.findByRequestedByCustomerIdOrderByCreatedAtDesc(customerId).stream().map(t -> toDto(t, false)).toList();
     }
 
     /** The caller's own ticket, or a generic 404 for anyone else's — same
@@ -65,15 +69,15 @@ public class SupportTicketService {
         if (!customerId.equals(ticket.getRequestedByCustomerId())) {
             throw new ResourceNotFoundException("Ticket not found");
         }
-        return toDto(ticket);
+        return toDto(ticket, false);
     }
 
     public List<SupportTicketDto> listAllTickets() {
-        return ticketRepository.findAllByOrderByCreatedAtDesc().stream().map(this::toDto).toList();
+        return ticketRepository.findAllByOrderByCreatedAtDesc().stream().map(t -> toDto(t, true)).toList();
     }
 
     public SupportTicketDto getTicket(Long ticketId) {
-        return toDto(findById(ticketId));
+        return toDto(findById(ticketId), true);
     }
 
     /** 12.01.01.02/.03/.04 Categorize/Prioritize/Assign, folded into one
@@ -84,17 +88,23 @@ public class SupportTicketService {
         SupportTicket ticket = findById(ticketId);
         refuseIfTerminal(ticket);
         if (request.category() != null) ticket.setCategory(request.category());
-        if (request.priority() != null) ticket.setPriority(request.priority());
+        if (request.priority() != null && request.priority() != ticket.getPriority()) {
+            ticket.setPriority(request.priority());
+            if (ticket.getResolutionDueAt() != null) {
+                recalculateDeadlines(ticket);
+            }
+        }
         if (request.assignedToCustomerId() != null) {
             ticket.setAssignedToCustomerId(request.assignedToCustomerId());
             if (ticket.getStatus() == TicketStatus.OPEN) {
                 ticket.setStatus(TicketStatus.IN_PROGRESS);
             }
+            markFirstResponse(ticket);
         }
         ticket = ticketRepository.save(ticket);
         auditService.recordSuccess("TICKET_UPDATED", null, null, null,
             "SupportTicket", ticketId.toString(), null, "Ticket categorized/prioritized/assigned");
-        return toDto(ticket);
+        return toDto(ticket, true);
     }
 
     /** 12.01.01.05 Escalate ticket — also raises priority to URGENT, the
@@ -105,12 +115,18 @@ public class SupportTicketService {
         SupportTicket ticket = findById(ticketId);
         refuseIfTerminal(ticket);
         ticket.setStatus(TicketStatus.ESCALATED);
-        ticket.setPriority(TicketPriority.URGENT);
+        if (ticket.getPriority() != TicketPriority.URGENT) {
+            ticket.setPriority(TicketPriority.URGENT);
+            if (ticket.getResolutionDueAt() != null) {
+                recalculateDeadlines(ticket);
+            }
+        }
+        markFirstResponse(ticket);
         ticket = ticketRepository.save(ticket);
         auditService.recordSuccess("TICKET_ESCALATED", null, null, null,
             "SupportTicket", ticketId.toString(), null, "Ticket escalated");
         notifyRequester(ticket, "Your ticket was escalated", "Your support ticket \"" + ticket.getSubject() + "\" has been escalated.");
-        return toDto(ticket);
+        return toDto(ticket, true);
     }
 
     /** 12.01.01.06 Resolve ticket. */
@@ -121,11 +137,12 @@ public class SupportTicketService {
         ticket.setStatus(TicketStatus.RESOLVED);
         ticket.setResolutionNote(request.resolutionNote());
         ticket.setResolvedAt(Instant.now());
+        markFirstResponse(ticket);
         ticket = ticketRepository.save(ticket);
         auditService.recordSuccess("TICKET_RESOLVED", null, null, null,
             "SupportTicket", ticketId.toString(), null, "Ticket resolved");
         notifyRequester(ticket, "Your ticket was resolved", "Your support ticket \"" + ticket.getSubject() + "\" has been resolved.");
-        return toDto(ticket);
+        return toDto(ticket, true);
     }
 
     /** 12.01.01.07 Close ticket — only from RESOLVED (Not specified whether a
@@ -142,7 +159,21 @@ public class SupportTicketService {
         ticket = ticketRepository.save(ticket);
         auditService.recordSuccess("TICKET_CLOSED", null, null, null,
             "SupportTicket", ticketId.toString(), null, "Ticket closed");
-        return toDto(ticket);
+        return toDto(ticket, true);
+    }
+
+    /** C101: the first human action on the ticket stops the first-response clock. Nothing to do for a ticket without deadlines. */
+    private void markFirstResponse(SupportTicket ticket) {
+        if (ticket.getFirstRespondedAt() == null && ticket.getFirstResponseDueAt() != null) {
+            ticket.setFirstRespondedAt(Instant.now());
+        }
+    }
+
+    /** C101: a new priority moves both deadlines, counted from the creation time; marks that no longer apply are cleared (a breach already recorded stays). */
+    private void recalculateDeadlines(SupportTicket ticket) {
+        slaService.applyDeadlines(ticket);
+        ticket.setFirstResponseWarnedAt(null);
+        ticket.setResolutionWarnedAt(null);
     }
 
     private void refuseIfTerminal(SupportTicket ticket) {
@@ -161,7 +192,8 @@ public class SupportTicketService {
             notificationService.notify(customer.getId(), customer.getEmail(), NotificationCategory.SYSTEM, NotificationSeverity.INFO, title, message));
     }
 
-    private SupportTicketDto toDto(SupportTicket ticket) {
+    private SupportTicketDto toDto(SupportTicket ticket, boolean admin) {
+        Instant now = Instant.now();
         String requestedByName = customerRepository.findById(ticket.getRequestedByCustomerId())
             .map(this::fullName).orElse("Unknown");
         String assignedToName = ticket.getAssignedToCustomerId() == null ? null
@@ -171,7 +203,9 @@ public class SupportTicketService {
             ticket.getSubject(), ticket.getDescription(), ticket.getCategory(),
             ticket.getPriority(), ticket.getStatus(),
             ticket.getAssignedToCustomerId(), assignedToName,
-            ticket.getResolutionNote(), ticket.getResolvedAt(), ticket.getClosedAt(), ticket.getCreatedAt()
+            ticket.getResolutionNote(), ticket.getResolvedAt(), ticket.getClosedAt(), ticket.getCreatedAt(),
+            ticket.getFirstRespondedAt(), ticket.getFirstResponseDueAt(), ticket.getResolutionDueAt(),
+            admin ? SlaService.firstResponseState(ticket, now) : null, admin ? SlaService.resolutionState(ticket, now) : null
         );
     }
 

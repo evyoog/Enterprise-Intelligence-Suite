@@ -19,6 +19,12 @@ public record SupportTicketDto(
     String resolutionNote,
     Instant resolvedAt,
     Instant closedAt,
-    Instant createdAt
+    Instant createdAt,
+    Instant firstRespondedAt,
+    Instant firstResponseDueAt,
+    Instant resolutionDueAt,
+    /** C101: MET, MET_LATE, ON_TRACK, WARNING or BREACHED; null for tickets without deadlines and in the requester's own view. */
+    String firstResponseState,
+    String resolutionState
 ) {
 }

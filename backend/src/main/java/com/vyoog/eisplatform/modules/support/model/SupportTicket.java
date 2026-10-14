@@ -61,6 +61,22 @@ public class SupportTicket {
 
     private Instant closedAt;
 
+    /** C101 / REQ-SUP-002: the first time a person took the ticket out of Open (assigned, escalated or resolved it). */
+    private Instant firstRespondedAt;
+
+    /** Set when the ticket is created (and again when its priority changes); null for tickets created before SLA tracking. */
+    private Instant firstResponseDueAt;
+
+    private Instant resolutionDueAt;
+
+    private Instant firstResponseWarnedAt;
+
+    private Instant resolutionWarnedAt;
+
+    private Instant firstResponseBreachedAt;
+
+    private Instant resolutionBreachedAt;
+
     @CreatedDate
     @Column(updatable = false)
     private Instant createdAt;
