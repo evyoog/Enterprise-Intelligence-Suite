@@ -22,13 +22,13 @@ Auto-renew ON and renewal date = start + 30 days. The expiry job leaves it ACTIV
 
 ## Automated coverage
 - `backend/src/test/java/com/vyoog/eisplatform/modules/registration/service/RenewalAndRemindersTest.java` — `aNewMonthlySubscriptionAutoRenewsAndHasARenewalDate`, `aDueSubscriptionIsRenewedWithARenewalInvoiceAndNotExpired`
-- `backend/src/test/java/com/vyoog/eisplatform/modules/registration/service/SubscriptionServiceTest.java` — `expiryJobFlipsOverdueActiveSubscriptionsOnly`
+- `backend/src/test/java/com/vyoog/eisplatform/modules/registration/service/SubscriptionServiceTest.java` — `expiryJobGivesAnEndedSubscriptionAReadOnlyGraceThenExpiresIt` (an ended subscription with auto-renew **off** gets the grace period instead of expiring at once; that an auto-renewing one is left alone is asserted by the first test above)
 
 ## Actual Result
-The automated tests passed on 2026-10-03.
+The automated tests passed on 2026-10-03 and again on 2026-10-14 (the expiry test was replaced when the grace period was added, C100).
 
 ## Status
-Passed (automated run 2026-10-03)
+Passed (automated run 2026-10-14)
 
 ## Linked Defect (if failed)
 None.

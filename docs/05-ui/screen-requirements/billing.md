@@ -43,7 +43,7 @@ Below the cards:
 | Subscription / plan | Text | |
 | Subtotal | Money | |
 | Tax | Money | Calculated by [REQ-BIL-002](../../02-requirements/FRD/tax-rules/requirement.md); shows the tax name on hover (for example "GST 18%") |
-| Total | Money | |
+| Total | Money | When the invoice used a coupon, a small line under the amount: **"Discount ({code}): −{amount}"** ([C100](../../01-business/roadmap/open-decisions.md#c100), REQ-BIL-001.35); none otherwise. The Subtotal column is net of the discount |
 | Status | Chip | OPEN, PAID, PARTIALLY_REFUNDED, REFUNDED, VOID — see [status chip mapping](billing-ui-standards.md#status-chips) |
 | Actions | Buttons, shown on row hover | **View**, **Pay** (OPEN only; opens the [Checkout payment](checkout-payment.md) screen; [Pay invoice](billing-pay-invoice.md) is the superseded dialog), **Download invoice**, **Download receipt** (PAID only) |
 

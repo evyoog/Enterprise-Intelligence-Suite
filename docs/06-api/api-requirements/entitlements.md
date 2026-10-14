@@ -27,7 +27,9 @@ Response: a JSON array of `EntitlementDto`, empty when nothing is active.
     "expiresAt": "2026-11-02T18:29:00Z",
     "includedFeatures": ["Reports", "API access", "Exports"],
     "usageLimit": 1000,
-    "quantity": 1
+    "quantity": 1,
+    "accessMode": "FULL",
+    "graceEndsAt": null
   }
 ]
 ```
@@ -37,6 +39,8 @@ Response: a JSON array of `EntitlementDto`, empty when nothing is active.
 | `includedFeatures` | The plan's comma-separated `includedFeatures`, split and trimmed; empty list when none |
 | `usageLimit` | The plan's limit only ([C97](../../01-business/roadmap/open-decisions.md#c97) EN-5); `null` = no limit set. No consumption is ever returned |
 | `quantity` | Seats on the subscription (1 for an individual) |
+| `accessMode` | `FULL`, or `READ_ONLY` while the subscription's term has ended with auto-renew off and its 7-day grace period runs ([C100](../../01-business/roadmap/open-decisions.md#c100) RR-1 B, [REQ-SUB-002.10](../../02-requirements/FRD/entitlements/requirement.md)) |
+| `graceEndsAt` | The end of the grace period while `accessMode` is `READ_ONLY`; otherwise `null` |
 
 ## Admin endpoints (platform permission `VIEW_ENTITLEMENTS`)
 New support permission **View entitlements** ([C97](../../01-business/roadmap/open-decisions.md#c97) EN-3), enforced for every path under `/admin/entitlements/**` and granted to platform administrators by `RbacSeeder`. Read-only. Each successful lookup is audited as `ENTITLEMENTS_VIEWED` (administrator, target type and id, organization id for an organization).
@@ -76,23 +80,34 @@ Response (always **200** for a normal answer, allowed or not):
   "ownerType": "INDIVIDUAL",
   "expiresAt": "2026-11-02T18:29:00Z",
   "includedFeatures": ["Reports", "API access", "Exports"],
-  "usageLimit": 1000
+  "usageLimit": 1000,
+  "accessMode": "FULL",
+  "graceEndsAt": null
 }
 ```
 | `reason` (when `allowed` is false) | Meaning |
 |---|---|
-| `NO_SUBSCRIPTION` | No ACTIVE subscription that is still in its term (SUSPENDED, CANCELLED, EXPIRED and PENDING_SUBSCRIPTION grant nothing) |
+| `NO_SUBSCRIPTION` | No ACTIVE subscription that is still in its term or in its read-only grace period (SUSPENDED, CANCELLED, EXPIRED and PENDING_SUBSCRIPTION grant nothing) |
 | `NO_MEMBER_ACCESS` | The organization has an ACTIVE subscription, but the named member is not an ACTIVE member or has no ACTIVE access to that product |
 | `FEATURE_NOT_INCLUDED` | The subscription is active but the plan does not list `featureKey`; `plan`, `includedFeatures` and `usageLimit` are still returned |
 | `UNKNOWN_PRODUCT` | `productId` is not an ACTIVE catalogue product |
 | `BAD_REQUEST` | Neither `customerId` nor `organizationId` was given |
 
-For every `NO_SUBSCRIPTION`, `NO_MEMBER_ACCESS`, `UNKNOWN_PRODUCT` and `BAD_REQUEST` answer, `plan`, `ownerType`, `expiresAt` and `usageLimit` are `null` and `includedFeatures` is `[]`. The hosted product enforces the returned `usageLimit` itself ([C97](../../01-business/roadmap/open-decisions.md#c97) EN-5).
+For every `NO_SUBSCRIPTION`, `NO_MEMBER_ACCESS`, `UNKNOWN_PRODUCT` and `BAD_REQUEST` answer, `plan`, `ownerType`, `expiresAt`, `usageLimit`, `accessMode` and `graceEndsAt` are `null` and `includedFeatures` is `[]`. A `FEATURE_NOT_INCLUDED` answer still returns `accessMode` and `graceEndsAt`. The hosted product enforces the returned `usageLimit` itself ([C97](../../01-business/roadmap/open-decisions.md#c97) EN-5).
+
+### Read-only during the grace period
+[C100](../../01-business/roadmap/open-decisions.md#c100) RR-1 B. When a term has ended with auto-renew off, the subscription stays ACTIVE for **7 days** (a grace period). The check then answers **`allowed: true`** with **`accessMode: "READ_ONLY"`** and **`graceEndsAt`**; the hosted product must **not allow changes** (create, edit, delete) and should tell the customer that renewing restores full access. Renewing, or turning auto-renew back on, makes the next answer `FULL`; when the grace period ends the answer is `NO_SUBSCRIPTION`. The mode starts when the hourly expiry job sets the grace end date, so for up to an hour after the term end the answer is still `NO_SUBSCRIPTION`. Do not cache the answer for long.
+
+```json
+{ "allowed": true, "reason": null, "productId": 3, "plan": "Pro", "ownerType": "INDIVIDUAL",
+  "expiresAt": "2026-11-02T18:29:00Z", "includedFeatures": ["Reports"], "usageLimit": 1000,
+  "accessMode": "READ_ONLY", "graceEndsAt": "2026-11-09T18:29:00Z" }
+```
 
 ### How a hosted product adopts it
 1. Store `INTERNAL_SSO_SHARED_SECRET` in the product's backend environment (never in the frontend).
 2. Before serving a feature, call the check with the customer (and organization, when the user acts for one) and the EIS `productId`. Cache the answer briefly at most; a plan change shows at once.
-3. Treat `allowed: false` as "do not serve" and show a message based on `reason`; count usage per customer or organization and refuse beyond `usageLimit`.
+3. Treat `allowed: false` as "do not serve" and show a message based on `reason`; treat `accessMode: READ_ONLY` as "serve, but read-only"; count usage per customer or organization and refuse beyond `usageLimit`.
 
 ## Errors
 | Status | Code | When |

@@ -23,3 +23,9 @@ One page for both roles: the request form and "my requests" list show for every 
 ## Accessibility and localization
 - Every action is a labeled `<button>`; both selects use `InputLabel` + `labelId`.
 - All strings are in `frontend/src/i18n/locales/{en,es}.json` under `orders.*`.
+
+## Purchase requests from the cart ([C100](../../../01-business/roadmap/open-decisions.md#c100))
+- A request made from the cart appears in **My requests** and in **Pending approvals** as "Purchase request #{id}", with **Products in this request** (one line per product and plan) and **"Reason: {reason}"** (`orders.purchaseRequestNumber`, `orders.products`, `orders.reason`). A one-product order without a reason shows as before.
+- The cart's dialog **"Submit a purchase request"** (required "Why do you need this?", 500 characters at most) is described in [cart.md](../../../05-ui/screen-requirements/cart.md#purchase-request-dialog).
+- The request form on this page still has one product and an optional plan and **no reason field** ([Open points](requirement.md#open-points)).
+

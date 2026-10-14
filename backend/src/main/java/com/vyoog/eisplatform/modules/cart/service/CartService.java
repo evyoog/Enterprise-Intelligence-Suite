@@ -52,13 +52,9 @@ import java.util.stream.Collectors;
  * audited (BR-11); the checkout reuses the existing subscribe, invoice and
  * order services, which audit themselves.
  *
- * <p>Engineering defaults until REQ-MKT-003's open questions are answered
- * (recorded under C59): a cart may hold several products; an individual's
- * checkout bills them on <b>one</b> invoice (Open question 1); an
- * organization member's checkout submits <b>one order per item</b>, because
- * an order holds one product (REQ-ORD-001); an organization admin's own cart
- * also goes through approval (Open question 2); items never expire (Open
- * question 3).
+ * <p>Rules (C59, C100): a cart may hold several products. An individual, an organization admin or a person with Manage billing checks out
+ * directly: all items are billed on <b>one</b> invoice (with the coupon, if any). Any other organization member's checkout submits <b>one multi-item
+ * purchase request</b> with a reason for an administrator to approve. Items never expire.
  */
 @Service
 @RequiredArgsConstructor
@@ -161,6 +157,9 @@ public class CartService {
         Cart cart = ownCart(customerId);
         CartItem item = ownItem(cart, itemId);
         cart.getItems().remove(item);
+        if (cart.getItems().isEmpty()) {
+            cart.setCouponCode(null);   // an empty cart keeps no coupon
+        }
         cart.setUpdatedAt(Instant.now());
         return toDto(customerId, cartRepository.save(cart));
     }
@@ -169,6 +168,7 @@ public class CartService {
     public void clear(Long customerId) {
         cartRepository.findByCustomerId(customerId).ifPresent(cart -> {
             cart.getItems().clear();
+            cart.setCouponCode(null);
             cart.setUpdatedAt(Instant.now());
             cartRepository.save(cart);
         });

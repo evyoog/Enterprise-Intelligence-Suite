@@ -7,12 +7,14 @@ flowchart TD
     A1 -- No --> X[Not allowed<br/>BAD_REQUEST or UNKNOWN_PRODUCT]
     A1 -- Yes --> B[Find subscriptions<br/>for that owner and product]
     B --> C{Any subscription ACTIVE<br/>and not past its term end?}
-    C -- No --> D[Not allowed<br/>NO_SUBSCRIPTION, no limits]
+    C -- No --> C2{ACTIVE, term ended, grace end date in the future?}
+    C2 -- No --> D[Not allowed<br/>NO_SUBSCRIPTION, no limits]
+    C2 -- Yes --> M
     C -- Yes --> M{Organization subscription for a member,<br/>and member has ACTIVE access to the product?}
     M -- No --> N[Not allowed<br/>NO_MEMBER_ACCESS]
-    M -- Yes --> E[Read that subscription's plan:<br/>includedFeatures, usageLimit]
+    M -- Yes --> E[Read that subscription's plan:<br/>includedFeatures, usageLimit,<br/>accessMode: FULL, or READ_ONLY with graceEndsAt during the grace period]
     E --> F{Feature key given?}
-    F -- No --> G[Allowed = true<br/>Return plan, ownerType, expiresAt,<br/>includedFeatures, usageLimit]
+    F -- No --> G[Allowed = true<br/>Return plan, ownerType, expiresAt,<br/>includedFeatures, usageLimit, accessMode, graceEndsAt]
     F -- Yes --> H{Feature key listed in<br/>includedFeatures?}
     H -- Yes --> G
     H -- No --> I[Not allowed<br/>FEATURE_NOT_INCLUDED<br/>plan and limit still returned]

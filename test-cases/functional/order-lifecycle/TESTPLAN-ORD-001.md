@@ -5,7 +5,7 @@
 | Feature ID (required) | FTR-ORD-001 |
 | Requirement(s) covered | [REQ-ORD-001](../../../docs/02-requirements/FRD/order-lifecycle/requirement.md) |
 | Author | Not specified |
-| Status | Approved with the FRD (product owner, 2026-09-28) |
+| Status | Approved with the FRD (product owner, 2026-09-28); extended by [C100](../../../docs/01-business/roadmap/open-decisions.md#c100) (AC-9 to AC-11, 2026-10-14) |
 
 ## Scope
 Every acceptance criterion in [`acceptance-criteria.md`](../../../docs/02-requirements/FRD/order-lifecycle/acceptance-criteria.md). Out of scope: what the FRD lists as out of scope (individual-customer orders, managing an already-provisioned org subscription, multi-level approval, any workflow engine).
@@ -14,7 +14,7 @@ Every acceptance criterion in [`acceptance-criteria.md`](../../../docs/02-requir
 | Level | Approach |
 |---|---|
 | Unit | Spring Boot tests against H2 in `backend/` (Vitest + Testing Library in `frontend/` for the new `/organization/orders` page) |
-| Integration | Same backend test class, exercising the real service/repository layers, including provisioning via `SubscriptionService#subscribeOrganization` |
+| Integration | Same backend test class, exercising the real service/repository layers, including provisioning via `SubscriptionService#subscribeOrganization`; for AC-9 to AC-11 `CouponAndPurchaseTest` (`cart` module), which drives the cart into `OrderService`; frontend `OrganizationOrdersPage.test.tsx` |
 | Security (SAST/DAST) | Permission and cross-organization cases below (AC-4, AC-8) |
 | Performance | Not specified |
 | Acceptance / UAT | Manual check in the dev environment |
@@ -33,3 +33,6 @@ Local and CI: automated tests. Manual checks: dev environment with a local Postg
 | [TC-ORD-006](TC-ORD-006.md) | AC-6 | P0 | Yes |
 | [TC-ORD-007](TC-ORD-007.md) | AC-7 | P0 | Yes |
 | [TC-ORD-008](TC-ORD-008.md) | AC-8 | P0 | Yes |
+| [TC-ORD-009](TC-ORD-009.md) | AC-9 a purchase request holds several products and the reason | P0 | Yes |
+| [TC-ORD-010](TC-ORD-010.md) | AC-10 approving a multi-product order creates one invoice | P0 | Yes |
+| [TC-ORD-011](TC-ORD-011.md) | AC-11 a direct purchase is an approved order; the Orders page shows every product and the reason | P1 | Yes |

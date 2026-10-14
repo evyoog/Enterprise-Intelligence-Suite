@@ -153,8 +153,18 @@ public class EntitlementService {
     /** C100 RR-1 B: after its term ends with auto-renew off, an ACTIVE subscription is read-only until its grace period ends. */
     private boolean inGrace(ProductSubscription s) {
         Instant now = Instant.now();
+        Instant graceEnd = graceEnd(s);
         return s.getStatus() == SubscriptionStatus.ACTIVE && s.getExpiresAt() != null && !s.getExpiresAt().isAfter(now)
-            && s.getGraceEndsAt() != null && s.getGraceEndsAt().isAfter(now);
+            && graceEnd != null && graceEnd.isAfter(now);
+    }
+
+    /** The grace end the expiry job has set, or, before the job has run (it is hourly), the one it will set: the term end plus the grace days, for a
+     * subscription with auto-renew off. */
+    private Instant graceEnd(ProductSubscription s) {
+        if (s.getGraceEndsAt() != null) {
+            return s.getGraceEndsAt();
+        }
+        return s.isAutoRenew() || s.getExpiresAt() == null ? null : s.getExpiresAt().plus(SubscriptionService.GRACE_DAYS, java.time.temporal.ChronoUnit.DAYS);
     }
 
     private boolean grantsAccess(ProductSubscription s) {
@@ -181,6 +191,6 @@ public class EntitlementService {
         return Optional.of(new EntitlementDto(s.getId(), product.getId(), product.getName(),
             s.getOwnerType() == RegistrationOwnerType.ORGANIZATION ? "ORGANIZATION" : "INDIVIDUAL",
             plan == null ? null : plan.getId(), plan == null ? null : plan.getName(), s.getStatus().name(), s.getExpiresAt(),
-            features, plan == null ? null : plan.getUsageLimit(), s.getQuantity(), accessMode(s), inGrace(s) ? s.getGraceEndsAt() : null));
+            features, plan == null ? null : plan.getUsageLimit(), s.getQuantity(), accessMode(s), inGrace(s) ? graceEnd(s) : null));
     }
 }

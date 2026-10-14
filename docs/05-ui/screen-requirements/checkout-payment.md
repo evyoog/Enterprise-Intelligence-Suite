@@ -5,7 +5,7 @@
 | Requirement | [REQ-BIL-001.18, .19, .22, .23](../../02-requirements/FRD/billing-payments/requirement.md); entry from the cart: [REQ-MKT-003.8](../../02-requirements/FRD/cart-checkout/requirement.md) |
 | Decisions | [C55](../../01-business/roadmap/open-decisions.md#c55) (online and offline payment, card-panel approach); [C59](../../01-business/roadmap/open-decisions.md#c59) (cart; this layout) |
 | Route | `/checkout?invoiceId=…` (also `?subscriptionId=…`, and `&scope=organization` for an organization's invoice), inside the signed-in tool frame ([application-layout.md](application-layout.md)) |
-| Entry points | **Proceed to checkout** on the [cart](cart.md); **Pay** on an OPEN invoice (Billing → Invoices); the invoice issued after an organization order is approved |
+| Entry points | **Proceed to checkout** on the [cart](cart.md) (an individual, or an organization administrator or Manage billing holder buying directly, C100); **Pay** on an OPEN invoice (Billing → Invoices); the invoice issued after an organization order is approved |
 | Permissions | The customer who owns the invoice, or an organization billing user (REQ-BIL-001 Open question 5). Anyone else: 404 |
 | Card data | [BR-BIL-001](../../03-business-rules/BR-BIL-001-no-raw-card-data.md) — see [Card data approach](#card-data-approach-br-bil-001) |
 | Logos | [payment-brand-assets.md](payment-brand-assets.md) |
@@ -112,9 +112,9 @@ The checkout never chooses a gateway ([REQ-BIL-003.12](../../02-requirements/FRD
 - Right: **Complete order**, disabled until the payment result is confirmed (online payment captured, or the offline invoice generated). Then it moves to the **Complete** step. It mirrors the reference's two-level action and **never starts a payment**: Pay (or Generate invoice) is the only action that does. If the result is confirmed automatically, the page moves to Complete without waiting for the click.
 
 ## Cart summary (right column)
-- **Subtotal**; **one line per tax** with its name and rate, for example **"GST (18 %)"** ([REQ-BIL-002](../../02-requirements/FRD/tax-rules/requirement.md)), or **"Tax: none for this region"**; **Total** in large type in the primary colour.
-- **No shipping row** (subscription software) and **no fees row** ([C97](../../01-business/roadmap/open-decisions.md#c97) BI-9: no fees line). No coupon field ([C50](../../01-business/roadmap/open-decisions.md#c50)).
-- **Items:** product image (catalog media; generic product icon if none) with a small count badge, product name, plan, price. Quantity is not shown (D14 not decided).
+- **Subtotal** (the **gross** amount, before any coupon); when the invoice has a coupon, **"Discount ({code})"** with a minus amount (`checkout.summary.discount`; "Discount" alone if the code is not known, `checkout.summary.discountPlain`) **between the subtotal and the tax** ([C100](../../01-business/roadmap/open-decisions.md#c100), REQ-BIL-001.35; subtotal − discount + tax = total); **one line per tax** with its name and rate, for example **"GST (18 %)"** ([REQ-BIL-002](../../02-requirements/FRD/tax-rules/requirement.md)), or **"Tax: none for this region"**; **Total** in large type in the primary colour.
+- **No shipping row** (subscription software) and **no fees row** ([C97](../../01-business/roadmap/open-decisions.md#c97) BI-9: no fees line). There is **no coupon field here**: the code is entered in the [cart](cart.md#coupon) and arrives on the invoice ([C100](../../01-business/roadmap/open-decisions.md#c100) PB-1 note).
+- **Items:** product image (catalog media; generic product icon if none) with a small count badge, product name, plan, price. Quantity (the seats of an organization purchase) is not shown on the checkout; the amount is the line total (price × seats).
 - **Edit cart** link to `/cart` (only when the checkout started from the cart). Items are read-only here; Remove happens on the cart page.
 - The summary stays visible on every step.
 
@@ -127,7 +127,7 @@ Focus moves to the result heading. Status changes are announced with `aria-live=
 | **Online payment pending** | Spinner, "Confirming your payment…". Polls every **5 seconds** for up to **2 minutes** (C55 default), then "This is taking longer than usual…" with **View billing** | — | `checkout.result.pending` |
 | **Online payment failed / cancelled** | Error icon, the provider's reason, "Your invoice is still open." | **Try again** (back to Payment with the same tile), **Choose another method** | `checkout.result.failed` |
 | **Invoice generated (offline)** | Document icon, "Invoice generated", invoice number, total, due date (Open question 10), **bank details** (account name, bank, account number, IFSC, SWIFT/BIC — [admin-billing-settings.md](admin-billing-settings.md)) each with a **Copy** button; "Quote invoice number {number} as the payment reference"; "We've emailed the invoice to {billing email}"; subscription status | **Download invoice**, **View billing** | `checkout.result.offline` |
-| **Order submitted for approval** (organization member, from the cart — [REQ-MKT-003.8](../../02-requirements/FRD/cart-checkout/requirement.md)) | "Order submitted for approval", order reference, "Your organization admin approves orders before payment. You'll be able to pay once it's approved." | **View my orders**, **Browse products** | `checkout.result.orderSubmitted` |
+| **Order submitted for approval** (organization member's purchase request from the cart, one order — [REQ-MKT-003.12](../../02-requirements/FRD/cart-checkout/requirement.md); `/checkout?orders={id}&step=complete`) | "Order submitted for approval", "Order {reference}", "Your organization admin approves orders before payment. You'll be able to pay once it's approved." (wording not yet changed to "purchase request", see the FRD open points) | **View my orders**, **Browse products** | `checkout.result.orderSubmitted` |
 
 If no offline bank details have been entered yet, the bank block shows "Bank details will be on your invoice." and no Copy buttons.
 

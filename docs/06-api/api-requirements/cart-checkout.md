@@ -5,18 +5,20 @@ Requirement: [REQ-MKT-003](../../02-requirements/FRD/cart-checkout/requirement.m
 ## Scope and authorization
 - Every endpoint acts on the **signed-in user's own cart** (`/me/cart`). A user always has at most one cart. `GET` returns an empty cart if none exists yet.
 - An item ID belonging to another user's cart returns a generic **404** (BR-1).
-- Whether the caller is an individual or an organization member decides what checkout does (`POST /me/cart/checkout`). That is decided on the server from the caller's membership, never from a request field.
+- Who is buying decides what checkout does (`POST /me/cart/checkout`): an **individual**, an **organization buyer** (an administrator or a Manage billing holder) or an **organization member** whose cart is a purchase request. That is decided on the server from the caller's membership and permissions (`continueAs`), never from a request field.
 
 ## Endpoints
 | Method | Path | Purpose | Success | Errors |
 |---|---|---|---|---|
-| GET | `/me/cart` | The cart with items, subtotal, tax lines (or `taxCalculatedAtPayment: true`), total, item count, and whether the caller continues as `INDIVIDUAL` or `ORGANIZATION_MEMBER` | 200 | — |
+| GET | `/me/cart` | The cart with items (each with `seats`), subtotal, `taxLines` (as built always empty: tax is calculated on the invoice; `taxCalculatedAtPayment` is true until billing details exist), the coupon (`couponCode`, `discount`, `couponMessage`), total, item count, and whether the caller continues as `INDIVIDUAL`, `ORGANIZATION_BUYER` or `ORGANIZATION_MEMBER` | 200 | — |
 | POST | `/me/cart/items` | Add `{ productId, planId }`. If the product is already in the cart, its plan is replaced (BR-3). Returns the whole cart | 201 | 400, 404 |
 | PATCH | `/me/cart/items/{itemId}` | Change plan `{ planId }` (same product only, BR-4), or confirm a changed price `{ confirmPrice: true }` (BR-7). Returns the whole cart | 200 | 400, 404 |
 | DELETE | `/me/cart/items/{itemId}` | Remove one item and return the cart. **Undo** re-adds it with `POST /me/cart/items` (same product and plan) | 200 | 404 |
 | DELETE | `/me/cart` | Clear the cart | 204 | — |
 | POST | `/me/cart/validate` | Re-check every item (BR-6). Returns the per-item issues and does not change the cart | 200 | — |
-| POST | `/me/cart/checkout` | Validate again, then: **individual** — create the subscriptions and their invoice, empty the cart, and return the checkout ID (the invoice ID used by `/checkout?invoiceId=…`, REQ-BIL-001.18); **organization member** — create one order per item for approval (REQ-ORD-001), empty the cart, and return the order IDs. Idempotent per cart (BR-10) | 201 | 400, 409 |
+| PUT | `/me/cart/coupon` | **Apply a coupon code** (C100 PB-1 note): body `{ "code": "SAVE10" }`, case-insensitive, stored in capitals. One code per cart; applying another replaces it. Returns the whole cart with the discount | 200 | 400 (empty cart; blank code; a purchase request; the code is not valid, not active, expired, in another currency or worth the whole cart — the message says which) |
+| DELETE | `/me/cart/coupon` | Remove the coupon; returns the cart | 200 | — |
+| POST | `/me/cart/checkout` | Validate again, then by `continueAs`: **`INDIVIDUAL`** or **`ORGANIZATION_BUYER`** — create the subscriptions and **one invoice** for the whole cart (with the coupon, if any), empty the cart, and return the invoice ID used by `/checkout?invoiceId=…` (REQ-BIL-001.18); for an organization buyer this is a **direct purchase**: an order recorded as approved by the buyer, every product provisioned, the organization administrators notified when the buyer is not one; **`ORGANIZATION_MEMBER`** — create **one multi-item order** with the member's `reason` for approval (REQ-ORD-001), empty the cart, and return its ID. Optional body `{ "reason": "…" }` (up to 500 characters; **required** for `ORGANIZATION_MEMBER`). Idempotent per cart (BR-10) | 201 | 400 (blank reason for a purchase request; a coupon that no longer works — nothing is created), 409 |
 
 ## Request / response
 ```json
@@ -27,16 +29,19 @@ Requirement: [REQ-MKT-003](../../02-requirements/FRD/cart-checkout/requirement.m
       "id": 41, "productId": 7, "productName": "Valam.ai", "imageUrl": "/media/products/7.png",
       "planId": 12, "planName": "Pro", "billingPeriod": "MONTHLY",
       "unitPrice": 120000, "unitPriceAtAdd": 100000, "currency": "INR",
-      "amount": 120000, "addedAt": "2026-10-01T09:00:00Z"
+      "amount": 600000, "addedAt": "2026-10-01T09:00:00Z", "seats": 5, "plans": [ … ]
     }
   ],
   "itemCount": 1,
   "currency": "INR",
-  "subtotal": 120000,
-  "taxLines": [{ "name": "GST", "ratePercent": 18, "amount": 21600 }],
-  "taxCalculatedAtPayment": false,
-  "total": 141600,
-  "continueAs": "INDIVIDUAL"
+  "subtotal": 600000,
+  "taxLines": [],
+  "taxCalculatedAtPayment": true,
+  "total": 540000,
+  "continueAs": "ORGANIZATION_BUYER",
+  "couponCode": "SAVE10",
+  "discount": 60000,
+  "couponMessage": null
 }
 
 // POST /me/cart/validate
@@ -48,13 +53,17 @@ Requirement: [REQ-MKT-003](../../02-requirements/FRD/cart-checkout/requirement.m
   ]
 }
 
-// POST /me/cart/checkout — individual
+// PUT /me/cart/coupon
+{ "code": "save10" }
+
+// POST /me/cart/checkout — individual, or organization admin / Manage billing (direct purchase)
 { "kind": "INVOICE", "invoiceId": 9 }
-// POST /me/cart/checkout — organization member (one order per item, C59 default)
-{ "kind": "ORDER", "orderIds": [15, 16] }
+// POST /me/cart/checkout — organization member: one multi-item purchase request (C100 CA-1 B, CA-2)
+// request body: { "reason": "Needed for the Q4 launch" }
+{ "kind": "ORDER", "orderIds": [15] }
 ```
 
-Amounts are in the currency's smallest unit, as in [billing-payments.md](billing-payments.md). Each item also returns `plans` (the product's paid plans, for **Change plan**). A cart with items in more than one currency cannot be checked out (`CURRENCY_MISMATCH`, C59 default).
+Amounts are in the currency's smallest unit, as in [billing-payments.md](billing-payments.md). Each item also returns `plans` (the product's paid plans, for **Change plan**) and `seats`: **1 for an individual**; for an organization the seats on its existing subscription to the product, else its licensed seats, and `amount` = `unitPrice` × `seats` (per-seat pricing, an engineering default to confirm — [REQ-SUB-003.7](../../02-requirements/FRD/subscription-seats/requirement.md)). The example above shows 5 seats of a 1,200.00 plan. `subtotal` is the sum of the amounts; `total` = `subtotal` − `discount`; the cart carries **no tax lines** (tax is calculated on the invoice). `couponCode` is hidden (null) and `discount` is 0 for a purchase request. When the applied code can no longer be used `discount` is 0 and `couponMessage` says why; the code stays so the customer can remove it. A cart with items in more than one currency cannot be checked out (`CURRENCY_MISMATCH`, C59 default).
 
 ## Validation issue codes
 | Code | When (BR-6) | Extra fields |
@@ -64,6 +73,7 @@ Amounts are in the currency's smallest unit, as in [billing-payments.md](billing
 | `ALREADY_SUBSCRIBED` | An ACTIVE subscription to the product exists for the caller (or their organization) | — |
 | `MISSING_DEPENDENCY` | A required product is neither owned nor in the cart | `requiredProductId`, `requiredProductName` |
 | `CURRENCY_MISMATCH` | The item's currency differs from the first item's (one invoice has one currency — C59 default) | — |
+| `NOT_ELIGIBLE` | The product's audience rule does not allow this kind of account ([REQ-CAT-005](../../02-requirements/FRD/offering-management/requirement.md)) | — |
 
 ## Errors
 Same error body and codes as [billing-payments.md](billing-payments.md#errors), plus:
@@ -74,3 +84,4 @@ Same error body and codes as [billing-payments.md](billing-payments.md#errors), 
 | 404 | `NOT_FOUND` | Unknown product or plan; cart item not the caller's (BR-1) |
 | 409 | `CART_INVALID` | `POST /me/cart/checkout` while any item has an issue. The body carries the same `issues` array as `/validate` |
 | 409 | `CART_EMPTY` | `POST /me/cart/checkout` on an empty cart |
+| 400 | `VALIDATION_ERROR` | `PUT /me/cart/coupon` on an empty cart, with a blank code, on a purchase request, or with a code the rules refuse; `POST /me/cart/checkout` for a member without a `reason` ("Tell your organization admin why you need this before you submit the request.") or with a coupon that no longer works (nothing is created, the cart is unchanged) |

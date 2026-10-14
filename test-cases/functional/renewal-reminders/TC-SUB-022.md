@@ -19,7 +19,7 @@ A billing administrator; an organization with an admin and a member.
 3. Manual: a user with own days keeps them after the default change; a user without follows 5.
 
 ## Expected Result
-Valid defaults save (audited `RENEWAL_REMINDER_DEFAULTS_CHANGED`); invalid ones 400; without `MANAGE_BILLING` 403. Only the active organization admin receives the organization reminder. Preference changes are audited (`RENEWAL_REMINDER_PREFERENCES_CHANGED`).
+Valid defaults save (audited `RENEWAL_REMINDER_DEFAULTS_CHANGED`); invalid ones 400; without `MANAGE_BILLING` 403. The active organization admins receive the organization reminder (since C100 also the Manage billing holders and the people an administrator added: TC-SUB-055, TC-SUB-056). Preference changes are audited (`RENEWAL_REMINDER_PREFERENCES_CHANGED`).
 
 ## Automated coverage
 - `backend/src/test/java/com/vyoog/eisplatform/config/RenewalRemindersAuthorizationTest.java`

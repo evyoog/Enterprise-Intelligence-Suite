@@ -10,3 +10,5 @@ UI requirements for this feature live in **docs/05-ui/screen-requirements/**, on
 The earlier draft placement ([plan-entitlements.md](../../../05-ui/screen-requirements/plan-entitlements.md), a card per subscription with usage-limit labels and a status chip) is superseded by [entitlements.md](../../../05-ui/screen-requirements/entitlements.md) as built: only ACTIVE subscriptions appear, so there is no status chip for SUSPENDED, CANCELLED or EXPIRED.
 
 The customer section is part of the existing My subscriptions page, and the admin page is the only new route — in line with the C44 rule of grouping related information into existing screens. The organization endpoint `GET /organization/me/entitlements` exists in the API, but no organization-wide entitlements view is on screen yet (Not built; see [entitlements.md](../../../05-ui/screen-requirements/entitlements.md#not-built)).
+
+While a subscription is in its read-only grace period ([C100](../../../01-business/roadmap/open-decisions.md#c100)) its entitlement card also shows a warning chip **"Read-only until {date}"** ([entitlements.md](../../../05-ui/screen-requirements/entitlements.md#entitlement-card)).

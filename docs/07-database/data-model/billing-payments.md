@@ -6,6 +6,8 @@
 
 > **Administrator-added payment gateways ([C99](../../01-business/roadmap/open-decisions.md#c99), REQ-BIL-003.16 and .17):** migration [`V039__payment_gateway_custom_definitions.sql`](../../../database/migrations/V039__payment_gateway_custom_definitions.sql), mirrored in `backend/src/main/resources/db/schema.sql` — three columns on `payment_gateway_config` — see [C99 changes](#c99-changes-migration-v039). Apply V039 by hand after V038.
 
+> **Coupons and invoice discounts ([C100](../../01-business/roadmap/open-decisions.md#c100), REQ-BIL-001.34 to .36):** migration [`V040__seats_grace_purchase_requests_coupons.sql`](../../../database/migrations/V040__seats_grace_purchase_requests_coupons.sql), mirrored in `backend/src/main/resources/db/schema.sql`. New table `coupon`; new columns `invoice.coupon_code`, `invoice.discount_amount`, `invoice_line.discount_amount`. The same migration adds the seat, grace, recipient and order tables described in the other data-model files of this folder ([subscription-seats](subscription-seats.md), [renewal-reminders](renewal-reminders.md), [cart-checkout](cart-checkout.md)).
+
 Proposed for [REQ-BIL-001](../../02-requirements/FRD/billing-payments/requirement.md) and [REQ-BIL-002](../../02-requirements/FRD/tax-rules/requirement.md). Final column types are set in the migration when the feature is built. Workbook entities used: Invoice (DE), Payment (DE). No card numbers or CVV are stored anywhere ([BR-BIL-001](../../03-business-rules/BR-BIL-001-no-raw-card-data.md)).
 
 Ownership: every record belongs to **either** a customer (individual) **or** an organization, never both.
@@ -34,10 +36,33 @@ Ownership: every record belongs to **either** a customer (individual) **or** an 
 | payment_route | No | `ONLINE`, `OFFLINE` — what the customer chose at checkout ([C55](../../01-business/roadmap/open-decisions.md#c55), REQ-BIL-001.19); null until a route is chosen |
 | period_start, period_end, issued_at, due_at | Yes | due_at = issued_at + payment terms (default 15 days, BI-2) |
 | purchase_order_number | No | Customer's optional purchase-order number, up to 50 characters, printed on the invoice (BI-9). V037 |
+| coupon_code | No | The coupon applied to the invoice, in capitals ([C100](../../01-business/roadmap/open-decisions.md#c100), REQ-BIL-001.35). A code, not a foreign key: the coupon can be disabled later without changing the invoice. V040 |
+| discount_amount | Yes (default 0) | BIGINT, smallest currency unit: the discount the coupon gave. **`subtotal` is net of it** (subtotal + tax_amount = total); the checkout shows subtotal + discount as the gross. V040 |
 | bill_to_snapshot | Yes | Billing details copied at issue |
 
 ## invoice_line
 id, invoice_id, description, period_start, period_end, quantity, unit_amount, amount, **tax_name**, **tax_rate**, **tax_amount** (the last three copied from the tax rule in force at issue time, per [REQ-BIL-002.5](../../02-requirements/FRD/tax-rules/requirement.md); null/0 when no rule applied).
+
+[C100](../../01-business/roadmap/open-decisions.md#c100): **`quantity` is the seats** for an organization subscription (1 for an individual) and `unit_amount` the price of one seat, so `amount` = `unit_amount` × `quantity`; a seat-increase invoice has one line "Added seats: …" whose `quantity` is the added seats and whose `amount` is prorated for the days left (REQ-BIL-001.36). Added by V040: `discount_amount` BIGINT NOT NULL DEFAULT 0, this line's share of the coupon discount (tax is calculated on `amount` − `discount_amount`).
+
+## coupon
+[C100](../../01-business/roadmap/open-decisions.md#c100) PB-1 note, [REQ-BIL-001.34, .35](../../02-requirements/FRD/billing-payments/requirement.md); business rules BR-24 to BR-28. Migration [`V040__seats_grace_purchase_requests_coupons.sql`](../../../database/migrations/V040__seats_grace_purchase_requests_coupons.sql), also in `backend/src/main/resources/db/schema.sql`.
+
+| Attribute | Required | Description |
+|---|---|---|
+| id | Yes | Primary key (BIGSERIAL) |
+| code | Yes | VARCHAR(40), unique, stored in capitals (3 to 40 letters, digits, `-`, `_`) |
+| description | No | VARCHAR(200) |
+| discount_type | Yes | `PERCENT` or `FIXED` (check constraint) |
+| percent_off | PERCENT only | NUMERIC(5,2), 1 to 99 (checked in the service) |
+| amount_off, currency | FIXED only | BIGINT in the currency's smallest unit; VARCHAR(10) three-letter currency. A fixed coupon works only for invoices in that currency |
+| expires_at | Yes | TIMESTAMP (UTC). A coupon is usable only before it |
+| enabled | Yes (default true) | Disabled by the administrator before the expiry, or enabled again |
+| redeemed_count | Yes (default 0) | INTEGER. Increased by one when an invoice with the coupon is created; a coupon with a count above zero cannot be deleted |
+| created_by_customer_id | No | The administrator's customer row, when they have one |
+| created_at, updated_at | Yes | |
+
+Status is not stored: `DISABLED` when not enabled, else `EXPIRED` when past `expires_at`, else `ACTIVE`. No limits (maximum redemptions, per customer, minimum amount, scope) are stored; they are Not specified.
 
 ## tax_rule
 | Attribute | Required | Description |
