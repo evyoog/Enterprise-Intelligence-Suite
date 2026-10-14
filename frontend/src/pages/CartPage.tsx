@@ -131,7 +131,7 @@ export function CartPage() {
     const plan = item.plans.find((p) => p.id === planId)
     if (plan) {
       const items = cart.items.map((i) => i.id === item.id
-        ? { ...i, planId, planName: plan.name, billingPeriod: plan.billingPeriod, unitPrice: plan.price, unitPriceAtAdd: plan.price, amount: plan.price }
+        ? { ...i, planId, planName: plan.name, billingPeriod: plan.billingPeriod, unitPrice: plan.price, unitPriceAtAdd: plan.price, amount: plan.price * (i.seats ?? 1) }
         : i)
       const subtotal = items.reduce((s, i) => s + i.amount, 0)
       setCart({ ...cart, items, subtotal, total: Math.max(subtotal - cart.discount, 0) })
@@ -384,6 +384,11 @@ export function CartPage() {
                     <Box sx={{ flex: 1, minWidth: 0 }}>
                       <Typography component="h2" sx={{ fontWeight: 700, fontSize: 16 }}>{item.productName}</Typography>
                       <Typography variant="body2" sx={{ color: 'text.secondary' }}>{item.planName}</Typography>
+                      {item.seats > 1 && (
+                        <Typography variant="body2" sx={{ color: 'text.secondary' }}>
+                          {t('cart.seatsTimesPrice', { seats: item.seats, price: money(item.unitPrice, item.currency) })}
+                        </Typography>
+                      )}
                       <Box sx={{ display: 'flex', gap: 1, alignItems: 'center', flexWrap: 'wrap', mt: 0.75 }}>
                         {item.billingPeriod && <Chip size="small" label={t(`checkout.period.${item.billingPeriod}`, { defaultValue: item.billingPeriod })} />}
                         {period && <Typography variant="caption" sx={{ color: 'text.secondary' }}>{period}</Typography>}

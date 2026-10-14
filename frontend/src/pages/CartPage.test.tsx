@@ -47,7 +47,7 @@ const plans = [
 function item(overrides: Record<string, unknown> = {}) {
   return {
     id: 41, productId: 7, productName: 'Valam.ai', planId: 11, planName: 'Pro monthly', billingPeriod: 'MONTHLY',
-    unitPrice: 100000, unitPriceAtAdd: 100000, currency: 'INR', amount: 100000, addedAt: '2026-10-01T00:00:00Z', plans,
+    unitPrice: 100000, unitPriceAtAdd: 100000, currency: 'INR', seats: 1, amount: 100000, addedAt: '2026-10-01T00:00:00Z', plans,
     ...overrides,
   }
 }
@@ -217,6 +217,16 @@ describe('CartPage (C59, REQ-MKT-003)', () => {
     await userEvent.setup().click(await screen.findByRole('button', { name: 'Proceed to checkout' }))
     expect(await screen.findByText('At /checkout?invoiceId=9&from=cart')).toBeInTheDocument()
     expect(cartCheckout).toHaveBeenCalledWith(undefined)
+  })
+
+  it('shows the seats and the per-seat price of an organization item, and nothing for one seat', async () => {
+    cartGet.mockResolvedValue(cart([item({ seats: 5, amount: 500000 }), item({ id: 42, productId: 8, productName: 'Varthan.ai' })], { continueAs: 'ORGANIZATION_BUYER' }))
+    renderCart()
+    const first = (await screen.findByRole('heading', { name: 'Valam.ai' })).closest('li')!
+    expect(within(first).getByText(/^5 seats × .*1,000\.00$/)).toBeInTheDocument()
+    expect(within(first).getByText(/5,000\.00/)).toBeInTheDocument()
+    const second = screen.getByRole('heading', { name: 'Varthan.ai' }).closest('li')!
+    expect(within(second).queryByText(/seats/)).not.toBeInTheDocument()
   })
 
   it('lets an organization buyer purchase directly, with a note that the admins are notified (C100 CA-2)', async () => {

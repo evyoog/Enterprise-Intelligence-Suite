@@ -384,6 +384,9 @@ class SeatsGraceAndRecipientsTest {
         assertThatThrownBy(() -> recipientService.save(adminId, new SaveReminderRecipientsRequest(List.of(new SaveReminderRecipientsRequest.Entry(newCustomer(null).getId(), true, true)))))
             .isInstanceOf(IllegalArgumentException.class).hasMessageContaining("active members");
 
+        assertThat(recipientService.candidates(adminId)).extracting(c -> c.customerId()).contains(inAppOnly, emailOnly, notChosen).doesNotContain(adminId);
+        assertThatThrownBy(() -> recipientService.candidates(notChosen)).isInstanceOf(ForbiddenException.class);
+
         var saved = recipientService.save(adminId, new SaveReminderRecipientsRequest(List.of(
             new SaveReminderRecipientsRequest.Entry(inAppOnly, false, true), new SaveReminderRecipientsRequest.Entry(emailOnly, true, false))));
         assertThat(saved.defaults()).extracting(p -> p.customerId()).contains(adminId).doesNotContain(inAppOnly);

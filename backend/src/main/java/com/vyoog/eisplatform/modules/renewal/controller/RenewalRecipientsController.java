@@ -29,6 +29,12 @@ public class RenewalRecipientsController {
         return recipientService.get(currentCustomerResolver.resolve(jwt).getId());
     }
 
+    /** Members who can be added, for people with Manage billing (the member list itself needs Manage users). */
+    @GetMapping("/candidates")
+    public java.util.List<ReminderRecipientsDto.Candidate> candidates(@AuthenticationPrincipal Jwt jwt) {
+        return recipientService.candidates(currentCustomerResolver.resolve(jwt).getId());
+    }
+
     @PutMapping
     public ReminderRecipientsDto save(@AuthenticationPrincipal Jwt jwt, @Valid @RequestBody SaveReminderRecipientsRequest request) {
         return recipientService.save(currentCustomerResolver.resolve(jwt).getId(), request);

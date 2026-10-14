@@ -44,6 +44,23 @@ public class RenewalReminderRecipientService {
         return build(organizationSelfService.requireOrganizationPermission(callerCustomerId, PERMISSION));
     }
 
+    /** The active members who could be added: everyone who is not already a default recipient. Lets Manage billing holders pick people without Manage users. */
+    @Transactional(readOnly = true)
+    public List<ReminderRecipientsDto.Candidate> candidates(Long callerCustomerId) {
+        Long organizationId = organizationSelfService.requireOrganizationPermission(callerCustomerId, PERMISSION);
+        Set<Long> defaults = new HashSet<>();
+        build(organizationId).defaults().forEach(d -> defaults.add(d.customerId()));
+        List<ReminderRecipientsDto.Candidate> result = new ArrayList<>();
+        for (OrganizationMember m : memberRepository.findByOrganizationId(organizationId)) {
+            if (m.getStatus() == MembershipStatus.ACTIVE && !defaults.contains(m.getCustomerId())) {
+                customerRepository.findById(m.getCustomerId())
+                    .ifPresent(c -> result.add(new ReminderRecipientsDto.Candidate(c.getId(), c.getFirstName() + " " + c.getLastName(), c.getEmail())));
+            }
+        }
+        result.sort(java.util.Comparator.comparing(ReminderRecipientsDto.Candidate::name, String.CASE_INSENSITIVE_ORDER));
+        return result;
+    }
+
     @Transactional
     public ReminderRecipientsDto save(Long callerCustomerId, SaveReminderRecipientsRequest request) {
         Long organizationId = organizationSelfService.requireOrganizationPermission(callerCustomerId, PERMISSION);

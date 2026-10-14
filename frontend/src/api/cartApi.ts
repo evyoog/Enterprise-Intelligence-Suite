@@ -24,6 +24,8 @@ export interface CartItem {
   unitPrice: number
   unitPriceAtAdd: number
   currency: string
+  /** Organization cart: the seats the subscription starts with (the plan's price is per seat); 1 for an individual. amount = unitPrice x seats. */
+  seats: number
   amount: number
   addedAt: string
   plans: CartPlanOption[]

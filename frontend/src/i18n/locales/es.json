@@ -2422,7 +2422,8 @@
       "required": "Cuéntale al administrador de tu organización por qué lo necesitas.",
       "counter": "{{count}} / {{max}} caracteres",
       "submit": "Enviar solicitud"
-    }
+    },
+    "seatsTimesPrice": "{{seats}} puestos × {{price}}"
   },
   "apiKeys": {
     "title": "Claves de API",
