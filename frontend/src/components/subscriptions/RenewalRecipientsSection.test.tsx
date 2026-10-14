@@ -9,20 +9,14 @@ import { RenewalRecipientsSection } from './RenewalRecipientsSection'
 
 const get = vi.fn()
 const save = vi.fn()
-const members = vi.fn()
+const candidates = vi.fn()
 
-vi.mock('../../api/renewalsApi', () => ({ reminderRecipientsApi: { get: () => get(), save: (b: unknown) => save(b) } }))
-vi.mock('../../api/registrationApi', async () => {
-  const actual = await vi.importActual<typeof import('../../api/registrationApi')>('../../api/registrationApi')
-  return { ...actual, organizationApi: { ...actual.organizationApi, listMyOrgUsers: () => members() } }
-})
+vi.mock('../../api/renewalsApi', () => ({
+  reminderRecipientsApi: { get: () => get(), save: (b: unknown) => save(b), candidates: () => candidates() },
+}))
 
 const person = (customerId: number, name: string, reason: 'ORG_ADMIN' | 'MANAGE_BILLING' | 'ADDED', emailEnabled = true, inAppEnabled = true) =>
   ({ customerId, name, email: `${name.split(' ')[0].toLowerCase()}@acme.test`, reason, emailEnabled, inAppEnabled })
-const orgMember = (customerId: number, firstName: string, lastName: string, status: 'ACTIVE' | 'SUSPENDED' = 'ACTIVE') => ({
-  organizationMemberId: customerId + 100, customerId, firstName, lastName, email: `${firstName.toLowerCase()}@acme.test`, orgRole: 'MEMBER' as const, status,
-})
-
 const initial = {
   defaults: [person(1, 'Asha Admin', 'ORG_ADMIN'), person(2, 'Bala Billing', 'MANAGE_BILLING')],
   added: [person(3, 'Chitra Finance', 'ADDED', true, false)],
@@ -30,11 +24,12 @@ const initial = {
 
 describe('RenewalRecipientsSection', () => {
   beforeEach(() => {
-    for (const m of [get, save, members]) m.mockReset()
+    for (const m of [get, save, candidates]) m.mockReset()
     get.mockResolvedValue(initial)
-    members.mockResolvedValue([
-      orgMember(1, 'Asha', 'Admin'), orgMember(2, 'Bala', 'Billing'), orgMember(3, 'Chitra', 'Finance'),
-      orgMember(4, 'Dev', 'Ops'), orgMember(5, 'Esha', 'Gone', 'SUSPENDED'),
+    // The server already leaves out the default recipients.
+    candidates.mockResolvedValue([
+      { customerId: 3, name: 'Chitra Finance', email: 'chitra@acme.test' },
+      { customerId: 4, name: 'Dev Ops', email: 'dev@acme.test' },
     ])
   })
 
@@ -60,7 +55,7 @@ describe('RenewalRecipientsSection', () => {
     await screen.findByText('Chitra Finance')
 
     await user.click(screen.getByRole('combobox', { name: 'Add person' }))
-    // Defaults, people already added and suspended members are not offered.
+    // People already added are not offered again.
     const options = screen.getAllByRole('option').map((o) => o.textContent)
     expect(options).toEqual(['Dev Ops (dev@acme.test)'])
     await user.click(screen.getByRole('option', { name: 'Dev Ops (dev@acme.test)' }))

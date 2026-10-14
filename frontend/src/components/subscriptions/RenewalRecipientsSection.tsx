@@ -3,13 +3,8 @@ import { useTranslation } from 'react-i18next'
 import { Alert, Autocomplete, Box, Button, Checkbox, Chip, FormControlLabel, IconButton, Skeleton, TextField, Typography } from '@mui/material'
 import { BellRing, X } from 'lucide-react'
 import { ApiError } from '../../api/client'
-import { organizationApi, type OrgMember } from '../../api/registrationApi'
-import { reminderRecipientsApi, type ReminderRecipient, type ReminderRecipients } from '../../api/renewalsApi'
+import { reminderRecipientsApi, type ReminderRecipient, type ReminderRecipientCandidate, type ReminderRecipients } from '../../api/renewalsApi'
 import { SettingsSection } from '../settings/SettingsSection'
-
-function memberName(m: OrgMember) {
-  return [m.firstName, m.lastName].filter(Boolean).join(' ').trim() || m.email || `#${m.customerId}`
-}
 
 const sameList = (a: ReminderRecipient[], b: ReminderRecipient[]) =>
   a.length === b.length && a.every((p, i) => p.customerId === b[i].customerId && p.emailEnabled === b[i].emailEnabled && p.inAppEnabled === b[i].inAppEnabled)
@@ -23,7 +18,7 @@ export function RenewalRecipientsSection() {
   const { t } = useTranslation()
   const [saved, setSaved] = useState<ReminderRecipients | null>(null)
   const [added, setAdded] = useState<ReminderRecipient[]>([])
-  const [members, setMembers] = useState<OrgMember[] | null>(null)
+  const [members, setMembers] = useState<ReminderRecipientCandidate[]>([])
   const [hidden, setHidden] = useState(false)
   const [loadError, setLoadError] = useState<string | null>(null)
   const [saveError, setSaveError] = useState<string | null>(null)
@@ -39,12 +34,11 @@ export function RenewalRecipientsSection() {
       else setLoadError(e instanceof ApiError ? e.message : t('subscriptions.recipients.loadError'))
     }), [t])
   useEffect(() => { void load() }, [load])
-  // The member list needs Manage users; without it people simply cannot be added from here.
-  useEffect(() => { organizationApi.listMyOrgUsers().then(setMembers).catch(() => setMembers(null)) }, [])
+  useEffect(() => { reminderRecipientsApi.candidates().then(setMembers).catch(() => setMembers([])) }, [])
 
   const options = useMemo(() => {
     const taken = new Set([...(saved?.defaults ?? []), ...added].map((p) => p.customerId))
-    return (members ?? []).filter((m) => m.status === 'ACTIVE' && !taken.has(m.customerId))
+    return members.filter((m) => !taken.has(m.customerId))
   }, [members, saved, added])
 
   if (hidden) return null
@@ -121,20 +115,18 @@ export function RenewalRecipientsSection() {
               )}
               {invalid && <Alert severity="warning" sx={{ mt: 1.5 }}>{t('subscriptions.recipients.needChannel', { name: invalid.name })}</Alert>}
 
-              <Autocomplete<OrgMember> sx={{ mt: 2, maxWidth: 420 }} size="small" options={options} value={null} blurOnSelect clearOnBlur
-                disabled={members === null}
-                getOptionLabel={(m) => `${memberName(m)}${m.email ? ` (${m.email})` : ''}`}
+              <Autocomplete<ReminderRecipientCandidate> sx={{ mt: 2, maxWidth: 420 }} size="small" options={options} value={null} blurOnSelect clearOnBlur
+                getOptionLabel={(m) => `${m.name}${m.email ? ` (${m.email})` : ''}`}
                 isOptionEqualToValue={(a, b) => a.customerId === b.customerId}
                 noOptionsText={t('subscriptions.recipients.noOptions')}
                 onChange={(_, m) => {
                   if (!m) return
                   setSuccess(false)
                   setAdded((prev) => [...prev, {
-                    customerId: m.customerId, name: memberName(m), email: m.email ?? '', reason: 'ADDED', emailEnabled: true, inAppEnabled: true,
+                    customerId: m.customerId, name: m.name, email: m.email, reason: 'ADDED', emailEnabled: true, inAppEnabled: true,
                   }])
                 }}
                 renderInput={(params) => <TextField {...params} label={t('subscriptions.recipients.addPerson')} />} />
-              {members === null && <Typography variant="caption" sx={{ color: 'text.secondary', display: 'block', mt: 0.5 }}>{t('subscriptions.recipients.membersUnavailable')}</Typography>}
             </Box>
 
             {saveError && <Alert severity="error" onClose={() => setSaveError(null)}>{saveError}</Alert>}

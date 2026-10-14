@@ -11,7 +11,6 @@ const list = vi.fn()
 const seats = vi.fn()
 const changeSeats = vi.fn()
 const setAutoRenew = vi.fn()
-const members = vi.fn()
 const permissions = vi.fn()
 const recipientsGet = vi.fn()
 
@@ -24,13 +23,12 @@ vi.mock('../../api/registrationApi', async () => {
       seats: (id: number) => seats(id),
       changeSeats: (id: number, q: number) => changeSeats(id, q),
       setAutoRenew: (id: number, v: boolean) => setAutoRenew(id, v),
-      listMyOrgUsers: () => members(),
     },
   }
 })
 vi.mock('../../api/myPermissionsApi', () => ({ myPermissionsApi: { get: () => permissions() } }))
 vi.mock('../../api/renewalsApi', () => ({
-  reminderRecipientsApi: { get: () => recipientsGet(), save: vi.fn() },
+  reminderRecipientsApi: { get: () => recipientsGet(), save: vi.fn(), candidates: () => Promise.resolve([]) },
 }))
 
 const sub = {
@@ -46,11 +44,10 @@ const BILLING = { platform: [], organization: ['MANAGE_ORGANIZATION_BILLING', 'M
 
 describe('OrganizationSubscriptionsSection', () => {
   beforeEach(() => {
-    for (const m of [list, seats, changeSeats, setAutoRenew, members, permissions, recipientsGet]) m.mockReset()
+    for (const m of [list, seats, changeSeats, setAutoRenew, permissions, recipientsGet]) m.mockReset()
     list.mockResolvedValue([sub])
     seats.mockResolvedValue(summary)
     permissions.mockResolvedValue(BILLING)
-    members.mockResolvedValue([])
     recipientsGet.mockResolvedValue({ defaults: [], added: [] })
   })
 

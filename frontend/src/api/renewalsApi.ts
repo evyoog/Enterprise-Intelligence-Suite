@@ -65,6 +65,13 @@ export interface ReminderRecipients {
   added: ReminderRecipient[]
 }
 
+/** An active member who is not a default recipient and so can be added. */
+export interface ReminderRecipientCandidate {
+  customerId: number
+  name: string
+  email: string
+}
+
 export interface SaveReminderRecipientsBody {
   recipients: { customerId: number; email: boolean; inApp: boolean }[]
 }
@@ -72,6 +79,8 @@ export interface SaveReminderRecipientsBody {
 /** Needs the organization's Manage billing permission. */
 export const reminderRecipientsApi = {
   get: () => apiRequest<ReminderRecipients>('/organization/me/renewal-reminder-recipients'),
+  /** Active members who are not default recipients (Manage billing only). */
+  candidates: () => apiRequest<ReminderRecipientCandidate[]>('/organization/me/renewal-reminder-recipients/candidates'),
   save: (body: SaveReminderRecipientsBody) =>
     apiRequest<ReminderRecipients>('/organization/me/renewal-reminder-recipients', { method: 'PUT', body: JSON.stringify(body) }),
 }
