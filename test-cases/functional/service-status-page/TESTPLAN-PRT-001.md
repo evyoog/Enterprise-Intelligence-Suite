@@ -33,6 +33,9 @@ Local and CI: automated tests. Manual checks: dev environment with a local Postg
 | [TC-PRT-006](TC-PRT-006.md) | AC-6 | P0 | Yes |
 | [TC-PRT-007](TC-PRT-007.md) | AC-7 | P0 | Partly |
 
+## Regression note (C101, 2026-10-14)
+AC-8 and AC-9 were added for the status derived from service instances and for the unified incident ([TC-SRM-006 to TC-SRM-008](../service-instances/), [TC-SUP-030, TC-SUP-034](../incident-problem-management/)). TC-PRT-001 to TC-PRT-007 must keep passing: the backend cases in `ServiceStatusServiceTest` and `ServiceStatusAuthorizationTest` are unchanged and passed on 2026-10-14; the frontend cases that posted and resolved an incident on the Manage tab were removed from `ServiceStatusPage.test.tsx` and are covered by `AdminIncidentsPage.test.tsx` (TC-PRT-002, TC-PRT-004). See [TC-SRM-014](../service-instances/TC-SRM-014.md).
+
 ## Entry Criteria
 FRD Approved.
 

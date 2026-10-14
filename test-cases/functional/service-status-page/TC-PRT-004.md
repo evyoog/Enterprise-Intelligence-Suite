@@ -23,7 +23,7 @@ It shows as resolved; an end time before the start is refused with 400 and the m
 
 ## Automated coverage
 - `backend/…/ServiceStatusServiceTest.java` — "incidentsAreOpenUntilEndedAndTheEndMustNotBeBeforeTheStart"
-- `frontend/src/pages/ServiceStatusPage.test.tsx` — "resolves an open incident and shows backend refusals"
+- `frontend/src/pages/admin/AdminIncidentsPage.test.tsx` — "only offers the allowed next phases and requires a resolution summary before RESOLVED", "shows what the server refuses and keeps the dialog open" (since 2026-10-14 ([C101](../../../docs/01-business/roadmap/open-decisions.md#c101)) incidents are resolved on the Incidents tab; the earlier case "resolves an open incident and shows backend refusals" of `ServiceStatusPage.test.tsx` was removed with the Manage-tab incident form)
 
 ## Actual Result
 The automated tests below passed on 2026-09-26.

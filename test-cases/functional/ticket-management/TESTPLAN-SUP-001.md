@@ -8,7 +8,7 @@
 | Status | Approved with the FRD (product owner, 2026-09-28) |
 
 ## Scope
-Every acceptance criterion in [`acceptance-criteria.md`](../../../docs/02-requirements/FRD/ticket-management/acceptance-criteria.md). Out of scope: AI-driven ticket handling, SLA policies, Incident & Problem records, reopening a resolved/closed ticket (see the FRD's own Out of scope).
+Every acceptance criterion in [`acceptance-criteria.md`](../../../docs/02-requirements/FRD/ticket-management/acceptance-criteria.md). Out of scope: AI-driven ticket handling, reopening a resolved/closed ticket (see the FRD's own Out of scope). SLA and Incident & Problem records are covered by their own plans since 2026-10-14 ([TESTPLAN-SUP-002](../sla-management/TESTPLAN-SUP-002.md), [TESTPLAN-SUP-003](../incident-problem-management/TESTPLAN-SUP-003.md)); TC-SUP-001 to TC-SUP-005 are re-run as a regression ([TC-SUP-020](../sla-management/TC-SUP-020.md)).
 
 ## Test Strategy
 | Level | Approach |

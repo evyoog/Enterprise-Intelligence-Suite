@@ -23,7 +23,8 @@ Customers who purchased the product see its details, other customers do not.
 
 ## Automated coverage
 - `backend/…/ServiceStatusServiceTest.java` — "everySignedInCustomerSeesEveryProductsStatusButIncidentDetailsOnlyForPurchasedOnes"
-- `frontend/src/pages/ServiceStatusPage.test.tsx` — "posts an incident", "shows every product status, and incident details only for purchased products"
+- `frontend/src/pages/ServiceStatusPage.test.tsx` — "shows every product status, and incident details only for purchased products", "no longer has the incident form (incidents moved to the Incidents tab)"
+- `frontend/src/pages/admin/AdminIncidentsPage.test.tsx` — "creates an incident from the public and internal groups" (since 2026-10-14 ([C101](../../../docs/01-business/roadmap/open-decisions.md#c101)) incidents are posted on the Incidents tab, not the Manage tab; the earlier case "posts an incident" was moved there)
 
 ## Actual Result
 The automated tests below passed on 2026-09-26.
