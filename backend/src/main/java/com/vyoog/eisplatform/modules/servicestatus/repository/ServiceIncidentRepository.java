@@ -13,4 +13,8 @@ public interface ServiceIncidentRepository extends JpaRepository<ServiceIncident
     List<ServiceIncident> findTop50ByProductIdInOrderByStartedAtDesc(Collection<Long> productIds);
 
     long countByProductIdAndEndedAtIsNull(Long productId);
+
+    List<ServiceIncident> findByProblemIdOrderByStartedAtDesc(Long problemId);
+
+    long countByProblemId(Long problemId);
 }

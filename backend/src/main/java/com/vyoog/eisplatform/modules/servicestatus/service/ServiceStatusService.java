@@ -12,7 +12,6 @@ import com.vyoog.eisplatform.modules.registration.repository.OrganizationMemberR
 import com.vyoog.eisplatform.modules.registration.repository.ProductSubscriptionRepository;
 import com.vyoog.eisplatform.modules.serviceinstance.service.ServiceInstanceService;
 import com.vyoog.eisplatform.modules.servicestatus.dto.IncidentDto;
-import com.vyoog.eisplatform.modules.servicestatus.dto.IncidentRequest;
 import com.vyoog.eisplatform.modules.servicestatus.dto.ProductStatusDto;
 import com.vyoog.eisplatform.modules.servicestatus.dto.ServiceStatusPageDto;
 import com.vyoog.eisplatform.modules.servicestatus.dto.UpdateProductStatusRequest;
@@ -139,43 +138,6 @@ public class ServiceStatusService {
         auditService.recordSuccess("SERVICE_STATUS_CHANGED", actorKeycloakSub, null, null, "Product", productId.toString(), null,
             product.getName() + ": " + previous + " -> " + request.status());
         return toStatusDto(product, true);
-    }
-
-    @Transactional
-    public IncidentDto createIncident(IncidentRequest request, String actorKeycloakSub) {
-        Product product = requireActiveProduct(request.productId());
-        ServiceIncident incident = new ServiceIncident();
-        incident.setCreatedAt(Instant.now());
-        incident.setCreatedByKeycloakSub(actorKeycloakSub);
-        apply(incident, request);
-        incident = incidentRepository.save(incident);
-        auditService.recordSuccess("INCIDENT_POSTED", actorKeycloakSub, null, null, "ServiceIncident", incident.getId().toString(), null,
-            product.getName() + ": " + incident.getTitle());
-        return toIncidentDto(incident, Map.of(product.getId(), product.getName()));
-    }
-
-    @Transactional
-    public IncidentDto updateIncident(Long incidentId, IncidentRequest request, String actorKeycloakSub) {
-        ServiceIncident incident = incidentRepository.findById(incidentId)
-            .orElseThrow(() -> new ResourceNotFoundException("Incident not found"));
-        Product product = requireActiveProduct(request.productId());
-        apply(incident, request);
-        incident = incidentRepository.save(incident);
-        auditService.recordSuccess("INCIDENT_UPDATED", actorKeycloakSub, null, null, "ServiceIncident", incidentId.toString(), null,
-            product.getName() + ": " + incident.getTitle() + (incident.getEndedAt() == null ? " (open)" : " (resolved)"));
-        return toIncidentDto(incident, Map.of(product.getId(), product.getName()));
-    }
-
-    private void apply(ServiceIncident incident, IncidentRequest request) {
-        if (request.endedAt() != null && request.endedAt().isBefore(request.startedAt())) {
-            throw new IllegalArgumentException("The end time must be after the start time.");
-        }
-        incident.setProductId(request.productId());
-        incident.setTitle(request.title().trim());
-        incident.setMessage(request.message().trim());
-        incident.setStartedAt(request.startedAt());
-        incident.setEndedAt(request.endedAt());
-        incident.setUpdatedAt(Instant.now());
     }
 
     /** Organization member: the organization's ACTIVE subscriptions.

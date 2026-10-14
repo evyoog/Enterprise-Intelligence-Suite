@@ -37,6 +37,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 class ServiceStatusServiceTest {
 
     @Autowired private ServiceStatusService service;
+    @Autowired private IncidentManagementService incidentService;
     @Autowired private com.vyoog.eisplatform.modules.serviceinstance.service.ServiceInstanceService serviceInstanceService;
     @Autowired private BusinessDashboardService businessDashboardService;
     @Autowired private ProductServiceStatusRepository statusRepository;
@@ -86,7 +87,8 @@ class ServiceStatusServiceTest {
     }
 
     private IncidentRequest incident(Product p, Instant start, Instant end) {
-        return new IncidentRequest(p.getId(), "Slow exports", "Exports take up to 10 minutes.", start, end);
+        return new IncidentRequest(p.getId(), "Slow exports", "Exports take up to 10 minutes.", start, end, null, null, null, null,
+            end == null ? null : "Cache cleared.");
     }
 
     private ProductStatusDto statusOf(java.util.List<ProductStatusDto> list, Product p) {
@@ -100,8 +102,8 @@ class ServiceStatusServiceTest {
         Customer member = orgAdminSubscribedTo(bought);
         Customer stranger = customer("stranger");
         service.updateProductStatus(other.getId(), new UpdateProductStatusRequest(ServiceStatusValue.DEGRADED, "Slow"), "admin-sub");
-        service.createIncident(incident(bought, Instant.now().minus(1, ChronoUnit.HOURS), null), "admin-sub");
-        service.createIncident(incident(other, Instant.now().minus(1, ChronoUnit.HOURS), null), "admin-sub");
+        incidentService.createIncident(incident(bought, Instant.now().minus(1, ChronoUnit.HOURS), null), "admin-sub");
+        incidentService.createIncident(incident(other, Instant.now().minus(1, ChronoUnit.HOURS), null), "admin-sub");
 
         var memberView = service.customerView(member.getId());
         assertThat(memberView.enabled()).isTrue();
@@ -135,15 +137,15 @@ class ServiceStatusServiceTest {
     void incidentsAreOpenUntilEndedAndTheEndMustNotBeBeforeTheStart() {
         Product p = product("Yukth");
         Instant start = Instant.now().minus(2, ChronoUnit.HOURS);
-        var created = service.createIncident(incident(p, start, null), "admin-sub");
+        var created = incidentService.createIncident(incident(p, start, null), "admin-sub");
         assertThat(created.open()).isTrue();
 
-        var resolved = service.updateIncident(created.id(), incident(p, start, Instant.now()), "admin-sub");
+        var resolved = incidentService.updateIncident(created.id(), incident(p, start, Instant.now()), "admin-sub");
         assertThat(resolved.open()).isFalse();
 
-        assertThatThrownBy(() -> service.updateIncident(created.id(), incident(p, start, start.minus(1, ChronoUnit.MINUTES)), "admin-sub"))
+        assertThatThrownBy(() -> incidentService.updateIncident(created.id(), incident(p, start, start.minus(1, ChronoUnit.MINUTES)), "admin-sub"))
             .isInstanceOf(IllegalArgumentException.class);
-        assertThatThrownBy(() -> service.updateIncident(-1L, incident(p, start, null), "admin-sub"))
+        assertThatThrownBy(() -> incidentService.updateIncident(-1L, incident(p, start, null), "admin-sub"))
             .isInstanceOf(ResourceNotFoundException.class);
         assertThat(auditLogRepository.findAll()).extracting(l -> l.getAction()).contains("INCIDENT_POSTED", "INCIDENT_UPDATED");
     }
