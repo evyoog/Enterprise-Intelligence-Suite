@@ -8,6 +8,7 @@ import { LEGACY_ADMIN_REDIRECTS } from '../components/routing/legacyRedirects'
 import { OrganizationMembersPage } from './OrganizationMembersPage'
 import { OrganizationSettingsRedirect } from './OrganizationSettingsPage'
 import { ServiceStatusRoutePage } from './ServiceStatusRoutePage'
+import { AdminSupportRoutePage } from './admin/AdminSupportRoutePage'
 import { ProductsAdminPage } from './admin/ProductsAdminPage'
 import { RolesPermissionsPage } from './admin/RolesPermissionsPage'
 
@@ -18,6 +19,11 @@ vi.mock('../components/organization/OrganizationInvitationsCard', () => ({ Organ
 vi.mock('../components/organization/OrganizationStructurePanel', () => ({ OrganizationStructurePanel: () => <p>Structure panel</p> }))
 vi.mock('../components/organization/OrganizationGroupsCard', () => ({ OrganizationGroupsCard: () => <p>Groups card</p> }))
 vi.mock('./ServiceStatusPage', () => ({ ServiceStatusPage: () => <p>Status page</p> }))
+vi.mock('./admin/AdminServiceInstancesPage', () => ({ AdminServiceInstancesPage: () => <p>Instances page</p> }))
+vi.mock('./admin/AdminIncidentsPage', () => ({ AdminIncidentsPage: () => <p>Incidents page</p> }))
+vi.mock('./admin/AdminProblemsPage', () => ({ AdminProblemsPage: () => <p>Problems page</p> }))
+vi.mock('./admin/AdminSupportTicketsPage', () => ({ AdminSupportTicketsPage: () => <p>Tickets page</p> }))
+vi.mock('./admin/AdminSlaSettingsPage', () => ({ AdminSlaSettingsPage: () => <p>SLA settings page</p> }))
 vi.mock('./admin/ServiceStatusAdminPage', () => ({ ServiceStatusAdminPage: () => <p>Manage status page</p> }))
 vi.mock('./admin/PlatformsListPage', () => ({ PlatformsListPage: () => <p>Products list</p> }))
 vi.mock('./admin/settings/CommonSettingsPage', () => ({ CommonSettingsPage: () => <p>Languages, currencies, regions, feature flags</p> }))
@@ -35,6 +41,7 @@ function at(path: string, element: React.ReactElement, access?: NavAccessValue) 
       <NavAccessContext.Provider value={access ?? { isAdmin: true, permissions: null }}>
         <Routes>
           <Route path="/status" element={element} />
+          <Route path="/admin/support/tickets" element={element} />
           <Route path="/admin" element={element} />
           <Route path="/admin/roles" element={element} />
           <Route path="/organization/members" element={element} />
@@ -101,6 +108,33 @@ describe('Platform → Service status', () => {
     at('/status', <ServiceStatusRoutePage />, { isAdmin: true, permissions: { platform: ['MANAGE_SERVICE_STATUS'], organization: [] } })
     await userEvent.setup().click(screen.getByRole('tab', { name: 'Manage' }))
     expect(screen.getByText('Manage status page')).toBeInTheDocument()
+  })
+})
+
+describe('Platform → Service status (C101 tabs)', () => {
+  it('adds Instances, Incidents and Problems tabs for MANAGE_SERVICE_STATUS', async () => {
+    at('/status', <ServiceStatusRoutePage />, { isAdmin: true, permissions: { platform: ['MANAGE_SERVICE_STATUS'], organization: [] } })
+    const user = userEvent.setup()
+    await user.click(screen.getByRole('tab', { name: 'Instances' }))
+    expect(screen.getByText('Instances page')).toBeInTheDocument()
+    await user.click(screen.getByRole('tab', { name: 'Incidents' }))
+    expect(screen.getByText('Incidents page')).toBeInTheDocument()
+    await user.click(screen.getByRole('tab', { name: 'Problems' }))
+    expect(screen.getByText('Problems page')).toBeInTheDocument()
+  })
+
+  it('does not show those tabs to someone without the permission', () => {
+    at('/status', <ServiceStatusRoutePage />, { isAdmin: true, permissions: { platform: ['VIEW_AUDIT_LOG'], organization: [] } })
+    expect(screen.queryByRole('tab', { name: 'Instances' })).not.toBeInTheDocument()
+  })
+})
+
+describe('Platform → Support (C101 tabs)', () => {
+  it('has Tickets and SLA settings tabs', async () => {
+    at('/admin/support/tickets', <AdminSupportRoutePage />)
+    expect(screen.getByText('Tickets page')).toBeInTheDocument()
+    await userEvent.setup().click(screen.getByRole('tab', { name: 'SLA settings' }))
+    expect(screen.getByText('SLA settings page')).toBeInTheDocument()
   })
 })
 

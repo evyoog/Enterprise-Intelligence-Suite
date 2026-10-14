@@ -15,6 +15,7 @@
 | Authorization | `role`, `permission`, `role_permission`, `privileged_access_request`, `privileged_access_audit_entry` |
 | Experience | `favorite_product`, `product_usage`, `dashboard_preference`, `customer_preference`, `search_history_entry` |
 | Notifications | `notification`, `notification_preference` |
+| Service status, support, SLA, incidents and problems (V003, V010, V041) | `product_service_status`, `support_ticket` (with the SLA deadlines), `service_incident`, `service_incident_ticket`, `service_instance`, `service_reporter_key`, `sla_policy`, `sla_settings`, `problem`, `problem_action` — see [service-instances-sla-incidents.md](data-model/service-instances-sla-incidents.md) |
 | Audit | `audit_log` |
 
 ## Conventions

@@ -6,7 +6,11 @@ Placement decided in [C26](../../../01-business/roadmap/open-decisions.md#c26).
 | Screen | Route | Roles |
 |---|---|---|
 | Status page (customer view) | `/status`, "Service status" in the signed-in sidebar; linked from the dashboard's Service health card | Every signed-in user |
-| Status and incident posting (admin view) | `/admin/service-status`, "Service status" in the Administration section | `MANAGE_SERVICE_STATUS` |
+| Status and incident posting (admin view) | `/admin/service-status`, "Service status" in the Administration section. **Since C80 / C101** the one entry is **Platform → Service status** (`/status`); administrators get the tabs `Status \| Manage \| Instances \| Incidents \| Problems` (`?tab=`) | `MANAGE_SERVICE_STATUS` |
+
+## Changes of C101 (2026-10-14)
+- The **Manage tab posts product status only**; the incident form moved to the **Incidents** tab ([incident-problem-management.md](../../../05-ui/screen-requirements/incident-problem-management.md)), where an incident has public and internal fields. The incident rows of the table below therefore describe the public fields now entered on the Incidents tab.
+- A product whose status is derived from instances shows **"Based on N reporting instances (x down, y degraded)"** ([service-instances.md](../../../05-ui/screen-requirements/service-instances.md#3-status-page-caption)). A manually set status shows no caption.
 
 ## Fields and validation (admin)
 | Field | Type | Required | Validation |

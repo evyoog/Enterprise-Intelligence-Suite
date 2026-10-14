@@ -513,7 +513,8 @@
       "accessManagement": "Access management",
       "entitlementsLookup": "Entitlements lookup",
       "coupons": "Coupons",
-      "taxConfiguration": "Tax configuration"
+      "taxConfiguration": "Tax configuration",
+      "serviceInstances": "Service instances"
     },
     "catalogTitle": "Product catalog",
     "catalogSubtitle": "Search and filter the products available on the platform.",
@@ -3794,7 +3795,10 @@
   },
   "serviceTabs": {
     "status": "Status",
-    "manage": "Manage"
+    "manage": "Manage",
+    "instances": "Instances",
+    "incidents": "Incidents",
+    "problems": "Problems"
   },
   "productContent": {
     "tabs": {
@@ -5060,5 +5064,9 @@
       "savedToast": "Action saved",
       "deletedToast": "Action deleted"
     }
+  },
+  "supportTabs": {
+    "tickets": "Tickets",
+    "sla": "SLA settings"
   }
 }

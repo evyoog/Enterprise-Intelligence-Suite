@@ -10,7 +10,7 @@
 | PI – CY Quarter | 2027.1 ([PO] "eVyoog EIS - Roadmap Initiatives") |
 | Sprint | [2027.1.2](../sprints/SPRINT-2027.1.2.md) (1–28 Feb 2027, [DN-2](../open-decisions.md#dn-2-sprint-scope-length-and-dates)); moved one sprint later than [PO] ([C31](../open-decisions.md#c31)) |
 | Capabilities / features / functions | 4 / 5 / 23 ([WB]) |
-| Application status | Not specified |
+| Application status | Not specified. **Progress 2026-10-14 ([C101](../open-decisions.md#c101)):** 10.01.01.01 Create service instance, 10.04.01.01 Collect health status and 10.04.01.04 View health are **built** ([REQ-SRM-001](../../../02-requirements/FRD/service-instances/requirement.md)); the interim status page's per-product status now comes from the instances. **Not specified, not built:** 10.01.01.02 to .07 (configure, start, stop, restart, scale, delete), 10.02 Resource Management, 10.03 Configuration Management, 10.04.01.02 Detect anomaly, 10.04.01.03 Create alert, 10.04.02 Usage Monitoring |
 
 **Sources:**
 - **[PO]** [`2026Q3_ProdOps_Plan.docx`](../../source-documents/2026Q3_ProdOps_Plan.docx)
@@ -118,8 +118,8 @@ Not specified in any source. Under [DN-2](../open-decisions.md#dn-2-sprint-scope
 
 | Artifact | Location | Status |
 |---|---|---|
-| Feature FRD | `docs/02-requirements/FRD/<feature>/` (copy `_template/`) | See the sprint page for FRDs in progress |
+| Feature FRD | `docs/02-requirements/FRD/<feature>/` (copy `_template/`) | [service-instances](../../../02-requirements/FRD/service-instances/requirement.md) (REQ-SRM-001): Approved 2026-10-14 and built; see the [sprint page](../sprints/SPRINT-2027.1.2.md#build-status--c101-answers) |
 | Requirement | `REQ-SRM-<NNN>` inside the FRD | Approved FRD required before build ([DN-4](../open-decisions.md#dn-4-business-rules-and-acceptance-criteria)) |
 | Business rules | `docs/03-business-rules/` and `FRD/<feature>/business-rules.md` | Per FRD |
-| Test cases | `test-cases/functional/<feature>/TC-SRM-<NNN>.md` | Not created |
+| Test cases | `test-cases/functional/<feature>/TC-SRM-<NNN>.md` | Created for service-instances: [TC-SRM-001 to TC-SRM-014](../../../../test-cases/functional/service-instances/TESTPLAN-SRM-001.md) |
 | NFRs | [WB:Non-Functional Requirements] NFR-001 to NFR-014 (platform-wide) | See [EIS-document-analysis.md](../EIS-document-analysis.md) section 2.17 |

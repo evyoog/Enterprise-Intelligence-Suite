@@ -59,7 +59,7 @@ Every support ticket ([REQ-SUP-001](../ticket-management/requirement.md)) gets t
 | REQ-SUP-002.8 | **Changing a ticket's priority recalculates both deadlines from the creation time** (not from the time of the change). Escalating a ticket raises it to URGENT and recalculates in the same way. | Must |
 | REQ-SUP-002.9 | A **warning** goes out when **80%** of a target has elapsed (the warning point is a setting, 1 to 99%), once per target, to the ticket's assignee and the people on the alert list. | Must |
 | REQ-SUP-002.10 | A **breach** (the deadline passes before the first response, or before resolution) **escalates the ticket (status ESCALATED, priority unchanged)** and **flags** it, once per target, and tells the same people. | Must |
-| REQ-SUP-002.11 | **Alert recipients:** the **assignee** and the **alert email list** (up to 20 addresses). People who have an account also get an **in-app notice**; other addresses get an email. Nobody is told twice about the same alert. | Must |
+| REQ-SUP-002.11 | **Alert recipients:** the **assignee** and the **alert email list** (up to 20 addresses). People who have an account (the assignee, or a listed address that matches an account) get an **in-app notice** and the usual notification email unless they muted the category; an address with no account gets an email. Nobody is told twice about the same alert. | Must |
 | REQ-SUP-002.12 | A platform administrator with `MANAGE_SUPPORT_TICKETS` **edits** the targets (per priority), the business hours, the warning point and the alert list on the **SLA settings** screen. **New targets apply to tickets created or re-prioritised afterwards**; deadlines already set are not moved. Changes are audited. | Must |
 | REQ-SUP-002.13 | **What people see.** Platform administrators see, on each ticket row, a first-response chip and a resolution chip with the state (`ON_TRACK`, `WARNING`, `BREACHED`, `MET`, `MET_LATE`) and the due time, can **filter by SLA state**, and see a breach flag. **Customers see only the deadlines** ("we aim to respond by … and resolve by …"), never the states. | Must |
 | REQ-SUP-002.14 | **Tickets created before SLA tracking have no deadlines**: no chips, no states, no warnings, no breaches, and a priority change does not give them deadlines. | Must |
@@ -91,7 +91,7 @@ Ticket management ([REQ-SUP-001](../ticket-management/requirement.md)), notifica
 | Requirement, business rules, workflow, acceptance criteria | this folder |
 | Screens | [ui-requirements.md](ui-requirements.md) → [sla-management.md](../../../05-ui/screen-requirements/sla-management.md) |
 | API | [api-requirements.md](api-requirements.md) → [sla-management.md](../../../06-api/api-requirements/sla-management.md) |
-| Data model | [service-instances-sla-incidents.md](../../../07-database/data-model/service-instances-sla-incidents.md#sla-management-reqsup-002) (V041) |
+| Data model | [service-instances-sla-incidents.md](../../../07-database/data-model/service-instances-sla-incidents.md#sla-management-req-sup-002) (V041) |
 | Test cases | [TESTPLAN-SUP-002](../../../../test-cases/functional/sla-management/TESTPLAN-SUP-002.md) |
 
 ## Decisions ([C101](../../../01-business/roadmap/open-decisions.md#c101), product owner, 2026-10-14)

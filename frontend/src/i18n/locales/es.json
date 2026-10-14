@@ -513,7 +513,8 @@
       "accessManagement": "Gestión de accesos",
       "entitlementsLookup": "Consulta de derechos de uso",
       "coupons": "Cupones",
-      "taxConfiguration": "Configuración de impuestos"
+      "taxConfiguration": "Configuración de impuestos",
+      "serviceInstances": "Instancias de servicio"
     },
     "catalogTitle": "Catálogo de productos",
     "catalogSubtitle": "Busque y filtre los productos disponibles en la plataforma.",
@@ -3795,7 +3796,10 @@
   },
   "serviceTabs": {
     "status": "Estado",
-    "manage": "Administrar"
+    "manage": "Administrar",
+    "instances": "Instancias",
+    "incidents": "Incidentes",
+    "problems": "Problemas"
   },
   "productContent": {
     "tabs": {
@@ -5065,5 +5069,9 @@
       "savedToast": "Acción guardada",
       "deletedToast": "Acción eliminada"
     }
+  },
+  "supportTabs": {
+    "tickets": "Tickets",
+    "sla": "Ajustes de SLA"
   }
 }

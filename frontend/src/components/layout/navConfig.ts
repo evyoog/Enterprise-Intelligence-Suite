@@ -2,7 +2,7 @@ import type { ComponentType } from 'react'
 import {
   Activity, BookOpen, Cable, ClipboardList, CreditCard, FolderTree, Handshake, KeyRound, Landmark, LayoutDashboard,
   LayoutGrid, Layers, LifeBuoy, NotebookPen, Package, PlugZap, Radio, ScrollText, SearchCheck, ShieldCheck, Star,
-  Boxes, Building2, Store, UserCheck, UserCog, UsersRound, Wrench, FileText, Receipt, Gauge, Percent, Ticket,
+  Boxes, Building2, Store, UserCheck, UserCog, UsersRound, Wrench, FileText, Receipt, Gauge, Percent, Ticket, Server,
 } from 'lucide-react'
 
 /**
@@ -129,6 +129,7 @@ export const NAV_CONFIG: NavDef[] = [
     ],
     when: { any: [platform('MANAGE_PRIVILEGED_ACCESS'), organization('MANAGE_PRIVILEGED_ACCESS')] },
   },
+  { id: 'serviceInstances', labelKey: 'serviceInstances', icon: Server, group: 'organization', to: '/organization/service-instances', when: orgAdmin },
   { id: 'identityFederation', labelKey: 'orgSecurity', icon: UserCog, group: 'organization', to: '/organization/identity-federation', when: orgAdmin },
   // Any organization member may submit an order; MANAGE_ORDERS also approves, so it is an Organization item for them.
   {

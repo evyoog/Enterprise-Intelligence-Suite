@@ -98,8 +98,9 @@
 | **Approved & built** (25) | catalog-showcase, claim-mapping, global-search, group-management, knowledge-base, member-lifecycle, member-role-assignment, mfa-recovery, oidc-federation, order-lifecycle, organization-lifecycle, organization-mfa-policy, plan-management, platform-administration, privileged-access, product-lifecycle, product-recommendations, product-reviews, provider-onboarding, role-permission-administration, saml-federation, service-status-page, subscription-lifecycle, tenant-lifecycle, ticket-management |
 | **Draft but built** (6) — approve or amend | billing-payments, cart-checkout, subscription-seats, renewal-reminders, api-management, event-platform |
 | **Draft, not built** (3) — need answers | access-management (REQ-TEN-005), entitlements (REQ-SUB-002), tax-rules (REQ-BIL-002) |
-| **Stub only** (2) | provisioning-contract (REQ-ORD-002), service-instances (REQ-SRM-001) |
-| **No FRD** | 02.02 Offering, 02.04 Product content, 02.05.01 Localization, 05.03.01 Invite user, 05.04.02 Projects, 04 AI (all), 07.03 Licence & quota, 08.01 Price books/promotions, 08.02.01 Usage billing, 11.01.02 AI knowledge, 11.02–11.04, 12.02–12.04, 13.02, 13.04 Webhooks, 14.02–14.04, 15.02, 15.04, 15.05.02, 16 Analytics (all), semantic search, launch-event recording |
+| **Stub only** (1) | provisioning-contract (REQ-ORD-002) |
+| **Approved & built since 2026-10-14** ([C101](open-decisions.md#c101)) | service-instances (REQ-SRM-001), sla-management (REQ-SUP-002), incident-problem-management (REQ-SUP-003) |
+| **No FRD** | 02.02 Offering, 02.04 Product content, 02.05.01 Localization, 05.03.01 Invite user, 05.04.02 Projects, 04 AI (all), 07.03 Licence & quota, 08.01 Price books/promotions, 08.02.01 Usage billing, 11.01.02 AI knowledge, 11.02–11.04, 12.02, 13.02, 13.04 Webhooks, 14.02–14.04, 15.02, 15.04, 15.05.02, 16 Analytics (all), semantic search, launch-event recording |
 
 **Document before development (priority order):** tax-rules, access-management, entitlements, provisioning-contract, invite user, webhooks, analytics/launch events, service-instances, AI platform (after D8).
 

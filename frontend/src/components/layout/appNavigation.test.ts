@@ -60,7 +60,7 @@ describe('organization admin (C80 §2)', () => {
 
   it('sees workspace, organization, status, billing and support under their groups', () => {
     expect(t.workspace).toEqual(['dashboard', 'myApplications', 'catalog', 'knowledgeCenter', 'knowledgeCenter>knowledgeArticles', 'knowledgeCenter>knowledgeGuides', 'knowledgeCenter>knowledgeFaqs'])
-    expect(t.organization).toEqual(['members', 'privilegedAccess', 'identityFederation', 'orders'])
+    expect(t.organization).toEqual(['members', 'privilegedAccess', 'serviceInstances', 'identityFederation', 'orders'])
     expect(t.platform).toEqual(['serviceStatus'])
     expect(t.operations).toEqual(['billing', 'billing>billingOverview', 'billing>billingInvoices', 'support'])
     expect(t.help).toBeUndefined()

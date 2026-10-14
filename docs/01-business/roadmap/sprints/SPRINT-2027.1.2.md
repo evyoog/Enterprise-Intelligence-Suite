@@ -38,9 +38,10 @@
 | Built early 2026-10-05 | [C77](../open-decisions.md#c77)/[C78](../open-decisions.md#c78) (2026-10-05) Knowledge Center pages offer "Still need help? Create a ticket", which opens the existing ticket form (12.01.01) with the article as context. No change to ticket behaviour; built with REQ-KNW-005 on 2026-10-05 (the ticket form now accepts subject/description prefill and records TICKET_CREATED_FROM_KNOWLEDGE). This sprint's dates are unchanged | [knowledge-center](../../../02-requirements/FRD/knowledge-center/requirement.md) | REQ-KNW-005 |
 | Not built | [C40](../open-decisions.md#c40) 03.03 Marketplace Checkout: needs a product-options/discount data model no source specifies — carried further |
 | Not built | [C40](../open-decisions.md#c40) 04a AI Agent Orchestration (whole application, including the C21/C4 additions above): needs an agent/LLM framework decision — carried further |
-| Not built | [C40](../open-decisions.md#c40) 10 Service & Resource Management (whole application, including the C20 retirement task): P1/stretch, no real infrastructure to manage yet — carried further |
+| Not built | [C40](../open-decisions.md#c40) 10 Service & Resource Management (whole application, including the C20 retirement task): P1/stretch, no real infrastructure to manage yet — carried further. **Superseded 2026-10-14 by [C101](../open-decisions.md#c101): service instances, health collection and health view are built** (10.01.01.01, 10.04.01.01, 10.04.01.04) and the C20 per-product status switch is done; the rest of 10 stays Not specified | - | - |
+| Decided | [C101](../open-decisions.md#c101) (2026-10-14) Service instances with product-reported health, the status page derived from them (SR-1 to SR-5); SLA targets and monitoring (SL-1, SL-2); the support incident is the status-page incident, and problems link incidents (IC-1, IC-2). **Built 2026-10-14**, migration V041 | [service-instances](../../../02-requirements/FRD/service-instances/requirement.md), [sla-management](../../../02-requirements/FRD/sla-management/requirement.md), [incident-problem-management](../../../02-requirements/FRD/incident-problem-management/requirement.md) | REQ-SRM-001, REQ-SUP-002, REQ-SUP-003 |
 | Moved out | [C59](../open-decisions.md#c59) 03.03 Marketplace Checkout moves to [2026.4.3](SPRINT-2026.4.3.md), built with Billing as the cart and checkout ([REQ-MKT-003](../../../02-requirements/FRD/cart-checkout/requirement.md)). 03a here keeps 03.01 Product Discovery only | [cart-checkout](../../../02-requirements/FRD/cart-checkout/requirement.md) | REQ-MKT-003 |
-| Added | [C57](../open-decisions.md#c57) Service instances (answer to D7, option A): one subscription's provisioned tenant in a hosted product, with status and product-reported health; the source the interim status page ([C20](../open-decisions.md#c20)) switches to for per-product status. FRD is a documents-only stub | [service-instances](../../../02-requirements/FRD/service-instances/requirement.md) | REQ-SRM-001 |
+| Added | [C57](../open-decisions.md#c57) Service instances (answer to D7, option A): one subscription's provisioned tenant in a hosted product, with status and product-reported health; the source the interim status page ([C20](../open-decisions.md#c20)) switches to for per-product status. FRD was a documents-only stub; **Approved and built 2026-10-14 ([C101](../open-decisions.md#c101))** | [service-instances](../../../02-requirements/FRD/service-instances/requirement.md) | REQ-SRM-001 |
 
 ### FRDs in this sprint
 
@@ -48,7 +49,9 @@
 |---|---|---|---|
 | [product-recommendations](../../../02-requirements/FRD/product-recommendations/requirement.md) | REQ-MKT-001 | 03.01.02 (03.01.01 already satisfied by existing catalog search) | Approved |
 | [ticket-management](../../../02-requirements/FRD/ticket-management/requirement.md) | REQ-SUP-001 | 12.01.01 | Approved |
-| [service-instances](../../../02-requirements/FRD/service-instances/requirement.md) | REQ-SRM-001 | 10 Service & Resource Management (service instance status and health) | Draft (stub) |
+| [service-instances](../../../02-requirements/FRD/service-instances/requirement.md) | REQ-SRM-001 | 10.01.01.01, 10.04.01.01, 10.04.01.04 (service instance status and health) | Approved (2026-10-14, [C101](../open-decisions.md#c101)); **Built** |
+| [sla-management](../../../02-requirements/FRD/sla-management/requirement.md) | REQ-SUP-002 | 12.03.01.01–.03, 12.03.02.01–.03 | Approved (2026-10-14, [C101](../open-decisions.md#c101)); **Built** |
+| [incident-problem-management](../../../02-requirements/FRD/incident-problem-management/requirement.md) | REQ-SUP-003 | 12.04.01.01–.04, 12.04.02.01–.03 | Approved (2026-10-14, [C101](../open-decisions.md#c101)); **Built** |
 
 ### Progress (as of 2026-09-28)
 
@@ -58,12 +61,36 @@
 | 03.01.02 Recommendations | Done (this FRD's scope) | Featured flag + popularity from existing usage data, no AI/ML model |
 | 03.03 Marketplace Checkout | Moved | Moved to [2026.4.3](SPRINT-2026.4.3.md) by [C59](../open-decisions.md#c59) (REQ-MKT-003, Draft) |
 | 04a AI Agent Orchestration (whole application) | Not started | Carried — needs an agent/LLM framework decision first ([C40](../open-decisions.md#c40)) |
-| 10 Service & Resource Management (whole application) | Not started | Carried — P1/stretch, no infrastructure to manage; the [C20](../open-decisions.md#c20) retirement task still can't land |
+| 10 Service & Resource Management (whole application) | Not started (as of 2026-09-28) | Carried — P1/stretch, no infrastructure to manage; the [C20](../open-decisions.md#c20) retirement task still can't land. **Update 2026-10-14: 10.01.01.01, 10.04.01.01 and 10.04.01.04 built ([C101](../open-decisions.md#c101)); see [Build status](#build-status--c101-answers)** |
 | 12.01.01 Ticket Management | Done (this FRD's scope) | Human-operated, not AI-driven |
-| 12.03 SLA Management | Not started | Carried — needs its own SLA-policy data model first ([C40](../open-decisions.md#c40)) |
-| 12.04 Incident & Problem Management | Not started | Carried — needs a decided relationship to the existing `service_incident` table first ([C40](../open-decisions.md#c40)) |
+| 12.03 SLA Management | Not started (as of 2026-09-28) | Carried — needs its own SLA-policy data model first ([C40](../open-decisions.md#c40)). **Update 2026-10-14: built ([C101](../open-decisions.md#c101) SL-1, SL-2)** |
+| 12.04 Incident & Problem Management | Not started (as of 2026-09-28) | Carried — needs a decided relationship to the existing `service_incident` table first ([C40](../open-decisions.md#c40)). **Update 2026-10-14: built ([C101](../open-decisions.md#c101) IC-1 A: the same record)** |
 
-03.03, 04a, 10, 12.03 and 12.04 remain open for this sprint, each carried to a later sprint once the decision it needs is made.
+As of 2026-09-28, 03.03, 04a, 10, 12.03 and 12.04 remained open, each carried until the decision it needs was made. **03.03 moved to 2026.4.3 ([C59](../open-decisions.md#c59)); 10 (service instances and health), 12.03 and 12.04 were decided and built on 2026-10-14 ([C101](../open-decisions.md#c101)); only 04a and the rest of 10 stay open.**
+
+### Build status — C101 answers
+
+The product owner answered the sprint's service-instance, SLA and incident questions on 2026-10-14 ([C101](../open-decisions.md#c101)): SR-1 to SR-5, SL-1, SL-2, IC-1, IC-2. **All are built** on `dev`. Test status is in each test case ([TESTPLAN-SRM-001](../../../../test-cases/functional/service-instances/TESTPLAN-SRM-001.md), [TESTPLAN-SUP-002](../../../../test-cases/functional/sla-management/TESTPLAN-SUP-002.md), [TESTPLAN-SUP-003](../../../../test-cases/functional/incident-problem-management/TESTPLAN-SUP-003.md)).
+
+**Before this can run anywhere else:** Flyway is disabled, so migration **V041 must be applied by hand** after V040 ([`V041__service_instances_sla_incidents_problems.sql`](../../../../database/migrations/V041__service_instances_sla_incidents_problems.sql): tables `service_instance`, `service_reporter_key`, `sla_policy`, `sla_settings`, `service_incident_ticket`, `problem`, `problem_action`; columns on `support_ticket` and `service_incident`). It is also in `backend/src/main/resources/db/schema.sql`, additive and re-runnable. A platform administrator then creates a **reporter key** per product for the products to report with.
+
+| ID | Answer | Status | Where (FRD · screen · tests) |
+|---|---|---|---|
+| SR-1 A | Only service instances and their health, as reported by the products | **Built** (10.01.01.01 create service instance; 10.04.01.01 collect health status; 10.04.01.04 view health). Start, stop, scale and the rest of 10.01.01 are **not built (Not specified)** | [REQ-SRM-001.1 to .4](../../../02-requirements/FRD/service-instances/requirement.md) · [service-instances.md](../../../05-ui/screen-requirements/service-instances.md) · [TC-SRM-001 to TC-SRM-005](../../../../test-cases/functional/service-instances/) |
+| SR-2 A | Healthy, Degraded or Down, reported every minute | **Built** | REQ-SRM-001.3, .5 · [API](../../../06-api/api-requirements/service-instances.md) · [TC-SRM-003](../../../../test-cases/functional/service-instances/TC-SRM-003.md), [TC-SRM-007](../../../../test-cases/functional/service-instances/TC-SRM-007.md) |
+| SR-3 B | A product is Down only if more than half of its instances are Down; **the status page's per-product status is now derived from the instances** (the C20 switch is done) | **Built** | REQ-SRM-001.9, [REQ-PRT-001.5](../../../02-requirements/FRD/service-status-page/requirement.md) · [TC-SRM-006 to TC-SRM-008](../../../../test-cases/functional/service-instances/) |
+| SR-4 A | Organization admins see their organization's instances; platform admins see all | **Built** (read-only for organization admins) | REQ-SRM-001.7, .8 · `/organization/service-instances`, `/status?tab=instances` · [TC-SRM-010, TC-SRM-011](../../../../test-cases/functional/service-instances/) |
+| SR-5 B | Status changed by the products' reports and by platform admins by hand | **Built** (reporter key; change by hand with a note, audited) | REQ-SRM-001.4, .6 · [TC-SRM-004, TC-SRM-005, TC-SRM-009](../../../../test-cases/functional/service-instances/) |
+| SL-1 B | Urgent 1 h / 8 h (24x7); High 4 h / 1 day, Medium 8 h / 3 days, Low 1 day / 5 days (business hours) | **Built** (12.03.01.01 define, .02 assign, .03 calculate; 12.03.02.01 monitor, .02 warn at 80%, .03 escalate breach) | [REQ-SUP-002.1 to .14](../../../02-requirements/FRD/sla-management/requirement.md) · [sla-management.md](../../../05-ui/screen-requirements/sla-management.md) · [TC-SUP-006 to TC-SUP-020](../../../../test-cases/functional/sla-management/) |
+| SL-2 B | The same for every customer and plan | **Built** (one policy per priority) | REQ-SUP-002.2 · [TC-SUP-006](../../../../test-cases/functional/sla-management/TC-SUP-006.md) |
+| SL defaults | Editable targets and business hours (Mon to Fri 09:00 to 18:00 Asia/Kolkata, 1 day = 8 business hours), clock never pauses, first response, recalculation on a priority change, alerts to the assignee and the alert list | **Built.** New targets apply to tickets created or re-prioritised afterwards; **tickets created before SLA tracking have no deadlines** | [BR-SLA-001 to BR-SLA-018](../../../02-requirements/FRD/sla-management/business-rules.md) · [TC-SUP-007 to TC-SUP-014, TC-SUP-017](../../../../test-cases/functional/sla-management/) |
+| IC-1 A | A support incident is the status-page incident; public and internal fields | **Built** (12.04.01.01 log, .02 investigate, .03 resolve, .04 close; severity, assignee, linked tickets) | [REQ-SUP-003.1 to .6](../../../02-requirements/FRD/incident-problem-management/requirement.md) · [incident-problem-management.md](../../../05-ui/screen-requirements/incident-problem-management.md) · [TC-SUP-021 to TC-SUP-025, TC-SUP-030, TC-SUP-032, TC-SUP-034](../../../../test-cases/functional/incident-problem-management/) |
+| IC-2 A | A problem is a separate record linking several incidents, with a root cause and corrective actions | **Built** (12.04.02.01 create, .02 root cause analysis, .03 corrective actions) | REQ-SUP-003.7 to .10 · [TC-SUP-026 to TC-SUP-029, TC-SUP-033](../../../../test-cases/functional/incident-problem-management/) |
+| Permissions | Incidents and problems with `MANAGE_SERVICE_STATUS`; SLA settings with `MANAGE_SUPPORT_TICKETS` | **Built** | REQ-SUP-003.11, REQ-SUP-002.12 · [TC-SRM-012](../../../../test-cases/functional/service-instances/TC-SRM-012.md), [TC-SUP-018, TC-SUP-031](../../../../test-cases/functional/) |
+
+**Not specified, so not built:** automatic anomaly detection and alerts (10.04.01.02, .03), usage monitoring (10.04.02), resource management (10.02) and configuration management (10.03), instance actions (configure, start, stop, restart, scale, delete: 10.01.01.02 to .07), SLA by plan, public holidays, pausing the clock while waiting for the customer.
+
+**Known gaps and open points** (built, but to confirm): the engineering defaults of C101 (a reporter key per product, a 5-minute "no recent report" window, a FAILED instance counting as Down, individual customers do not see instances, the root cause kept on the problem rather than on the incident, editable SLA settings, a breach escalates without raising the priority); provisioning ([REQ-ORD-002](../../../02-requirements/FRD/provisioning-contract/requirement.md)) is not built, so products report through the reporter key and tenant references arrive in reports; no HTTP-level automated test of the open `POST /product-reports/health` path (the key checks are tested in the service); see each test case for what is not automated.
 
 ## EIS 04a AI Advisor & Agent Platform: agent orchestration foundation
 
@@ -111,7 +138,7 @@ Full breakdown with APIs, services, entities and events: [applications/10-servic
 
 ### Expected deliverables
 
-- The retirement task from [C20](../open-decisions.md#c20) (switch the interim status page's per-product status to 10.04 Health Monitoring), plus the P0 capabilities above ([DN-2](../open-decisions.md#dn-2-sprint-scope-length-and-dates)); 10.04 is P1 (stretch) under C4/C5, so this carries over if not delivered.
+- The retirement task from [C20](../open-decisions.md#c20) (switch the interim status page's per-product status to 10.04 Health Monitoring), plus the P0 capabilities above ([DN-2](../open-decisions.md#dn-2-sprint-scope-length-and-dates)); 10.04 is P1 (stretch) under C4/C5, so this carries over if not delivered. **Status 2026-10-14:** 10.01.01.01, 10.04.01.01 and 10.04.01.04 are built and the per-product status switch is done ([C101](../open-decisions.md#c101), [build status](#build-status--c101-answers)); the other functions of 10 stay Not specified.
 
 ## EIS 03a Marketplace: discovery and checkout
 
@@ -160,7 +187,7 @@ Full breakdown: [applications/12-support-service-management.md](../applications/
 
 ### Expected deliverables
 
-- The P0 capabilities above ([DN-2](../open-decisions.md#dn-2-sprint-scope-length-and-dates)). 12.02 AI Support is not in this sprint — see [2027.1.3](SPRINT-2027.1.3.md).
+- The P0 capabilities above ([DN-2](../open-decisions.md#dn-2-sprint-scope-length-and-dates)). 12.02 AI Support is not in this sprint — see [2027.1.3](SPRINT-2027.1.3.md). **Status 2026-10-14:** 12.01.01 built earlier ([C40](../open-decisions.md#c40)); 12.03 SLA Management and 12.04 Incident & Problem Management built ([C101](../open-decisions.md#c101), [build status](#build-status--c101-answers)).
 
 ## Decisions affecting this sprint
 
@@ -169,6 +196,7 @@ Full breakdown: [applications/12-support-service-management.md](../applications/
 - [C20](../open-decisions.md#c20) The retirement task for the interim service-status page, now here with 10 Service & Resource Management.
 - [C31](../open-decisions.md#c31) Corrected sprint sequence: 04 split, 10, 03a and 12a moved in as shown above.
 - [C57](../open-decisions.md#c57) Service instances; [C59](../open-decisions.md#c59) 03.03 moved to 2026.4.3.
+- [C101](../open-decisions.md#c101) Service instances and health (10.01.01.01, 10.04.01.01, 10.04.01.04), SLA management (12.03) and incident & problem management (12.04): answered and built 2026-10-14.
 - Sprint goal, team, capacity and status are Not specified.
 
 Details: [open-decisions.md](../open-decisions.md).

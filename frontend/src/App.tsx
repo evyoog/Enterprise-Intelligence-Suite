@@ -57,7 +57,8 @@ import { KnowledgeTaxonomyPage } from './pages/knowledge-admin/KnowledgeTaxonomy
 import { KnowledgeSearchIndexPage } from './pages/knowledge-admin/KnowledgeSearchIndexPage'
 import { KnowledgeAnalyticsPage } from './pages/knowledge-admin/KnowledgeAnalyticsPage'
 import { MyTicketsPage } from './pages/MyTicketsPage'
-import { AdminSupportTicketsPage } from './pages/admin/AdminSupportTicketsPage'
+import { AdminSupportRoutePage } from './pages/admin/AdminSupportRoutePage'
+import { OrganizationServiceInstancesPage } from './pages/OrganizationServiceInstancesPage'
 import { GlobalSearchPage } from './pages/GlobalSearchPage'
 import { ProductDetailPage } from './pages/ProductDetailPage'
 import { OfferingDetailPage, OfferingsPage } from './pages/OfferingsPage'
@@ -216,6 +217,7 @@ function MainApp() {
           <Route path="/support/tickets" element={<RequireAuth><MyTicketsPage /></RequireAuth>} />
           {/* 08 Billing & Payments (sprint 2026.4.3, REQ-BIL-001, C46). */}
           <Route path="/billing" element={<RequireAuth><BillingPage /></RequireAuth>} />
+          <Route path="/organization/service-instances" element={<RequireAuth><OrganizationServiceInstancesPage /></RequireAuth>} />
           <Route path="/organization/billing" element={<RequireAuth><OrganizationBillingPage /></RequireAuth>} />
           {/* C48: Subscribe -> straight to payment details for a signed-in
               customer (RequireAuth is a bookmark/reload safety net — the
@@ -247,7 +249,7 @@ function MainApp() {
             <Route path="audit-log" element={<AdminAuditLogPage />} />
             <Route path="privileged-access" element={<AdminPrivilegedAccessPage />} />
             <Route path="roles" element={<RolesPermissionsPage />} />
-            <Route path="support/tickets" element={<AdminSupportTicketsPage />} />
+            <Route path="support/tickets" element={<AdminSupportRoutePage />} />
             <Route path="reviews" element={<AdminReviewsPage />} />
             <Route path="partners" element={<AdminPartnersPage />} />
             <Route path="partners/:id" element={<AdminPartnerDetailPage />} />

@@ -10,7 +10,7 @@
 | PI – CY Quarter | 2027.1 ([PO] "eVyoog EIS - Roadmap Initiatives") |
 | Sprint | 12a Human support (Support, SLA, Incident & Problem) in [2027.1.2](../sprints/SPRINT-2027.1.2.md) (1–28 Feb 2027, [C31](../open-decisions.md#c31)); AI Support (12.02) ships with the customer AI agents (04b) in [2027.1.3](../sprints/SPRINT-2027.1.3.md) (1–31 Mar 2027) |
 | Capabilities / features / functions | 4 / 7 / 28 ([WB]) |
-| Application status | Not specified |
+| Application status | Not specified. **Progress 2026-10-14:** 12.01 Support (12.01.01, human-operated) built ([REQ-SUP-001](../../../02-requirements/FRD/ticket-management/requirement.md)); **12.03 SLA Management** ([REQ-SUP-002](../../../02-requirements/FRD/sla-management/requirement.md)) and **12.04 Incident & Problem Management** ([REQ-SUP-003](../../../02-requirements/FRD/incident-problem-management/requirement.md)) built on [C101](../open-decisions.md#c101). **12.02 AI Support** is not built (sprint 2027.1.3). **Not specified:** SLA by plan, public holidays, pausing the SLA clock |
 
 **Sources:**
 - **[PO]** [`2026Q3_ProdOps_Plan.docx`](../../source-documents/2026Q3_ProdOps_Plan.docx)
@@ -140,12 +140,12 @@ Not specified in any source. Under [DN-2](../open-decisions.md#dn-2-sprint-scope
 | Feature FRD | `docs/02-requirements/FRD/<feature>/` (copy `_template/`) | See the sprint page for FRDs in progress |
 | Requirement | `REQ-SUP-<NNN>` inside the FRD | Approved FRD required before build ([DN-4](../open-decisions.md#dn-4-business-rules-and-acceptance-criteria)) |
 | Business rules | `docs/03-business-rules/` and `FRD/<feature>/business-rules.md` | Per FRD |
-| Test cases | `test-cases/functional/ticket-management/TC-SUP-001..005.md` | Created ([REQ-SUP-001](../../../02-requirements/FRD/ticket-management/requirement.md), sprint 2027.1.2, 12.01.01 only) |
+| Test cases | `test-cases/functional/ticket-management/TC-SUP-001..005.md`, `sla-management/TC-SUP-006..020.md`, `incident-problem-management/TC-SUP-021..036.md` | Created ([REQ-SUP-001](../../../02-requirements/FRD/ticket-management/requirement.md), [REQ-SUP-002](../../../02-requirements/FRD/sla-management/requirement.md), [REQ-SUP-003](../../../02-requirements/FRD/incident-problem-management/requirement.md); sprint 2027.1.2) |
 | NFRs | [WB:Non-Functional Requirements] NFR-001 to NFR-014 (platform-wide) | See [EIS-document-analysis.md](../EIS-document-analysis.md) section 2.17 |
 
 ## Related code already in this repository
 
 Observed on branch `dev`. This is a module-level mapping, not a verified function-by-function implementation status.
 
-- Backend: `backend/src/main/java/com/vyoog/eisplatform/modules/support (SupportTicket, SupportTicketService, SupportTicketController, AdminSupportTicketController — 12.01.01 only)`
-- Frontend: `frontend/src/pages/MyTicketsPage.tsx`, `frontend/src/pages/admin/AdminSupportTicketsPage.tsx`
+- Backend: `backend/src/main/java/com/vyoog/eisplatform/modules/support` (SupportTicket, SupportTicketService, SupportTicketController, AdminSupportTicketController — 12.01.01; SlaService, SlaCalculator, SlaCheckJob, AdminSlaController — 12.03) and `modules/servicestatus` (IncidentManagementService, ProblemService, AdminServiceStatusController, AdminProblemController — 12.04, with the status-page incident table)
+- Frontend: `frontend/src/pages/MyTicketsPage.tsx`, `frontend/src/pages/admin/AdminSupportTicketsPage.tsx`, `frontend/src/pages/admin/AdminSlaSettingsPage.tsx`, `frontend/src/pages/admin/AdminIncidentsPage.tsx`, `frontend/src/pages/admin/AdminProblemsPage.tsx`

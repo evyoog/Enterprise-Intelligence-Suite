@@ -380,7 +380,7 @@ function SecretDialog({ created, onClose }: { created: CreatedReporterKey; onClo
       <DialogContent sx={{ display: 'grid', gap: 2, pt: '8px !important' }}>
         <Alert severity="warning">{t('serviceInstances.secret.warning')}</Alert>
         <TextField label={t('serviceInstances.secret.label')} value={created.secret} fullWidth
-          slotProps={{ htmlInput: { readOnly: true, style: { fontFamily: 'monospace' }, onFocus: (e) => e.currentTarget.select() } }} />
+          slotProps={{ htmlInput: { readOnly: true, style: { fontFamily: 'monospace' }, onFocus: (e: React.FocusEvent<HTMLInputElement>) => e.currentTarget.select() } }} />
         <Box>
           <Button variant="outlined" onClick={copy}>{t(copied ? 'serviceInstances.secret.copied' : 'serviceInstances.secret.copy')}</Button>
         </Box>
