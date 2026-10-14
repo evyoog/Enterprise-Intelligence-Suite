@@ -4,6 +4,8 @@
 
 > **Payment gateways ([C98](../../01-business/roadmap/open-decisions.md#c98), REQ-BIL-003):** migration [`V038__payment_gateways.sql`](../../../database/migrations/V038__payment_gateways.sql), mirrored in `backend/src/main/resources/db/schema.sql` — new table `payment_gateway_config` and a per-provider `payment_webhook_event` — see [C98 changes](#c98-changes-migration-v038). Apply V038 by hand after V037.
 
+> **Administrator-added payment gateways ([C99](../../01-business/roadmap/open-decisions.md#c99), REQ-BIL-003.16 and .17):** migration [`V039__payment_gateway_custom_definitions.sql`](../../../database/migrations/V039__payment_gateway_custom_definitions.sql), mirrored in `backend/src/main/resources/db/schema.sql` — three columns on `payment_gateway_config` — see [C99 changes](#c99-changes-migration-v039). Apply V039 by hand after V038.
+
 Proposed for [REQ-BIL-001](../../02-requirements/FRD/billing-payments/requirement.md) and [REQ-BIL-002](../../02-requirements/FRD/tax-rules/requirement.md). Final column types are set in the migration when the feature is built. Workbook entities used: Invoice (DE), Payment (DE). No card numbers or CVV are stored anywhere ([BR-BIL-001](../../03-business-rules/BR-BIL-001-no-raw-card-data.md)).
 
 Ownership: every record belongs to **either** a customer (individual) **or** an organization, never both.
@@ -160,6 +162,20 @@ Additive and safe to re-run (`IF NOT EXISTS`, `DROP CONSTRAINT IF EXISTS`, `ON C
 | last_webhook_failure_at, last_webhook_failure_reason, webhook_failure_count | Yes for the count (default 0) | **One counter and the latest reason, not a row per attempt** (BR-13). The count is never reset |
 | created_at, updated_at, updated_by_customer_id | Yes / Yes / No | Housekeeping. `updated_by_customer_id` is null when the administrator's Keycloak account has no customer row |
 
-A row is created on first use for **every** provider the registry lists, planned ones included (inactive, nothing stored), and the Razorpay row is created active and default when it is missing. Credentials the deployment supplies through the secrets file are **not** copied here; a stored value overrides them field by field (BR-5).
+A row is created on first use for **every** built-in provider the registry lists (inactive, nothing stored); a gateway an administrator adds gets its row when it is added (C99, below); and the Razorpay row is created active and default when it is missing. Credentials the deployment supplies through the secrets file are **not** copied here; a stored value overrides them field by field (BR-5).
+
+## C99 changes (migration V039)
+Additive and safe to re-run (`ADD COLUMN IF NOT EXISTS`); no data is changed. Mirrored in `backend/src/main/resources/db/schema.sql`. Requirement: [REQ-BIL-003.16, .17](../../02-requirements/FRD/payment-gateways/requirement.md); rules [BR-20 to BR-25](../../02-requirements/FRD/payment-gateways/business-rules.md). Apply after V038.
+
+| Table | Column | Type | Description |
+|---|---|---|---|
+| payment_gateway_config | `custom` | `BOOLEAN NOT NULL DEFAULT false` | True for a gateway an administrator added from the Payment Gateways screen (no adapter, configuration only, BR-23). False for the Razorpay row and for every row that existed before V039 |
+| payment_gateway_config | `display_name` | `VARCHAR(100)` | The name the administrator gave an added gateway. Null for a built-in provider (its name comes from its adapter) |
+| payment_gateway_config | `definition` | `TEXT` | The **non-secret** definition of an added gateway as JSON (`CustomGatewayDefinition`): description, logo key, countries, currencies, methods, environments and the credential field list (key, label, secret, required, never a value). Null for a built-in provider. **Never holds a credential value** |
+
+- An added gateway's **credential values** stay in `credentials_encrypted` (AES-256-GCM, [BR-3](../../02-requirements/FRD/payment-gateways/business-rules.md)), keyed by the field keys of the definition; removing a field in the definition deletes its value from the ciphertext (BR-21). Removing the gateway deletes the whole row (BR-24).
+- `provider_code` (unique, up to 30 characters) is the gateway's code, 2 to 30 characters from the Add form. Note: `payment.provider` is `VARCHAR(20)` and `payment_webhook_event.provider` `VARCHAR(30)`, so a gateway whose code is 21 to 30 characters can be stored here but cannot be given an adapter without a shorter code ([09-integrations/payment-gateways.md](../../09-integrations/payment-gateways.md#how-to-turn-an-added-gateway-into-a-real-integration)).
+- An added gateway never has `activated` or `default_gateway` true, never a `test_status`, and never a payment or webhook event row (it has no adapter, BR-23). If an adapter is later written for its code, the same row (credentials, environment, `config_version`) is reused by that adapter and `custom` stays true but is ignored.
+- The unique index on `provider_code` also stops two concurrent adds of the same code (the second is answered 409).
 
 Not stored: the payment gateway's credentials supplied through the environment or secrets file (BR-SEC-001), and no licence keys or usage figures anywhere ([REQ-SUB-002](../../02-requirements/FRD/entitlements/requirement.md) is derived, with no table). Subscription activation after payment (BI-1) adds no column: it uses the existing `product_subscription.status` (`PENDING_SUBSCRIPTION` to `ACTIVE`) and `started_at`.
