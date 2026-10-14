@@ -4,10 +4,12 @@ Requirement: [REQ-BIL-002](../../02-requirements/FRD/tax-rules/requirement.md). 
 
 Every path below is under `/api/admin/billing/tax` and needs the platform permission `MANAGE_BILLING` (403 otherwise). The acting administrator is the Keycloak subject of the token. **No request or response contains a provider credential** (BR-30).
 
+Success codes: `POST` that creates a rule, class, registration or exemption answers **201**; `DELETE` of a rule or registration answers **204**; every other call answers **200**.
+
 ## Engine switch, provider and status
 | Method | Path | Purpose |
 |---|---|---|
-| GET | `/status` | Active mode (`INTERNAL`/`EXTERNAL`), status (`READY`, `ATTENTION`, `BLOCKING`), messages, configuration version, who changed the mode and when, internal figures (rules in force, pending, drafts, countries), external block (provider, credential **set / not set** flags, endpoint host, validation result, capabilities), invoices waiting, last calculation |
+| GET | `/status` | Active mode (`INTERNAL`/`EXTERNAL`), status (`READY`, `ATTENTION`, `BLOCKING`), messages, configuration version, who changed the mode and when, `allowSelfApproval`, internal figures (rules in force, pending, drafts, countries), external block (provider, credential **set / not set** flags, endpoint host, validation result, capabilities), invoices waiting, last calculation |
 | PUT | `/mode` | Body `{ "externalEngineEnabled": true \| false }`. Switching **on** runs the provider checks in the same request. 200 `{ changed, status, report }`; **409** with the same body when switching on was refused (the setting is unchanged and `report.checks` lists every check) |
 | PUT | `/provider` | Body `providerCode`, `companyCode`, `environment` (`SANDBOX`/`PRODUCTION`), `timeoutSeconds` (2–60), `maxAttempts` (1–5). While external mode is on the new settings must pass validation too (409 otherwise, nothing saved) |
 | POST | `/provider/validate` | Test connection and Validate capabilities: calls the provider, stores and returns the report (`passed`, `checks[]`, `countries`, `currencies`, `transactionTypes`) |
@@ -51,11 +53,13 @@ Validation checks: `PROVIDER_SELECTED`, `CREDENTIALS`, `CONNECTION`, `SUPPLIER_E
 | GET | `/invoices/{invoiceId}/calculations` | The calculation attempts of an invoice: engine, configuration version, status, reason, provider reference, attempts |
 
 ## Invoice and credit-note additions (REQ-BIL-001 endpoints)
+Customer paths are under `/api/me/billing` (individual customer) and `/api/organization/me/billing` (organization); admin paths are under `/api/admin/billing`. Draft invoices and the tax additions below apply to all three.
+
 - `InvoiceDto` gains `taxStatus` (`LEGACY`, `CALCULATED`, `BLOCKED`), `taxEngine`, `placeOfSupply`, `customerTaxId`, `issuerSnapshot` (detail only), `taxLines[]` (detail only; `code`, `name`, `taxType`, `jurisdiction`, `treatment`, `rate`, `taxableAmount`, `taxAmount`) and, **admin views only**, `taxBlockCode` and `taxBlockReason`. Lines gain `taxAmount`, `taxClassCode`, `hsnSacCode`. Status gains `DRAFT`.
-- Customer and organization invoice lists **do not list Drafts**. A Draft cannot be paid (`409 INVALID_STATE`) and has no document (404).
-- `GET /billing/invoices/{id}/credit-notes`, `GET /organization/billing/invoices/{id}/credit-notes`, `GET /admin/billing/invoices/{id}/credit-notes`; `.../credit-notes/{creditNoteId}/document` downloads the credit note.
-- Billing details (`PUT /billing/details`, organization equivalent): `taxId` is format-checked ([TX-4](../../01-business/roadmap/open-decisions.md#c97)); an Indian customer must give a valid GSTIN or leave it empty (400 with the message).
-- Checkout summary gains `taxPending` and `placeOfSupply`; `taxLines` now lists real components.
+- `GET /me/billing/invoices` and `GET /organization/me/billing/invoices` **do not list Drafts**. `GET /admin/billing/invoices` does. A Draft cannot be paid (`POST /me/billing/invoices/{invoiceId}/payments` and the organization equivalent answer `409 INVALID_STATE`: only an OPEN invoice can be paid) and has no document (`GET .../invoices/{invoiceId}/document` answers 404 "This invoice is not issued yet").
+- Credit notes: `GET /me/billing/invoices/{invoiceId}/credit-notes`, `GET /organization/me/billing/invoices/{invoiceId}/credit-notes` and `GET /admin/billing/invoices/{invoiceId}/credit-notes` list them; `GET /me/billing/invoices/{invoiceId}/credit-notes/{creditNoteId}/document` and `GET /organization/me/billing/invoices/{invoiceId}/credit-notes/{creditNoteId}/document` download one (text/plain).
+- Billing details: `PUT /me/billing/details` and `PUT /organization/me/billing/details`: `taxId` is format-checked ([TX-4](../../01-business/roadmap/open-decisions.md#c97)); an Indian customer must give a valid GSTIN or leave it empty (400 with the message). Saving billing details retries the owner's Draft invoices.
+- Checkout summary (`GET /me/billing/checkout`, `GET /organization/me/billing/checkout`) gains `taxPending` and `placeOfSupply`; `taxLines` now lists real components.
 
 ## External provider contract v1
 The generic REST adapter (`GENERIC_REST`) calls an HTTPS API root that EIS reads from the backend environment (`TAX_PROVIDER_BASE_URL`; credentials `TAX_PROVIDER_API_KEY`, optional `TAX_PROVIDER_API_SECRET`). Every request has `Authorization: Bearer <key>`, `X-Company-Code`, `X-Environment`; a POST also has `Idempotency-Key` (the transaction reference) and, when a secret is set, `X-Signature` (hex HMAC-SHA256 of the body). Amounts are integers in the currency's smallest unit and **exclude tax**.

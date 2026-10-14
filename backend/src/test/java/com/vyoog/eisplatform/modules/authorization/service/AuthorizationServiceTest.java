@@ -50,11 +50,12 @@ class AuthorizationServiceTest {
         // REQ-INT-001/REQ-INT-002 (C61, C62): MANAGE_INTEGRATIONS.
         // C70: MANAGE_SEARCH (search index, synonyms, insights).
         // REQ-KNW-008 (C71): KNOWLEDGE_CONTRIBUTE (knowledge contributor).
+        // REQ-SUB-002 (C97 EN-3): VIEW_ENTITLEMENTS (read-only entitlement lookup for support).
         assertThat(authorizationService.listPlatformPermissions(Set.of("ROLE_ADMIN")))
             .containsExactlyInAnyOrder("MANAGE_CATALOG", "MANAGE_REGISTRATIONS", "MANAGE_PRIVILEGED_ACCESS", "VIEW_AUDIT_LOG",
                 "MANAGE_ROLES", "MANAGE_PERMISSIONS", "MANAGE_SERVICE_STATUS", "MANAGE_PLATFORM_SETTINGS", "MANAGE_KNOWLEDGE_BASE",
                 "MANAGE_SUPPORT_TICKETS", "MANAGE_REVIEWS", "MANAGE_PARTNERS", "MANAGE_BILLING", "VIEW_PLATFORM_DASHBOARD",
-                "MANAGE_INTEGRATIONS", "MANAGE_SEARCH", "KNOWLEDGE_CONTRIBUTE");
+                "MANAGE_INTEGRATIONS", "MANAGE_SEARCH", "KNOWLEDGE_CONTRIBUTE", "VIEW_ENTITLEMENTS");
     }
 
     @Test
