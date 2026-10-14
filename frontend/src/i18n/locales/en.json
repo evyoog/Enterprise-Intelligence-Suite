@@ -487,7 +487,7 @@
       "partners": "Partners",
       "billing": "Billing",
       "billingInvoicesPayments": "Invoices & payments",
-      "paymentGateway": "Payment gateway",
+      "paymentGateway": "Payment gateways",
       "billingSettings": "Billing settings",
       "integrations": "Integrations",
       "platformEvents": "Platform events",
@@ -1123,28 +1123,147 @@
       "resolveTax": "Resolve tax"
     },
     "paymentGateway": {
-      "title": "Payment gateway",
-      "subtitle": "Payment gateways and their connection status — read-only.",
-      "provider": "Provider",
-      "status": "Status",
+      "title": "Payment Gateways",
+      "subtitle": "Configure and manage payment providers used to collect subscription payments across EIS.",
+      "loadError": "Could not load the payment gateways.",
+      "retry": "Retry",
+      "working": "Working",
+      "stats": {
+        "registered": "Registered gateways",
+        "configured": "Configured",
+        "active": "Active",
+        "needsConfiguration": "Need configuration",
+        "activeOf": "{{active}} of {{total}} active"
+      },
+      "noneActive": "None active",
       "configured": "Configured",
-      "notConfigured": "Not configured",
-      "mode": "Mode",
-      "live": "Live",
-      "test": "Test",
-      "keyId": "Key ID",
-      "keySecret": "Key secret",
-      "webhookSecret": "Webhook secret",
-      "webhookUrl": "Webhook URL",
-      "lastWebhook": "Last webhook received",
-      "never": "Never",
-      "set": "Set",
-      "notSet": "Not set",
-      "copy": "Copy",
+      "configuredTitle": "Payment gateways",
+      "routingNote": "New payments go to an active gateway that supports the invoice currency and payment method; the default is tried first. Payments already made always stay with the gateway that took them.",
+      "plannedTitle": "Planned integrations",
+      "plannedBody": "These providers can be added to EIS but have no integration yet. They cannot be configured, tested or activated.",
+      "planned": "Integration planned",
+      "plannedNote": "{{name}} is not integrated yet. This shows what it will need; nothing here can be configured or used.",
+      "configuration": {
+        "NOT_AVAILABLE": "Not available",
+        "NOT_CONFIGURED": "Not configured",
+        "CONFIGURATION_INCOMPLETE": "Configuration incomplete",
+        "CONFIGURED": "Configured"
+      },
+      "connection": {
+        "NOT_CONFIGURED": "Not configured",
+        "CONFIGURATION_INCOMPLETE": "Configuration incomplete",
+        "NOT_TESTED": "Not tested",
+        "CONNECTION_SUCCESSFUL": "Connection successful",
+        "AUTHENTICATION_FAILED": "Authentication failed",
+        "PROVIDER_UNAVAILABLE": "Provider unavailable",
+        "UNSUPPORTED_CONFIGURATION": "Unsupported configuration",
+        "TEST_FAILED": "Test failed"
+      },
+      "active": "Active",
+      "inactive": "Inactive",
+      "default": "Default",
+      "lastTest": "Last test: {{date}}",
+      "env": {
+        "TEST": "Test",
+        "LIVE": "Live"
+      },
+      "envNotSet": "Environment not set",
+      "methods": {
+        "card": "Cards",
+        "upi": "UPI",
+        "netbanking": "Netbanking",
+        "wallet": "Wallets",
+        "bank_transfer": "Bank transfer",
+        "paypal": "PayPal"
+      },
+      "configure": "Configure",
+      "configureNamed": "Configure {{name}}",
       "testConnection": "Test connection",
-      "connected": "Connected.",
-      "testFailed": "Could not reach Razorpay.",
-      "notConfiguredGuidance": "Add the Razorpay credentials to the common secrets file, then restart the backend."
+      "testNamed": "Test the {{name}} connection",
+      "activate": "Activate",
+      "activateNamed": "Activate {{name}}",
+      "deactivate": "Deactivate",
+      "deactivateNamed": "Deactivate {{name}}",
+      "makeDefault": "Make default",
+      "makeDefaultNamed": "Make {{name}} the default gateway",
+      "viewDetails": "View details",
+      "viewDetailsNamed": "View details of {{name}}",
+      "activated": "{{name}} is active.",
+      "deactivated": "{{name}} is inactive. Payments already made with it are unchanged.",
+      "defaultSet": "{{name}} is now the default for new payments.",
+      "testFailed": "The connection test could not be run.",
+      "saveFailed": "Could not save. Please try again.",
+      "configureTitle": "Configure {{name}}",
+      "configureHelp": "Enter the credentials from the provider's dashboard. They are stored encrypted and are never shown again; leave a field blank to keep what is saved.",
+      "rotationNote": "This gateway is active, so the new credentials are tested first. If the test fails nothing is saved and the current credentials keep working.",
+      "noEncryptionKey": "Credentials cannot be stored because the server has no encryption key (PAYMENT_GATEWAY_ENCRYPTION_KEY). Ask whoever runs the server to set it. Credentials supplied through the secrets file keep working.",
+      "unreadable": "The stored credentials cannot be read with the server's current encryption key. Enter them again.",
+      "environment": "Environment",
+      "keepSecret": "•••••• saved — leave blank to keep",
+      "fieldSet": "Set ({{source}})",
+      "fieldNotSet": "Not set",
+      "current": "Current: {{value}}",
+      "source": {
+        "STORED": "stored here",
+        "ENVIRONMENT": "secrets file",
+        "NONE": "not set"
+      },
+      "save": "Save",
+      "saved": "{{name}} configuration saved.",
+      "cancel": "Cancel",
+      "close": "Close",
+      "detailTabs": "Gateway details",
+      "tabs": {
+        "overview": "Overview",
+        "webhook": "Webhook",
+        "activity": "Activity"
+      },
+      "regions": "Countries and currencies",
+      "capabilities": "Supports",
+      "cap": {
+        "webhooks": "Webhooks",
+        "refunds": "Refunds",
+        "recurring": "Recurring payments"
+      },
+      "paymentMethods": "Payment methods",
+      "methodsHelp": "Switch off a method to stop offering it through this gateway. At least one must stay on.",
+      "fields": "Configuration fields",
+      "secretField": "Secret",
+      "publicField": "Identifier",
+      "evidence": "Verified by real activity",
+      "evidenceHelp": "Separate from the connection test: a passing test does not prove that payments, webhooks or refunds work.",
+      "evidenceItems": {
+        "authenticated": "Credentials accepted",
+        "webhookReceived": "Signed webhook received",
+        "paymentCaptured": "Payment captured",
+        "refundMade": "Refund made"
+      },
+      "seen": "Yes",
+      "notSeen": "Not yet",
+      "endpoint": "Webhook URL",
+      "copy": "Copy",
+      "copied": "Copied",
+      "copyEndpoint": "Copy the webhook URL",
+      "localUrl": "This URL points at this machine, so the provider cannot reach it. Set the public backend address (APP_BACKEND_URL) for this environment.",
+      "hookSecretSet": "Webhook secret set",
+      "hookSecretMissing": "Webhook secret missing",
+      "signature": {
+        "VERIFIED": "Signature verified",
+        "NOT_SEEN": "No signed event yet",
+        "NOT_APPLICABLE": "No webhooks"
+      },
+      "hookFailures": "{{count}} rejected webhook(s)",
+      "lastEvent": "Last event received",
+      "never": "Never",
+      "lastFailure": "Last rejected webhook ({{date}})",
+      "subscribeTo": "Subscribe the webhook to",
+      "setupSteps": "Set-up steps",
+      "recentEvents": "Recent webhook events",
+      "noEvents": "No webhook has been received.",
+      "history": "Changes by administrators",
+      "noHistory": "No changes recorded yet.",
+      "configVersion": "Configuration version {{version}}",
+      "credentialsUpdated": "credentials updated {{date}}"
     },
     "billingSettings": {
       "eyebrow": "Billing",
@@ -1304,40 +1423,6 @@
         "checkoutTitle": "Checkout preview",
         "checkoutDescription": "Subscription payment",
         "checkoutNote": "Methods switched off are hidden from the checkout."
-      },
-      "gateway": {
-        "statusTitle": "Razorpay credentials",
-        "statusBody": "Whether each key is set in the secrets file. Values are never shown here.",
-        "present": "Present",
-        "missing": "Missing",
-        "provider": "Provider: {{provider}}",
-        "webhookTitle": "Webhook",
-        "webhookBody": "Register this URL in the Razorpay Dashboard with your webhook secret, so payments are confirmed even if the customer closes the window.",
-        "copyWebhook": "Copy webhook URL",
-        "copyVariable": "Copy {{name}}",
-        "setupTitle": "Add or rotate the keys",
-        "setupBody": "Keys live only in the common secrets file (BR-SEC-001).",
-        "step1": {
-          "title": "Generate keys in Razorpay",
-          "body": "In the Razorpay Dashboard, create a Test key (or a Live key when you go live), and a webhook secret."
-        },
-        "step2": {
-          "title": "Put them in config/secrets.env",
-          "body": "Fill these variables on the server. The file is never committed."
-        },
-        "step3": {
-          "title": "Register the webhook",
-          "body": "Add the webhook URL above in the Razorpay Dashboard with the same webhook secret."
-        },
-        "step4": {
-          "title": "Restart the backend",
-          "body": "The backend reads the secrets file when it starts."
-        },
-        "step5": {
-          "title": "Test the connection",
-          "body": "Use Test connection above. Online payment methods turn on for customers automatically."
-        },
-        "securityNote": "For security, Razorpay keys are never typed into, stored by, or shown on this screen. Only whether each key is set, and the key ID masked."
       },
       "reminders": {
         "title": "Renewal reminder defaults",
@@ -1872,16 +1957,6 @@
         }
       },
       "close": "Close"
-    },
-    "gateways": {
-      "title": "Payment gateways",
-      "body": "The gateways the platform can take payments through. Checkout uses the active one and never shows a gateway's keys.",
-      "active": "Active",
-      "methods": "Methods",
-      "makeActive": "Make active",
-      "makeActiveNamed": "Make {{name}} the active gateway",
-      "testNamed": "Test the {{name}} connection",
-      "addNote": "Another gateway can be linked by adding it to the platform backend with its credentials in the common secrets file; it then appears in this list. Switching the active gateway affects new payments only."
     }
   },
   "checkout": {
@@ -2093,7 +2168,8 @@
       "upi": "UPI",
       "netbanking": "Netbanking",
       "wallet": "Wallets"
-    }
+    },
+    "providerUnsupported": "This payment was routed to a gateway this screen cannot open yet. Nothing was charged. Please try another method or contact support."
   },
   "cart": {
     "title": "Your cart",

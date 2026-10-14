@@ -415,4 +415,20 @@ describe('CheckoutPage (C55, C59 redesign)', () => {
 
     expect(screen.getByText('Stripe')).toBeInTheDocument()
   })
+
+  it('does not open a payment window for a gateway this screen has no launcher for (C98)', async () => {
+    getDetails.mockResolvedValue(savedDetails)
+    checkout.mockResolvedValue(summary())
+    createPayment.mockResolvedValue({ paymentId: 3, providerOrderId: 'order_x', amount: 1999, currency: 'USD', keyId: '', provider: 'STRIPE', clientConfig: {} })
+    renderAt('/checkout?invoiceId=9&step=payment')
+    await screen.findByRole('radiogroup', { name: 'Payment' })
+    const user = userEvent.setup()
+    await user.click(tiles()[2])
+    await user.click(screen.getByRole('checkbox', { name: /I agree/ }))
+    await user.click(payButton())
+
+    expect(await screen.findByText(/routed to a gateway this screen cannot open yet/)).toBeInTheDocument()
+    expect(vi.mocked(openRazorpayCheckout)).not.toHaveBeenCalled()
+    expect(confirmPayment).not.toHaveBeenCalled()
+  })
 })

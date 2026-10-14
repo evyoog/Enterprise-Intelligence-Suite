@@ -12,8 +12,8 @@ const offlineBankDetails = vi.fn()
 const saveOfflineBankDetails = vi.fn()
 const paymentMethodSettings = vi.fn()
 const savePaymentMethodSettings = vi.fn()
-const gatewayStatus = vi.fn()
-const gateways = vi.fn()
+const gatewaySummary = vi.fn()
+const gatewayList = vi.fn()
 const payByInvoiceOrganizations = vi.fn()
 const setPayByInvoice = vi.fn()
 
@@ -23,6 +23,10 @@ vi.mock('../../api/renewalsApi', () => ({
     defaults: () => Promise.resolve({ daysBefore: 7, sendTime: '09:00', timeZone: 'Asia/Kolkata' }),
     saveDefaults: vi.fn(),
   },
+}))
+
+vi.mock('../../api/paymentGatewayApi', () => ({
+  paymentGatewayApi: { summary: () => gatewaySummary(), list: () => gatewayList() },
 }))
 
 vi.mock('../../api/billingApi', async () => {
@@ -37,9 +41,6 @@ vi.mock('../../api/billingApi', async () => {
       saveOfflineBankDetails: (b: unknown) => saveOfflineBankDetails(b),
       paymentMethodSettings: () => paymentMethodSettings(),
       savePaymentMethodSettings: (b: unknown) => savePaymentMethodSettings(b),
-      gatewayStatus: () => gatewayStatus(),
-      testGateway: () => Promise.resolve(),
-      gateways: () => gateways(),
       payByInvoiceOrganizations: (q?: string) => payByInvoiceOrganizations(q),
       setPayByInvoice: (id: number, on: boolean) => setPayByInvoice(id, on),
     },
@@ -54,13 +55,13 @@ function renderAt(tab?: string) {
 
 describe('AdminBillingSettingsPage (C55, C60)', () => {
   beforeEach(() => {
-    for (const m of [businessProfile, saveBusinessProfile, offlineBankDetails, saveOfflineBankDetails, paymentMethodSettings, savePaymentMethodSettings, gatewayStatus, gateways, payByInvoiceOrganizations, setPayByInvoice]) m.mockReset()
-    gateways.mockResolvedValue([])
+    for (const m of [businessProfile, saveBusinessProfile, offlineBankDetails, saveOfflineBankDetails, paymentMethodSettings, savePaymentMethodSettings, gatewaySummary, gatewayList, payByInvoiceOrganizations, setPayByInvoice]) m.mockReset()
+    gatewayList.mockResolvedValue([])
+    gatewaySummary.mockResolvedValue({ registered: 5, implemented: 1, configured: 1, active: 1, needsConfiguration: 0 })
     payByInvoiceOrganizations.mockResolvedValue([])
     businessProfile.mockResolvedValue({ invoicePrefix: 'INV', paymentTermsDays: 0 })
     offlineBankDetails.mockResolvedValue({ bankTransferEnabled: true, neftRtgsEnabled: true, chequeEnabled: true })
     paymentMethodSettings.mockResolvedValue(methods)
-    gatewayStatus.mockResolvedValue({ provider: 'Razorpay', configured: false, liveMode: false, keySecretSet: false, webhookSecretSet: false, webhookUrl: 'http://localhost:8081/api/webhooks/razorpay' })
   })
 
   it('shows the four overview tiles and the business tab, with no axe violations', async () => {
@@ -156,12 +157,17 @@ describe('AdminBillingSettingsPage (C55, C60)', () => {
     expect(screen.getByText('Keep at least one payment method on, or customers cannot pay.')).toBeInTheDocument()
   }, 30000)
 
-  it('shows the Razorpay credential status without any key input (BR-SEC-001)', async () => {
+  it('shows the payment gateways tab with the same list as the Payment Gateways page (C98)', async () => {
+    gatewayList.mockResolvedValue([{
+      code: 'RAZORPAY', name: 'Razorpay', description: 'x', logo: 'razorpay', implementation: 'IMPLEMENTED', supportedMethods: ['card'], enabledMethods: ['card'],
+      currencies: ['INR'], countries: ['IN'], configurationStatus: 'CONFIGURED', connectionStatus: 'NOT_TESTED', activated: true, defaultGateway: true,
+      actions: { configure: true, test: true, activate: false, deactivate: true, setDefault: false },
+    }])
     renderAt('gateway')
-    expect(await screen.findByText('RAZORPAY_KEY_ID=')).toBeInTheDocument()
-    expect(screen.getAllByText('Missing')).toHaveLength(3)
+
+    expect(await screen.findByRole('listitem', { name: 'Razorpay' })).toBeInTheDocument()
+    expect(screen.getByText('1 of 1 active')).toBeInTheDocument()
     expect(screen.queryByRole('textbox')).not.toBeInTheDocument()
-    expect(screen.getByRole('button', { name: 'Test connection' })).toBeDisabled()
   })
 
   it('saves the Terms, Privacy and Refund page links and rejects a bad one (C97 BI-7)', async () => {
@@ -205,19 +211,6 @@ describe('AdminBillingSettingsPage (C55, C60)', () => {
     await user.click(screen.getByRole('switch', { name: 'Pay by invoice for Globex' }))
     await waitFor(() => expect(setPayByInvoice).toHaveBeenCalledWith(3, false))
   }, 30000)
-
-  it('lists payment gateways, marks the active one and never shows a key (C97 BI-8)', async () => {
-    gateways.mockResolvedValue([
-      { code: 'RAZORPAY', name: 'Razorpay', configured: true, active: true, methods: ['card', 'netbanking', 'upi', 'wallet'], status: {} },
-      { code: 'OTHERPAY', name: 'OtherPay', configured: false, active: false, methods: ['card'], status: {} },
-    ])
-    renderAt('gateway')
-    expect(await screen.findByRole('heading', { name: 'OtherPay' })).toBeInTheDocument()
-    expect(screen.getByText('Active')).toBeInTheDocument()
-    expect(screen.getByRole('button', { name: 'Make Razorpay the active gateway' })).toBeDisabled()
-    expect(screen.getByRole('button', { name: 'Make OtherPay the active gateway' })).toBeDisabled()   // not configured yet
-    expect(screen.getByRole('button', { name: 'Test the OtherPay connection' })).toBeDisabled()
-  })
 
   it('shows a load error with Retry', async () => {
     businessProfile.mockRejectedValueOnce(new Error('boom'))

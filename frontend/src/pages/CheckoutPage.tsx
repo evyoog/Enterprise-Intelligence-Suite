@@ -295,6 +295,8 @@ export function CheckoutPage() {
       const method = RAZORPAY_METHOD[option]
       const paymentMethodId = option === 'card' && typeof selectedCard === 'number' ? selectedCard : undefined
       const order = await api.createPayment(invoice, { method, ...(paymentMethodId ? { paymentMethodId } : {}) })
+      // C98: the backend chose the gateway. This screen can open only the providers it has a launcher for; any other leaves the payment unstarted.
+      if (order.provider && order.provider !== 'RAZORPAY') throw new Error('unsupported-provider')
       const razorpay = await openRazorpayCheckout({
         keyId: order.keyId, orderId: order.providerOrderId, amount: order.amount, currency: order.currency,
         // C60: name, description and colour come from Billing settings when set.
@@ -321,7 +323,8 @@ export function CheckoutPage() {
         return
       }
       const cancelled = e instanceof Error && e.message === 'cancelled'
-      setResult({ kind: 'failed', cancelled, reason: cancelled ? t('checkout.result.cancelled') : (e instanceof ApiError ? e.message : t('checkout.genericError')) })
+      const unsupported = e instanceof Error && e.message === 'unsupported-provider'
+      setResult({ kind: 'failed', cancelled, reason: cancelled ? t('checkout.result.cancelled') : unsupported ? t('checkout.providerUnsupported') : (e instanceof ApiError ? e.message : t('checkout.genericError')) })
       setToast({ message: t('checkout.toast.failed'), severity: 'error' })
       goTo('complete')
     } finally {

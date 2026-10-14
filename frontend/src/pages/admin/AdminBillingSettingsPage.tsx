@@ -13,12 +13,13 @@ import {
   Smartphone, Wallet, Banknote, ListChecks, MessageSquareText,
 } from 'lucide-react'
 import {
-  adminBillingApi, type BusinessProfile, type GatewayStatus, type OfflineBankDetails, type PaymentMethodSettings,
+  adminBillingApi, type BusinessProfile, type OfflineBankDetails, type PaymentMethodSettings,
 } from '../../api/billingApi'
 import { PageHeader } from '../../components/layout/PageHeader'
 import { FieldGrid, SettingsSection, StatusTile } from '../../components/settings/SettingsSection'
 import { PayByInvoiceOrganizations } from '../../components/settings/PayByInvoiceOrganizations'
-import { PaymentGatewaysPanel } from '../../components/settings/PaymentGatewaysPanel'
+import { PaymentGatewayManagement } from '../../components/payments/PaymentGatewayManagement'
+import { paymentGatewayApi, type GatewaySummary } from '../../api/paymentGatewayApi'
 import { SaveBar } from '../../components/settings/SaveBar'
 import { useSettingsForm } from '../../components/settings/useSettingsForm'
 import { accentColor } from '../../theming/accents'
@@ -60,12 +61,12 @@ export function AdminBillingSettingsPage() {
   const setTab = (next: TabKey) => setParams({ tab: next }, { replace: true })
 
   // Overview tiles read the same endpoints the tabs edit.
-  const [overview, setOverview] = useState<{ business?: BusinessProfile; offline?: OfflineBankDetails; methods?: PaymentMethodSettings; gateway?: GatewayStatus }>({})
+  const [overview, setOverview] = useState<{ business?: BusinessProfile; offline?: OfflineBankDetails; methods?: PaymentMethodSettings; gateway?: GatewaySummary }>({})
   const refreshOverview = useCallback(() => {
     adminBillingApi.businessProfile().then((business) => setOverview((o) => ({ ...o, business }))).catch(() => {})
     adminBillingApi.offlineBankDetails().then((offline) => setOverview((o) => ({ ...o, offline }))).catch(() => {})
     adminBillingApi.paymentMethodSettings().then((methods) => setOverview((o) => ({ ...o, methods }))).catch(() => {})
-    adminBillingApi.gatewayStatus().then((gateway) => setOverview((o) => ({ ...o, gateway }))).catch(() => {})
+    paymentGatewayApi.summary().then((gateway) => setOverview((o) => ({ ...o, gateway }))).catch(() => {})
   }, [])
   useEffect(() => { refreshOverview() }, [refreshOverview])
   const [toast, setToast] = useState<string | null>(null)
@@ -95,9 +96,9 @@ export function AdminBillingSettingsPage() {
           value={methodsOn == null ? '—' : t('admin.billingSettings.overview.methodsOn', { count: methodsOn, total: 5 })}
           status={methodsOn ? t('admin.billingSettings.overview.ready') : undefined} statusColor="success" />
         <StatusTile icon={PlugZap} accent="amber" label={t('admin.billingSettings.tabs.gateway')} selected={tab === 'gateway'} onClick={() => setTab('gateway')}
-          value={overview.gateway ? (overview.gateway.liveMode ? t('admin.paymentGateway.live') : t('admin.paymentGateway.test')) : '—'}
-          status={overview.gateway ? (overview.gateway.configured ? t('admin.paymentGateway.configured') : t('admin.paymentGateway.notConfigured')) : undefined}
-          statusColor={overview.gateway?.configured ? 'success' : 'error'} />
+          value={overview.gateway ? t('admin.paymentGateway.stats.activeOf', { active: overview.gateway.active, total: overview.gateway.implemented }) : '—'}
+          status={overview.gateway ? (overview.gateway.active > 0 ? t('admin.paymentGateway.configured') : t('admin.paymentGateway.noneActive')) : undefined}
+          statusColor={overview.gateway && overview.gateway.active > 0 ? 'success' : 'error'} />
       </Box>
 
       <Paper variant="outlined" sx={{ borderRadius: 3, mb: 3 }}>
@@ -113,8 +114,8 @@ export function AdminBillingSettingsPage() {
       <Box role="tabpanel" id={`panel-${tab}`} aria-labelledby={`tab-${tab}`}>
         {tab === 'business' && <BusinessTab onSaved={onSaved} />}
         {tab === 'offline' && <OfflineTab onSaved={onSaved} />}
-        {tab === 'methods' && <MethodsTab onSaved={onSaved} gatewayConfigured={overview.gateway?.configured ?? true} />}
-        {tab === 'gateway' && <PaymentGatewaysPanel onStatus={(gateway) => setOverview((o) => ({ ...o, gateway }))} />}
+        {tab === 'methods' && <MethodsTab onSaved={onSaved} gatewayConfigured={overview.gateway ? overview.gateway.active > 0 : true} />}
+        {tab === 'gateway' && <PaymentGatewayManagement />}
         {tab === 'reminders' && <RenewalReminderDefaultsPanel onSaved={onSaved} />}
       </Box>
 

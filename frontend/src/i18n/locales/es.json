@@ -487,7 +487,7 @@
       "partners": "Socios",
       "billing": "Facturación",
       "billingInvoicesPayments": "Facturas y pagos",
-      "paymentGateway": "Pasarela de pago",
+      "paymentGateway": "Pasarelas de pago",
       "billingSettings": "Configuración de facturación",
       "integrations": "Integraciones",
       "platformEvents": "Eventos de la plataforma",
@@ -1123,28 +1123,147 @@
       "resolveTax": "Resolver impuestos"
     },
     "paymentGateway": {
-      "title": "Pasarela de pago",
-      "subtitle": "Pasarelas de pago y estado de su conexión — solo lectura.",
-      "provider": "Proveedor",
-      "status": "Estado",
-      "configured": "Configurado",
-      "notConfigured": "No configurado",
-      "mode": "Modo",
-      "live": "Producción",
-      "test": "Prueba",
-      "keyId": "ID de clave",
-      "keySecret": "Clave secreta",
-      "webhookSecret": "Secreto del webhook",
-      "webhookUrl": "URL del webhook",
-      "lastWebhook": "Último webhook recibido",
-      "never": "Nunca",
-      "set": "Configurado",
-      "notSet": "No configurado",
-      "copy": "Copiar",
+      "title": "Pasarelas de pago",
+      "subtitle": "Configura y administra los proveedores de pago con los que EIS cobra las suscripciones.",
+      "loadError": "No se pudieron cargar las pasarelas de pago.",
+      "retry": "Reintentar",
+      "working": "Trabajando",
+      "stats": {
+        "registered": "Pasarelas registradas",
+        "configured": "Configuradas",
+        "active": "Activas",
+        "needsConfiguration": "Requieren configuración",
+        "activeOf": "{{active}} de {{total}} activas"
+      },
+      "noneActive": "Ninguna activa",
+      "configured": "Configurada",
+      "configuredTitle": "Pasarelas de pago",
+      "routingNote": "Los pagos nuevos van a una pasarela activa que admita la moneda de la factura y el método de pago; primero se prueba la predeterminada. Los pagos ya realizados siguen siempre con la pasarela que los cobró.",
+      "plannedTitle": "Integraciones previstas",
+      "plannedBody": "Estos proveedores pueden añadirse a EIS pero aún no tienen integración. No se pueden configurar, probar ni activar.",
+      "planned": "Integración prevista",
+      "plannedNote": "{{name}} aún no está integrado. Aquí se ve lo que necesitará; nada de esto se puede configurar ni usar.",
+      "configuration": {
+        "NOT_AVAILABLE": "No disponible",
+        "NOT_CONFIGURED": "Sin configurar",
+        "CONFIGURATION_INCOMPLETE": "Configuración incompleta",
+        "CONFIGURED": "Configurada"
+      },
+      "connection": {
+        "NOT_CONFIGURED": "Sin configurar",
+        "CONFIGURATION_INCOMPLETE": "Configuración incompleta",
+        "NOT_TESTED": "Sin probar",
+        "CONNECTION_SUCCESSFUL": "Conexión correcta",
+        "AUTHENTICATION_FAILED": "Error de autenticación",
+        "PROVIDER_UNAVAILABLE": "Proveedor no disponible",
+        "UNSUPPORTED_CONFIGURATION": "Configuración no compatible",
+        "TEST_FAILED": "La prueba falló"
+      },
+      "active": "Activa",
+      "inactive": "Inactiva",
+      "default": "Predeterminada",
+      "lastTest": "Última prueba: {{date}}",
+      "env": {
+        "TEST": "Pruebas",
+        "LIVE": "Producción"
+      },
+      "envNotSet": "Entorno sin definir",
+      "methods": {
+        "card": "Tarjetas",
+        "upi": "UPI",
+        "netbanking": "Banca en línea",
+        "wallet": "Monederos",
+        "bank_transfer": "Transferencia bancaria",
+        "paypal": "PayPal"
+      },
+      "configure": "Configurar",
+      "configureNamed": "Configurar {{name}}",
       "testConnection": "Probar conexión",
-      "connected": "Conectado.",
-      "testFailed": "No se pudo conectar con Razorpay.",
-      "notConfiguredGuidance": "Agregue las credenciales de Razorpay al archivo común de secretos y reinicie el backend."
+      "testNamed": "Probar la conexión de {{name}}",
+      "activate": "Activar",
+      "activateNamed": "Activar {{name}}",
+      "deactivate": "Desactivar",
+      "deactivateNamed": "Desactivar {{name}}",
+      "makeDefault": "Hacer predeterminada",
+      "makeDefaultNamed": "Hacer de {{name}} la pasarela predeterminada",
+      "viewDetails": "Ver detalles",
+      "viewDetailsNamed": "Ver los detalles de {{name}}",
+      "activated": "{{name}} está activa.",
+      "deactivated": "{{name}} está inactiva. Los pagos ya realizados con ella no cambian.",
+      "defaultSet": "{{name}} es ahora la predeterminada para pagos nuevos.",
+      "testFailed": "No se pudo ejecutar la prueba de conexión.",
+      "saveFailed": "No se pudo guardar. Inténtalo de nuevo.",
+      "configureTitle": "Configurar {{name}}",
+      "configureHelp": "Introduce las credenciales del panel del proveedor. Se guardan cifradas y no se vuelven a mostrar; deja un campo en blanco para conservar lo guardado.",
+      "rotationNote": "Esta pasarela está activa, así que las credenciales nuevas se prueban primero. Si la prueba falla no se guarda nada y las credenciales actuales siguen funcionando.",
+      "noEncryptionKey": "No se pueden guardar credenciales porque el servidor no tiene clave de cifrado (PAYMENT_GATEWAY_ENCRYPTION_KEY). Pídela a quien administra el servidor. Las credenciales del archivo de secretos siguen funcionando.",
+      "unreadable": "Las credenciales guardadas no se pueden leer con la clave de cifrado actual del servidor. Vuelve a introducirlas.",
+      "environment": "Entorno",
+      "keepSecret": "•••••• guardado — déjalo en blanco para conservarlo",
+      "fieldSet": "Definido ({{source}})",
+      "fieldNotSet": "Sin definir",
+      "current": "Actual: {{value}}",
+      "source": {
+        "STORED": "guardado aquí",
+        "ENVIRONMENT": "archivo de secretos",
+        "NONE": "sin definir"
+      },
+      "save": "Guardar",
+      "saved": "Configuración de {{name}} guardada.",
+      "cancel": "Cancelar",
+      "close": "Cerrar",
+      "detailTabs": "Detalles de la pasarela",
+      "tabs": {
+        "overview": "Resumen",
+        "webhook": "Webhook",
+        "activity": "Actividad"
+      },
+      "regions": "Países y monedas",
+      "capabilities": "Admite",
+      "cap": {
+        "webhooks": "Webhooks",
+        "refunds": "Reembolsos",
+        "recurring": "Pagos recurrentes"
+      },
+      "paymentMethods": "Métodos de pago",
+      "methodsHelp": "Desactiva un método para dejar de ofrecerlo con esta pasarela. Debe quedar al menos uno.",
+      "fields": "Campos de configuración",
+      "secretField": "Secreto",
+      "publicField": "Identificador",
+      "evidence": "Comprobado con actividad real",
+      "evidenceHelp": "Es independiente de la prueba de conexión: que pase no demuestra que los pagos, webhooks o reembolsos funcionen.",
+      "evidenceItems": {
+        "authenticated": "Credenciales aceptadas",
+        "webhookReceived": "Webhook firmado recibido",
+        "paymentCaptured": "Pago capturado",
+        "refundMade": "Reembolso realizado"
+      },
+      "seen": "Sí",
+      "notSeen": "Aún no",
+      "endpoint": "URL del webhook",
+      "copy": "Copiar",
+      "copied": "Copiado",
+      "copyEndpoint": "Copiar la URL del webhook",
+      "localUrl": "Esta URL apunta a este equipo, así que el proveedor no puede alcanzarla. Define la dirección pública del backend (APP_BACKEND_URL) para este entorno.",
+      "hookSecretSet": "Secreto del webhook definido",
+      "hookSecretMissing": "Falta el secreto del webhook",
+      "signature": {
+        "VERIFIED": "Firma verificada",
+        "NOT_SEEN": "Aún no hay evento firmado",
+        "NOT_APPLICABLE": "Sin webhooks"
+      },
+      "hookFailures": "{{count}} webhook(s) rechazado(s)",
+      "lastEvent": "Último evento recibido",
+      "never": "Nunca",
+      "lastFailure": "Último webhook rechazado ({{date}})",
+      "subscribeTo": "Suscribe el webhook a",
+      "setupSteps": "Pasos de configuración",
+      "recentEvents": "Eventos de webhook recientes",
+      "noEvents": "No se ha recibido ningún webhook.",
+      "history": "Cambios de los administradores",
+      "noHistory": "Aún no hay cambios registrados.",
+      "configVersion": "Versión de configuración {{version}}",
+      "credentialsUpdated": "credenciales actualizadas {{date}}"
     },
     "billingSettings": {
       "eyebrow": "Facturación",
@@ -1304,40 +1423,6 @@
         "checkoutTitle": "Vista previa del pago",
         "checkoutDescription": "Pago de suscripción",
         "checkoutNote": "Los métodos desactivados no se muestran en el pago."
-      },
-      "gateway": {
-        "statusTitle": "Credenciales de Razorpay",
-        "statusBody": "Si cada clave está en el archivo de secretos. Los valores nunca se muestran aquí.",
-        "present": "Presente",
-        "missing": "Falta",
-        "provider": "Proveedor: {{provider}}",
-        "webhookTitle": "Webhook",
-        "webhookBody": "Registra esta URL en el panel de Razorpay con tu secreto de webhook, para confirmar los pagos aunque el cliente cierre la ventana.",
-        "copyWebhook": "Copiar la URL del webhook",
-        "copyVariable": "Copiar {{name}}",
-        "setupTitle": "Añadir o renovar las claves",
-        "setupBody": "Las claves solo están en el archivo común de secretos (BR-SEC-001).",
-        "step1": {
-          "title": "Genera las claves en Razorpay",
-          "body": "En el panel de Razorpay, crea una clave de prueba (o una real al pasar a producción) y un secreto de webhook."
-        },
-        "step2": {
-          "title": "Ponlas en config/secrets.env",
-          "body": "Rellena estas variables en el servidor. El archivo nunca se sube al repositorio."
-        },
-        "step3": {
-          "title": "Registra el webhook",
-          "body": "Añade la URL del webhook anterior en el panel de Razorpay con el mismo secreto."
-        },
-        "step4": {
-          "title": "Reinicia el backend",
-          "body": "El backend lee el archivo de secretos al arrancar."
-        },
-        "step5": {
-          "title": "Prueba la conexión",
-          "body": "Usa Probar conexión. Los métodos en línea se activan para los clientes automáticamente."
-        },
-        "securityNote": "Por seguridad, las claves de Razorpay nunca se escriben, guardan ni muestran en esta pantalla. Solo si cada clave está configurada y el ID de clave enmascarado."
       },
       "reminders": {
         "title": "Valores predeterminados de recordatorios",
@@ -1872,16 +1957,6 @@
         }
       },
       "close": "Cerrar"
-    },
-    "gateways": {
-      "title": "Pasarelas de pago",
-      "body": "Las pasarelas con las que la plataforma puede cobrar. El pago usa la activa y nunca muestra sus claves.",
-      "active": "Activa",
-      "methods": "Métodos",
-      "makeActive": "Activar",
-      "makeActiveNamed": "Activar {{name}} como pasarela",
-      "testNamed": "Probar la conexión de {{name}}",
-      "addNote": "Se puede enlazar otra pasarela añadiéndola al backend de la plataforma, con sus credenciales en el archivo común de secretos; después aparece en esta lista. Cambiar la pasarela activa solo afecta a los pagos nuevos."
     }
   },
   "checkout": {
@@ -2093,7 +2168,8 @@
       "upi": "UPI",
       "netbanking": "Banca en línea",
       "wallet": "Monederos"
-    }
+    },
+    "providerUnsupported": "Este pago se dirigió a una pasarela que esta pantalla aún no puede abrir. No se cobró nada. Prueba otro método o contacta con soporte."
   },
   "cart": {
     "title": "Tu carrito",

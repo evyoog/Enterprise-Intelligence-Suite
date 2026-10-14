@@ -146,16 +146,6 @@ export interface BusinessProfile {
 /** C97 BI-4: an organization and whether pay by invoice is enabled for it. */
 export interface PayByInvoiceOrganization { id: number; name: string; code: string; enabled: boolean }
 
-/** C97 BI-8: one payment gateway the platform can offer. Never carries a secret. */
-export interface PaymentGatewayInfo {
-  code: string
-  name: string
-  configured: boolean
-  active: boolean
-  methods: CheckoutMethod[]
-  status: GatewayStatus
-}
-
 /** C60: payment methods offered at checkout and Razorpay Checkout appearance. */
 export interface PaymentMethodSettings {
   cardEnabled: boolean
@@ -303,7 +293,12 @@ export interface CreatePaymentResponse {
   providerOrderId: string
   amount: number
   currency: string
+  /** The provider's public key (Razorpay Checkout). */
   keyId: string
+  /** C98: which gateway the backend routed this payment to. */
+  provider: string
+  /** Everything public the browser needs to open that provider's payment window; never a secret. */
+  clientConfig: Record<string, string>
 }
 
 export interface PaymentMethodSetupResponse {
@@ -409,11 +404,6 @@ export const adminBillingApi = {
   reconcile: (paymentId: number) => apiRequest<Payment>(`/admin/billing/payments/${paymentId}/reconcile`, { method: 'POST' }),
   gatewayStatus: () => apiRequest<GatewayStatus>('/admin/billing/gateway'),
   testGateway: () => apiRequest<void>('/admin/billing/gateway/test', { method: 'POST' }),
-  /** C97 BI-8: every payment gateway, which one is active, and a test per gateway. */
-  gateways: () => apiRequest<PaymentGatewayInfo[]>('/admin/billing/gateways'),
-  setActiveGateway: (code: string) =>
-    apiRequest<PaymentGatewayInfo[]>('/admin/billing/gateways/active', { method: 'PUT', body: JSON.stringify({ code }) }),
-  testGatewayByCode: (code: string) => apiRequest<void>(`/admin/billing/gateways/${code}/test`, { method: 'POST' }),
   /** C97 BI-4: organizations allowed to pay by invoice (no search) or a name search. */
   payByInvoiceOrganizations: (search?: string) =>
     apiRequest<PayByInvoiceOrganization[]>(`/admin/billing/settings/pay-by-invoice/organizations${search ? `?search=${encodeURIComponent(search)}` : ''}`),
