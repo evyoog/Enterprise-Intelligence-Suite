@@ -61,6 +61,8 @@ public class SubscriptionService {
     private final InvoiceService invoiceService;
     /** REQ-INT-002 (C62): lifecycle events, written in the same transaction. */
     private final OutboxService outboxService;
+    /** C100 SE-1 B: seats in use, when a scheduled seat decrease is applied at renewal. */
+    private final ProductSeatService productSeatService;
     /** REQ-CAT-005 (C85): per-product audience rule. */
     private final com.vyoog.eisplatform.modules.offering.service.EligibilityService eligibilityService;
     /** REQ-TEN-005 (C90): organization entitlement changes recalculate member product access. */
@@ -251,6 +253,41 @@ public class SubscriptionService {
      * up front, since the order that triggers it already carries one. */
     @Transactional
     public SubscriptionDto subscribeOrganization(Long organizationId, Long productId, Long planId) {
+        ProductSubscription subscription = activateOrganizationSubscription(organizationId, productId, planId);
+        invoiceService.generateForSubscription(subscription.getId());
+        eventPublisher.publishEvent(new com.vyoog.eisplatform.modules.registration.event.OrganizationEntitlementsChangedEvent(organizationId));
+        return toDto(subscription, productRepository.findById(productId).map(Product::getName).orElse("Unknown product"));
+    }
+
+    /** C100 CA-1 B: an approved or direct organization purchase of several products: every subscription is created and ONE invoice bills them all (with the
+     * coupon, if any). Returns the invoice id, or null when everything was free. */
+    @Transactional
+    public Long subscribeOrganizationItems(Long organizationId, List<long[]> productAndPlan, String couponCode) {
+        List<Long> subscriptionIds = new java.util.ArrayList<>();
+        for (long[] item : productAndPlan) {
+            Long planId = item[1] == 0 ? null : item[1];
+            subscriptionIds.add(activateOrganizationSubscription(organizationId, item[0], planId).getId());
+        }
+        var invoice = invoiceService.generateForSubscriptions(subscriptionIds, couponCode);
+        eventPublisher.publishEvent(new com.vyoog.eisplatform.modules.registration.event.OrganizationEntitlementsChangedEvent(organizationId));
+        return invoice == null ? null : invoice.getId();
+    }
+
+    /** C100 SE-1 B: the seats a purchase of this product starts with (and is billed for): the existing subscription's seats, else, as REQ-SUB-003's
+     * engineering default, the organization's licensed seats (at least the active members, at least 1). */
+    public int initialSeats(Long organizationId, Long productId) {
+        var existing = subscriptionRepository.findByOwnerOrganizationIdAndProductId(organizationId, productId);
+        if (existing.isPresent() && existing.get().getQuantity() > 0) {
+            return existing.get().getQuantity();
+        }
+        int licensed = organizationRepository.findById(organizationId).map(o -> o.getLicensedSeats()).orElse(0);
+        long active = memberRepository.countByOrganizationIdAndStatus(organizationId,
+            com.vyoog.eisplatform.modules.registration.model.MembershipStatus.ACTIVE);
+        return (int) Math.min(SubscriptionSeatService.MAX_SEATS, Math.max(1, Math.max(licensed, active)));
+    }
+
+    /** Creates or reactivates an organization's subscription to a product on a plan, with its audit and event; the caller bills it. */
+    private ProductSubscription activateOrganizationSubscription(Long organizationId, Long productId, Long planId) {
         Product product = productRepository.findById(productId)
             .filter(p -> p.getStatus() == ProductStatus.ACTIVE)
             .orElseThrow(() -> new ResourceNotFoundException("Product not found"));
@@ -265,12 +302,7 @@ public class SubscriptionService {
                 return created;
             });
         if (subscription.getId() == null) {
-            // REQ-SUB-003 engineering default: start at the organization's
-            // licensed seats (at least the active members, at least 1).
-            int licensed = organizationRepository.findById(organizationId).map(o -> o.getLicensedSeats()).orElse(0);
-            long active = memberRepository.countByOrganizationIdAndStatus(organizationId,
-                com.vyoog.eisplatform.modules.registration.model.MembershipStatus.ACTIVE);
-            subscription.setQuantity((int) Math.min(SubscriptionSeatService.MAX_SEATS, Math.max(1, Math.max(licensed, active))));
+            subscription.setQuantity(initialSeats(organizationId, productId));
         }
         subscription.setStatus(SubscriptionStatus.ACTIVE);
         subscription.setStartedAt(Instant.now());
@@ -278,15 +310,14 @@ public class SubscriptionService {
         // REQ-SUB-004.1 (C64): a Monthly/Yearly plan gets a renewal date and auto-renew.
         subscription.setExpiresAt(firstRenewalDate(planId, subscription.getStartedAt()));
         subscription.setAutoRenew(true);
+        subscription.setGraceEndsAt(null);
+        subscription.setPendingQuantity(null);
         subscription = subscriptionRepository.save(subscription);
 
         auditService.recordSuccess("SUBSCRIPTION_CREATED", null, null, null,
             "ProductSubscription", productId.toString(), organizationId, "Organization subscribed to product " + productId);
         publish(PlatformEventTypes.SUBSCRIPTION_CREATED, subscription);
-        invoiceService.generateForSubscription(subscription.getId());
-        eventPublisher.publishEvent(new com.vyoog.eisplatform.modules.registration.event.OrganizationEntitlementsChangedEvent(organizationId));
-
-        return toDto(subscription, product.getName());
+        return subscription;
     }
 
     private SubscriptionDto toDto(ProductSubscription subscription) {
@@ -312,7 +343,9 @@ public class SubscriptionService {
             subscription.isAutoRenew(),
             subscription.getPendingPlanId(),
             subscription.getPendingPlanId() == null ? null
-                : productPlanRepository.findById(subscription.getPendingPlanId()).map(ProductPlan::getName).orElse(null)
+                : productPlanRepository.findById(subscription.getPendingPlanId()).map(ProductPlan::getName).orElse(null),
+            subscription.getPendingQuantity(),
+            subscription.getGraceEndsAt()
         );
     }
 
@@ -418,10 +451,12 @@ public class SubscriptionService {
         }
         Instant oldRenewal = subscription.getExpiresAt();
         applyPendingPlan(subscription);   // C97 SC-1: a scheduled downgrade takes effect with this renewal
+        applyPendingSeats(subscription);  // C100 SE-1 B: so does a scheduled seat decrease
         Optional<Instant> next = nextExpiry(subscription, oldRenewal);
         if (next.isEmpty()) {
             return false;
         }
+        subscription.setGraceEndsAt(null);   // C100 RR-1 B: renewing ends a grace period
         subscription.setExpiresAt(next.get());
         subscription = subscriptionRepository.save(subscription);
         invoiceService.generateForSubscription(subscription.getId());
@@ -467,8 +502,10 @@ public class SubscriptionService {
         Instant from = subscription.getExpiresAt() != null && subscription.getExpiresAt().isAfter(Instant.now())
             ? subscription.getExpiresAt() : Instant.now();
         applyPendingPlan(subscription);   // C97 SC-1
+        applyPendingSeats(subscription);  // C100 SE-1 B
         Instant newExpiry = nextExpiry(subscription, from)
             .orElseThrow(() -> new IllegalArgumentException("This subscription has no billing period to renew."));
+        subscription.setGraceEndsAt(null);   // C100 RR-1 B
         subscription.setExpiresAt(newExpiry);
         if (subscription.getStatus() == SubscriptionStatus.EXPIRED) {
             subscription.setStatus(SubscriptionStatus.ACTIVE);
@@ -482,18 +519,36 @@ public class SubscriptionService {
         return toDto(subscription);
     }
 
-    /** 07.04.01 Process expiry (sprint 2026.4.3): called by
-     * {@code SubscriptionExpiryJob} on a fixed schedule — flips every ACTIVE
-     * subscription whose {@code expiresAt} has passed to EXPIRED. Skips
-     * SUSPENDED/CANCELLED rows: those are already out of ACTIVE, so this
-     * query never sees them. */
+    /** C100 RR-1 B: how long a subscription stays read-only after its term ends with auto-renew off. */
+    public static final int GRACE_DAYS = 7;
+
+    /** 07.04.01 Process expiry (sprint 2026.4.3), C100 RR-1 B: called by {@code SubscriptionExpiryJob}. A subscription whose term has ended with
+     * auto-renew OFF first gets a {@value #GRACE_DAYS}-day read-only grace period (it stays ACTIVE, with {@code graceEndsAt}); when that has passed it is
+     * flipped to EXPIRED. Returns the number that expired. SUSPENDED and CANCELLED rows are never seen by this query. */
     @Transactional
     public int expireOverdueSubscriptions() {
-        // REQ-SUB-004 (C64): auto-renewing subscriptions are renewed by
-        // RenewalJob instead of expiring.
+        // REQ-SUB-004 (C64): auto-renewing subscriptions are renewed by RenewalJob instead.
+        Instant now = Instant.now();
         List<ProductSubscription> overdue = subscriptionRepository
-            .findByStatusAndAutoRenewFalseAndExpiresAtBefore(SubscriptionStatus.ACTIVE, Instant.now());
+            .findByStatusAndAutoRenewFalseAndExpiresAtBefore(SubscriptionStatus.ACTIVE, now);
+        int expired = 0;
         for (ProductSubscription subscription : overdue) {
+            if (subscription.getGraceEndsAt() == null) {
+                Instant graceEnd = subscription.getExpiresAt().plus(GRACE_DAYS, ChronoUnit.DAYS);
+                subscription.setGraceEndsAt(graceEnd);
+                subscriptionRepository.save(subscription);
+                if (graceEnd.isAfter(now)) {
+                    notify(subscription, "Subscription ended: read-only", "Your subscription has ended. It stays read-only until "
+                        + graceEnd.atZone(java.time.ZoneOffset.UTC).toLocalDate() + "; renew before then to keep full access.");
+                    auditService.recordSuccess("SUBSCRIPTION_GRACE_STARTED", null, subscription.getOwnerCustomerId(), null,
+                        "ProductSubscription", subscription.getId().toString(), subscription.getOwnerOrganizationId(),
+                        "Term ended with auto-renew off; read-only until " + graceEnd);
+                    publish(PlatformEventTypes.SUBSCRIPTION_CHANGED, subscription);
+                    continue;
+                }
+            } else if (subscription.getGraceEndsAt().isAfter(now)) {
+                continue;
+            }
             subscription.setStatus(SubscriptionStatus.EXPIRED);
             subscriptionRepository.save(subscription);
             notify(subscription, "Subscription expired", "Your subscription has expired.");
@@ -503,8 +558,42 @@ public class SubscriptionService {
                 eventPublisher.publishEvent(new com.vyoog.eisplatform.modules.registration.event.OrganizationEntitlementsChangedEvent(
                     subscription.getOwnerOrganizationId()));
             }
+            expired++;
         }
-        return overdue.size();
+        return expired;
+    }
+
+    /** C100 RR-1 B: the customer turns auto-renew on or off. Turning it on during a grace period renews at once. */
+    @Transactional
+    public SubscriptionDto setAutoRenew(Long customerId, Long subscriptionId, boolean autoRenew) {
+        return changeAutoRenew(resolveOwnSubscription(customerId, subscriptionId), customerId, autoRenew);
+    }
+
+    @Transactional
+    public SubscriptionDto setOrganizationAutoRenew(Long organizationId, Long actorCustomerId, Long subscriptionId, boolean autoRenew) {
+        return changeAutoRenew(resolveOrganizationSubscription(organizationId, subscriptionId), actorCustomerId, autoRenew);
+    }
+
+    private SubscriptionDto changeAutoRenew(ProductSubscription subscription, Long actorCustomerId, boolean autoRenew) {
+        if (subscription.getStatus() != SubscriptionStatus.ACTIVE && subscription.getStatus() != SubscriptionStatus.SUSPENDED) {
+            throw new IllegalArgumentException("Auto-renew can only be changed on an active or suspended subscription.");
+        }
+        if (subscription.getExpiresAt() == null) {
+            throw new IllegalArgumentException("This subscription has no renewal date.");
+        }
+        if (subscription.isAutoRenew() != autoRenew) {
+            subscription.setAutoRenew(autoRenew);
+            subscription = subscriptionRepository.save(subscription);
+            auditService.recordSuccess("SUBSCRIPTION_AUTO_RENEW_CHANGED", null, actorCustomerId, null, "ProductSubscription",
+                subscription.getId().toString(), subscription.getOwnerOrganizationId(), "Auto-renew turned " + (autoRenew ? "on" : "off"));
+            publish(PlatformEventTypes.SUBSCRIPTION_CHANGED, subscription);
+            if (autoRenew && subscription.getGraceEndsAt() != null && subscription.getStatus() == SubscriptionStatus.ACTIVE
+                    && !subscription.getExpiresAt().isAfter(Instant.now())) {
+                autoRenew(subscription.getId());
+                subscription = subscriptionRepository.findById(subscription.getId()).orElse(subscription);
+            }
+        }
+        return toDto(subscription);
     }
 
     /** 07.01.02 Change plan (sprint 2026.4.3), C97 SC-1: an upgrade (or a plan of the same price) takes effect at once; a downgrade is
@@ -592,6 +681,32 @@ public class SubscriptionService {
                 subscription.getId().toString(), subscription.getOwnerOrganizationId(), "Scheduled plan change withdrawn");
         }
         return toDto(subscription);
+    }
+
+    /** C100 SE-1 B: at a renewal, a scheduled seat decrease takes effect (never below the seats in use), so the renewal is billed for fewer seats. */
+    private void applyPendingSeats(ProductSubscription subscription) {
+        Integer pending = subscription.getPendingQuantity();
+        if (pending == null) {
+            return;
+        }
+        long inUse = subscription.getOwnerOrganizationId() == null ? 0
+            : productSeatService.seatsInUse(subscription.getOwnerOrganizationId(), subscription.getProductId());
+        int target = (int) Math.max(Math.max(1, pending), inUse);
+        int from = subscription.getQuantity();
+        subscription.setPendingQuantity(null);
+        if (target != from) {
+            subscription.setQuantity(target);
+            auditService.recordSuccess("SUBSCRIPTION_SEATS_CHANGED", null, subscription.getOwnerCustomerId(), null, "ProductSubscription",
+                subscription.getId().toString(), subscription.getOwnerOrganizationId(),
+                "Seats changed from " + from + " to " + target + " at renewal" + (target != pending ? " (" + inUse + " seats are in use)" : ""));
+            Map<String, Object> payload = new LinkedHashMap<>();
+            payload.put("subscriptionId", subscription.getId());
+            payload.put("organizationId", subscription.getOwnerOrganizationId());
+            payload.put("productId", subscription.getProductId());
+            payload.put("fromQuantity", from);
+            payload.put("toQuantity", target);
+            outboxService.publish(PlatformEventTypes.SEATS_CHANGED, PlatformEventTypes.AGGREGATE_SUBSCRIPTION, subscription.getId(), payload);
+        }
     }
 
     /** C97 SC-1: at a renewal, a scheduled downgrade takes effect, so the renewal is billed at the new plan's price. */

@@ -19,6 +19,10 @@ public record SubscriptionDto(
     boolean autoRenew,
     /** C97 SC-1: a downgrade chosen by the customer, taking effect at the next renewal; null when none is scheduled. */
     Long pendingPlanId,
-    String pendingPlanName
+    String pendingPlanName,
+    /** C100 SE-1 B: a seat decrease taking effect at the next renewal; null when none is scheduled. */
+    Integer pendingQuantity,
+    /** C100 RR-1 B: while set and in the future, the subscription is read-only (its term has ended). */
+    Instant graceEndsAt
 ) {
 }

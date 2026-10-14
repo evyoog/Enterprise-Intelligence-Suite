@@ -19,6 +19,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -66,8 +67,20 @@ public class CartController {
     }
 
     @PostMapping("/checkout")
-    public ResponseEntity<CartCheckoutResultDto> checkout(@AuthenticationPrincipal Jwt jwt) {
-        return ResponseEntity.status(HttpStatus.CREATED).body(cartService.checkout(customerId(jwt)));
+    public ResponseEntity<CartCheckoutResultDto> checkout(@AuthenticationPrincipal Jwt jwt,
+                                                          @RequestBody(required = false) com.vyoog.eisplatform.modules.cart.dto.CartCheckoutRequest request) {
+        return ResponseEntity.status(HttpStatus.CREATED).body(cartService.checkout(customerId(jwt), request == null ? null : request.reason()));
+    }
+
+    /** C100 (PB-1 note): the coupon field. */
+    @PutMapping("/coupon")
+    public CartDto applyCoupon(@AuthenticationPrincipal Jwt jwt, @RequestBody com.vyoog.eisplatform.modules.cart.dto.ApplyCouponRequest request) {
+        return cartService.applyCoupon(customerId(jwt), request.code());
+    }
+
+    @DeleteMapping("/coupon")
+    public CartDto removeCoupon(@AuthenticationPrincipal Jwt jwt) {
+        return cartService.removeCoupon(customerId(jwt));
     }
 
     private Long customerId(Jwt jwt) {

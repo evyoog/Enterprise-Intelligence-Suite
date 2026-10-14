@@ -19,6 +19,8 @@ public record CartItemDto(
     String currency,
     long amount,
     Instant addedAt,
-    List<CartPlanOptionDto> plans
+    List<CartPlanOptionDto> plans,
+    /** C100 SE-1 B: a plan's price is per seat for an organization, so an organization's item is {@code seats} x {@code unitPrice}; 1 for an individual. */
+    int seats
 ) {
 }

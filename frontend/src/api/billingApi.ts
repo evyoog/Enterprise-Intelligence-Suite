@@ -67,7 +67,11 @@ export interface CheckoutSummary {
   subscriptionStatus?: string
   currency: string
   items: CheckoutItem[]
+  /** Before the coupon discount: subtotal - discount + tax = total. */
   subtotal: number
+  /** C100 (PB-1 note): the coupon applied to the invoice and the discount it gave. */
+  couponCode?: string | null
+  discount?: number
   taxLines: TaxLine[]
   total: number
   dueAt?: string
@@ -207,6 +211,8 @@ export interface InvoiceLine {
   taxAmount?: number
   taxClassCode?: string
   hsnSacCode?: string
+  /** C100: this line's share of the coupon discount. */
+  discountAmount?: number
 }
 
 export interface Payment {
@@ -236,9 +242,13 @@ export interface Invoice {
   invoiceNumber: string
   status: InvoiceStatus
   currency: Currency
+  /** Net of the coupon discount: subtotal + tax = total. */
   subtotal: number
   taxAmount: number
   total: number
+  /** C100 (PB-1 note): the coupon applied and the discount it gave. */
+  couponCode?: string | null
+  discountAmount?: number
   periodStart?: string
   periodEnd?: string
   issuedAt: string

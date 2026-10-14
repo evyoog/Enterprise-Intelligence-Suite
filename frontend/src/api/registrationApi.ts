@@ -96,6 +96,10 @@ export interface Subscription {
   /** C97 SC-1: a downgrade chosen by the customer, applied at the next renewal. */
   pendingPlanId?: number
   pendingPlanName?: string
+  /** C100 SE-1 B: a seat decrease applied at the next renewal; null/absent when none is scheduled. */
+  pendingQuantity?: number | null
+  /** C100 RR-1 B: while in the future the subscription is read-only (term ended, auto-renew off). */
+  graceEndsAt?: string | null
 }
 
 /** REQ-SUB-002 (C97 EN-1): one read-only entitlement, derived from an ACTIVE subscription and its plan. */
@@ -112,6 +116,9 @@ export interface Entitlement {
   /** The plan's limit only (C97 EN-5); each product counts its own usage. */
   usageLimit?: number
   quantity: number
+  /** C100 RR-1 B: FULL, or READ_ONLY while the 7-day grace period runs. */
+  accessMode?: 'FULL' | 'READ_ONLY'
+  graceEndsAt?: string | null
 }
 
 /** REQ-SUB-003 (C63): an organization subscription's seats. */
@@ -123,7 +130,23 @@ export interface SeatSummary {
   minimum: number
   organizationSeatLimit: number
   maximum: number
+  /** C100 SE-1 B: a decrease that takes effect at the next renewal; null when none. */
+  pendingQuantity?: number | null
+  /** Minor units: the price of ONE seat for ONE term. */
+  unitAmount?: number
+  currency?: string | null
+  /** Days left in the term, of `termDays`: an increase now is charged for these. */
+  remainingDays?: number
+  termDays?: number
+  renewsAt?: string | null
+  /** Only in the answer to a change. */
+  effect?: SeatChangeEffect | null
+  /** The invoice issued for an increase (answer to a change only). */
+  invoiceId?: number | null
 }
+
+/** C100 SE-1 B: what a seat change did. */
+export type SeatChangeEffect = 'NOW' | 'AT_RENEWAL' | 'WITHDRAWN' | 'UNCHANGED'
 
 export interface OrgMember {
   organizationMemberId: number
@@ -195,6 +218,9 @@ export const myProductsApi = {
   /** C97 SC-1: withdraws a downgrade scheduled for the next renewal. */
   cancelScheduledPlanChange: (subscriptionId: number) =>
     apiRequest<Subscription>(`/me/subscriptions/${subscriptionId}/plan/scheduled`, { method: 'DELETE' }),
+  /** C100 RR-1 B: turning it off starts a 7-day read-only grace period at the term end; turning it on in the grace period renews at once. */
+  setAutoRenew: (subscriptionId: number, autoRenew: boolean) =>
+    apiRequest<Subscription>(`/me/subscriptions/${subscriptionId}/auto-renew`, { method: 'PATCH', body: JSON.stringify({ autoRenew }) }),
 }
 
 /** REQ-SUB-002 (C97 EN-1, EN-3): read-only entitlements. The admin lookup needs `VIEW_ENTITLEMENTS`. */
@@ -226,9 +252,12 @@ export const organizationApi = {
     apiRequest<OrgMember>(`/organization/me/members/${memberId}/access-review`, { method: 'POST' }),
   listMyOrgProducts: () => apiRequest<OrgProductAccess[]>('/organization/me/products'),
   listMyOrgSubscription: () => apiRequest<Subscription[]>('/organization/me/subscription'),
-  // REQ-SUB-003 (C63) — MANAGE_ORGANIZATION.
+  // REQ-SUB-003 (C63, C100 SE-2) — viewing: Manage billing or Manage subscriptions; changing seats: Manage billing.
   listOrganizationSubscriptions: () => apiRequest<Subscription[]>('/organization/me/subscriptions'),
   seats: (subscriptionId: number) => apiRequest<SeatSummary>(`/organization/me/subscriptions/${subscriptionId}/seats`),
   changeSeats: (subscriptionId: number, quantity: number) =>
     apiRequest<SeatSummary>(`/organization/me/subscriptions/${subscriptionId}/seats`, { method: 'PATCH', body: JSON.stringify({ quantity }) }),
+  /** C100 RR-1 B: Manage billing or Manage subscriptions. */
+  setAutoRenew: (subscriptionId: number, autoRenew: boolean) =>
+    apiRequest<Subscription>(`/organization/me/subscriptions/${subscriptionId}/auto-renew`, { method: 'PATCH', body: JSON.stringify({ autoRenew }) }),
 }

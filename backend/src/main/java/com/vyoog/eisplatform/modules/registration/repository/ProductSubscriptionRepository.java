@@ -31,6 +31,9 @@ public interface ProductSubscriptionRepository extends JpaRepository<ProductSubs
     List<ProductSubscription> findByStatusAndAutoRenewTrueAndExpiresAtLessThanEqual(SubscriptionStatus status, Instant instant);
 
     /** REQ-SUB-004.6: subscriptions renewing within a window (reminder candidates). */
+    /** C100 RR-4: subscriptions whose grace period ends in the window (a grace reminder runs to the end of the local grace day, even after the expiry job ran). */
+    List<ProductSubscription> findByGraceEndsAtBetween(Instant from, Instant to);
+
     List<ProductSubscription> findByStatusAndExpiresAtBetween(SubscriptionStatus status, Instant from, Instant to);
 
     /** Platform admin dashboard (C53): subscriptions by status, platform-wide. */

@@ -2,6 +2,14 @@ import { apiRequest } from './client'
 
 export type OrderStatus = 'SUBMITTED' | 'APPROVED' | 'REJECTED' | 'CANCELLED'
 
+/** C100 CA-1 B: one product of an order. */
+export interface OrderItem {
+  productId: number
+  productName: string
+  planId?: number
+  planName?: string
+}
+
 export interface Order {
   id: number
   productId: number
@@ -16,6 +24,10 @@ export interface Order {
   decidedAt?: string
   decisionNote?: string
   createdAt: string
+  /** C100 CA-1 B: every product of the order (the fields above are the first). */
+  items?: OrderItem[]
+  /** C100 CA-2: why the member asked for the purchase. */
+  requestReason?: string | null
 }
 
 // 09 Order & Provisioning Management (sprint 2027.1.1) — organization

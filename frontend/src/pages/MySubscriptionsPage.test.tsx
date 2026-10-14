@@ -1,5 +1,5 @@
 import '../i18n'
-import { screen, waitFor } from '@testing-library/react'
+import { screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { axe } from 'jest-axe'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
@@ -14,6 +14,7 @@ const cancel = vi.fn()
 const renew = vi.fn()
 const changePlan = vi.fn()
 const cancelScheduledPlanChange = vi.fn()
+const setAutoRenew = vi.fn()
 const entitlementsMine = vi.fn()
 
 vi.mock('../api/registrationApi', async () => {
@@ -28,6 +29,7 @@ vi.mock('../api/registrationApi', async () => {
       renew: (id: number) => renew(id),
       changePlan: (id: number, planId: number | null) => changePlan(id, planId),
       cancelScheduledPlanChange: (id: number) => cancelScheduledPlanChange(id),
+      setAutoRenew: (id: number, v: boolean) => setAutoRenew(id, v),
     },
     entitlementsApi: { ...actual.entitlementsApi, mine: () => entitlementsMine() },
     organizationApi: {
@@ -54,7 +56,7 @@ const suspendedSub = { ...activeSub, id: 2, status: 'SUSPENDED' as const }
 
 describe('MySubscriptionsPage', () => {
   beforeEach(() => {
-    for (const m of [listSubscriptions, suspend, reactivate, cancel, renew, changePlan, productGet, myRenewals, cancelScheduledPlanChange, entitlementsMine]) m.mockReset()
+    for (const m of [listSubscriptions, suspend, reactivate, cancel, renew, changePlan, productGet, myRenewals, cancelScheduledPlanChange, entitlementsMine, setAutoRenew]) m.mockReset()
     myRenewals.mockResolvedValue([])
     entitlementsMine.mockResolvedValue([])
   })
@@ -152,5 +154,93 @@ describe('MySubscriptionsPage', () => {
     expect(screen.getByText('Reports')).toBeInTheDocument()
     expect(screen.getByText('API access')).toBeInTheDocument()
     expect(screen.getByText(/Limit: 1,000/)).toBeInTheDocument()
+  })
+  it('turns auto-renew off after a confirmation that explains the 7-day read-only grace period (C100 RR-1)', async () => {
+    const withTerm = { ...activeSub, expiresAt: '2026-11-02T10:00:00Z', autoRenew: true }
+    listSubscriptions.mockResolvedValue([withTerm])
+    setAutoRenew.mockResolvedValue({ ...withTerm, autoRenew: false })
+    renderWithProviders(<MySubscriptionsPage />)
+    const user = userEvent.setup()
+
+    const toggle = await screen.findByRole('switch', { name: 'Auto-renew' })
+    expect(toggle).toBeChecked()
+    await user.click(toggle)
+    const dialog = screen.getByRole('dialog', { name: 'Turn off auto-renew for Valam.ai?' })
+    expect(within(dialog).getByText(/read-only for 7 days/)).toBeInTheDocument()
+    expect(setAutoRenew).not.toHaveBeenCalled()
+    await user.click(within(dialog).getByRole('button', { name: 'Turn off auto-renew' }))
+    expect(setAutoRenew).toHaveBeenCalledWith(1, false)
+    await waitFor(() => expect(screen.getByRole('switch', { name: 'Auto-renew' })).not.toBeChecked())
+  })
+
+  it('turns auto-renew on straight away', async () => {
+    const off = { ...activeSub, expiresAt: '2026-11-02T10:00:00Z', autoRenew: false }
+    listSubscriptions.mockResolvedValue([off])
+    setAutoRenew.mockResolvedValue({ ...off, autoRenew: true })
+    renderWithProviders(<MySubscriptionsPage />)
+    await userEvent.setup().click(await screen.findByRole('switch', { name: 'Auto-renew' }))
+    expect(setAutoRenew).toHaveBeenCalledWith(1, true)
+  })
+
+  it('shows the server message when auto-renew cannot be changed', async () => {
+    const withTerm = { ...activeSub, expiresAt: '2026-11-02T10:00:00Z', autoRenew: false }
+    listSubscriptions.mockResolvedValue([withTerm])
+    setAutoRenew.mockRejectedValue(new ApiError(409, 'This subscription has expired.'))
+    renderWithProviders(<MySubscriptionsPage />)
+    await userEvent.setup().click(await screen.findByRole('switch', { name: 'Auto-renew' }))
+    expect(await screen.findByText('This subscription has expired.')).toBeInTheDocument()
+  })
+
+  it('shows a read-only banner with Renew while the grace period runs, and leaves it once auto-renew is on again (C100 RR-1)', async () => {
+    const graceEndsAt = new Date(Date.now() + 4 * 86_400_000).toISOString()
+    const inGrace = { ...activeSub, expiresAt: '2026-10-10T10:00:00Z', autoRenew: false, graceEndsAt }
+    listSubscriptions.mockResolvedValue([inGrace])
+    myRenewals.mockResolvedValue([{ subscriptionId: 1, productName: 'Valam.ai', planName: null, autoRenew: false,
+      renewalDate: '2026-10-10T10:00:00Z', remindersEnabled: true, nextReminderAt: null, graceEndsAt }])
+    setAutoRenew.mockResolvedValue({ ...inGrace, autoRenew: true, graceEndsAt: null })
+    renderWithProviders(<MySubscriptionsPage />)
+
+    expect(await screen.findByText(/^Read-only until /)).toBeInTheDocument()
+    expect(screen.getByText(/The term of Valam\.ai has ended\. It is read-only until/)).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Renew now' })).toBeInTheDocument()
+
+    await userEvent.setup().click(screen.getByRole('switch', { name: 'Auto-renew' }))
+    expect(setAutoRenew).toHaveBeenCalledWith(1, true)
+    await waitFor(() => expect(screen.queryByText(/^Read-only until /)).not.toBeInTheDocument())
+    expect(screen.queryByRole('button', { name: 'Renew now' })).not.toBeInTheDocument()
+  })
+
+  it('renews from the grace banner', async () => {
+    const graceEndsAt = new Date(Date.now() + 4 * 86_400_000).toISOString()
+    const inGrace = { ...activeSub, expiresAt: '2026-10-10T10:00:00Z', autoRenew: false, graceEndsAt }
+    listSubscriptions.mockResolvedValue([inGrace])
+    renew.mockResolvedValue({ ...inGrace, graceEndsAt: null })
+    renderWithProviders(<MySubscriptionsPage />)
+    await userEvent.setup().click(await screen.findByRole('button', { name: 'Renew now' }))
+    expect(renew).toHaveBeenCalledWith(1)
+    await waitFor(() => expect(screen.queryByText(/^Read-only until /)).not.toBeInTheDocument())
+  })
+
+  it('does not show a banner once the grace period has passed', async () => {
+    listSubscriptions.mockResolvedValue([{ ...activeSub, expiresAt: '2026-01-01T10:00:00Z', autoRenew: false, graceEndsAt: '2026-01-08T10:00:00Z' }])
+    renderWithProviders(<MySubscriptionsPage />)
+    await screen.findByText('Valam.ai')
+    expect(screen.queryByText(/^Read-only until /)).not.toBeInTheDocument()
+  })
+
+  it('marks an entitlement read-only during the grace period (C100 RR-1)', async () => {
+    listSubscriptions.mockResolvedValue([activeSub])
+    entitlementsMine.mockResolvedValue([{ subscriptionId: 1, productId: 10, productName: 'Valam.ai', ownerType: 'INDIVIDUAL', planName: 'Pro',
+      status: 'ACTIVE', expiresAt: '2026-10-10T10:00:00Z', includedFeatures: [], quantity: 1, accessMode: 'READ_ONLY', graceEndsAt: '2026-10-17T10:00:00Z' }])
+    renderWithProviders(<MySubscriptionsPage />)
+    expect(await screen.findByText(/^Read-only until /)).toBeInTheDocument()
+  })
+
+  it('has no detectable a11y violations with a grace banner and the auto-renew switch', async () => {
+    const graceEndsAt = new Date(Date.now() + 4 * 86_400_000).toISOString()
+    listSubscriptions.mockResolvedValue([{ ...activeSub, expiresAt: '2026-10-10T10:00:00Z', autoRenew: false, graceEndsAt }])
+    const { container } = renderWithProviders(<MySubscriptionsPage />)
+    await screen.findByRole('switch', { name: 'Auto-renew' })
+    expect(await axe(container)).toHaveNoViolations()
   })
 })

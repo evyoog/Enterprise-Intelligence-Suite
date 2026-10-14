@@ -58,6 +58,26 @@ public class NotificationService {
     }
 
     /**
+     * C100 RR-5: like {@link #notifyTemplated} but the sender chooses the channels for this person: the in-app notification, the email, or both.
+     * The person's own muting of email for the category still applies to the email.
+     */
+    @Transactional
+    public void notifyTemplated(Long customerId, String customerEmail, NotificationCategory category, NotificationSeverity severity,
+                                String templateCode, java.util.Map<String, String> values, boolean inApp, boolean email) {
+        var text = templateService.render(templateCode, languageResolver.forCustomer(customerId), values);
+        if (inApp) {
+            recordNotification(customerId, category, severity, text.subject(), text.body());
+        }
+        if (email && customerEmail != null && !customerEmail.isBlank() && !isEmailDisabled(customerId, category)) {
+            try {
+                emailService.sendNotificationEmail(customerEmail, text.subject(), text.body());
+            } catch (Exception e) {
+                log.error("Failed to send notification email for category {}: {}", category, e.getMessage());
+            }
+        }
+    }
+
+    /**
      * Always records the in-app notification (the notification center is the
      * durable record — see Notification's own javadoc); sends an email only
      * when this customer hasn't muted this category (see

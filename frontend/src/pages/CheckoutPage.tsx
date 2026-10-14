@@ -383,7 +383,7 @@ export function CheckoutPage() {
 
   const showSummary = shownResult?.kind !== 'orders' && items.length > 0
   const cartSummary = showSummary ? (
-    <CartSummary items={items} subtotal={subtotal} total={total} taxLines={summary?.taxLines ?? []} taxPending={Boolean(summary?.taxPending)} placeOfSupply={summary?.placeOfSupply} money={money}
+    <CartSummary items={items} subtotal={subtotal} discount={summary?.discount ?? 0} couponCode={summary?.couponCode} total={total} taxLines={summary?.taxLines ?? []} taxPending={Boolean(summary?.taxPending)} placeOfSupply={summary?.placeOfSupply} money={money}
       editCart={fromCart && shownStep !== 'complete'} />
   ) : null
 
@@ -545,9 +545,9 @@ function Breadcrumb({ step, fromCart, onDetails }: { step: Step; fromCart: boole
   )
 }
 
-function CartSummary({ items, subtotal, total, taxLines, taxPending = false, placeOfSupply, money, editCart }: {
+function CartSummary({ items, subtotal, discount = 0, couponCode, total, taxLines, taxPending = false, placeOfSupply, money, editCart }: {
   items: { productName: string; imageUrl?: string; planName?: string; billingPeriod?: string; amount: number; quantity?: number }[]
-  subtotal: number; total: number; taxLines: { name: string; ratePercent?: number; amount: number }[]; money: (v: number) => string
+  subtotal: number; discount?: number; couponCode?: string | null; total: number; taxLines: { name: string; ratePercent?: number; amount: number }[]; money: (v: number) => string
   taxPending?: boolean; placeOfSupply?: string
   editCart: boolean
 }) {
@@ -560,6 +560,9 @@ function CartSummary({ items, subtotal, total, taxLines, taxPending = false, pla
       </Typography>
       <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
         <SummaryRow label={t('checkout.summary.subtotal')} value={money(subtotal)} />
+        {discount > 0 && (
+          <SummaryRow label={couponCode ? t('checkout.summary.discount', { code: couponCode }) : t('checkout.summary.discountPlain')} value={`−${money(discount)}`} />
+        )}
         {taxLines.length === 0
           ? <Typography variant="body2" sx={{ color: 'text.secondary' }}>{t(taxPending ? 'checkout.summary.taxPending' : 'checkout.summary.noTax')}</Typography>
           : taxLines.map((line) => (

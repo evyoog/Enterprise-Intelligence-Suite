@@ -332,7 +332,9 @@ public class OrganizationSelfService {
                 subscription.isAutoRenew(),
                 subscription.getPendingPlanId(),
                 subscription.getPendingPlanId() == null ? null
-                    : productPlanRepository.findById(subscription.getPendingPlanId()).map(ProductPlan::getName).orElse(null)
+                    : productPlanRepository.findById(subscription.getPendingPlanId()).map(ProductPlan::getName).orElse(null),
+                subscription.getPendingQuantity(),
+                subscription.getGraceEndsAt()
             ))
             .toList();
     }
@@ -549,6 +551,13 @@ public class OrganizationSelfService {
      * queries, not just render one object. */
     public Long requireOrganizationManagement(Long customerId) {
         return requirePermission(customerId, "MANAGE_ORGANIZATION").getOrganizationId();
+    }
+
+    /** C100 SE-2: whether the caller holds the named organization permission, without refusing; the caller must be a member in good standing. */
+    public boolean holdsOrganizationPermission(Long customerId, String permissionName) {
+        OrganizationMember member = resolveMembership(customerId);
+        return memberAccessService.hasPermission(member, permissionName)
+            || privilegedAccessService.hasActiveOrganizationGrant(customerId, member.getOrganizationId(), permissionName);
     }
 
     /** REQ-TEN-005: the organization id of a caller who holds the named organization permission (effective access). */

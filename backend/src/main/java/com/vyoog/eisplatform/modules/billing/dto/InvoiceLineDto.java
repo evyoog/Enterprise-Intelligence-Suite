@@ -13,6 +13,8 @@ public record InvoiceLineDto(
     long amount,
     long taxAmount,
     String taxClassCode,
-    String hsnSacCode
+    String hsnSacCode,
+    /** C100: this line's share of the coupon discount. */
+    long discountAmount
 ) {
 }

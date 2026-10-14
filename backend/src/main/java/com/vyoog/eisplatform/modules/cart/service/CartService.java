@@ -66,6 +66,7 @@ public class CartService {
 
     public static final String INDIVIDUAL = "INDIVIDUAL";
     public static final String ORGANIZATION_MEMBER = "ORGANIZATION_MEMBER";
+    public static final String ORGANIZATION_BUYER = "ORGANIZATION_BUYER";
 
     /** BR-10: a repeated checkout within this window after a successful one
      * returns that same checkout instead of "cart is empty". */
@@ -80,6 +81,8 @@ public class CartService {
     private final SubscriptionService subscriptionService;
     private final InvoiceService invoiceService;
     private final OrderService orderService;
+    /** C100 (PB-1 note): the coupon field. */
+    private final com.vyoog.eisplatform.modules.billing.service.CouponService couponService;
     /** REQ-CAT-005 (C85): per-product audience rule. */
     private final com.vyoog.eisplatform.modules.offering.service.EligibilityService eligibilityService;
     /** REQ-INT-002 (C62): CheckoutCompleted. */
@@ -178,12 +181,54 @@ public class CartService {
         return new CartValidationDto(issues.isEmpty(), issues);
     }
 
-    /** REQ-MKT-003.8, BR-6/7/9/10. Validates again, then creates the
-     * subscriptions and one invoice (individual) or one order per item
-     * (organization member), and empties the cart — all in one
-     * transaction, under a lock on the cart row. */
+    /** C100 (PB-1 note): applies a coupon code to the cart. Refused with the reason when the code is not valid, or when the cart is a purchase request. */
+    @Transactional
+    public CartDto applyCoupon(Long customerId, String code) {
+        Cart cart = cartRepository.findByCustomerId(customerId).orElseThrow(() -> new IllegalArgumentException("Your cart is empty."));
+        if (cart.getItems().isEmpty()) {
+            throw new IllegalArgumentException("Your cart is empty.");
+        }
+        if (isRequest(customerId)) {
+            throw new IllegalArgumentException("A coupon cannot be used on a purchase request. An organization admin can use it when they buy.");
+        }
+        String normalised = com.vyoog.eisplatform.modules.billing.service.CouponService.normalise(code);
+        if (normalised == null) {
+            throw new IllegalArgumentException("Enter a coupon code.");
+        }
+        long subtotal = toDto(customerId, cart).subtotal();
+        couponService.quote(normalised, cart.getItems().get(0).getCurrency().name(), subtotal);   // throws with the reason
+        cart.setCouponCode(normalised);
+        cart.setUpdatedAt(Instant.now());
+        return toDto(customerId, cartRepository.save(cart));
+    }
+
+    @Transactional
+    public CartDto removeCoupon(Long customerId) {
+        Cart cart = cartRepository.findByCustomerId(customerId).orElse(null);
+        if (cart != null && cart.getCouponCode() != null) {
+            cart.setCouponCode(null);
+            cart.setUpdatedAt(Instant.now());
+            cart = cartRepository.save(cart);
+        }
+        return toDto(customerId, cart);
+    }
+
+    /** True when the caller is an organization member who cannot buy directly: their cart becomes a purchase request. */
+    private boolean isRequest(Long customerId) {
+        return membership(customerId).map(m -> !orderService.canPurchaseDirectly(m)).orElse(false);
+    }
+
+    /** A checkout with no reason (an individual, or an organization buyer). */
     @Transactional
     public CartCheckoutResultDto checkout(Long customerId) {
+        return checkout(customerId, null);
+    }
+
+    /** REQ-MKT-003.8, BR-6/7/9/10, C100 CA-1 B and CA-2. Validates again, then creates the subscriptions and one invoice (an individual, an organization
+     * admin or a person with Manage billing; the coupon, if any, is applied then) or one multi-item purchase request with the member's reason (any other
+     * organization member), and empties the cart, all in one transaction under a lock on the cart row. */
+    @Transactional
+    public CartCheckoutResultDto checkout(Long customerId, String reason) {
         Cart cart = cartRepository.lockByCustomerId(customerId).orElse(null);
         if (cart == null || cart.getItems().isEmpty()) {
             if (cart != null && cart.getLastCheckoutAt() != null
@@ -198,20 +243,31 @@ public class CartService {
         }
 
         CartCheckoutResultDto result;
-        if (membership(customerId).isPresent()) {
-            List<Long> orderIds = new ArrayList<>();
-            for (CartItem item : cart.getItems()) {
-                orderIds.add(orderService.submitOrder(customerId, new SubmitOrderRequest(item.getProductId(), item.getPlanId())).id());
+        Optional<OrganizationMember> member = membership(customerId);
+        if (member.isPresent() && isRequest(customerId)) {
+            if (reason == null || reason.trim().isEmpty()) {
+                throw new IllegalArgumentException("Tell your organization admin why you need this before you submit the request.");
             }
-            result = new CartCheckoutResultDto("ORDER", null, orderIds);
+            var order = orderService.submitOrder(customerId, new SubmitOrderRequest(null, null,
+                cart.getItems().stream().map(i -> new SubmitOrderRequest.Item(i.getProductId(), i.getPlanId())).toList(), reason));
+            result = new CartCheckoutResultDto("ORDER", null, List.of(order.id()));
             cart.setLastCheckoutKind("ORDER");
-            cart.setLastCheckoutRef(orderIds.stream().map(String::valueOf).collect(Collectors.joining(",")));
+            cart.setLastCheckoutRef(order.id().toString());
+        } else if (member.isPresent()) {
+            var purchase = orderService.purchaseDirectly(customerId, new SubmitOrderRequest(null, null,
+                cart.getItems().stream().map(i -> new SubmitOrderRequest.Item(i.getProductId(), i.getPlanId())).toList(), null), cart.getCouponCode());
+            if (purchase.invoiceId() == null) {
+                throw new IllegalStateException("A cart of paid plans produced no invoice");
+            }
+            result = new CartCheckoutResultDto("INVOICE", purchase.invoiceId(), null);
+            cart.setLastCheckoutKind("INVOICE");
+            cart.setLastCheckoutRef(purchase.invoiceId().toString());
         } else {
             List<Long> subscriptionIds = new ArrayList<>();
             for (CartItem item : cart.getItems()) {
                 subscriptionIds.add(subscriptionService.subscribeFromCart(customerId, item.getProductId(), item.getPlanId()));
             }
-            Invoice invoice = invoiceService.generateForSubscriptions(subscriptionIds);
+            Invoice invoice = invoiceService.generateForSubscriptions(subscriptionIds, cart.getCouponCode());
             if (invoice == null) {
                 throw new IllegalStateException("A cart of paid plans produced no invoice");
             }
@@ -228,6 +284,7 @@ public class CartService {
         outboxService.publish(com.vyoog.eisplatform.modules.integration.service.PlatformEventTypes.CHECKOUT_COMPLETED,
             com.vyoog.eisplatform.modules.integration.service.PlatformEventTypes.AGGREGATE_CART, cart.getId(), payload);
         cart.setLastCheckoutAt(Instant.now());
+        cart.setCouponCode(null);
         cart.getItems().clear();
         cart.setUpdatedAt(Instant.now());
         cartRepository.save(cart);
@@ -315,22 +372,35 @@ public class CartService {
     }
 
     private CartDto toDto(Long customerId, Cart cart) {
-        boolean organizationMember = membership(customerId).isPresent();
-        String continueAs = organizationMember ? ORGANIZATION_MEMBER : INDIVIDUAL;
-        // BR-8: tax needs the billing region; the tax engine (REQ-BIL-002) is
-        // not built yet, so with billing details the cart shows no tax lines.
-        boolean hasBillingDetails = organizationMember
-            ? billingDetailsRepository.findByOwnerOrganizationId(membership(customerId).get().getOrganizationId()).isPresent()
+        Optional<OrganizationMember> member = membership(customerId);
+        boolean request = member.isPresent() && !orderService.canPurchaseDirectly(member.get());
+        String continueAs = member.isEmpty() ? INDIVIDUAL : request ? ORGANIZATION_MEMBER : ORGANIZATION_BUYER;
+        // BR-8: tax needs the billing region and is worked out on the invoice, so the cart shows no tax lines.
+        boolean hasBillingDetails = member.isPresent()
+            ? billingDetailsRepository.findByOwnerOrganizationId(member.get().getOrganizationId()).isPresent()
             : billingDetailsRepository.findByOwnerCustomerId(customerId).isPresent();
         if (cart == null || cart.getItems().isEmpty()) {
-            return new CartDto(List.of(), 0, null, 0, List.of(), !hasBillingDetails, 0, continueAs);
+            return new CartDto(List.of(), 0, null, 0, List.of(), !hasBillingDetails, 0, continueAs, null, 0, null);
         }
-        List<CartItemDto> items = cart.getItems().stream().map(this::toItemDto).toList();
+        // C100 SE-1 B: an organization buys the seats it starts with, at the plan's price per seat.
+        List<CartItemDto> items = cart.getItems().stream()
+            .map(i -> toItemDto(i, member.map(m -> subscriptionService.initialSeats(m.getOrganizationId(), i.getProductId())).orElse(1))).toList();
         long subtotal = items.stream().mapToLong(CartItemDto::amount).sum();
-        return new CartDto(items, items.size(), items.get(0).currency(), subtotal, List.of(), !hasBillingDetails, subtotal, continueAs);
+        String couponCode = request ? null : cart.getCouponCode();
+        long discount = 0;
+        String couponMessage = null;
+        if (couponCode != null) {
+            try {
+                discount = couponService.quote(couponCode, items.get(0).currency(), subtotal).amount();
+            } catch (IllegalArgumentException e) {
+                couponMessage = e.getMessage();   // the code stays visible so the customer can see why and remove it
+            }
+        }
+        return new CartDto(items, items.size(), items.get(0).currency(), subtotal, List.of(), !hasBillingDetails, subtotal - discount, continueAs,
+            couponCode, discount, couponMessage);
     }
 
-    private CartItemDto toItemDto(CartItem item) {
+    private CartItemDto toItemDto(CartItem item, int seats) {
         Product product = productRepository.findById(item.getProductId()).orElse(null);
         ProductPlan plan = productPlanRepository.findById(item.getPlanId()).orElse(null);
         long unitPrice = plan != null ? minorUnits(plan.getPrice()) : item.getUnitPriceAtAdd();
@@ -351,9 +421,10 @@ public class CartService {
             unitPrice,
             item.getUnitPriceAtAdd(),
             (plan != null ? plan.getCurrency() : item.getCurrency()).name(),
-            unitPrice,
+            unitPrice * seats,
             item.getAddedAt(),
-            plans);
+            plans,
+            seats);
     }
 
     private static long minorUnits(BigDecimal price) {

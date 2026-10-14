@@ -70,6 +70,9 @@ final class InvoiceDocuments {
             body.append(String.format("%-40s x%-3d %10.2f%n", line.getDescription(), line.getQuantity(), line.getAmount() / 100.0));
             if (line.getHsnSacCode() != null) body.append("    SAC/HSN: ").append(line.getHsnSacCode()).append("\n");
         }
+        if (invoice.getDiscountAmount() > 0) {
+            body.append("\nDiscount (").append(invoice.getCouponCode()).append("): -").append(invoice.getDiscountAmount() / 100.0).append(" ").append(invoice.getCurrency()).append("\n");
+        }
         body.append("\nSubtotal: ").append(invoice.getSubtotal() / 100.0).append(" ").append(invoice.getCurrency()).append("\n");
         // C96: every tax component with its rate, summed over the lines; "Tax" alone only for invoices issued before tax was calculated.
         if (taxLines == null || taxLines.isEmpty()) {

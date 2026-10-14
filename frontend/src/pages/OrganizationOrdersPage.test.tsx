@@ -90,6 +90,37 @@ describe('OrganizationOrdersPage', () => {
     expect(cancel).toHaveBeenCalledWith(1)
   })
 
+  const multiItemOrder = {
+    ...submittedOrder, id: 7, requestReason: 'Needed for the Q4 forecast',
+    items: [
+      { productId: 10, productName: 'Valam.ai', planId: 1, planName: 'Pro' },
+      { productId: 11, productName: 'Varthan.ai', planId: 2, planName: 'Team' },
+    ],
+  }
+
+  it('shows every product of a purchase request and the reason, to the requester and to the admin (C100)', async () => {
+    myOrders.mockResolvedValue([multiItemOrder])
+    pendingOrders.mockResolvedValue([multiItemOrder])
+    const { container } = renderWithProviders(<OrganizationOrdersPage />)
+    const approvals = await screen.findByRole('region', { name: 'Purchase request #7' })
+    for (const list of screen.getAllByRole('list', { name: 'Products in this request' })) {
+      expect(list).toHaveTextContent('Valam.ai — Pro')
+      expect(list).toHaveTextContent('Varthan.ai — Team')
+    }
+    expect(screen.getAllByText('Reason: Needed for the Q4 forecast')).toHaveLength(2)
+    expect(approvals).toHaveTextContent('Requested by Jane Member')
+    expect(screen.getAllByText('Purchase request #7').length).toBeGreaterThan(0)
+    expect(await axe(container)).toHaveNoViolations()
+  })
+
+  it('still shows a single-product order without an items list', async () => {
+    myOrders.mockResolvedValue([{ ...submittedOrder, planName: 'Pro' }])
+    pendingOrders.mockRejectedValue(new ApiError(403, 'Forbidden'))
+    renderWithProviders(<OrganizationOrdersPage />)
+    expect(await screen.findByText('Valam.ai — Pro')).toBeInTheDocument()
+    expect(screen.queryByText(/^Reason:/)).not.toBeInTheDocument()
+  })
+
   it('has no detectable a11y violations', async () => {
     myOrders.mockResolvedValue([submittedOrder])
     pendingOrders.mockResolvedValue([submittedOrder])

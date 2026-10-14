@@ -12,10 +12,13 @@ public record EntitlementCheckResponse(
     String ownerType,
     Instant expiresAt,
     List<String> includedFeatures,
-    Integer usageLimit
+    Integer usageLimit,
+    /** C100 RR-1 B: FULL, or READ_ONLY during the grace period (the product must not allow changes); null when not allowed. */
+    String accessMode,
+    Instant graceEndsAt
 ) {
     static EntitlementCheckResponse denied(String reason, Long productId) {
-        return new EntitlementCheckResponse(false, reason, productId, null, null, null, List.of(), null);
+        return new EntitlementCheckResponse(false, reason, productId, null, null, null, List.of(), null, null, null);
     }
 
     public static EntitlementCheckResponse deny(String reason, Long productId) {

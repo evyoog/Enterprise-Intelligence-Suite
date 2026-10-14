@@ -78,6 +78,13 @@ public class SubscriptionController {
         return subscriptionService.changePlan(customer.getId(), subscriptionId, request);
     }
 
+    /** C100 RR-1 B: the customer turns auto-renew on or off. */
+    @PatchMapping("/subscriptions/{id}/auto-renew")
+    public SubscriptionDto autoRenew(@AuthenticationPrincipal Jwt jwt, @PathVariable("id") Long subscriptionId,
+                                     @Valid @RequestBody com.vyoog.eisplatform.modules.registration.dto.AutoRenewRequest request) {
+        return subscriptionService.setAutoRenew(currentCustomerResolver.resolve(jwt).getId(), subscriptionId, request.autoRenew());
+    }
+
     /** C97 SC-1: withdraws a downgrade scheduled for the next renewal. */
     @DeleteMapping("/subscriptions/{id}/plan/scheduled")
     public SubscriptionDto cancelScheduledPlanChange(@AuthenticationPrincipal Jwt jwt, @PathVariable("id") Long subscriptionId) {

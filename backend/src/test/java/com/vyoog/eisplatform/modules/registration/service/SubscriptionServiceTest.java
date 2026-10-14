@@ -189,13 +189,13 @@ class SubscriptionServiceTest {
     }
 
     @Test
-    void expiryJobFlipsOverdueActiveSubscriptionsOnly() {
+    void expiryJobGivesAnEndedSubscriptionAReadOnlyGraceThenExpiresIt() {
+        // C100 RR-1 B: a term that ends with auto-renew off is read-only for 7 days, then the subscription expires.
         Product product = newProduct();
         Long customerId = newCustomer().getId();
         subscriptionService.subscribe(customerId, product.getId());
         ProductSubscription overdue = activeSubscription(customerId, product.getId());
         overdue.setExpiresAt(Instant.now().minus(1, ChronoUnit.DAYS));
-        // REQ-SUB-004: only subscriptions without auto-renew expire.
         overdue.setAutoRenew(false);
         subscriptionRepository.save(overdue);
 
@@ -206,13 +206,19 @@ class SubscriptionServiceTest {
         notYetDue.setAutoRenew(false);
         subscriptionRepository.save(notYetDue);
 
-        int expiredCount = subscriptionService.expireOverdueSubscriptions();
-        assertThat(expiredCount).isGreaterThanOrEqualTo(1);
+        assertThat(subscriptionService.expireOverdueSubscriptions()).as("nothing expires yet: the grace period starts").isZero();
+        ProductSubscription inGrace = subscriptionRepository.findById(overdue.getId()).orElseThrow();
+        assertThat(inGrace.getStatus()).isEqualTo(SubscriptionStatus.ACTIVE);
+        assertThat(inGrace.getGraceEndsAt()).isCloseTo(inGrace.getExpiresAt().plus(SubscriptionService.GRACE_DAYS, ChronoUnit.DAYS), org.assertj.core.api.Assertions.within(1, ChronoUnit.MILLIS));
+        assertThat(subscriptionRepository.findById(notYetDue.getId()).orElseThrow().getGraceEndsAt()).isNull();
 
-        assertThat(subscriptionRepository.findById(overdue.getId()).orElseThrow().getStatus())
-            .isEqualTo(SubscriptionStatus.EXPIRED);
-        assertThat(subscriptionRepository.findById(notYetDue.getId()).orElseThrow().getStatus())
-            .isEqualTo(SubscriptionStatus.ACTIVE);
+        // Once the grace period has passed the subscription expires.
+        inGrace.setExpiresAt(Instant.now().minus(8, ChronoUnit.DAYS));
+        inGrace.setGraceEndsAt(Instant.now().minus(1, ChronoUnit.DAYS));
+        subscriptionRepository.save(inGrace);
+        assertThat(subscriptionService.expireOverdueSubscriptions()).isGreaterThanOrEqualTo(1);
+        assertThat(subscriptionRepository.findById(overdue.getId()).orElseThrow().getStatus()).isEqualTo(SubscriptionStatus.EXPIRED);
+        assertThat(subscriptionRepository.findById(notYetDue.getId()).orElseThrow().getStatus()).isEqualTo(SubscriptionStatus.ACTIVE);
     }
 
     @Test

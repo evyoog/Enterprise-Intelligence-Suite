@@ -41,6 +41,10 @@ public record CheckoutSummaryDto(
     String purchaseOrderNumber,
     /** C97 BI-8: the active payment gateway code and its display name, so the screens say nothing gateway-specific. */
     String gatewayCode,
-    String gatewayName
+    String gatewayName,
+    /** C100 (PB-1 note): the coupon applied to the invoice and the discount it gave. {@code subtotal} above is before the discount, so
+     * subtotal - discount + tax = total. */
+    String couponCode,
+    long discount
 ) {
 }

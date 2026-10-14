@@ -42,6 +42,15 @@ public class Order {
     @Column(name = "plan_id")
     private Long planId;
 
+    /** C100 CA-1 B: every product of the order; the order's own product and plan repeat the first. */
+    @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OrderBy("id ASC")
+    private java.util.List<OrderItem> items = new java.util.ArrayList<>();
+
+    /** C100 CA-2: why the member asks for the purchase; shown to the administrator who decides. */
+    @Column(name = "request_reason", length = 500)
+    private String requestReason;
+
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 20)
     private OrderStatus status = OrderStatus.SUBMITTED;

@@ -14,6 +14,9 @@ import { useCart } from '../components/cart/CartContext'
 import { PaymentLogos } from '../components/payments/PaymentLogos'
 import { formatMoney } from '../utils/money'
 
+/** C100 CA-2: the most characters the purchase-request reason can have. */
+const REASON_MAX = 500
+
 interface Toast { message: string; severity: 'success' | 'error' | 'info'; undo?: () => void }
 
 /** The period a new subscription on this plan covers, starting today. */
@@ -49,6 +52,12 @@ export function CartPage() {
   const [toast, setToast] = useState<Toast | null>(null)
   const [confirmClear, setConfirmClear] = useState(false)
   const [summaryOpen, setSummaryOpen] = useState(false)
+  const [couponInput, setCouponInput] = useState('')
+  const [couponBusy, setCouponBusy] = useState(false)
+  const [couponError, setCouponError] = useState<string | null>(null)
+  const [reasonOpen, setReasonOpen] = useState(false)
+  const [reason, setReason] = useState('')
+  const [reasonError, setReasonError] = useState(false)
   const addHandled = useRef<string | null>(null)
   const itemRefs = useRef<Record<number, HTMLLIElement | null>>({})
 
@@ -125,7 +134,7 @@ export function CartPage() {
         ? { ...i, planId, planName: plan.name, billingPeriod: plan.billingPeriod, unitPrice: plan.price, unitPriceAtAdd: plan.price, amount: plan.price }
         : i)
       const subtotal = items.reduce((s, i) => s + i.amount, 0)
-      setCart({ ...cart, items, subtotal, total: subtotal })
+      setCart({ ...cart, items, subtotal, total: Math.max(subtotal - cart.discount, 0) })
     }
     try {
       apply(await cartApi.changePlan(item.id, planId))
@@ -136,12 +145,44 @@ export function CartPage() {
     }
   }
 
-  const confirmPrice = async (item: CartItem) => {
+  // C100 CA-6 A: a changed price is confirmed once for the whole cart, not item by item.
+  const confirmPrices = async () => {
+    const changed = issues.filter((i) => i.code === 'PRICE_CHANGED')
     try {
-      apply(await cartApi.confirmPrice(item.id))
-      setIssues((all) => all.filter((i) => !(i.itemId === item.id && i.code === 'PRICE_CHANGED')))
+      for (const issue of changed) {
+        apply(await cartApi.confirmPrice(issue.itemId))
+        setIssues((all) => all.filter((i) => !(i.itemId === issue.itemId && i.code === 'PRICE_CHANGED')))
+      }
     } catch (e) {
       setToast({ message: errorText(e), severity: 'error' })
+    }
+  }
+
+  // C100 (PB-1 note): one coupon code per cart.
+  const applyCoupon = async () => {
+    const code = couponInput.trim()
+    if (!code || couponBusy) return
+    setCouponBusy(true)
+    setCouponError(null)
+    try {
+      apply(await cartApi.applyCoupon(code))
+      setCouponInput('')
+    } catch (e) {
+      setCouponError(e instanceof ApiError ? e.message : t('cart.coupon.error'))
+    } finally {
+      setCouponBusy(false)
+    }
+  }
+
+  const removeCoupon = async () => {
+    setCouponBusy(true)
+    setCouponError(null)
+    try {
+      apply(await cartApi.removeCoupon())
+    } catch (e) {
+      setToast({ message: errorText(e), severity: 'error' })
+    } finally {
+      setCouponBusy(false)
     }
   }
 
@@ -150,7 +191,7 @@ export function CartPage() {
     try {
       await cartApi.clear()
       setIssues([])
-      apply({ ...(cart as Cart), items: [], itemCount: 0, subtotal: 0, total: 0 })
+      apply({ ...(cart as Cart), items: [], itemCount: 0, subtotal: 0, total: 0, discount: 0, couponCode: null, couponMessage: null })
     } catch (e) {
       setToast({ message: errorText(e), severity: 'error' })
     }
@@ -166,23 +207,50 @@ export function CartPage() {
     }
   }
 
+  // C100 CA-2: a member's cart becomes one purchase request and needs a reason, so the single click opens the reason dialog first.
   const proceed = async () => {
+    if (busy) return
+    if (cart?.continueAs === 'ORGANIZATION_MEMBER') {
+      setReasonError(false)
+      setReasonOpen(true)
+      return
+    }
+    await checkout()
+  }
+
+  const submitRequest = async () => {
+    if (!reason.trim()) {
+      setReasonError(true)
+      return
+    }
+    await checkout(reason.trim())
+  }
+
+  const checkout = async (requestReason?: string) => {
     if (busy) return
     setBusy(true)
     try {
       const validation = await cartApi.validate()
       if (!validation.valid) {
+        setReasonOpen(false)
         showIssues(validation.issues)
         return
       }
-      const result = await cartApi.checkout()
+      const result = await cartApi.checkout(requestReason)
+      setReasonOpen(false)
       setCount(0)
       if (result.kind === 'INVOICE') navigate(`/checkout?invoiceId=${result.invoiceId}&from=cart`)
       else navigate(`/checkout?orders=${result.orderIds.join(',')}&step=complete`)
     } catch (e) {
       const detailIssues = e instanceof ApiError ? (e.detail?.issues as CartIssue[] | undefined) : undefined
-      if (detailIssues?.length) showIssues(detailIssues)
-      else setToast({ message: errorText(e), severity: 'error' })
+      if (detailIssues?.length) {
+        setReasonOpen(false)
+        showIssues(detailIssues)
+      } else {
+        setToast({ message: errorText(e), severity: 'error' })
+        // The coupon may have stopped being valid: keep the cart and show what the server now says about it.
+        if (cart?.couponCode) load()
+      }
     } finally {
       setBusy(false)
     }
@@ -213,6 +281,7 @@ export function CartPage() {
 
   const organization = cart.continueAs === 'ORGANIZATION_MEMBER'
   const primaryLabel = organization ? t('cart.submitForApproval') : t('cart.proceed')
+  const priceChanges = issues.filter((i) => i.code === 'PRICE_CHANGED').length
 
   if (cart.items.length === 0) {
     return (
@@ -238,6 +307,9 @@ export function CartPage() {
       </Typography>
       <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
         <Row label={t('cart.summary.subtotal')} value={money(cart.subtotal)} />
+        {cart.couponCode && cart.discount > 0 && (
+          <Row label={t('cart.coupon.discount', { code: cart.couponCode })} value={`−${money(cart.discount)}`} />
+        )}
         {cart.taxLines.length > 0
           ? cart.taxLines.map((tl) => <Row key={tl.name} label={tl.ratePercent != null ? `${tl.name} (${tl.ratePercent} %)` : tl.name} value={money(tl.amount)} />)
           : <Typography variant="body2" sx={{ color: 'text.secondary' }}>{cart.taxCalculatedAtPayment ? t('cart.summary.taxAtPayment') : t('cart.summary.noTax')}</Typography>}
@@ -247,6 +319,25 @@ export function CartPage() {
           <Typography variant="h5" component="p" sx={{ fontWeight: 800, fontVariantNumeric: 'tabular-nums' }}>{money(cart.total)}</Typography>
         </Box>
       </Box>
+      {!organization && (
+        <Box sx={{ mt: 2 }}>
+          {cart.couponCode ? (
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flexWrap: 'wrap' }}>
+              <Chip size="small" color="success" variant="outlined" label={t('cart.coupon.applied', { code: cart.couponCode })} />
+              <Button size="small" color="inherit" disabled={couponBusy} onClick={removeCoupon}>{t('cart.coupon.remove')}</Button>
+            </Box>
+          ) : (
+            <Box component="form" noValidate onSubmit={(e) => { e.preventDefault(); applyCoupon() }} sx={{ display: 'flex', gap: 1, alignItems: 'flex-start' }}>
+              <TextField size="small" fullWidth label={t('cart.coupon.label')} value={couponInput}
+                onChange={(e) => { setCouponInput(e.target.value.toUpperCase()); setCouponError(null) }}
+                error={Boolean(couponError)} helperText={couponError ?? undefined}
+                slotProps={{ htmlInput: { maxLength: 40, autoCapitalize: 'characters', autoComplete: 'off' } }} />
+              <Button type="submit" variant="outlined" sx={{ height: 40 }} disabled={couponBusy || !couponInput.trim()}>{t('cart.coupon.apply')}</Button>
+            </Box>
+          )}
+          {cart.couponCode && cart.couponMessage && <Alert severity="warning" sx={{ mt: 1.5 }}>{cart.couponMessage}</Alert>}
+        </Box>
+      )}
       {!isMobile && (
         <Button variant="contained" size="large" fullWidth sx={{ mt: 2.5, py: 1.4 }} disabled={busy} onClick={proceed}
           startIcon={busy ? <CircularProgress size={16} color="inherit" /> : undefined}>
@@ -254,6 +345,7 @@ export function CartPage() {
         </Button>
       )}
       {organization && <Typography variant="body2" sx={{ color: 'text.secondary', mt: 1 }}>{t('cart.approvalHelp')}</Typography>}
+      {cart.continueAs === 'ORGANIZATION_BUYER' && <Typography variant="body2" sx={{ color: 'text.secondary', mt: 1 }}>{t('cart.buyerNote')}</Typography>}
       <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mt: 2, color: 'text.secondary' }}>
         <Lock size={14} aria-hidden />
         <Typography variant="caption">{t('cart.summary.trust')}</Typography>
@@ -271,6 +363,11 @@ export function CartPage() {
       </Typography>
       <Box sx={{ display: 'grid', gap: 3, gridTemplateColumns: { xs: '1fr', md: '65fr 35fr' }, alignItems: 'start' }}>
         <Box>
+          {priceChanges > 0 && (
+            <Alert severity="warning" sx={{ mb: 1.5 }} action={<Button color="inherit" size="small" onClick={confirmPrices}>{t('cart.confirmPrice')}</Button>}>
+              {t('cart.pricesChanged', { count: priceChanges })}
+            </Alert>
+          )}
           <Box component="ul" sx={{ listStyle: 'none', p: 0, m: 0, display: 'flex', flexDirection: 'column', gap: 1.5 }}>
             {cart.items.map((item) => {
               const itemIssues = issuesFor(item.id)
@@ -314,7 +411,7 @@ export function CartPage() {
                     <Alert key={n} role="alert" tabIndex={-1} severity={issue.code === 'PRICE_CHANGED' ? 'warning' : 'error'} sx={{ mt: 1.5 }}
                       action={
                         issue.code === 'PRICE_CHANGED'
-                          ? <Button color="inherit" size="small" onClick={() => confirmPrice(item)}>{t('cart.confirmPrice')}</Button>
+                          ? undefined
                           : issue.code === 'MISSING_DEPENDENCY' && issue.requiredProductId
                             ? <Button color="inherit" size="small" component={RouterLink} to={`/products/${issue.requiredProductId}`}>{t('cart.addRequired', { required: issue.requiredProductName })}</Button>
                             : <Button color="inherit" size="small" onClick={() => remove(item)}>{t('cart.remove')}</Button>
@@ -350,6 +447,25 @@ export function CartPage() {
           </Box>
         </Paper>
       )}
+
+      <Dialog open={reasonOpen} onClose={() => { if (!busy) setReasonOpen(false) }} aria-labelledby="request-reason-title" maxWidth="sm" fullWidth>
+        <DialogTitle id="request-reason-title">{t('cart.reason.title')}</DialogTitle>
+        <DialogContent>
+          <DialogContentText sx={{ mb: 2 }}>{t('cart.reason.body')}</DialogContentText>
+          <TextField autoFocus required fullWidth multiline minRows={3} label={t('cart.reason.label')} value={reason}
+            onChange={(e) => { setReason(e.target.value); setReasonError(false) }}
+            error={reasonError}
+            helperText={reasonError ? t('cart.reason.required') : t('cart.reason.counter', { count: reason.length, max: REASON_MAX })}
+            slotProps={{ htmlInput: { maxLength: REASON_MAX } }} />
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setReasonOpen(false)} disabled={busy}>{t('common.cancel')}</Button>
+          <Button variant="contained" onClick={submitRequest} disabled={busy}
+            startIcon={busy ? <CircularProgress size={16} color="inherit" /> : undefined}>
+            {t('cart.reason.submit')}
+          </Button>
+        </DialogActions>
+      </Dialog>
 
       <Dialog open={confirmClear} onClose={() => setConfirmClear(false)} aria-labelledby="clear-cart-title">
         <DialogTitle id="clear-cart-title">{t('cart.clearConfirm.title')}</DialogTitle>

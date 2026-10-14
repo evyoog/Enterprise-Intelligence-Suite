@@ -44,6 +44,14 @@ describe('AdminBillingPage', () => {
     expect(await screen.findByText('Jane Customer')).toBeInTheDocument()
   })
 
+  it('shows the coupon discount of an invoice (C100)', async () => {
+    invoices.mockResolvedValue({
+      content: [{ id: 1, invoiceNumber: 'INV-2026-000001', status: 'OPEN', currency: 'USD', total: 900, subtotal: 900, taxAmount: 0, issuedAt: '2026-10-01T00:00:00Z', ownerLabel: 'Jane Customer', couponCode: 'SAVE10', discountAmount: 100 }],
+    })
+    renderWithProviders(<AdminBillingPage />)
+    expect(await screen.findByText('Discount (SAVE10): −1.00 USD')).toBeInTheDocument()
+  })
+
   it('refunds a captured payment with a reason', async () => {
     payments.mockResolvedValue({
       content: [{ id: 5, invoiceId: 1, invoiceNumber: 'INV-2026-000001', status: 'CAPTURED', currency: 'USD', amount: 1999, refundedAmount: 0, createdAt: '2026-10-01T00:00:00Z', ownerLabel: 'Jane Customer' }],

@@ -148,6 +148,13 @@ public class OrganizationController {
         return subscriptionSeatService.changePlan(currentCustomerResolver.resolve(jwt).getId(), subscriptionId, request);
     }
 
+    /** C100 RR-1 B: Manage billing (or Manage subscriptions) turns auto-renew on or off for an organization subscription. */
+    @PatchMapping("/subscriptions/{subscriptionId}/auto-renew")
+    public SubscriptionDto organizationAutoRenew(@AuthenticationPrincipal Jwt jwt, @PathVariable Long subscriptionId,
+                                                 @Valid @RequestBody com.vyoog.eisplatform.modules.registration.dto.AutoRenewRequest request) {
+        return subscriptionSeatService.setAutoRenew(currentCustomerResolver.resolve(jwt).getId(), subscriptionId, request.autoRenew());
+    }
+
     /** C97 SC-1: withdraws a downgrade scheduled for the next renewal. */
     @DeleteMapping("/subscriptions/{subscriptionId}/plan/scheduled")
     public SubscriptionDto cancelScheduledPlanChange(@AuthenticationPrincipal Jwt jwt, @PathVariable Long subscriptionId) {

@@ -47,6 +47,10 @@ public class Cart {
     @Column(name = "last_checkout_at")
     private Instant lastCheckoutAt;
 
+    /** C100 (PB-1 note): the coupon code the customer applied; checked again when the invoice is created. */
+    @Column(name = "coupon_code", length = 40)
+    private String couponCode;
+
     @OneToMany(mappedBy = "cart", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     @OrderBy("addedAt ASC, id ASC")
     private List<CartItem> items = new ArrayList<>();

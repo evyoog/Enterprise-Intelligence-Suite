@@ -170,6 +170,29 @@ describe('CheckoutPage (C55, C59 redesign)', () => {
     expect(within(aside).queryByText('Tax: none for this region')).not.toBeInTheDocument()
   })
 
+  it('shows the coupon discount between the gross subtotal and the tax, and the net total (C100)', async () => {
+    getDetails.mockResolvedValue(savedDetails)
+    checkout.mockResolvedValue(summary({
+      subtotal: 100000, couponCode: 'SAVE10', discount: 10000, total: 106200,
+      taxLines: [{ name: 'Central GST', ratePercent: 9, amount: 8100 }, { name: 'State GST', ratePercent: 9, amount: 8100 }],
+    }))
+    renderAt('/checkout?invoiceId=9&from=cart&step=payment')
+    await screen.findByRole('radiogroup', { name: 'Payment' })
+    const aside = screen.getByRole('complementary', { name: /Order summary/ })
+    expect(within(aside).getByText('Discount (SAVE10)')).toBeInTheDocument()
+    expect(within(aside).getByText(/^−.*100\.00$/)).toBeInTheDocument()
+    expect(within(aside).getByText(/1,000\.00/)).toBeInTheDocument()
+    expect(within(aside).getByText(/1,062\.00/)).toBeInTheDocument()
+  })
+
+  it('shows no discount line when the invoice has no coupon (C100)', async () => {
+    getDetails.mockResolvedValue(savedDetails)
+    checkout.mockResolvedValue(summary({ couponCode: null, discount: 0 }))
+    renderAt('/checkout?invoiceId=9&from=cart&step=payment')
+    await screen.findByRole('radiogroup', { name: 'Payment' })
+    expect(within(screen.getByRole('complementary', { name: /Order summary/ })).queryByText(/Discount/)).not.toBeInTheDocument()
+  })
+
   it('does not offer payment for a Draft invoice whose tax could not be determined (C96)', async () => {
     getDetails.mockResolvedValue(savedDetails)
     checkout.mockResolvedValue(summary({ invoiceStatus: 'DRAFT', invoiceNumber: null, taxPending: true }))

@@ -202,6 +202,16 @@ describe('Sidebar by kind of user (C80)', () => {
     expect(within(sidebar).queryByRole('link', { name: /audit log|reviews|partners|support/i })).not.toBeInTheDocument()
   })
 
+  it('shows Coupons under Billing to a billing manager, as the current page on its own route (C100)', async () => {
+    signedIn(true)
+    getPermissions.mockResolvedValue({ platform: ['MANAGE_BILLING'], organization: [] })
+    renderAt('/admin/billing/coupons')
+    const sidebar = screen.getByRole('navigation', { name: 'Application' })
+    const link = await within(sidebar).findByRole('link', { name: 'Coupons' }, SIDEBAR_WAIT)
+    expect(link).toHaveAttribute('href', '/admin/billing/coupons')
+    expect(link).toHaveAttribute('aria-current', 'page')
+  })
+
   it('opens only the group holding the current page, on a deep link or refresh', async () => {
     signedIn(true)
     getPermissions.mockResolvedValue({ platform: ['MANAGE_INTEGRATIONS', 'MANAGE_BILLING'], organization: [] })

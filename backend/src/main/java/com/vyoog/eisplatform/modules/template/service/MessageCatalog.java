@@ -108,7 +108,16 @@ public final class MessageCatalog {
             texts("Your {product} subscription renews on {date}",
                 "Your {product}{plan} subscription renews on {date}{amount}. {how}\n\nManage your subscription: {manageUrl}\nPay or update your payment method: {billingUrl}\nChange or turn off these reminders: {preferencesUrl}",
                 "Su suscripción a {product} se renueva el {date}",
-                "Su suscripción a {product}{plan} se renueva el {date}{amount}. {how}\n\nGestione su suscripción: {manageUrl}\nPague o actualice su método de pago: {billingUrl}\nCambie o desactive estos recordatorios: {preferencesUrl}")));
+                "Su suscripción a {product}{plan} se renueva el {date}{amount}. {how}\n\nGestione su suscripción: {manageUrl}\nPague o actualice su método de pago: {billingUrl}\nCambie o desactive estos recordatorios: {preferencesUrl}")),
+        new Type("NOTIF_RENEWAL_GRACE_REMINDER", "Ended subscription reminder", "Reminds a person, each day of the grace period, that an ended subscription is read-only and about to expire.",
+            Channel.NOTIFICATION, List.of(p("product", "The product's name", "Valam.ai", true), p("plan", "The plan, in brackets", " (Standard)", false), p("date", "The day the term ended", "2026-11-01", true),
+                p("graceEnd", "The last day of the grace period", "2026-11-08", true), p("how", "What the person can do now", "It is read-only until 2026-11-08; renew before then to keep full access.", false),
+                p("manageUrl", "Link to the subscriptions page", "https://example.com/my/subscriptions", false), p("billingUrl", "Link to billing", "https://example.com/billing", false),
+                p("preferencesUrl", "Link to the reminder preferences", "https://example.com/account/preferences", false)),
+            texts("Your {product} subscription has ended",
+                "Your {product}{plan} subscription ended on {date}. {how}\n\nRenew your subscription: {manageUrl}\nPay or update your payment method: {billingUrl}\nChange or turn off these reminders: {preferencesUrl}",
+                "Su suscripción a {product} ha terminado",
+                "Su suscripción a {product}{plan} terminó el {date}. {how}\n\nRenueve su suscripción: {manageUrl}\nPague o actualice su método de pago: {billingUrl}\nCambie o desactive estos recordatorios: {preferencesUrl}")));
 
     private MessageCatalog() {
     }

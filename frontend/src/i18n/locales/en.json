@@ -511,7 +511,8 @@
       "organizationsDirectory": "Organizations",
       "offerings": "Offerings",
       "accessManagement": "Access management",
-      "entitlementsLookup": "Entitlements lookup"
+      "entitlementsLookup": "Entitlements lookup",
+      "coupons": "Coupons"
     },
     "catalogTitle": "Product catalog",
     "catalogSubtitle": "Search and filter the products available on the platform.",
@@ -711,7 +712,7 @@
     "confirmCancel": "This permanently cancels your subscription to {{product}}. Continue?",
     "seats": {
       "sectionTitle": "Organization subscriptions",
-      "sectionBody": "Seats are shared by your organization's active members. A change takes effect immediately.",
+      "sectionBody": "Seats are shared by your organization's active members. An increase takes effect now and is charged for the rest of the term. A decrease takes effect at your next renewal.",
       "usage": "Seats: {{inUse}} in use of {{quantity}}",
       "usageLabel": "Seats in use for {{product}}",
       "label": "Seats",
@@ -721,10 +722,29 @@
       "minimum": "Minimum {{minimum}} — seats in use",
       "notChangeable": "Seats can be changed on active or suspended subscriptions.",
       "confirmTitle": "Change seats from {{from}} to {{to}}?",
-      "confirmBody": "This takes effect immediately. Billing for seat changes is not set up yet, so nothing is charged or credited now.",
       "confirm": "Change seats",
       "updated": "Seats updated.",
-      "error": "Could not change the seats."
+      "error": "Could not change the seats.",
+      "pending": "Falls to {{quantity}} seats on {{date}}. Nothing is credited.",
+      "pendingNoDate": "Falls to {{quantity}} seats at your next renewal. Nothing is credited.",
+      "withdraw": "Withdraw",
+      "estimate": "Charged now for {{days}} of {{term}} days: {{amount}}",
+      "estimateNote": "Estimate for {{added}} added seats. The invoice shows the exact amount, with tax.",
+      "decreaseNote": "The decrease takes effect on {{date}}. Nothing is credited.",
+      "decreaseNoteNoDate": "The decrease takes effect at your next renewal. Nothing is credited.",
+      "confirmIncreaseBody": "The added seats take effect now and are charged on a new invoice.",
+      "confirmDecreaseBody": "You keep all {{quantity}} seats until your next renewal and nothing is credited. You can withdraw the decrease before then.",
+      "result": {
+        "NOW_INVOICE": "Seats increased to {{quantity}}. An invoice was created for the added seats.",
+        "NOW": "Seats changed to {{quantity}}.",
+        "AT_RENEWAL": "Seats will fall to {{quantity}} on {{date}}. Nothing is credited.",
+        "AT_RENEWAL_NO_DATE": "Seats will fall to {{quantity}} at your next renewal. Nothing is credited.",
+        "WITHDRAWN": "The scheduled decrease was withdrawn. You keep {{quantity}} seats.",
+        "UNCHANGED": "Seats are unchanged."
+      },
+      "viewInvoices": "View invoices",
+      "viewOnly": "Only people with the Manage billing permission can change seats.",
+      "readOnly": "Seats cannot be changed while the subscription is read-only. Renew it first."
     },
     "renewal": {
       "autoRenewOn": "Auto-renew on",
@@ -738,6 +758,45 @@
       "notice": "Your plan changes to {{plan}} on {{date}}, at your next renewal. You keep your current plan until then.",
       "keep": "Keep current plan",
       "nextRenewal": "your next renewal"
+    },
+    "autoRenew": {
+      "label": "Auto-renew",
+      "onHint": "Renews automatically at the end of the term.",
+      "offHint": "Not renewing. When the term ends it is read-only for 7 days, then it expires.",
+      "confirmOffTitle": "Turn off auto-renew for {{product}}?",
+      "confirmOffBody": "When the term ends, {{product}} will not renew. It then becomes read-only for 7 days (a grace period) and expires at the end of that period unless you renew. If you turn auto-renew back on during the grace period, it renews at once.",
+      "confirmOff": "Turn off auto-renew",
+      "error": "Could not change auto-renew."
+    },
+    "grace": {
+      "chip": "Read-only until {{date}}",
+      "notice": "The term of {{product}} has ended. It is read-only until {{date}} and then expires. Renew now, or turn auto-renew on to renew at once.",
+      "renewNow": "Renew now"
+    },
+    "recipients": {
+      "title": "Renewal reminder recipients",
+      "description": "Organization admins and people with Manage billing always get renewal reminders. Add other members who should get them too.",
+      "defaultsTitle": "Always receive reminders",
+      "addedTitle": "Also receive reminders",
+      "none": "No one else has been added.",
+      "reason": {
+        "ORG_ADMIN": "Organization admin",
+        "MANAGE_BILLING": "Manage billing",
+        "ADDED": "Added"
+      },
+      "email": "Email",
+      "inApp": "In-app",
+      "emailFor": "Email for {{name}}",
+      "inAppFor": "In-app for {{name}}",
+      "addPerson": "Add person",
+      "noOptions": "No more members to add",
+      "remove": "Remove {{name}}",
+      "needChannel": "Choose email, in-app or both for {{name}}.",
+      "save": "Save recipients",
+      "saved": "Reminder recipients saved.",
+      "loadError": "Could not load the reminder recipients.",
+      "saveError": "Could not save the reminder recipients.",
+      "membersUnavailable": "The member list is not available to you, so people cannot be added here."
     }
   },
   "orders": {
@@ -767,7 +826,10 @@
     },
     "requestedBy": "Requested by {{name}}",
     "decidedBy": "Decided by {{name}}",
-    "cancel": "Cancel request"
+    "cancel": "Cancel request",
+    "purchaseRequestNumber": "Purchase request #{{id}}",
+    "products": "Products in this request",
+    "reason": "Reason: {{reason}}"
   },
   "knowledgeBase": {
     "title": "Knowledge base",
@@ -1018,7 +1080,9 @@
       "downloadReceipt": "Download receipt",
       "empty": "No invoices yet.",
       "tax": "Tax",
-      "creditNotes": "Credit notes"
+      "creditNotes": "Credit notes",
+      "discount": "Discount ({{code}})",
+      "discountPlain": "Discount"
     },
     "pay": {
       "title": "Pay invoice",
@@ -2005,6 +2069,72 @@
         }
       },
       "close": "Close"
+    },
+    "coupons": {
+      "title": "Coupons",
+      "subtitle": "Codes customers enter in the cart for a discount. One code per cart; tax is calculated on the discounted amount.",
+      "add": "Add coupon",
+      "loadError": "Coupons could not be loaded.",
+      "retry": "Retry",
+      "actionError": "That action could not be completed.",
+      "empty": {
+        "title": "No coupons yet",
+        "body": "Add a coupon so customers can enter its code in the cart."
+      },
+      "columns": {
+        "code": "Code",
+        "discount": "Discount",
+        "expires": "Expires",
+        "status": "Status",
+        "redeemed": "Redeemed",
+        "actions": "Actions"
+      },
+      "percentOff": "{{percent}}% off",
+      "amountOff": "{{amount}} off",
+      "status": {
+        "ACTIVE": "Active",
+        "DISABLED": "Disabled",
+        "EXPIRED": "Expired"
+      },
+      "edit": "Edit",
+      "editCode": "Edit {{code}}",
+      "disable": "Disable",
+      "disableCode": "Disable {{code}}",
+      "enable": "Enable",
+      "enableCode": "Enable {{code}}",
+      "delete": "Delete",
+      "deleteCode": "Delete {{code}}",
+      "deleteTitle": "Delete {{code}}?",
+      "deleteBody": "This permanently removes the coupon. A coupon that has been redeemed cannot be deleted; disable it instead.",
+      "createdToast": "Coupon {{code}} created",
+      "savedToast": "Coupon {{code}} saved",
+      "enabledToast": "Coupon {{code}} enabled",
+      "disabledToast": "Coupon {{code}} disabled",
+      "deletedToast": "Coupon {{code}} deleted",
+      "addTitle": "Add coupon",
+      "editTitle": "Edit coupon",
+      "form": {
+        "code": "Code",
+        "codeHelp": "3 to 40 letters, digits, dashes or underscores. Stored in capitals; cannot be changed later.",
+        "codeInvalid": "Use 3 to 40 letters, digits, dashes or underscores.",
+        "description": "Description (optional)",
+        "descriptionTooLong": "The description can have up to 200 characters.",
+        "type": "Discount type",
+        "typePercent": "Percent off",
+        "typeFixed": "Fixed amount",
+        "percent": "Percent off",
+        "percentHelp": "From 1 to 99.",
+        "percentInvalid": "Enter a percentage from 1 to 99.",
+        "amount": "Amount off",
+        "amountHelp": "In the currency's main unit, for example 10.00.",
+        "amountInvalid": "Enter an amount above zero.",
+        "currency": "Currency",
+        "expires": "Expires on",
+        "expiresHelp": "Date and time in your time zone ({{zone}}).",
+        "expiryRequired": "Set the expiry date and time.",
+        "expiryPast": "The expiry must be in the future.",
+        "save": "Save"
+      }
     }
   },
   "checkout": {
@@ -2098,7 +2228,9 @@
       "toggle": "Total {{total}} · {{count}} items",
       "editCart": "Edit cart",
       "taxPending": "Tax: being calculated",
-      "placeOfSupply": "Place of supply: {{place}}"
+      "placeOfSupply": "Place of supply: {{place}}",
+      "discount": "Discount ({{code}})",
+      "discountPlain": "Discount"
     },
     "period": {
       "MONTHLY": "Monthly",
@@ -2229,7 +2361,7 @@
     "remove": "Remove",
     "removeItem": "Remove {{product}}",
     "changePlan": "Change plan",
-    "confirmPrice": "Confirm new price",
+    "confirmPrice": "Confirm new prices",
     "addRequired": "Add {{required}}",
     "continueBrowsing": "Continue browsing",
     "clear": "Clear cart",
@@ -2238,8 +2370,8 @@
       "body": "Remove all items from your cart?"
     },
     "proceed": "Proceed to checkout",
-    "submitForApproval": "Submit order for approval",
-    "approvalHelp": "Your organization admin approves orders before payment.",
+    "submitForApproval": "Submit purchase request",
+    "approvalHelp": "You cannot buy products yourself. Your organization admin reviews the request and can purchase them for you.",
     "viewSummary": "View summary",
     "error": "Something went wrong with your cart. Please try again.",
     "retry": "Retry",
@@ -2270,7 +2402,26 @@
     "addToCart": "Add to cart",
     "addToCartLabel": "Add {{name}} to cart",
     "viewCart": "View cart",
-    "noPaidPlan": "No paid plan yet. Use Subscribe."
+    "noPaidPlan": "No paid plan yet. Use Subscribe.",
+    "pricesChanged_one": "The price of {{count}} item in your cart changed. Confirm the new price once for the whole cart to continue.",
+    "pricesChanged_other": "The prices of {{count}} items in your cart changed. Confirm the new prices once for the whole cart to continue.",
+    "buyerNote": "If you are not an organization admin, the organization admins are notified of this purchase.",
+    "coupon": {
+      "label": "Coupon code",
+      "apply": "Apply",
+      "remove": "Remove coupon",
+      "applied": "Coupon {{code}}",
+      "discount": "Discount ({{code}})",
+      "error": "This coupon code could not be applied."
+    },
+    "reason": {
+      "title": "Submit a purchase request",
+      "body": "Your organization admin reviews this request and can purchase the products for you. Tell them why you need them.",
+      "label": "Why do you need this?",
+      "required": "Tell your organization admin why you need this.",
+      "counter": "{{count}} / {{max}} characters",
+      "submit": "Submit request"
+    }
   },
   "apiKeys": {
     "title": "API keys",
@@ -2884,7 +3035,8 @@
       "manualRenew": "Manual renewal",
       "spent": "Spent this period",
       "noSpend": "No paid invoices yet",
-      "vsLast": "vs last period"
+      "vsLast": "vs last period",
+      "readOnlyUntil": "Read-only until {{date}}"
     }
   },
   "searchAdmin": {
@@ -4463,6 +4615,7 @@
       "lookUp": "Look up",
       "none": "Nothing is active for this customer or organization.",
       "notFound": "No customer or organization has that ID."
-    }
+    },
+    "readOnlyUntil": "Read-only until {{date}}"
   }
 }

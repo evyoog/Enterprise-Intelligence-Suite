@@ -226,7 +226,14 @@ function InvoicesTab({ api }: { api: BillingScope }) {
                 <TableCell>{new Date(inv.issuedAt).toLocaleDateString()}</TableCell>
                 <TableCell><Chip size="small" label={inv.status} color={statusColor(inv.status)} /></TableCell>
                 <TableCell align="right">{money(inv.taxAmount, inv.currency)}</TableCell>
-                <TableCell align="right">{money(inv.total, inv.currency)}</TableCell>
+                <TableCell align="right">
+                  {money(inv.total, inv.currency)}
+                  {(inv.discountAmount ?? 0) > 0 && (
+                    <Typography variant="caption" sx={{ display: 'block', color: 'text.secondary' }}>
+                      {inv.couponCode ? t('billing.invoices.discount', { code: inv.couponCode }) : t('billing.invoices.discountPlain')}: −{money(inv.discountAmount ?? 0, inv.currency)}
+                    </Typography>
+                  )}
+                </TableCell>
                 <TableCell align="right">
                   {(inv.status === 'PARTIALLY_REFUNDED' || inv.status === 'REFUNDED') && (
                     <Button size="small" onClick={() => setCreditNotesFor(inv)}>{t('billing.invoices.creditNotes')}</Button>

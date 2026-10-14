@@ -6,6 +6,7 @@ import { ApiError } from '../../api/client'
 import { entitlementsApi, type Entitlement } from '../../api/registrationApi'
 import { useLocalePreference } from '../../theming/LocalePreferenceProvider'
 import { SettingsSection } from '../settings/SettingsSection'
+import { ReadOnlyChip } from './GraceNotice'
 
 /** One entitlement: the product, the plan, when the term ends, the features the plan includes and its limit. Read-only (C97 EN-1). */
 export function EntitlementCard({ entitlement }: { entitlement: Entitlement }) {
@@ -17,6 +18,10 @@ export function EntitlementCard({ entitlement }: { entitlement: Entitlement }) {
         <Typography component="h3" sx={{ fontWeight: 700 }}>{entitlement.productName}</Typography>
         <Chip size="small" variant="outlined" label={t(`entitlements.owner.${entitlement.ownerType}`)} />
         {entitlement.planName && <Chip size="small" color="primary" variant="outlined" label={entitlement.planName} />}
+        {/* C100 RR-1 B: the term ended and the grace period runs; the product enforces read-only. */}
+        {entitlement.accessMode === 'READ_ONLY' && entitlement.graceEndsAt && (
+          <ReadOnlyChip graceEndsAt={entitlement.graceEndsAt} i18nKey="entitlements.readOnlyUntil" />
+        )}
       </Box>
       <Typography variant="body2" sx={{ color: 'text.secondary', mt: 0.5 }}>
         {entitlement.expiresAt ? t('entitlements.until', { date: formatDate(entitlement.expiresAt) }) : t('entitlements.noEnd')}

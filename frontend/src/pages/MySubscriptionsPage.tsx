@@ -14,6 +14,9 @@ import { renewalsApi, type Renewal } from '../api/renewalsApi'
 import { useLocalePreference } from '../theming/LocalePreferenceProvider'
 import { OrganizationSubscriptionsSection } from '../components/subscriptions/OrganizationSubscriptionsSection'
 import { EntitlementsSection } from '../components/subscriptions/EntitlementsSection'
+import { AutoRenewControl } from '../components/subscriptions/AutoRenewControl'
+import { GraceNotice, ReadOnlyChip } from '../components/subscriptions/GraceNotice'
+import { isInGrace } from '../utils/grace'
 
 type Action = 'suspend' | 'reactivate' | 'cancel' | 'renew'
 
@@ -55,6 +58,23 @@ export function MySubscriptionsPage() {
       setSubscriptions((prev) => prev?.map((s) => (s.id === updated.id ? updated : s)) ?? prev)
     } catch (e) {
       setActionError(e instanceof ApiError ? e.message : 'That action could not be completed.')
+    } finally {
+      setBusyId(null)
+    }
+  }
+
+  // C100 RR-1 B: auto-renew on/off; the answer carries the new grace state, which the renewal row mirrors.
+  const setAutoRenew = async (subscription: Subscription, autoRenew: boolean) => {
+    setBusyId(subscription.id)
+    setActionError(null)
+    try {
+      const updated = await myProductsApi.setAutoRenew(subscription.id, autoRenew)
+      setSubscriptions((prev) => prev?.map((s) => (s.id === updated.id ? updated : s)) ?? prev)
+      setRenewals((prev) => prev[updated.id]
+        ? { ...prev, [updated.id]: { ...prev[updated.id], autoRenew: updated.autoRenew ?? autoRenew, graceEndsAt: updated.graceEndsAt ?? null } }
+        : prev)
+    } catch (e) {
+      setActionError(e instanceof ApiError ? e.message : t('subscriptions.autoRenew.error'))
     } finally {
       setBusyId(null)
     }
@@ -105,6 +125,7 @@ export function MySubscriptionsPage() {
             renewal={renewals[subscription.id]}
             busy={busyId === subscription.id}
             onAction={(action) => runAction(subscription, action)}
+            onAutoRenew={(autoRenew) => setAutoRenew(subscription, autoRenew)}
             onChangePlan={() => setPlanDialogFor(subscription)}
             onWithdrawScheduledChange={() => withdrawScheduledChange(subscription)}
           />
@@ -137,16 +158,21 @@ function statusColor(status: SubscriptionStatus): 'success' | 'warning' | 'defau
   return 'default'
 }
 
-function SubscriptionRow({ subscription, renewal, busy, onAction, onChangePlan, onWithdrawScheduledChange }: {
+function SubscriptionRow({ subscription, renewal, busy, onAction, onAutoRenew, onChangePlan, onWithdrawScheduledChange }: {
   subscription: Subscription
   renewal?: Renewal
   busy: boolean
   onAction: (action: Action) => void
+  onAutoRenew: (autoRenew: boolean) => void
   onChangePlan: () => void
   onWithdrawScheduledChange: () => void
 }) {
   const { t } = useTranslation()
   const { formatDate, formatDateTime } = useLocalePreference()
+  const autoRenew = subscription.autoRenew ?? renewal?.autoRenew ?? false
+  // C100 RR-1 B: the term ended with auto-renew off; read-only until the grace period ends.
+  const graceEndsAt = subscription.graceEndsAt ?? renewal?.graceEndsAt ?? null
+  const inGrace = subscription.status === 'ACTIVE' && graceEndsAt !== null && isInGrace(graceEndsAt)
 
   return (
     <Paper variant="outlined" sx={{ p: 2.5, display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 2, flexWrap: 'wrap' }}>
@@ -162,11 +188,21 @@ function SubscriptionRow({ subscription, renewal, busy, onAction, onChangePlan, 
         </Typography>
         <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap', mt: 1 }}>
           <Chip size="small" color={statusColor(subscription.status)} label={t(`subscriptions.status.${subscription.status}`)} />
-          {renewal?.autoRenew && (
+          {autoRenew && (
             <Chip size="small" variant="outlined" color="info" icon={<RefreshCw size={14} />} label={t('subscriptions.renewal.autoRenewOn')} />
           )}
-          {renewal && <Chip size="small" variant="outlined" label={t('subscriptions.renewal.renewsOn', { date: formatDate(renewal.renewalDate) })} />}
+          {renewal && !inGrace && <Chip size="small" variant="outlined" label={t('subscriptions.renewal.renewsOn', { date: formatDate(renewal.renewalDate) })} />}
+          {inGrace && graceEndsAt && <ReadOnlyChip graceEndsAt={graceEndsAt} />}
         </Box>
+        {inGrace && graceEndsAt && (
+          <GraceNotice product={subscription.productName} graceEndsAt={graceEndsAt} busy={busy} onRenew={() => onAction('renew')} />
+        )}
+        {subscription.status === 'ACTIVE' && subscription.expiresAt && (
+          <Box sx={{ mt: 1 }}>
+            <AutoRenewControl id={`auto-renew-${subscription.id}`} product={subscription.productName} checked={autoRenew}
+              busy={busy} onChange={onAutoRenew} />
+          </Box>
+        )}
         {subscription.pendingPlanId != null && (
           <Alert severity="info" sx={{ mt: 1.5 }}
             action={<Button color="inherit" size="small" disabled={busy} onClick={onWithdrawScheduledChange}>{t('subscriptions.scheduledChange.keep')}</Button>}>

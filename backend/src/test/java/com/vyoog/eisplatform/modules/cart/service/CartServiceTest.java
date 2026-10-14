@@ -265,35 +265,4 @@ class CartServiceTest {
             .isInstanceOf(CartConflictException.class)
             .satisfies(e -> assertThat(((CartConflictException) e).getCode()).isEqualTo("CART_EMPTY"));
     }
-
-    @Test
-    void anOrganizationMembersCheckoutSubmitsOneOrderPerItemAndNoInvoice() {
-        Organization org = new Organization();
-        org.setName("Cart Org");
-        org.setCode("CART-" + System.nanoTime());
-        org.setBusinessEmail("biz@cart-org.example");
-        org.setCountry("India");
-        org.setLicensedSeats(5);
-        org = organizationRepository.save(org);
-        Customer member = newCustomer();
-        organizationMemberService.addMember(org.getId(), newCustomer().getId(), OrgRole.ORG_ADMIN);
-        organizationMemberService.addMember(org.getId(), member.getId(), OrgRole.MEMBER);
-        Product a = newProduct("OrgA");
-        ProductPlan aPlan = newPlan(a, "Pro", BillingPeriod.MONTHLY, "100.00");
-        Product b = newProduct("OrgB");
-        ProductPlan bPlan = newPlan(b, "Pro", BillingPeriod.MONTHLY, "50.00");
-        cartService.addItem(member.getId(), new AddCartItemRequest(a.getId(), aPlan.getId()));
-        CartDto cart = cartService.addItem(member.getId(), new AddCartItemRequest(b.getId(), bPlan.getId()));
-        assertThat(cart.continueAs()).isEqualTo(CartService.ORGANIZATION_MEMBER);
-
-        CartCheckoutResultDto result = cartService.checkout(member.getId());
-
-        assertThat(result.kind()).isEqualTo("ORDER");
-        assertThat(result.orderIds()).hasSize(2);
-        assertThat(result.orderIds()).allSatisfy(id ->
-            assertThat(orderRepository.findById(id).orElseThrow().getStatus()).isEqualTo(OrderStatus.SUBMITTED));
-        Long orgId = org.getId();
-        assertThat(invoiceRepository.findAll().stream().filter(i -> orgId.equals(i.getOwnerOrganizationId()))).isEmpty();
-        assertThat(cartService.getCart(member.getId()).itemCount()).isZero();
-    }
 }

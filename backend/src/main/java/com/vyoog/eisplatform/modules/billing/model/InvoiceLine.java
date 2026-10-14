@@ -48,6 +48,10 @@ public class InvoiceLine {
     @Column(name = "hsn_sac_code", length = 20)
     private String hsnSacCode;
 
+    /** C100: this line's share of the invoice's coupon discount; the line is taxed on {@code amount - discountAmount}. */
+    @Column(name = "discount_amount", nullable = false)
+    private long discountAmount = 0;
+
     /** C96: the sum of this line's tax components. */
     @Column(name = "tax_amount", nullable = false)
     private long taxAmount = 0;

@@ -55,17 +55,17 @@ public class EntitlementService {
      * organization's subscriptions to the products the member has access to. */
     public List<EntitlementDto> forCustomer(Long customerId) {
         List<EntitlementDto> result = new ArrayList<>();
-        subscriptionRepository.findByOwnerCustomerId(customerId).stream().filter(this::isLive).forEach(s -> toDto(s).ifPresent(result::add));
+        subscriptionRepository.findByOwnerCustomerId(customerId).stream().filter(this::grantsAccess).forEach(s -> toDto(s).ifPresent(result::add));
         memberRepository.findFirstByCustomerIdAndStatus(customerId, MembershipStatus.ACTIVE).ifPresent(member ->
             subscriptionRepository.findByOwnerOrganizationId(member.getOrganizationId()).stream()
-                .filter(this::isLive).filter(s -> memberHasAccess(member, s.getProductId()))
+                .filter(this::grantsAccess).filter(s -> memberHasAccess(member, s.getProductId()))
                 .forEach(s -> toDto(s).ifPresent(result::add)));
         return result;
     }
 
     /** The organization's entitlements: all its ACTIVE subscriptions. */
     public List<EntitlementDto> forOrganization(Long organizationId) {
-        return subscriptionRepository.findByOwnerOrganizationId(organizationId).stream().filter(this::isLive)
+        return subscriptionRepository.findByOwnerOrganizationId(organizationId).stream().filter(this::grantsAccess)
             .map(this::toDto).flatMap(Optional::stream).toList();
     }
 
@@ -103,7 +103,7 @@ public class EntitlementService {
         ProductSubscription subscription = null;
         boolean memberAccessMissing = false;
         if (request.organizationId() != null) {
-            subscription = subscriptionRepository.findByOwnerOrganizationIdAndProductId(request.organizationId(), productId).filter(this::isLive).orElse(null);
+            subscription = subscriptionRepository.findByOwnerOrganizationIdAndProductId(request.organizationId(), productId).filter(this::grantsAccess).orElse(null);
             if (subscription != null && request.customerId() != null) {
                 OrganizationMember member = memberRepository.findByOrganizationIdAndCustomerId(request.organizationId(), request.customerId())
                     .filter(m -> m.getStatus() == MembershipStatus.ACTIVE).orElse(null);
@@ -113,12 +113,12 @@ public class EntitlementService {
                 }
             }
         } else {
-            subscription = subscriptionRepository.findByOwnerCustomerIdAndProductId(request.customerId(), productId).filter(this::isLive).orElse(null);
+            subscription = subscriptionRepository.findByOwnerCustomerIdAndProductId(request.customerId(), productId).filter(this::grantsAccess).orElse(null);
             if (subscription == null) {
                 OrganizationMember member = memberRepository.findFirstByCustomerIdAndStatus(request.customerId(), MembershipStatus.ACTIVE).orElse(null);
                 if (member != null) {
                     ProductSubscription orgSubscription = subscriptionRepository
-                        .findByOwnerOrganizationIdAndProductId(member.getOrganizationId(), productId).filter(this::isLive).orElse(null);
+                        .findByOwnerOrganizationIdAndProductId(member.getOrganizationId(), productId).filter(this::grantsAccess).orElse(null);
                     if (orgSubscription != null) {
                         if (memberHasAccess(member, productId)) {
                             subscription = orgSubscription;
@@ -139,14 +139,30 @@ public class EntitlementService {
         String feature = request.featureKey() == null ? "" : request.featureKey().trim();
         if (!feature.isEmpty() && e.includedFeatures().stream().noneMatch(f -> f.equalsIgnoreCase(feature))) {
             return new EntitlementCheckResponse(false, "FEATURE_NOT_INCLUDED", productId, e.planName(), e.ownerType(), e.expiresAt(),
-                e.includedFeatures(), e.usageLimit());
+                e.includedFeatures(), e.usageLimit(), e.accessMode(), e.graceEndsAt());
         }
-        return new EntitlementCheckResponse(true, null, productId, e.planName(), e.ownerType(), e.expiresAt(), e.includedFeatures(), e.usageLimit());
+        return new EntitlementCheckResponse(true, null, productId, e.planName(), e.ownerType(), e.expiresAt(), e.includedFeatures(), e.usageLimit(),
+            e.accessMode(), e.graceEndsAt());
     }
 
     /** BR-1: only an ACTIVE subscription that has not passed its term end grants anything. */
     private boolean isLive(ProductSubscription s) {
         return s.getStatus() == SubscriptionStatus.ACTIVE && (s.getExpiresAt() == null || s.getExpiresAt().isAfter(Instant.now()));
+    }
+
+    /** C100 RR-1 B: after its term ends with auto-renew off, an ACTIVE subscription is read-only until its grace period ends. */
+    private boolean inGrace(ProductSubscription s) {
+        Instant now = Instant.now();
+        return s.getStatus() == SubscriptionStatus.ACTIVE && s.getExpiresAt() != null && !s.getExpiresAt().isAfter(now)
+            && s.getGraceEndsAt() != null && s.getGraceEndsAt().isAfter(now);
+    }
+
+    private boolean grantsAccess(ProductSubscription s) {
+        return isLive(s) || inGrace(s);
+    }
+
+    private String accessMode(ProductSubscription s) {
+        return inGrace(s) ? "READ_ONLY" : "FULL";
     }
 
     private boolean memberHasAccess(OrganizationMember member, Long productId) {
@@ -165,6 +181,6 @@ public class EntitlementService {
         return Optional.of(new EntitlementDto(s.getId(), product.getId(), product.getName(),
             s.getOwnerType() == RegistrationOwnerType.ORGANIZATION ? "ORGANIZATION" : "INDIVIDUAL",
             plan == null ? null : plan.getId(), plan == null ? null : plan.getName(), s.getStatus().name(), s.getExpiresAt(),
-            features, plan == null ? null : plan.getUsageLimit(), s.getQuantity()));
+            features, plan == null ? null : plan.getUsageLimit(), s.getQuantity(), accessMode(s), inGrace(s) ? s.getGraceEndsAt() : null));
     }
 }

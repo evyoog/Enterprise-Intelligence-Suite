@@ -511,7 +511,8 @@
       "organizationsDirectory": "Organizaciones",
       "offerings": "Ofertas",
       "accessManagement": "Gestión de accesos",
-      "entitlementsLookup": "Consulta de derechos de uso"
+      "entitlementsLookup": "Consulta de derechos de uso",
+      "coupons": "Cupones"
     },
     "catalogTitle": "Catálogo de productos",
     "catalogSubtitle": "Busque y filtre los productos disponibles en la plataforma.",
@@ -711,7 +712,7 @@
     "confirmCancel": "Esto cancela permanentemente tu suscripción a {{product}}. ¿Continuar?",
     "seats": {
       "sectionTitle": "Suscripciones de la organización",
-      "sectionBody": "Los puestos se comparten entre los miembros activos de su organización. Un cambio se aplica de inmediato.",
+      "sectionBody": "Los puestos se comparten entre los miembros activos de tu organización. Un aumento se aplica ahora y se cobra por el resto del período. Una reducción se aplica en tu próxima renovación.",
       "usage": "Puestos: {{inUse}} en uso de {{quantity}}",
       "usageLabel": "Puestos en uso de {{product}}",
       "label": "Puestos",
@@ -721,10 +722,29 @@
       "minimum": "Mínimo {{minimum}}: puestos en uso",
       "notChangeable": "Los puestos se pueden cambiar en suscripciones activas o suspendidas.",
       "confirmTitle": "¿Cambiar los puestos de {{from}} a {{to}}?",
-      "confirmBody": "El cambio se aplica de inmediato. La facturación de cambios de puestos aún no está configurada, así que ahora no se cobra ni se abona nada.",
       "confirm": "Cambiar puestos",
       "updated": "Puestos actualizados.",
-      "error": "No se pudieron cambiar los puestos."
+      "error": "No se pudieron cambiar los puestos.",
+      "pending": "Bajará a {{quantity}} puestos el {{date}}. No se abona nada.",
+      "pendingNoDate": "Bajará a {{quantity}} puestos en tu próxima renovación. No se abona nada.",
+      "withdraw": "Retirar",
+      "estimate": "Se cobra ahora por {{days}} de {{term}} días: {{amount}}",
+      "estimateNote": "Estimación para {{added}} puestos adicionales. La factura muestra el importe exacto, con impuestos.",
+      "decreaseNote": "La reducción se aplica el {{date}}. No se abona nada.",
+      "decreaseNoteNoDate": "La reducción se aplica en tu próxima renovación. No se abona nada.",
+      "confirmIncreaseBody": "Los puestos adicionales se aplican ahora y se cobran en una factura nueva.",
+      "confirmDecreaseBody": "Conservas los {{quantity}} puestos hasta tu próxima renovación y no se abona nada. Puedes retirar la reducción antes de esa fecha.",
+      "result": {
+        "NOW_INVOICE": "Puestos aumentados a {{quantity}}. Se creó una factura por los puestos adicionales.",
+        "NOW": "Puestos cambiados a {{quantity}}.",
+        "AT_RENEWAL": "Los puestos bajarán a {{quantity}} el {{date}}. No se abona nada.",
+        "AT_RENEWAL_NO_DATE": "Los puestos bajarán a {{quantity}} en tu próxima renovación. No se abona nada.",
+        "WITHDRAWN": "Se retiró la reducción programada. Conservas {{quantity}} puestos.",
+        "UNCHANGED": "Los puestos no han cambiado."
+      },
+      "viewInvoices": "Ver facturas",
+      "viewOnly": "Solo las personas con el permiso Gestionar facturación pueden cambiar los puestos.",
+      "readOnly": "No se pueden cambiar los puestos mientras la suscripción es de solo lectura. Renuévala primero."
     },
     "renewal": {
       "autoRenewOn": "Renovación automática activada",
@@ -738,6 +758,45 @@
       "notice": "Tu plan cambiará a {{plan}} el {{date}}, en tu próxima renovación. Conservas tu plan actual hasta entonces.",
       "keep": "Mantener el plan actual",
       "nextRenewal": "tu próxima renovación"
+    },
+    "autoRenew": {
+      "label": "Renovación automática",
+      "onHint": "Se renueva automáticamente al final del período.",
+      "offHint": "No se renovará. Al terminar el período queda en solo lectura durante 7 días y después caduca.",
+      "confirmOffTitle": "¿Desactivar la renovación automática de {{product}}?",
+      "confirmOffBody": "Cuando termine el período, {{product}} no se renovará. Pasará a solo lectura durante 7 días (período de gracia) y caducará al final de ese período salvo que lo renueves. Si vuelves a activar la renovación automática durante el período de gracia, se renueva de inmediato.",
+      "confirmOff": "Desactivar renovación automática",
+      "error": "No se pudo cambiar la renovación automática."
+    },
+    "grace": {
+      "chip": "Solo lectura hasta el {{date}}",
+      "notice": "El período de {{product}} ha terminado. Está en solo lectura hasta el {{date}} y después caduca. Renueva ahora o activa la renovación automática para renovar de inmediato.",
+      "renewNow": "Renovar ahora"
+    },
+    "recipients": {
+      "title": "Destinatarios de los recordatorios de renovación",
+      "description": "Los administradores de la organización y las personas con Gestionar facturación siempre reciben los recordatorios de renovación. Añade a otros miembros que también deban recibirlos.",
+      "defaultsTitle": "Siempre reciben recordatorios",
+      "addedTitle": "También reciben recordatorios",
+      "none": "No se ha añadido a nadie más.",
+      "reason": {
+        "ORG_ADMIN": "Administrador de la organización",
+        "MANAGE_BILLING": "Gestionar facturación",
+        "ADDED": "Añadido"
+      },
+      "email": "Correo",
+      "inApp": "En la aplicación",
+      "emailFor": "Correo para {{name}}",
+      "inAppFor": "En la aplicación para {{name}}",
+      "addPerson": "Añadir persona",
+      "noOptions": "No hay más miembros que añadir",
+      "remove": "Quitar a {{name}}",
+      "needChannel": "Elige correo, en la aplicación o ambos para {{name}}.",
+      "save": "Guardar destinatarios",
+      "saved": "Destinatarios de recordatorios guardados.",
+      "loadError": "No se pudieron cargar los destinatarios de los recordatorios.",
+      "saveError": "No se pudieron guardar los destinatarios de los recordatorios.",
+      "membersUnavailable": "La lista de miembros no está disponible para ti, por lo que no se puede añadir a nadie aquí."
     }
   },
   "orders": {
@@ -767,7 +826,10 @@
     },
     "requestedBy": "Solicitado por {{name}}",
     "decidedBy": "Decidido por {{name}}",
-    "cancel": "Cancelar solicitud"
+    "cancel": "Cancelar solicitud",
+    "purchaseRequestNumber": "Solicitud de compra n.º {{id}}",
+    "products": "Productos de esta solicitud",
+    "reason": "Motivo: {{reason}}"
   },
   "knowledgeBase": {
     "title": "Base de conocimiento",
@@ -1018,7 +1080,9 @@
       "downloadReceipt": "Descargar recibo",
       "empty": "Aún no hay facturas.",
       "tax": "Impuestos",
-      "creditNotes": "Notas de crédito"
+      "creditNotes": "Notas de crédito",
+      "discount": "Descuento ({{code}})",
+      "discountPlain": "Descuento"
     },
     "pay": {
       "title": "Pagar factura",
@@ -2005,6 +2069,72 @@
         }
       },
       "close": "Cerrar"
+    },
+    "coupons": {
+      "title": "Cupones",
+      "subtitle": "Códigos que los clientes introducen en el carrito para obtener un descuento. Un código por carrito; los impuestos se calculan sobre el importe con descuento.",
+      "add": "Añadir cupón",
+      "loadError": "No se pudieron cargar los cupones.",
+      "retry": "Reintentar",
+      "actionError": "No se pudo completar esa acción.",
+      "empty": {
+        "title": "Aún no hay cupones",
+        "body": "Añade un cupón para que los clientes puedan introducir su código en el carrito."
+      },
+      "columns": {
+        "code": "Código",
+        "discount": "Descuento",
+        "expires": "Caduca",
+        "status": "Estado",
+        "redeemed": "Canjeado",
+        "actions": "Acciones"
+      },
+      "percentOff": "{{percent}}% de descuento",
+      "amountOff": "{{amount}} de descuento",
+      "status": {
+        "ACTIVE": "Activo",
+        "DISABLED": "Desactivado",
+        "EXPIRED": "Caducado"
+      },
+      "edit": "Editar",
+      "editCode": "Editar {{code}}",
+      "disable": "Desactivar",
+      "disableCode": "Desactivar {{code}}",
+      "enable": "Activar",
+      "enableCode": "Activar {{code}}",
+      "delete": "Eliminar",
+      "deleteCode": "Eliminar {{code}}",
+      "deleteTitle": "¿Eliminar {{code}}?",
+      "deleteBody": "Esto elimina el cupón de forma permanente. Un cupón que ya se ha canjeado no se puede eliminar; desactívalo en su lugar.",
+      "createdToast": "Cupón {{code}} creado",
+      "savedToast": "Cupón {{code}} guardado",
+      "enabledToast": "Cupón {{code}} activado",
+      "disabledToast": "Cupón {{code}} desactivado",
+      "deletedToast": "Cupón {{code}} eliminado",
+      "addTitle": "Añadir cupón",
+      "editTitle": "Editar cupón",
+      "form": {
+        "code": "Código",
+        "codeHelp": "De 3 a 40 letras, dígitos, guiones o guiones bajos. Se guarda en mayúsculas y no se puede cambiar después.",
+        "codeInvalid": "Usa de 3 a 40 letras, dígitos, guiones o guiones bajos.",
+        "description": "Descripción (opcional)",
+        "descriptionTooLong": "La descripción puede tener hasta 200 caracteres.",
+        "type": "Tipo de descuento",
+        "typePercent": "Porcentaje de descuento",
+        "typeFixed": "Importe fijo",
+        "percent": "Porcentaje de descuento",
+        "percentHelp": "De 1 a 99.",
+        "percentInvalid": "Introduce un porcentaje de 1 a 99.",
+        "amount": "Importe de descuento",
+        "amountHelp": "En la unidad principal de la moneda, por ejemplo 10.00.",
+        "amountInvalid": "Introduce un importe mayor que cero.",
+        "currency": "Moneda",
+        "expires": "Caduca el",
+        "expiresHelp": "Fecha y hora en tu zona horaria ({{zone}}).",
+        "expiryRequired": "Indica la fecha y hora de caducidad.",
+        "expiryPast": "La caducidad debe ser futura.",
+        "save": "Guardar"
+      }
     }
   },
   "checkout": {
@@ -2098,7 +2228,9 @@
       "toggle": "Total {{total}} · {{count}} artículos",
       "editCart": "Editar carrito",
       "taxPending": "Impuestos: calculándose",
-      "placeOfSupply": "Lugar de suministro: {{place}}"
+      "placeOfSupply": "Lugar de suministro: {{place}}",
+      "discount": "Descuento ({{code}})",
+      "discountPlain": "Descuento"
     },
     "period": {
       "MONTHLY": "Mensual",
@@ -2229,7 +2361,7 @@
     "remove": "Quitar",
     "removeItem": "Quitar {{product}}",
     "changePlan": "Cambiar plan",
-    "confirmPrice": "Confirmar nuevo precio",
+    "confirmPrice": "Confirmar nuevos precios",
     "addRequired": "Añadir {{required}}",
     "continueBrowsing": "Seguir explorando",
     "clear": "Vaciar carrito",
@@ -2238,8 +2370,8 @@
       "body": "¿Quitar todos los artículos de tu carrito?"
     },
     "proceed": "Continuar al pago",
-    "submitForApproval": "Enviar pedido para aprobación",
-    "approvalHelp": "El administrador de tu organización aprueba los pedidos antes del pago.",
+    "submitForApproval": "Enviar solicitud de compra",
+    "approvalHelp": "No puedes comprar productos por tu cuenta. El administrador de tu organización revisa la solicitud y puede comprarlos por ti.",
     "viewSummary": "Ver resumen",
     "error": "Algo salió mal con tu carrito. Inténtalo de nuevo.",
     "retry": "Reintentar",
@@ -2270,7 +2402,27 @@
     "addToCart": "Añadir al carrito",
     "addToCartLabel": "Añadir {{name}} al carrito",
     "viewCart": "Ver carrito",
-    "noPaidPlan": "Aún no hay un plan de pago. Usa Suscribirse."
+    "noPaidPlan": "Aún no hay un plan de pago. Usa Suscribirse.",
+    "pricesChanged_one": "El precio de {{count}} artículo de tu carrito cambió. Confirma el nuevo precio una sola vez para todo el carrito para continuar.",
+    "pricesChanged_many": "Los precios de {{count}} artículos de tu carrito cambiaron. Confirma los nuevos precios una sola vez para todo el carrito para continuar.",
+    "pricesChanged_other": "Los precios de {{count}} artículos de tu carrito cambiaron. Confirma los nuevos precios una sola vez para todo el carrito para continuar.",
+    "buyerNote": "Si no eres administrador de la organización, se notifica a los administradores de la organización de esta compra.",
+    "coupon": {
+      "label": "Código de cupón",
+      "apply": "Aplicar",
+      "remove": "Quitar cupón",
+      "applied": "Cupón {{code}}",
+      "discount": "Descuento ({{code}})",
+      "error": "No se pudo aplicar este código de cupón."
+    },
+    "reason": {
+      "title": "Enviar una solicitud de compra",
+      "body": "El administrador de tu organización revisa esta solicitud y puede comprar los productos por ti. Cuéntale por qué los necesitas.",
+      "label": "¿Por qué lo necesitas?",
+      "required": "Cuéntale al administrador de tu organización por qué lo necesitas.",
+      "counter": "{{count}} / {{max}} caracteres",
+      "submit": "Enviar solicitud"
+    }
   },
   "apiKeys": {
     "title": "Claves de API",
@@ -2884,7 +3036,8 @@
       "manualRenew": "Renovación manual",
       "spent": "Gastado en este periodo",
       "noSpend": "Aún no hay facturas pagadas",
-      "vsLast": "frente al periodo anterior"
+      "vsLast": "frente al periodo anterior",
+      "readOnlyUntil": "Solo lectura hasta el {{date}}"
     }
   },
   "searchAdmin": {
@@ -4463,6 +4616,7 @@
       "lookUp": "Consultar",
       "none": "No hay nada activo para este cliente u organización.",
       "notFound": "Ningún cliente u organización tiene ese ID."
-    }
+    },
+    "readOnlyUntil": "Solo lectura hasta el {{date}}"
   }
 }

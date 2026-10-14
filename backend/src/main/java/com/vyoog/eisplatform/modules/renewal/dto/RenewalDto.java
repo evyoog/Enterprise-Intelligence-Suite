@@ -12,6 +12,8 @@ public record RenewalDto(
     boolean autoRenew,
     Instant renewalDate,
     boolean remindersEnabled,
-    String nextReminderAt
+    String nextReminderAt,
+    /** C100 RR-1 B: set while the term has ended and the 7-day read-only grace period runs. */
+    Instant graceEndsAt
 ) {
 }
