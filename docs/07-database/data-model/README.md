@@ -6,6 +6,7 @@ Logical entity definitions, one per entity: `DE-<NNN>-<entity-name>.md`. Start f
 One file per feature, with the tables, columns, constraints and relationships it adds; the migration is named in each file.
 
 - [access-management](access-management.md) — Data model — Access management
+- [application-access](application-access.md) — Data model — Application access requests (REQ-TEN-010)
 - [api-management](api-management.md) — Data model — API management
 - [billing-payments](billing-payments.md) — Data model — Billing & Payments
 - [cart-checkout](cart-checkout.md) — Data model — Cart and checkout
