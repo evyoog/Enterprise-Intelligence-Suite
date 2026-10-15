@@ -100,6 +100,8 @@ export interface Subscription {
   pendingQuantity?: number | null
   /** C100 RR-1 B: while in the future the subscription is read-only (term ended, auto-renew off). */
   graceEndsAt?: string | null
+  /** C102 (REQ-MKT-005): a free trial — `expiresAt` is the trial end, no grace period, no renewal. */
+  trial: boolean
 }
 
 /** REQ-SUB-002 (C97 EN-1): one read-only entitlement, derived from an ACTIVE subscription and its plan. */

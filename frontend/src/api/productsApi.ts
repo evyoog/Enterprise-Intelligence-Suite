@@ -74,6 +74,8 @@ export interface Product {
   createdAt?: string
   /** C95: the wide banner image of the catalog card; `imageUrl` is the app icon. */
   bannerImageUrl?: string | null
+  /** C102 (REQ-MKT-005): days of the free trial (1-90); null/absent = the product offers no trial. */
+  trialDays?: number | null
 }
 
 export interface ProductCreateRequest {
@@ -96,6 +98,8 @@ export interface ProductCreateRequest {
   documentationUrl?: string | null
   supportUrl?: string | null
   bannerImageUrl?: string | null
+  /** 1-90, or null/omitted for no free trial. On update, omitting it clears the trial. */
+  trialDays?: number | null
 }
 
 export interface CategoryFacet {
