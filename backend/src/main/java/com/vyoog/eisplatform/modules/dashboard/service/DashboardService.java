@@ -8,9 +8,11 @@ import com.vyoog.eisplatform.modules.authorization.service.PrivilegedAccessServi
 import com.vyoog.eisplatform.modules.dashboard.dto.*;
 import com.vyoog.eisplatform.modules.dashboard.model.DashboardPreference;
 import com.vyoog.eisplatform.modules.dashboard.model.FavoriteProduct;
+import com.vyoog.eisplatform.modules.dashboard.model.ProductLaunchHistory;
 import com.vyoog.eisplatform.modules.dashboard.model.ProductUsage;
 import com.vyoog.eisplatform.modules.dashboard.repository.DashboardPreferenceRepository;
 import com.vyoog.eisplatform.modules.dashboard.repository.FavoriteProductRepository;
+import com.vyoog.eisplatform.modules.dashboard.repository.ProductLaunchHistoryRepository;
 import com.vyoog.eisplatform.modules.dashboard.repository.ProductUsageRepository;
 import com.vyoog.eisplatform.modules.product.repository.ProductRepository;
 import com.vyoog.eisplatform.modules.registration.dto.MyProductDto;
@@ -55,6 +57,7 @@ public class DashboardService {
     private final ProductRepository productRepository;
     private final FavoriteProductRepository favoriteRepository;
     private final ProductUsageRepository usageRepository;
+    private final ProductLaunchHistoryRepository launchHistoryRepository;
     private final DashboardPreferenceRepository preferenceRepository;
     private final ObjectMapper objectMapper;
 
@@ -206,6 +209,17 @@ public class DashboardService {
         usage.setLaunchCount(usage.getLaunchCount() + 1);
         usage.setLastLaunchedAt(Instant.now());
         usageRepository.save(usage);
+
+        ProductLaunchHistory launch = new ProductLaunchHistory();
+        launch.setCustomerId(customerId);
+        launch.setProductId(productId);
+        launchHistoryRepository.save(launch);
+    }
+
+    /** C104 / AN-1: deletes launch-history rows older than 13 months; returns the count removed. */
+    @Transactional
+    public int purgeOldLaunchHistory() {
+        return launchHistoryRepository.deleteByLaunchedAtBefore(Instant.now().minus(395, ChronoUnit.DAYS));
     }
 
     private void requireRealProduct(Long productId) {

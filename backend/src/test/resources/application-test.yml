@@ -68,6 +68,9 @@ app:
   # C101: tests call the reconcile and SLA services directly.
   orders:
     job-enabled: false
+  # C104: tests call DashboardService#purgeOldLaunchHistory directly.
+  analytics:
+    job-enabled: false
   service-instances:
     job-enabled: false
   sla:

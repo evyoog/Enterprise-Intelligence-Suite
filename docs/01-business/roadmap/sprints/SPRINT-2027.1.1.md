@@ -151,6 +151,8 @@ Full breakdown: [applications/13-integration-api-platform.md](../applications/13
 
 - The P0 capabilities above ([DN-2](../open-decisions.md#dn-2-sprint-scope-length-and-dates)). 13.01 API Management and 13.03 Event Platform (P0, Commit) are no longer in this sprint — see [2026.4.2](SPRINT-2026.4.2.md).
 
+**Sequencing recorded ([C104](../open-decisions.md#c104), 2026-10-15), WH-1:** nothing built yet (still P1/Stretch); when built, customer webhooks (13.04) come right after the provisioning webhooks (09.02.01, itself not yet built — PV-1 to PV-7 open), sharing the same code, and connectors (13.02) come later.
+
 ## EIS 16 Analytics & Data Platform
 
 **Planned work ([PO] / [WB] description):** Customer, product, operational and business analytics
@@ -181,6 +183,8 @@ Full breakdown with APIs, services, entities and events: [applications/16-analyt
 ### Expected deliverables
 
 - The P0 capabilities above ([DN-2](../open-decisions.md#dn-2-sprint-scope-length-and-dates)). Deliverables are otherwise Not specified in any source.
+
+**Built ahead of this sprint ([C104](../open-decisions.md#c104), 2026-10-15), AN-1:** each product launch is now recorded as its own history row (13-month retention), alongside the existing cumulative usage counter — see [applications/16-analytics-data-platform.md](../applications/16-analytics-data-platform.md). Migration V044. **Sequencing recorded, AN-2:** when 16 is built, 16.04 Business Analytics (revenue for platform admins) comes first. Everything else in 16 stays Not started.
 
 ## Decisions affecting this sprint
 
