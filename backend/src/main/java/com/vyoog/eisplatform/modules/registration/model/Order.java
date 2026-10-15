@@ -63,6 +63,10 @@ public class Order {
     @Column(name = "decision_note", length = 500)
     private String decisionNote;
 
+    /** C103 / REQ-TEN-010: when the 3-day pending reminder was sent to the organization's approvers (once; null = not yet due or already decided). */
+    @Column(name = "reminded_at")
+    private Instant remindedAt;
+
     @CreatedDate
     @Column(updatable = false)
     private Instant createdAt;

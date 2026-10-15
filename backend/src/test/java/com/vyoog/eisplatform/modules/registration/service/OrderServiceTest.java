@@ -172,4 +172,38 @@ class OrderServiceTest {
         assertThatThrownBy(() -> orderService.approveOrder(orgB.adminId(), order.id(), new DecideOrderRequest(null)))
             .isInstanceOf(ResourceNotFoundException.class);
     }
+
+    @Autowired
+    private com.vyoog.eisplatform.modules.registration.repository.OrderRepository orderRepository;
+    @Autowired
+    private org.springframework.jdbc.core.JdbcTemplate jdbcTemplate;
+
+    private void backdate(Long orderId, int days) {
+        jdbcTemplate.update("update orders set created_at = ? where id = ?",
+            java.sql.Timestamp.from(java.time.Instant.now().minus(days, java.time.temporal.ChronoUnit.DAYS)), orderId);
+    }
+
+    /** C103 / REQ-TEN-010 (AP-1 §3): a request still SUBMITTED after 3 days is reminded once, never auto-decided. */
+    @Test
+    void aRequestPendingThreeDaysIsRemindedOnceAndNeverAutoDecided() {
+        Setup setup = newOrgWithAdminAndMember();
+        Product product = newProduct();
+        OrderDto submitted = orderService.submitOrder(setup.memberId(), new SubmitOrderRequest(product.getId(), null));
+
+        assertThat(orderService.remindPendingOrders()).isZero();   // not due yet
+
+        backdate(submitted.id(), 4);
+
+        assertThat(orderService.remindPendingOrders()).isEqualTo(1);
+        assertThat(orderRepository.findById(submitted.id()).orElseThrow().getRemindedAt()).isNotNull();
+        assertThat(orderRepository.findById(submitted.id()).orElseThrow().getStatus()).isEqualTo(OrderStatus.SUBMITTED);
+
+        assertThat(orderService.remindPendingOrders()).isZero();   // only once
+
+        // A decided order is never reminded, even if it would otherwise be due.
+        OrderDto other = orderService.submitOrder(setup.memberId(), new SubmitOrderRequest(newProduct().getId(), null));
+        orderService.approveOrder(setup.adminId(), other.id(), new DecideOrderRequest(null));
+        backdate(other.id(), 4);
+        assertThat(orderService.remindPendingOrders()).isZero();
+    }
 }

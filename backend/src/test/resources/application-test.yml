@@ -66,6 +66,8 @@ app:
   renewals:
     job-enabled: false
   # C101: tests call the reconcile and SLA services directly.
+  orders:
+    job-enabled: false
   service-instances:
     job-enabled: false
   sla:

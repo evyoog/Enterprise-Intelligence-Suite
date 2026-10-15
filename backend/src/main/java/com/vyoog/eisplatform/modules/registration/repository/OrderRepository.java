@@ -13,4 +13,7 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
     List<Order> findByRequestedByCustomerIdOrderByCreatedAtDesc(Long requestedByCustomerId);
 
     List<Order> findByOrganizationIdAndStatusOrderByCreatedAtAsc(Long organizationId, OrderStatus status);
+
+    /** C103: orders still pending (for the 3-day reminder job). */
+    List<Order> findByStatusAndCreatedAtBefore(OrderStatus status, java.time.Instant createdBefore);
 }

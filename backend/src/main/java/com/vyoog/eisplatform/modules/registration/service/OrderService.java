@@ -326,6 +326,28 @@ public class OrderService {
             .toList();
     }
 
+    /** C103 / REQ-TEN-010 (AP-1 §3): a request still pending after 3 days gets one reminder to the organization's admins. Not auto-approved or rejected. */
+    public static final int PENDING_REMINDER_DAYS = 3;
+
+    @Transactional
+    public int remindPendingOrders() {
+        Instant threshold = Instant.now().minus(PENDING_REMINDER_DAYS, java.time.temporal.ChronoUnit.DAYS);
+        int sent = 0;
+        for (Order order : orderRepository.findByStatusAndCreatedAtBefore(OrderStatus.SUBMITTED, threshold)) {
+            if (order.getRemindedAt() != null) {
+                continue;
+            }
+            order.setRemindedAt(Instant.now());
+            orderRepository.save(order);
+            notifyOrgAdmins(order.getOrganizationId(), "Purchase request still waiting for approval",
+                requesterName(order.getRequestedByCustomerId()) + "'s request for " + productNames(order.getItems().stream()
+                    .map(i -> new SubmitOrderRequest.Item(i.getProductId(), i.getPlanId())).toList())
+                    + " has been pending for " + PENDING_REMINDER_DAYS + " days.");
+            sent++;
+        }
+        return sent;
+    }
+
     private void notifyOrgAdmins(Long organizationId, String title, String message) {
         memberRepository.findByOrganizationIdAndOrgRoleAndStatus(organizationId, OrgRole.ORG_ADMIN, MembershipStatus.ACTIVE)
             .forEach(admin -> customerRepository.findById(admin.getCustomerId()).ifPresent(customer ->
