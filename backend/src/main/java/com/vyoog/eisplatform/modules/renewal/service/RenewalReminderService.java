@@ -182,6 +182,9 @@ public class RenewalReminderService {
             SubscriptionStatus.ACTIVE, now, now.plus(Duration.ofDays(MAX_DAYS + 2)));
         int sent = 0;
         for (ProductSubscription subscription : candidates) {
+            if (subscription.isTrial()) {
+                continue;   // C102: a free trial has its own notices (SubscriptionService#remindEndingTrials)
+            }
             for (Recipient recipient : recipients(subscription)) {
                 Effective eff = effective(recipient.customer().getId(), settings);
                 if (!eff.enabled()) {

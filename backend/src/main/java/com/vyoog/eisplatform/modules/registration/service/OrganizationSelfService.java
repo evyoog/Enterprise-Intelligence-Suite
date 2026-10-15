@@ -334,7 +334,8 @@ public class OrganizationSelfService {
                 subscription.getPendingPlanId() == null ? null
                     : productPlanRepository.findById(subscription.getPendingPlanId()).map(ProductPlan::getName).orElse(null),
                 subscription.getPendingQuantity(),
-                subscription.getGraceEndsAt()
+                subscription.getGraceEndsAt(),
+                subscription.isTrial()
             ))
             .toList();
     }

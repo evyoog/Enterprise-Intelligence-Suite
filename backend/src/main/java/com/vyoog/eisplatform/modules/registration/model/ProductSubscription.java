@@ -84,6 +84,14 @@ public class ProductSubscription {
     @Column(name = "grace_ends_at")
     private Instant graceEndsAt;
 
+    /** C102 / REQ-MKT-005: a free trial: on the product's highest plan, no card, {@code expiresAt} is its end, never auto-renewed, no grace period. A purchase turns it off. */
+    @Column(nullable = false)
+    private boolean trial = false;
+
+    /** C102: the "3 days left" notice of a trial was sent. */
+    @Column(name = "trial_reminded_at")
+    private Instant trialRemindedAt;
+
     @CreatedDate
     @Column(updatable = false)
     private Instant createdAt;

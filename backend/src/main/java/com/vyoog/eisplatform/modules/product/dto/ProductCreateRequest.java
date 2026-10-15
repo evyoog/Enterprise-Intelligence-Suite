@@ -2,6 +2,8 @@ package com.vyoog.eisplatform.modules.product.dto;
 
 import com.vyoog.eisplatform.modules.product.model.ProductStatus;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
@@ -49,8 +51,20 @@ public record ProductCreateRequest(
     @Size(max = 500) @Pattern(regexp = "https?://.+", message = "must start with http:// or https://") String documentationUrl,
     @Size(max = 500) @Pattern(regexp = "https?://.+", message = "must start with http:// or https://") String supportUrl,
     // C95: the banner image of the catalog card (uploaded through POST /products/images); null = none.
-    @Size(max = 500) String bannerImageUrl
+    @Size(max = 500) String bannerImageUrl,
+    // C102: free trial length in days (1 to 90); null = no trial. Left out by older clients (no trial).
+    @Min(1) @Max(90) Integer trialDays
 ) {
+
+    /** The pre-C102 shape: no trial. */
+    public ProductCreateRequest(String name, String description, BigDecimal price, String imageUrl, String launchUrl,
+                                String category, ProductStatus status, Boolean ssoConnected, List<Long> platformIds,
+                                List<ProductPlanCreateRequest> plans, Long parentProductId, String variantLabel,
+                                List<Long> dependsOnProductIds, Boolean featured, String accentColor, List<String> featureTags,
+                                String documentationUrl, String supportUrl, String bannerImageUrl) {
+        this(name, description, price, imageUrl, launchUrl, category, status, ssoConnected, platformIds, plans,
+            parentProductId, variantLabel, dependsOnProductIds, featured, accentColor, featureTags, documentationUrl, supportUrl, bannerImageUrl, null);
+    }
 
     /** The pre-C95 shape: no banner image. */
     public ProductCreateRequest(String name, String description, BigDecimal price, String imageUrl, String launchUrl,
@@ -59,7 +73,7 @@ public record ProductCreateRequest(
                                 List<Long> dependsOnProductIds, Boolean featured, String accentColor, List<String> featureTags,
                                 String documentationUrl, String supportUrl) {
         this(name, description, price, imageUrl, launchUrl, category, status, ssoConnected, platformIds, plans,
-            parentProductId, variantLabel, dependsOnProductIds, featured, accentColor, featureTags, documentationUrl, supportUrl, null);
+            parentProductId, variantLabel, dependsOnProductIds, featured, accentColor, featureTags, documentationUrl, supportUrl, null, null);
     }
 
     /** The pre-C66 shape — showcase fields default (no colour, tags or links). */

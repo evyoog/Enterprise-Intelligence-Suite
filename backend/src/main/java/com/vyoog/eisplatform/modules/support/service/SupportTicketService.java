@@ -45,7 +45,14 @@ public class SupportTicketService {
 
     @Transactional
     public SupportTicketDto createTicket(Long customerId, CreateTicketRequest request) {
+        return createTicket(customerId, request, null);
+    }
+
+    /** C102: a ticket with a category already set (for example "Demo request"). */
+    @Transactional
+    public SupportTicketDto createTicket(Long customerId, CreateTicketRequest request, String category) {
         SupportTicket ticket = new SupportTicket();
+        ticket.setCategory(category);
         ticket.setRequestedByCustomerId(customerId);
         ticket.setSubject(request.subject());
         ticket.setDescription(request.description());

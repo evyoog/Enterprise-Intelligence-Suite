@@ -25,5 +25,9 @@ public class SubscriptionExpiryJob {
         if (expired > 0) {
             log.info("Expired {} overdue subscription(s)", expired);
         }
+        int reminded = subscriptionService.remindEndingTrials();   // C102
+        if (reminded > 0) {
+            log.info("Reminded {} free trial(s) that end soon", reminded);
+        }
     }
 }

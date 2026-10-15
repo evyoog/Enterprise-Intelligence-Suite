@@ -260,6 +260,7 @@ public class ProductService {
             : request.accentColor().toUpperCase(java.util.Locale.ROOT));
         product.setDocumentationUrl(blankToNull(request.documentationUrl()));
         product.setSupportUrl(blankToNull(request.supportUrl()));
+        product.setTrialDays(request.trialDays());
         product.setBannerImageUrl(blankToNull(request.bannerImageUrl()));
         if (request.featureTags() == null || request.featureTags().isEmpty()) {
             product.setFeatureTags(null);

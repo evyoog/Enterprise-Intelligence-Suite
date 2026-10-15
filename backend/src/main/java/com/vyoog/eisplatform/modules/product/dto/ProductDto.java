@@ -35,6 +35,8 @@ public class ProductDto {
     private List<String> featureTags;
     private String documentationUrl;
     private String supportUrl;
+    /** C102: free trial length in days; null = no trial offered. */
+    private Integer trialDays;
     /** C94: when the product was added, for the catalog's New badge and Newest sort. */
     private java.time.Instant createdAt;
 }

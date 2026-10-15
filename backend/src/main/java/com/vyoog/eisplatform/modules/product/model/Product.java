@@ -91,6 +91,10 @@ public class Product {
     @Column(name = "support_url", length = 500)
     private String supportUrl;
 
+    /** C102 / REQ-MKT-005: free trial length in days (1 to 90); null = the product offers no trial. */
+    @Column(name = "trial_days")
+    private Integer trialDays;
+
     /** Which high-level platform(s) (e.g. Thittam) this app is shown under.
      * Many-to-many: the same app can be assigned to more than one platform. */
     @ManyToMany(fetch = FetchType.LAZY)

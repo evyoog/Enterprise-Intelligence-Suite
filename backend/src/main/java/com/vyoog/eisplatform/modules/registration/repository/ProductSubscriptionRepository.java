@@ -36,6 +36,9 @@ public interface ProductSubscriptionRepository extends JpaRepository<ProductSubs
 
     List<ProductSubscription> findByStatusAndExpiresAtBetween(SubscriptionStatus status, Instant from, Instant to);
 
+    /** C102: trials ending within a window that have not been reminded yet. */
+    List<ProductSubscription> findByStatusAndTrialTrueAndTrialRemindedAtIsNullAndExpiresAtBetween(SubscriptionStatus status, Instant from, Instant to);
+
     /** Platform admin dashboard (C53): subscriptions by status, platform-wide. */
     long countByStatus(SubscriptionStatus status);
 }

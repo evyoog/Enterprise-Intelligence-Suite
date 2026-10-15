@@ -81,6 +81,7 @@ public class SubscriptionService {
         payload.put("ownerOrganizationId", subscription.getOwnerOrganizationId());
         payload.put("status", subscription.getStatus() == null ? null : subscription.getStatus().name());
         payload.put("expiresAt", subscription.getExpiresAt() == null ? null : subscription.getExpiresAt().toString());
+        payload.put("trial", subscription.isTrial());   // C102: the product provisions a trial tenant like any other, and can tell it is a trial
         outboxService.publish(eventType, PlatformEventTypes.AGGREGATE_SUBSCRIPTION, subscription.getId(), payload);
         serviceInstanceService.syncFromSubscription(subscription);
     }
@@ -158,6 +159,7 @@ public class SubscriptionService {
         subscription.setStatus(SubscriptionStatus.ACTIVE);
         subscription.setStartedAt(Instant.now());
         subscription.setExpiresAt(null);
+        subscription.setTrial(false);   // C102: subscribing turns a trial into a normal subscription
         subscription = subscriptionRepository.save(subscription);
 
         customerRepository.findById(customerId).ifPresent(customer ->
@@ -196,7 +198,8 @@ public class SubscriptionService {
         // C97 BI-1: a paid purchase starts after payment (card or UPI) or at once with a due date (pay by invoice). Until then it is
         // PENDING_SUBSCRIPTION. A subscription that is already active keeps running while the new purchase is paid.
         boolean paid = planId != null && productPlanRepository.findById(planId).map(p -> p.getPrice().signum() > 0).orElse(false);
-        boolean alreadyActive = subscription.getStatus() == SubscriptionStatus.ACTIVE;
+        // C102: a running trial is not a paid subscription, so a paid plan bought over it starts after payment.
+        boolean alreadyActive = subscription.getStatus() == SubscriptionStatus.ACTIVE && !subscription.isTrial();
         boolean startNow = !paid || alreadyActive;
         subscription.setStatus(startNow ? SubscriptionStatus.ACTIVE : SubscriptionStatus.PENDING_SUBSCRIPTION);
         subscription.setStartedAt(Instant.now());
@@ -204,6 +207,7 @@ public class SubscriptionService {
         // REQ-SUB-004.1 (C64): a Monthly/Yearly plan gets a renewal date and auto-renew.
         subscription.setExpiresAt(firstRenewalDate(planId, subscription.getStartedAt()));
         subscription.setAutoRenew(true);
+        subscription.setTrial(false);
         subscription = subscriptionRepository.save(subscription);
 
         if (startNow) {
@@ -315,12 +319,114 @@ public class SubscriptionService {
         subscription.setAutoRenew(true);
         subscription.setGraceEndsAt(null);
         subscription.setPendingQuantity(null);
+        subscription.setTrial(false);   // C102: buying turns a trial into a normal subscription
         subscription = subscriptionRepository.save(subscription);
 
         auditService.recordSuccess("SUBSCRIPTION_CREATED", null, null, null,
             "ProductSubscription", productId.toString(), organizationId, "Organization subscribed to product " + productId);
         publish(PlatformEventTypes.SUBSCRIPTION_CREATED, subscription);
         return subscription;
+    }
+
+    // ------------------------------------------------------------------ C102 / REQ-MKT-005: free trials
+
+    /** The reminder is sent this many days before a trial ends. */
+    public static final int TRIAL_REMINDER_DAYS = 3;
+
+    /** An individual starts a free trial of a product that offers one. */
+    @Transactional
+    public SubscriptionDto startTrial(Long customerId, Long productId) {
+        Product product = requireTrialProduct(productId);
+        eligibilityService.assertEligible(productId, false);
+        if (subscriptionRepository.findByOwnerCustomerIdAndProductId(customerId, productId).isPresent()) {
+            throw new IllegalArgumentException("You already have, or had, a subscription to " + product.getName() + ", so a free trial is not available.");
+        }
+        ProductSubscription trial = new ProductSubscription();
+        trial.setOwnerType(RegistrationOwnerType.INDIVIDUAL);
+        trial.setOwnerCustomerId(customerId);
+        trial.setQuantity(1);
+        return beginTrial(trial, product, customerId);
+    }
+
+    /** An organization starts a free trial (the caller has checked that the actor may buy for the organization). The seats are the organization's. */
+    @Transactional
+    public SubscriptionDto startOrganizationTrial(Long organizationId, Long actorCustomerId, Long productId) {
+        Product product = requireTrialProduct(productId);
+        eligibilityService.assertEligible(productId, true);
+        if (subscriptionRepository.findByOwnerOrganizationIdAndProductId(organizationId, productId).isPresent()) {
+            throw new IllegalArgumentException("Your organization already has, or had, a subscription to " + product.getName() + ", so a free trial is not available.");
+        }
+        ProductSubscription trial = new ProductSubscription();
+        trial.setOwnerType(RegistrationOwnerType.ORGANIZATION);
+        trial.setOwnerOrganizationId(organizationId);
+        trial.setQuantity(initialSeats(organizationId, productId));
+        SubscriptionDto dto = beginTrial(trial, product, actorCustomerId);
+        eventPublisher.publishEvent(new com.vyoog.eisplatform.modules.registration.event.OrganizationEntitlementsChangedEvent(organizationId));
+        return dto;
+    }
+
+    private Product requireTrialProduct(Long productId) {
+        Product product = productRepository.findById(productId)
+            .filter(p -> p.getStatus() == ProductStatus.ACTIVE)
+            .orElseThrow(() -> new ResourceNotFoundException("Product not found"));
+        if (product.getTrialDays() == null || product.getTrialDays() < 1) {
+            throw new IllegalArgumentException(product.getName() + " does not offer a free trial.");
+        }
+        return product;
+    }
+
+    /** The product's highest plan: a trial has all features (C102 TR-1). Null for a product without plans (its single price covers everything). */
+    private Long highestPlanId(Product product) {
+        return product.getPlans().stream().max(java.util.Comparator.comparing(ProductPlan::getPrice)).map(ProductPlan::getId).orElse(null);
+    }
+
+    private SubscriptionDto beginTrial(ProductSubscription trial, Product product, Long actorCustomerId) {
+        Instant now = Instant.now();
+        trial.setProductId(product.getId());
+        trial.setPlanId(highestPlanId(product));
+        trial.setStatus(SubscriptionStatus.ACTIVE);
+        trial.setStartedAt(now);
+        trial.setExpiresAt(now.plus(product.getTrialDays(), ChronoUnit.DAYS));
+        trial.setAutoRenew(false);
+        trial.setTrial(true);
+        trial = subscriptionRepository.save(trial);
+        notify(trial, "Free trial started: " + product.getName(), "Your " + product.getTrialDays() + "-day free trial of " + product.getName()
+            + " has started, with all features. It ends on " + trial.getExpiresAt().atZone(java.time.ZoneOffset.UTC).toLocalDate() + ".");
+        auditService.recordSuccess("TRIAL_STARTED", null, actorCustomerId, null, "ProductSubscription", trial.getId().toString(), trial.getOwnerOrganizationId(),
+            "Free trial of " + product.getName() + " for " + product.getTrialDays() + " days");
+        publish(PlatformEventTypes.SUBSCRIPTION_CREATED, trial);   // the product creates the trial tenant and its database
+        return toDto(trial, product.getName());
+    }
+
+    /** A trial whose days are over: expired at once, with no grace period, and the product is told. */
+    private void expireTrial(ProductSubscription subscription) {
+        subscription.setStatus(SubscriptionStatus.EXPIRED);
+        subscriptionRepository.save(subscription);
+        String name = productRepository.findById(subscription.getProductId()).map(Product::getName).orElse("the product");
+        notify(subscription, "Free trial ended: " + name, "Your free trial of " + name + " has ended. Subscribe to keep using it.");
+        auditService.recordSuccess("TRIAL_EXPIRED", null, subscription.getOwnerCustomerId(), null, "ProductSubscription", subscription.getId().toString(),
+            subscription.getOwnerOrganizationId(), "Free trial ended");
+        publish(PlatformEventTypes.SUBSCRIPTION_CHANGED, subscription);   // status EXPIRED: the product removes the trial tenant
+        if (subscription.getOwnerOrganizationId() != null) {
+            eventPublisher.publishEvent(new com.vyoog.eisplatform.modules.registration.event.OrganizationEntitlementsChangedEvent(subscription.getOwnerOrganizationId()));
+        }
+    }
+
+    /** Called by {@code SubscriptionExpiryJob}: tells the owner of every trial ending within {@value #TRIAL_REMINDER_DAYS} days, once. */
+    @Transactional
+    public int remindEndingTrials() {
+        Instant now = Instant.now();
+        int sent = 0;
+        for (ProductSubscription subscription : subscriptionRepository.findByStatusAndTrialTrueAndTrialRemindedAtIsNullAndExpiresAtBetween(
+                SubscriptionStatus.ACTIVE, now, now.plus(TRIAL_REMINDER_DAYS, ChronoUnit.DAYS))) {
+            String name = productRepository.findById(subscription.getProductId()).map(Product::getName).orElse("the product");
+            subscription.setTrialRemindedAt(now);
+            subscriptionRepository.save(subscription);
+            notify(subscription, "Your free trial of " + name + " ends soon", "Your free trial ends on "
+                + subscription.getExpiresAt().atZone(java.time.ZoneOffset.UTC).toLocalDate() + ". Subscribe before then to keep your data and access.");
+            sent++;
+        }
+        return sent;
     }
 
     private SubscriptionDto toDto(ProductSubscription subscription) {
@@ -348,7 +454,8 @@ public class SubscriptionService {
             subscription.getPendingPlanId() == null ? null
                 : productPlanRepository.findById(subscription.getPendingPlanId()).map(ProductPlan::getName).orElse(null),
             subscription.getPendingQuantity(),
-            subscription.getGraceEndsAt()
+            subscription.getGraceEndsAt(),
+            subscription.isTrial()
         );
     }
 
@@ -499,6 +606,9 @@ public class SubscriptionService {
     @Transactional
     public SubscriptionDto renewSubscription(Long customerId, Long subscriptionId) {
         ProductSubscription subscription = resolveOwnSubscription(customerId, subscriptionId);
+        if (subscription.isTrial()) {
+            throw new IllegalArgumentException("A free trial cannot be renewed. Subscribe to keep the product after the trial.");
+        }
         if (subscription.getStatus() == SubscriptionStatus.CANCELLED) {
             throw new IllegalArgumentException("A cancelled subscription cannot be renewed.");
         }
@@ -536,6 +646,11 @@ public class SubscriptionService {
             .findByStatusAndAutoRenewFalseAndExpiresAtBefore(SubscriptionStatus.ACTIVE, now);
         int expired = 0;
         for (ProductSubscription subscription : overdue) {
+            if (subscription.isTrial()) {   // C102: a trial has no grace period
+                expireTrial(subscription);
+                expired++;
+                continue;
+            }
             if (subscription.getGraceEndsAt() == null) {
                 Instant graceEnd = subscription.getExpiresAt().plus(GRACE_DAYS, ChronoUnit.DAYS);
                 subscription.setGraceEndsAt(graceEnd);
@@ -554,6 +669,7 @@ public class SubscriptionService {
             }
             subscription.setStatus(SubscriptionStatus.EXPIRED);
             subscriptionRepository.save(subscription);
+            serviceInstanceService.syncFromSubscription(subscription);   // C101: the instance is deprovisioned with the subscription
             notify(subscription, "Subscription expired", "Your subscription has expired.");
             auditService.recordSuccess("SUBSCRIPTION_EXPIRED", null, subscription.getOwnerCustomerId(), null,
                 "ProductSubscription", subscription.getId().toString(), null, "Subscription expired automatically");
@@ -578,6 +694,9 @@ public class SubscriptionService {
     }
 
     private SubscriptionDto changeAutoRenew(ProductSubscription subscription, Long actorCustomerId, boolean autoRenew) {
+        if (subscription.isTrial()) {
+            throw new IllegalArgumentException("A free trial does not renew. Subscribe to keep the product after the trial.");
+        }
         if (subscription.getStatus() != SubscriptionStatus.ACTIVE && subscription.getStatus() != SubscriptionStatus.SUSPENDED) {
             throw new IllegalArgumentException("Auto-renew can only be changed on an active or suspended subscription.");
         }
@@ -605,6 +724,9 @@ public class SubscriptionService {
     @Transactional
     public SubscriptionDto changePlan(Long customerId, Long subscriptionId, ChangePlanRequest request) {
         ProductSubscription subscription = resolveOwnSubscription(customerId, subscriptionId);
+        if (subscription.isTrial()) {
+            throw new IllegalArgumentException("A free trial has all features on the highest plan. Subscribe to choose a plan.");
+        }
         boolean scheduled = applyPlanChange(subscription, request);
         auditService.recordSuccess(scheduled ? "SUBSCRIPTION_PLAN_CHANGE_SCHEDULED" : "SUBSCRIPTION_PLAN_CHANGED", null, customerId, null,
             "ProductSubscription", subscriptionId.toString(), null,
@@ -798,6 +920,9 @@ public class SubscriptionService {
     @Transactional
     public SubscriptionDto changeOrganizationPlan(Long organizationId, Long actorCustomerId, Long subscriptionId, ChangePlanRequest request) {
         ProductSubscription subscription = resolveOrganizationSubscription(organizationId, subscriptionId);
+        if (subscription.isTrial()) {
+            throw new IllegalArgumentException("A free trial has all features on the highest plan. Subscribe to choose a plan.");
+        }
         boolean scheduled = applyPlanChange(subscription, request);
         afterOrganizationChange(subscription, actorCustomerId, scheduled ? "SUBSCRIPTION_PLAN_CHANGE_SCHEDULED" : "SUBSCRIPTION_PLAN_CHANGED",
             scheduled ? "Subscription plan change scheduled" : "Subscription plan changed",

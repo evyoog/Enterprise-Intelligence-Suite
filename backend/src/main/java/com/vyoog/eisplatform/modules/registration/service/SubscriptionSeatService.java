@@ -80,6 +80,9 @@ public class SubscriptionSeatService {
         if (quantity < 1 || quantity > MAX_SEATS) {
             throw new IllegalArgumentException("Seats must be between 1 and " + MAX_SEATS + ".");
         }
+        if (subscription.isTrial()) {
+            throw new IllegalArgumentException("A free trial has the organization's seats. Subscribe to change them.");
+        }
         if (subscription.getStatus() != SubscriptionStatus.ACTIVE && subscription.getStatus() != SubscriptionStatus.SUSPENDED) {
             throw new InvalidStateException("Seats can only be changed on an active or suspended subscription.");
         }
