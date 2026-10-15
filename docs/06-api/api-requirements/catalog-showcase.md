@@ -36,3 +36,6 @@ Same fields with **all** feature tags plus `apps` (ACTIVE `ProductDto`s). 404 wh
 
 The product create and update request and the product response gain `bannerImageUrl` (C95; the URL returned by `POST /products/images`, up to 500 characters; blank = none). `imageUrl` stays the app icon. The product response also gains `createdAt` (ISO time the product was added), used for the New badge and the Newest sort. Nothing else changes.
 
+
+## C102 additions (free trials)
+The product create and update request and the product response gain `trialDays` (an integer from 1 to 90, or null for no trial; 400 outside the range; an update that omits it clears the trial). The trial, demo and compare endpoints are in [product-evaluation.md](product-evaluation.md).

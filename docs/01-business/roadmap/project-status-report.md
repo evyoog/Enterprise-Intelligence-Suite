@@ -100,6 +100,7 @@
 | **Draft, not built** (3) — need answers | access-management (REQ-TEN-005), entitlements (REQ-SUB-002), tax-rules (REQ-BIL-002) |
 | **Stub only** (1) | provisioning-contract (REQ-ORD-002) |
 | **Approved & built since 2026-10-14** ([C101](open-decisions.md#c101)) | service-instances (REQ-SRM-001), sla-management (REQ-SUP-002), incident-problem-management (REQ-SUP-003) |
+| **Approved & built since 2026-10-15** ([C102](open-decisions.md#c102)) | product-evaluation (REQ-MKT-005: 03.02.01.01 start trial, 03.02.01.02 request demo, 03.02.02.01 to .03 compare and estimate cost); subscription-lifecycle, renewal-reminders, ticket-management, provisioning-contract, service-instances, cart-checkout and catalog-showcase updated |
 | **No FRD** | 02.02 Offering, 02.04 Product content, 02.05.01 Localization, 05.03.01 Invite user, 05.04.02 Projects, 04 AI (all), 07.03 Licence & quota, 08.01 Price books/promotions, 08.02.01 Usage billing, 11.01.02 AI knowledge, 11.02–11.04, 12.02, 13.02, 13.04 Webhooks, 14.02–14.04, 15.02, 15.04, 15.05.02, 16 Analytics (all), semantic search, launch-event recording |
 
 **Document before development (priority order):** tax-rules, access-management, entitlements, provisioning-contract, invite user, webhooks, analytics/launch events, service-instances, AI platform (after D8).
@@ -144,8 +145,8 @@
 7. What is an "offering" vs a product/plan — bundles, prerequisites, regions, channels, eligibility needed for MVP?
 8. Product content: datasheets, videos, case studies — who uploads, where stored (D23)?
 9. Should release versions of apps be tracked and shown?
-10. Product evaluation/trials: free trial length, limits, auto-conversion?
-11. Product comparison needed?
+10. Product evaluation/trials: free trial length, limits, auto-conversion? **Answered 2026-10-15 ([C102](open-decisions.md#c102)):** a trial provisions the product with all features; the trial days are set per product (1 to 90, engineering default); one trial per customer or organization per product; no auto-conversion (the customer buys through the cart). Sandbox, trial per plan and extending a trial are Not specified
+11. Product comparison needed? **Answered 2026-10-15 ([C102](open-decisions.md#c102) TR-2 A):** yes, a compare page of 2 to 4 items with price x seats + tax; built
 
 **Subscriptions & billing (07, 08)**
 12. Tax: inclusive/exclusive? GST split? External tax service?

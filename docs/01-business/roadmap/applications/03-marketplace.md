@@ -10,7 +10,7 @@
 | PI – CY Quarter | 2027.1 ([PO] "eVyoog EIS - Roadmap Initiatives") |
 | Sprint | Split ([C31](../open-decisions.md#c31)): 03a Discovery in [2027.1.2](../sprints/SPRINT-2027.1.2.md) (1–28 Feb 2027); 03b Trials & reviews in [2027.1.3](../sprints/SPRINT-2027.1.3.md) (1–31 Mar 2027). 03.03 Marketplace Checkout pulled forward to [2026.4.3](../sprints/SPRINT-2026.4.3.md) by [C59](../open-decisions.md#c59) as the cart and checkout ([REQ-MKT-003](../../../02-requirements/FRD/cart-checkout/requirement.md), Draft) |
 | Capabilities / features / functions | 4 / 7 / 27 ([WB]) |
-| Application status | Not specified |
+| Application status | Not specified. **Progress 2026-10-15:** 03.01 Product Discovery and 03.03 Marketplace Checkout built earlier ([REQ-MKT-001](../../../02-requirements/FRD/product-recommendations/requirement.md), [REQ-MKT-003](../../../02-requirements/FRD/cart-checkout/requirement.md)); 03.04 Reviews & Ratings built ([REQ-MKT-002](../../../02-requirements/FRD/product-reviews/requirement.md)); **03.02 Product Evaluation built** on [C102](../open-decisions.md#c102) ([REQ-MKT-005](../../../02-requirements/FRD/product-evaluation/requirement.md)): 03.02.01.01 Start trial, 03.02.01.02 Request demo, 03.02.02.01 Compare products, 03.02.02.02 Compare plans, 03.02.02.03 Estimate cost. **Not specified, so not built:** 03.02.01.03 Launch sandbox, 03.02.01.04 View prerequisites, a trial length per plan, extending a trial, trial data deletion timing, a trial with a card |
 
 **Sources:**
 - **[PO]** [`2026Q3_ProdOps_Plan.docx`](../../source-documents/2026Q3_ProdOps_Plan.docx)
@@ -55,6 +55,8 @@ AI required: decided in the feature FRD ([C12](../open-decisions.md#c12)). [WB:F
 | 03.01.02.03 | Show popular products | Yes | Phase 1 / MVP | P0 | No | Customer | `/product-discovery/show-popular-products` | - | Marketplace Service | Subscription | CheckoutCompleted | UJ-005 Provision Service |
 
 ## 03.02 Product Evaluation
+
+> **Status 2026-10-15 ([C102](../open-decisions.md#c102), [REQ-MKT-005](../../../02-requirements/FRD/product-evaluation/requirement.md)):** 03.02.01.01 Start trial, 03.02.01.02 Request demo, 03.02.02.01 Compare products, 03.02.02.02 Compare plans and 03.02.02.03 Estimate cost are **built**. 03.02.01.03 Launch sandbox and 03.02.01.04 View prerequisites are **Not specified and not built**.
 
 ### Feature 03.02.01 Evaluation
 
@@ -139,12 +141,12 @@ Not specified in any source. Under [DN-2](../open-decisions.md#dn-2-sprint-scope
 | Feature FRD | `docs/02-requirements/FRD/<feature>/` (copy `_template/`) | See the sprint page for FRDs in progress |
 | Requirement | `REQ-MKT-<NNN>` inside the FRD | Approved FRD required before build ([DN-4](../open-decisions.md#dn-4-business-rules-and-acceptance-criteria)) |
 | Business rules | `docs/03-business-rules/` and `FRD/<feature>/business-rules.md` | Per FRD |
-| Test cases | `test-cases/functional/product-recommendations/TC-MKT-001..004.md`, `test-cases/functional/product-reviews/TC-MKT-005..010.md` | Created ([REQ-MKT-001](../../../02-requirements/FRD/product-recommendations/requirement.md) sprint 2027.1.2, [REQ-MKT-002](../../../02-requirements/FRD/product-reviews/requirement.md) sprint 2027.1.3) |
+| Test cases | `test-cases/functional/product-recommendations/TC-MKT-001..004.md`, `test-cases/functional/product-reviews/TC-MKT-005..010.md`, `test-cases/functional/product-evaluation/TC-MKT-049..071.md` | Created ([REQ-MKT-001](../../../02-requirements/FRD/product-recommendations/requirement.md) sprint 2027.1.2, [REQ-MKT-002](../../../02-requirements/FRD/product-reviews/requirement.md) sprint 2027.1.3, [REQ-MKT-005](../../../02-requirements/FRD/product-evaluation/requirement.md) sprint 2027.1.3, built 2026-10-15) |
 | NFRs | [WB:Non-Functional Requirements] NFR-001 to NFR-014 (platform-wide) | See [EIS-document-analysis.md](../EIS-document-analysis.md) section 2.17 |
 
 ## Related code already in this repository
 
 Observed on branch `dev`. This is a module-level mapping, not a verified function-by-function implementation status.
 
-- Backend: `backend/src/main/java/com/vyoog/eisplatform/modules/product (Product#featured)`, `backend/src/main/java/com/vyoog/eisplatform/modules/dashboard (RecommendationService, RecommendationController — 03.01.02 only)`, `backend/src/main/java/com/vyoog/eisplatform/modules/reviews` (ProductReview, ProductReviewService — 03.04.01 only)
-- Frontend: `frontend/src/pages/MyProductsPage.tsx` (recommendations widget), `frontend/src/components/admin/ProductForm.tsx` (featured toggle), `frontend/src/pages/ProductDetailPage.tsx`, `frontend/src/pages/admin/AdminReviewsPage.tsx`
+- Backend: `backend/src/main/java/com/vyoog/eisplatform/modules/product (Product#featured)`, `backend/src/main/java/com/vyoog/eisplatform/modules/dashboard (RecommendationService, RecommendationController — 03.01.02 only)`, `backend/src/main/java/com/vyoog/eisplatform/modules/reviews` (ProductReview, ProductReviewService — 03.04.01 only) and `backend/src/main/java/com/vyoog/eisplatform/modules/evaluation` (TrialService, DemoRequestService, CompareService, EvaluationController — 03.02), with the trial methods in `modules/registration/service/SubscriptionService.java`
+- Frontend: `frontend/src/pages/MyProductsPage.tsx` (recommendations widget), `frontend/src/components/admin/ProductForm.tsx` (featured toggle), `frontend/src/pages/ProductDetailPage.tsx`, `frontend/src/pages/admin/AdminReviewsPage.tsx`; 03.02: `frontend/src/components/evaluation/` (TryItFirstPanel, DemoRequestDialog), `frontend/src/pages/ComparePage.tsx`, `frontend/src/components/catalog/CompareTray.tsx`, `frontend/src/components/subscriptions/TrialNotice.tsx`

@@ -9,6 +9,7 @@ FRD: [REQ-CAT-003](../../02-requirements/FRD/catalog-showcase/requirement.md). D
 - **Applications** section, two columns: the **filter panel** (Platform, Pricing model, Features with Show more, and Saved products only for signed-in users; each option with its count; Clear all; collapsible groups; on a phone behind a **Filters** button) and the results.
 - **Toolbar:** "Showing N products", search with recent searches, **Sort by** (Name, Price, Newest, Highest rated) and a **Grid / List** switch (remembered in the browser).
 - **Product card** (`CatalogProductCard`, grid or list), narrow since [C95](../../01-business/roadmap/open-decisions.md#c95): the grid (`CatalogGrid`) fits as many cards as possible at a minimum width of about 240 px (four per row at 1440 px). Banner area (the banner image, else a tint) with the app icon or initials, badges **Featured** and **New**, the **Launch** icon link (only when the app has a launch URL) and the wishlist heart (`aria-pressed`, "Save {name} to wishlist" / "Remove {name} from wishlist"); name (link to `/products/:id`), category · platform, description (two lines), up to three feature tags, **rating** with review count (only when there are approved reviews), **From** price or Free, **Subscribe** and **Add to cart** (disabled with a hint when there is no paid plan).
+- **Compare tick and tray** ([C102](../../01-business/roadmap/open-decisions.md#c102), REQ-MKT-005): each card has a **Compare** tick (up to 4 products); a tray at the bottom shows the chosen products and **Compare now**, which opens `/compare`. See [product-evaluation.md](product-evaluation.md#4-catalog-compare-tick-and-tray).
 - States: skeletons; empty with Clear filters; error with Retry. `SupportCTA` at the bottom.
 - Not shown: versions, device platforms, deployment, integrations, a Popular badge (no data).
 - Built in `frontend/src/pages/ProductsPage.tsx` and `frontend/src/components/catalog/`; strings under `catalog.hero.*`, `catalog.tiles.*`, `catalog.filters.*`, `catalog.card.*`, `catalog.toolbar.*`, `catalog.pricingModel.*`.
@@ -17,7 +18,7 @@ FRD: [REQ-CAT-003](../../02-requirements/FRD/catalog-showcase/requirement.md). D
 Breadcrumbs, logo, name, Available badge, Overview, Applications grid, Features (all tags), Product information (type, status, apps, categories), `SupportCTA`. Hidden/inactive → error state "not found".
 
 ## 3. App details — `/products/:id` (public)
-Breadcrumbs (catalog → platform → app), logo, accent from `appColor`, feature tags, Documentation / Support site links when set, existing pricing, subscribe and reviews sections unchanged, `SupportCTA`.
+Breadcrumbs (catalog → platform → app), logo, accent from `appColor`, feature tags, Documentation / Support site links when set, existing pricing, subscribe and reviews sections unchanged, `SupportCTA`. Since [C102](../../01-business/roadmap/open-decisions.md#c102) a **"Try it first"** panel above the tabs offers Start free trial (when the product sets trial days), Request a demo and Watch tutorials: [product-evaluation.md](product-evaluation.md#1-product-page-try-it-first-panel).
 
 ## 4. Platforms — `/admin/platforms`
 Same `ShowcaseCard` per platform in display order with the real app count and visibility status (In catalog / Hidden from catalog / Inactive); action "Manage apps" → `/admin/platforms/:id`; Edit → `/admin/platforms/:id/edit`; Add Product.
@@ -38,6 +39,7 @@ Sections, in order:
 6. **Features** — tag input (Enter or Add), removable chips.
 7. **Pricing** — price (*Shown only if no pricing tiers are added.*), tiers with every existing field.
 8. **Resources** — documentation URL, support URL.
+9. **Free trial (days)** ([C102](../../01-business/roadmap/open-decisions.md#c102)) — empty (no trial) or a whole number from 1 to 90: [product-evaluation.md](product-evaluation.md#3-admin-product-form-free-trial-days).
 
 No **Versions** section: there is no release data. The edit page header shows the status badge, "Revision N" (the edit counter, REQ-CAT-001.1) with an explanatory tooltip, Publish, and Retire (with confirmation). Create navigates to the new app's edit page with a success message.
 

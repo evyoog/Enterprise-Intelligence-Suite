@@ -13,6 +13,8 @@ The screen-by-screen specification is [catalog-showcase.md](../../../05-ui/scree
 | All Apps | `/admin/apps` | `MANAGE_CATALOG` | Not specified |
 | Create / Edit App | `/admin/settings/product`, `/admin/products/:id/edit` | `MANAGE_CATALOG` | Not specified |
 
+Since [C102](../../../01-business/roadmap/open-decisions.md#c102): the catalog cards have a **Compare** tick and the catalog a **Compare tray**; the app details page has a "Try it first" panel; the app form has **Free trial (days)**; the public page `/compare` is new. They are specified in [product-evaluation.md](../../../05-ui/screen-requirements/product-evaluation.md).
+
 ## Fields and validation
 | Field | Type | Required | Validation | Error message (i18n key) |
 |-------|------|----------|------------|--------------------------|

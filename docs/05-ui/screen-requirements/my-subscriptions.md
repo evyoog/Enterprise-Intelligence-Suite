@@ -40,6 +40,9 @@ Rule: an upgrade takes effect immediately; a downgrade (a cheaper plan per month
 - **Keep current plan:** a button in the alert (`subscriptions.scheduledChange.keep`). It calls `DELETE /me/subscriptions/{id}/plan/scheduled`; on success the notice disappears and the plan is unchanged. A refusal shows the backend message in the page-level alert.
 - The current plan shown on the card does not change until the renewal; after the renewal the card shows the new plan and no notice.
 
+## Free trial ([C102](../../01-business/roadmap/open-decisions.md#c102), REQ-MKT-005)
+A subscription with `trial` true shows a **"Free trial"** chip and **"Ends {date} ({n} days left)"** (or "Ended {date}"), the note "A free trial cannot be renewed or changed. Subscribe to keep using {product}." and a **Subscribe** button to the product page, and **no** auto-renew switch, "Renews on" chip, Renew or Change plan (and no seat controls in the Organization subscriptions section). Detail and the cart limitation: [product-evaluation.md](product-evaluation.md#2-my-subscriptions-and-organization-subscriptions-free-trial).
+
 ## Not built
 - Organization plan changes have the same rule and endpoints (`PATCH` and `DELETE …/plan/scheduled` under `/organization/me/subscriptions/{id}`), but the Organization subscriptions section shows **no** scheduled-change notice and no Keep current plan button yet; withdrawing is possible through the API only.
 

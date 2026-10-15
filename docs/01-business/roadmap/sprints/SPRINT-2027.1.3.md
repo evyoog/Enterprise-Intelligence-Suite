@@ -41,12 +41,14 @@
 | Decided | [C41](../open-decisions.md#c41) Unified Search (01.03.01, minus semantic search): a new cross-entity keyword search over products, published knowledge articles and the caller's own tickets — the first place these three are combined | [global-search](../../../02-requirements/FRD/global-search/requirement.md) | REQ-PRT-002 |
 | Already satisfied | [C41](../open-decisions.md#c41) 01.02 Customer Dashboard's own "on live data" functions: `BusinessDashboardService` (built in earlier phases) already returns real organization/subscription/usage/service-health data — nothing new needed | - | - |
 | Decided | [C41](../open-decisions.md#c41) Reviews & Ratings (03.04.01) built; a new customer-facing product detail page hosts it | [product-reviews](../../../02-requirements/FRD/product-reviews/requirement.md) | REQ-MKT-002 |
-| Not built | [C41](../open-decisions.md#c41) 03.02 Product Evaluation (trials/demos/sandboxes) — needs 10 Service & Resource Management, still not built, to provision anything to trial against |
+| Superseded 2026-10-15 | [C41](../open-decisions.md#c41) 03.02 Product Evaluation (trials/demos/sandboxes) waited for 10 Service & Resource Management. Service instances were built on 2026-10-14 ([C101](../open-decisions.md#c101)), and [C102](../open-decisions.md#c102) decided and built trials, demo requests and the compare page. A sandbox (03.02.01.03) and view prerequisites (03.02.01.04) stay Not specified | [product-evaluation](../../../02-requirements/FRD/product-evaluation/requirement.md) | REQ-MKT-005 |
 | Not built | [C41](../open-decisions.md#c41) 04b Customer-facing AI agents and 12.02 AI Support — same agent/LLM framework gap 04a already carries |
-| Not built | [C41](../open-decisions.md#c41) 11b Learning & Certification — all P1/stretch, explicitly deferrable per this sprint's own note, no dependents |
-| Not built | [C41](../open-decisions.md#c41) 15b Policy Management & Compliance — 15.02's priority is Not specified in any source; needs its own general policy-engine scoping decision |
+| Not built | [C41](../open-decisions.md#c41) 11b Learning & Certification — all P1/stretch, explicitly deferrable per this sprint's own note, no dependents. **2026-10-15 ([C102](../open-decisions.md#c102) LE-1): the product owner answered "later I will tell"; nothing is built** (the Academy stays prepared and hidden, [C77](../open-decisions.md#c77)) |
+| Not built | [C41](../open-decisions.md#c41) 15b Policy Management & Compliance — 15.02's priority is Not specified in any source; needs its own general policy-engine scoping decision. **2026-10-15 ([C102](../open-decisions.md#c102) PO-1 A): specific policies when needed** (MFA exists; the next could be a session timeout and an IP allow-list); no general policy engine; nothing is built |
 | Decided | [C58](../open-decisions.md#c58) Vector store for semantic search (01.03.01.02): **pgvector** in the existing PostgreSQL database. Embedding model Not specified (depends on D8, LLM provider). Semantic search stays carried until D8 is decided; no FRD change yet | - | - |
 | Decided | [C70](../open-decisions.md#c70) (2026-10-05) Keyword search improved (exact phrase, English/Spanish word forms, partial words, typos, exact IDs, ranking, highlighting, "Did you mean", suggestions, Ctrl/Cmd+K, re-indexing, rebuild, insights, synonyms) and semantic search (01.03.01.02, hybrid with pgvector, open-source multilingual model in ai-service, public content only). Built early on 2026-10-05; this sprint's dates are unchanged | [global-search](../../../02-requirements/FRD/global-search/requirement.md), [semantic-search](../../../02-requirements/FRD/semantic-search/requirement.md) | REQ-PRT-002, REQ-PRT-003 |
+| Decided | [C102](../open-decisions.md#c102) (2026-10-15) Trials and comparison (TR-1 note, TR-2 A): a trial provisions the product with all features through the normal subscription path, with a demo request and the video tutorials as the other ways to explore; a compare page with price x seats + tax. **Built 2026-10-15**, migration V042 | [product-evaluation](../../../02-requirements/FRD/product-evaluation/requirement.md) | REQ-MKT-005 |
+| Decided | [C102](../open-decisions.md#c102) (2026-10-15) LE-1 "later I will tell" (11b) and PO-1 A "specific policies when needed" (15b): recorded, nothing built | - | - |
 | Built early 2026-10-05 | [C75](../open-decisions.md#c75)–[C78](../open-decisions.md#c78) (2026-10-05) Knowledge Center parts that belong here: video learning (11.03.02 watch progress, REQ-KNW-004), Academy (11b, built only if the product owner confirms — otherwise data model and navigation prepared), knowledge search extension (new types, transcripts, chapters, audience filter before ranking — [C76](../open-decisions.md#c76), reuses REQ-PRT-002/003), AI Knowledge Assistant contract (REQ-KNW-007, answers not built until D8, with 04b/12.02). Built early on 2026-10-05 (commit `0ccbd12`): video watch progress, knowledge search extension and the assistant stub; the Academy is prepared only (tables, hidden navigation). This sprint's dates are unchanged | [knowledge-videos](../../../02-requirements/FRD/knowledge-videos/requirement.md), [knowledge-center](../../../02-requirements/FRD/knowledge-center/requirement.md), [knowledge-assistant](../../../02-requirements/FRD/knowledge-assistant/requirement.md) | REQ-KNW-004, REQ-KNW-005, REQ-KNW-007 |
 
 ### FRDs in this sprint
@@ -57,6 +59,7 @@
 | [semantic-search](../../../02-requirements/FRD/semantic-search/requirement.md) | REQ-PRT-003 | 01.03.01.02 | Approved (2026-10-05, C70) |
 | [knowledge-assistant](../../../02-requirements/FRD/knowledge-assistant/requirement.md) | REQ-KNW-007 | 11.01.02 / 12.02.01 (prepared; answers need D8) | Approved 2026-10-05 (C78) — built early (stub until D8) |
 | [product-reviews](../../../02-requirements/FRD/product-reviews/requirement.md) | REQ-MKT-002 | 03.04.01 | Approved |
+| [product-evaluation](../../../02-requirements/FRD/product-evaluation/requirement.md) | REQ-MKT-005 | 03.02.01.01, .02; 03.02.02.01 to .03 (03.02.01.03 and .04 are Not specified) | Approved (2026-10-15, [C102](../open-decisions.md#c102)); **Built** |
 
 ### Progress (as of 2026-09-28)
 
@@ -64,14 +67,34 @@
 |---|---|---|
 | 01.02 Customer Dashboard | Done (pre-existing) | Already satisfied by `BusinessDashboardService`, built in earlier phases; "View spending" stays unavailable pending 08 Billing |
 | 01.03.01 Global Search | Done (built early, 2026-10-05) | Keyword search improved and semantic search built ([C70](../open-decisions.md#c70)); see the progress note below. The semantic part runs on the stub test model until a real model is configured |
-| 03.02 Product Evaluation | Not started | Carried — needs 10 Service & Resource Management to provision anything to trial against |
+| 03.02 Product Evaluation | Not started (as of 2026-09-28) | Carried — needed 10 Service & Resource Management to provision anything to trial against. **Update 2026-10-15: start trial, request demo, compare products, compare plans and estimate cost are built ([C102](../open-decisions.md#c102)); launch sandbox and view prerequisites are Not specified; see [Build status](#build-status--c102-answers)** |
 | 03.04.01 Reviews & Ratings | Done (this FRD's scope) | Submit/rate/moderate/view all built; new product detail page |
 | 04b Customer-facing AI agents (whole application) | Not started | Carried — same agent/LLM framework gap as 04a |
 | 12.02 AI Support | Not started | Carried — ships with 04b once that framework decision is made |
-| 11b Learning & Certification (whole application) | Not started | Carried — all P1/stretch, explicitly deferrable, no dependents |
-| 15b Policy Management & Compliance (whole application) | Not started | Carried — needs its own general policy-engine scoping decision |
+| 11b Learning & Certification (whole application) | Not started | Carried — all P1/stretch, explicitly deferrable, no dependents. **Update 2026-10-15: the product owner's answer (LE-1) is "later I will tell"; nothing built** |
+| 15b Policy Management & Compliance (whole application) | Not started | Carried — needs its own general policy-engine scoping decision. **Update 2026-10-15: the product owner's answer (PO-1 A) is specific policies when needed; no general engine; nothing built** |
 
-03.02, 04b, 12.02, 11b and 15b remain open for this sprint, each carried to a later one once the decision it needs is made. (01.03.01.02 was built early on 2026-10-05, C70.)
+As of 2026-09-28, 03.02, 04b, 12.02, 11b and 15b remained open for this sprint, each carried to a later one once the decision it needs is made. (01.03.01.02 was built early on 2026-10-05, C70.) **03.02 (except 03.02.01.03 and .04) was decided and built on 2026-10-15 ([C102](../open-decisions.md#c102)); 04b, 12.02, 11b and 15b stay carried, with the product owner's answers for 11b (LE-1) and 15b (PO-1) recorded below.**
+
+### Build status — C102 answers
+
+The product owner answered the sprint's trial, comparison, learning and policy questions on 2026-10-15 ([C102](../open-decisions.md#c102)): TR-1, TR-2, LE-1, PO-1. **TR-1 and TR-2 are built** on `dev` ahead of the sprint's dates; LE-1 and PO-1 are recorded and nothing is built. Test status is in each test case ([TESTPLAN-MKT-005](../../../../test-cases/functional/product-evaluation/TESTPLAN-MKT-005.md)).
+
+**Before this can run anywhere else:** Flyway is disabled, so migration **V042 must be applied by hand** after V041 ([`V042__trials_and_demo_requests.sql`](../../../../database/migrations/V042__trials_and_demo_requests.sql): `products.trial_days` with a 1 to 90 check; `product_subscription.trial` and `trial_reminded_at`). It is also in `backend/src/main/resources/db/schema.sql`, additive and re-runnable. A platform administrator then sets **Free trial (days)** on each product that should offer one: until then no product offers a trial.
+
+| ID | Answer | Status | Where (FRD · screen · tests) |
+|---|---|---|---|
+| TR-1 | A trial also creates the database and provisions the product with all features; before a trial the customer can explore, request a demo or watch the video tutorials | **Built** (03.02.01.01 start trial; 03.02.01.02 request demo). The trial is a subscription on the highest plan; the service instance and the `SubscriptionCreated` event (`trial: true`) go out and the **product creates the tenant and database** (EIS creates none). Sandbox (03.02.01.03) and view prerequisites (03.02.01.04) are **not built (Not specified)** | [REQ-MKT-005.1 to .11](../../../02-requirements/FRD/product-evaluation/requirement.md) · [product-evaluation.md](../../../05-ui/screen-requirements/product-evaluation.md) · [TC-MKT-049 to TC-MKT-059](../../../../test-cases/functional/product-evaluation/) |
+| TR-1 defaults | One trial per customer or organization per product, ever; 1 to 90 days per product; 1 seat, or the organization's seats; no card, no auto-renew, no grace period; an organization admin or Manage billing starts the organization's; notices 3 days before and at the end; buying turns it into a normal subscription | **Built.** Trials are skipped by the renewal reminders. **Known gap:** while a trial is still running the cart refuses the product as already subscribed, so buying works once the trial has ended; the service-level purchase is tested. An organization's trial sends no notice | [BR-EVL-001 to BR-EVL-020](../../../02-requirements/FRD/product-evaluation/business-rules.md) · [TC-MKT-050 to TC-MKT-058, TC-MKT-069](../../../../test-cases/functional/product-evaluation/) |
+| TR-2 A | A compare page, 2 to 4 items side by side, with a cost estimate of price x seats + tax | **Built** (03.02.02.01 compare products; .02 compare plans; .03 estimate cost). Public; the tax estimate is for a signed-in customer with billing details, from EIS's own tax rules, and "at checkout" with the external tax provider or when the rules cannot tax the sale | [REQ-MKT-005.12, .13](../../../02-requirements/FRD/product-evaluation/requirement.md) · [API](../../../06-api/api-requirements/product-evaluation.md) · [TC-MKT-060 to TC-MKT-064, TC-MKT-067, TC-MKT-068](../../../../test-cases/functional/product-evaluation/) |
+| TR defaults | Admin sets trial days on the product form; the Compare tick and tray on the catalog cards; the "Try it first" panel; the "Free trial" chip with days left and Subscribe | **Built** | [REQ-MKT-005.14, .15](../../../02-requirements/FRD/product-evaluation/requirement.md) · [TC-MKT-049, TC-MKT-065 to TC-MKT-068, TC-MKT-071](../../../../test-cases/functional/product-evaluation/) |
+| Permissions | Compare is public and read-only; trial and demo need sign-in; an organization trial needs an organization admin or Manage billing | **Built** | [TC-MKT-052, TC-MKT-064](../../../../test-cases/functional/product-evaluation/) |
+| LE-1 | "Later I will tell." (11b Learning, Training Delivery, Certification) | **Recorded; nothing built.** The Academy data model stays prepared and hidden ([C77](../open-decisions.md#c77)) | [11 Training & Knowledge Management](../applications/11-training-knowledge-management.md) |
+| PO-1 A | Specific policies when needed (MFA exists; the next could be a session timeout and an IP allow-list) | **Recorded; nothing built.** No general policy engine; each policy is scoped and approved when it is needed | [15 Administration & Governance](../applications/15-administration-governance.md) |
+
+**Not specified, so not built:** a sandbox (03.02.01.03), view prerequisites (03.02.01.04), a trial length per plan, extending a trial, when the trial data is deleted (the product's decision), a trial with a card, the Academy (LE-1), the next specific policy (PO-1). **04b and 12.02** (the customer-facing agents and AI Support) are unchanged and still carried.
+
+**Known gaps and open points** (built, but to confirm): the engineering defaults of C102; the cart check `ALREADY_SUBSCRIBED` counts a running trial as an active subscription ([BR-EVL-016](../../../02-requirements/FRD/product-evaluation/business-rules.md)); an organization's trial sends no notice; a product update that omits `trialDays` clears the trial; the tax estimate paths `ESTIMATED` and `AT_CHECKOUT` have no automated test; see each test case for what is not automated.
 
 ### Keyword and semantic search (C70) — built early on 2026-10-05
 
@@ -157,7 +180,7 @@ Full breakdown: [applications/03-marketplace.md](../applications/03-marketplace.
 
 ### Expected deliverables
 
-- The P0 capabilities above ([DN-2](../open-decisions.md#dn-2-sprint-scope-length-and-dates)). **Can move to [2027.2.1](SPRINT-2027.2.1.md)** if this sprint is overloaded ([C31](../open-decisions.md#c31)) — nothing later depends on it.
+- The P0 capabilities above ([DN-2](../open-decisions.md#dn-2-sprint-scope-length-and-dates)). **Can move to [2027.2.1](SPRINT-2027.2.1.md)** if this sprint is overloaded ([C31](../open-decisions.md#c31)) — nothing later depends on it. **Status 2026-10-15:** 03.02.01.01, 03.02.01.02 and 03.02.02.01 to .03 are built ([C102](../open-decisions.md#c102), [build status](#build-status--c102-answers)); 03.02.01.03 and .04 stay Not specified; 03.04.01 was built earlier.
 
 ## EIS 11b Training & Knowledge Management: learning and certification
 
@@ -182,7 +205,7 @@ Full breakdown: [applications/11-training-knowledge-management.md](../applicatio
 
 ### Expected deliverables
 
-- All-P1 (stretch) scope ([DN-2](../open-decisions.md#dn-2-sprint-scope-length-and-dates)). **Can move to [2027.2.1](SPRINT-2027.2.1.md)** if this sprint is overloaded ([C31](../open-decisions.md#c31)) — nothing depends on it.
+- All-P1 (stretch) scope ([DN-2](../open-decisions.md#dn-2-sprint-scope-length-and-dates)). **Can move to [2027.2.1](SPRINT-2027.2.1.md)** if this sprint is overloaded ([C31](../open-decisions.md#c31)) — nothing depends on it. **Product owner's answer, 2026-10-15 ([C102](../open-decisions.md#c102) LE-1): "later I will tell." Nothing is built and the slice stays carried.**
 
 ## EIS 15b Administration & Governance: policy and compliance
 
@@ -207,7 +230,7 @@ Note: 06.02.02 "Policy" for this sprint's purposes is the **organization MFA pol
 
 ### Expected deliverables
 
-- The capabilities above ([DN-2](../open-decisions.md#dn-2-sprint-scope-length-and-dates)); 15.02 Policy Lifecycle's priority is Not specified in any source.
+- The capabilities above ([DN-2](../open-decisions.md#dn-2-sprint-scope-length-and-dates)); 15.02 Policy Lifecycle's priority is Not specified in any source. **Product owner's answer, 2026-10-15 ([C102](../open-decisions.md#c102) PO-1 A): specific policies when needed** (MFA exists; the next could be a session timeout and an IP allow-list), not a general policy engine. Nothing is built; each policy is scoped and approved when it is needed, and the slice stays carried.
 
 ## Decisions affecting this sprint
 
@@ -217,6 +240,7 @@ Note: 06.02.02 "Policy" for this sprint's purposes is the **organization MFA pol
 - [C21](../open-decisions.md#c21) General policy engine (15.02) is distinct from the organization MFA policy (06.02.02), already built.
 - [C31](../open-decisions.md#c31) Corrected sprint sequence: 01b, 04b, 03b, 11b and 15b as shown above. This is the busiest sprint; 03b and 11b can move to 2027.2.1.
 - [C58](../open-decisions.md#c58) pgvector for semantic search.
+- [C102](../open-decisions.md#c102) Trials, demo requests and the compare page (TR-1, TR-2; built 2026-10-15); LE-1 and PO-1 recorded.
 - Sprint goal, team, capacity and status are Not specified.
 
 Details: [open-decisions.md](../open-decisions.md).

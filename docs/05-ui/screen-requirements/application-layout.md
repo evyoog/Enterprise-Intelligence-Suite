@@ -12,6 +12,7 @@ Requested by the product owner on 2026-09-26. The frontend has two separate fram
 |---|---|---|
 | `/` | Website home | Website home when opened from **Home** or the website logo (C79). Opened any other way (typed address, after sign-in, SSO return): redirected to the tool home: `/admin` for a platform admin, otherwise `/organization/business-dashboard` (which sends members without `MANAGE_ORGANIZATION` and individuals on to `/my/products`) |
 | `/products` | Public catalog with the website header and banner | Catalog inside the tool: title, search and filters only |
+| `/compare` | Public compare page with the website header | The same page inside the tool, without the website header ([product-evaluation.md](product-evaluation.md#5-compare-page), C102) |
 | `/account/preferences` | Public page with the website header | Inside the tool |
 | `/my/products`, `/organization/business-dashboard`, `/account/security`, `/organization/identity-federation` | Redirected to `/` (`RequireAuth`) | Inside the tool |
 | `/cart`, `/checkout` | Redirected to sign in (`RequireAuth`; REQ-MKT-003 Open question 5) | Inside the tool ([cart.md](cart.md), [checkout-payment.md](checkout-payment.md)) |

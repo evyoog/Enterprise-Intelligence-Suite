@@ -10,7 +10,7 @@
 | PI – CY Quarter | 2027.2 ([PO] "eVyoog EIS - Roadmap Initiatives") |
 | Sprint | Split ([C31](../open-decisions.md#c31)): 15a Audit & Platform Administration in [2026.4.2](../sprints/SPRINT-2026.4.2.md) (1–30 Nov 2026); 15b Policy & compliance in [2027.1.3](../sprints/SPRINT-2027.1.3.md) (1–31 Mar 2027); 15c Regional operations in [2027.2.2](../sprints/SPRINT-2027.2.2.md) (1–31 May 2027) |
 | Capabilities / features / functions | 5 / 9 / 33 ([WB]) |
-| Application status | Not specified |
+| Application status | Not specified. **Product owner's answer for 15b, 2026-10-15 ([C102](../open-decisions.md#c102) PO-1 A): specific policies when needed** (the MFA policy exists; the next could be a session timeout and an IP allow-list), not a general policy engine. Nothing of 15.02 Policy Management or 15.04 Compliance is built; each policy is scoped and approved when it is needed |
 
 **Sources:**
 - **[PO]** [`2026Q3_ProdOps_Plan.docx`](../../source-documents/2026Q3_ProdOps_Plan.docx)

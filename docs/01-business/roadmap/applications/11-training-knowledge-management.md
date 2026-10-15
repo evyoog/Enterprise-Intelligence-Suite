@@ -10,7 +10,7 @@
 | PI – CY Quarter | 2027.1 ([PO] "eVyoog EIS - Roadmap Initiatives") |
 | Sprint | Split ([C31](../open-decisions.md#c31)): 11a Knowledge base in [2027.1.1](../sprints/SPRINT-2027.1.1.md) (1–31 Jan 2027); 11b Learning & certification in [2027.1.3](../sprints/SPRINT-2027.1.3.md) (1–31 Mar 2027) |
 | Capabilities / features / functions | 4 / 7 / 26 ([WB]) |
-| Application status | Not specified |
+| Application status | Not specified. **Product owner's answer for 11b, 2026-10-15 ([C102](../open-decisions.md#c102) LE-1): "later I will tell."** Nothing of 11.02 Learning Management, 11.03.01 Labs & Assessments or 11.04 Certification is built; the Academy data model stays prepared and hidden ([C77](../open-decisions.md#c77)). 11.01 Knowledge Base and 11.03.02 Video Learning were built earlier |
 
 **Sources:**
 - **[PO]** [`2026Q3_ProdOps_Plan.docx`](../../source-documents/2026Q3_ProdOps_Plan.docx)

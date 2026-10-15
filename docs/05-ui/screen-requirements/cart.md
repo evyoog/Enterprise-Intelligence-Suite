@@ -12,6 +12,8 @@
 
 Shared presentation rules: [billing-ui-standards.md](billing-ui-standards.md). Colours from the unified MUI theme ([C45](../../01-business/roadmap/open-decisions.md#c45)), light and dark mode. Logos: [payment-brand-assets.md](payment-brand-assets.md).
 
+> **Free trial ([C102](../../01-business/roadmap/open-decisions.md#c102)).** A customer buys over a free trial through this cart: the purchase turns the trial subscription into a normal one. Known gap: while the trial is still running the cart reports the item as already subscribed ([REQ-MKT-003.20](../../02-requirements/FRD/cart-checkout/requirement.md)); it works once the trial has ended.
+
 ## Layout
 
 ### Desktop (≥ 1024 px)

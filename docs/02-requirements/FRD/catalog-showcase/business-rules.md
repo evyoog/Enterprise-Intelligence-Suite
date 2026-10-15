@@ -16,5 +16,7 @@
 | BR-CAT-312 | **New** = added in the last 30 days. **From price** = the cheapest paid plan with its period. **Rating** = average of APPROVED reviews rounded to one decimal, with the count. | frontend, backend (rating) | REQ-CAT-003.13 |
 | BR-CAT-313 | Filters combine with AND across groups. Within Platform and within Pricing model a product matches **any** chosen option; within Features it must have **all** chosen tags. Category and search run on the server; the other filters and the sort work on the loaded products. | frontend | REQ-CAT-003.12, .14 |
 | BR-CAT-314 | Sort: Name A to Z (default); Price = the From price, lowest first; Newest; Rating = highest average, then most reviews, unrated last. Ties fall back to name. | frontend | REQ-CAT-003.14 |
+| BR-CAT-315 | **Compare selection (C102):** at most 4 products can be ticked Compare; the choice is the product ids kept in the browser tab (`sessionStorage`); a broken stored value is ignored. The tick is shown only where a card is asked to show it (not in the form preview or the wishlist). | frontend | REQ-CAT-003.16 |
+| BR-CAT-316 | **Free trial days (C102):** the product form accepts an empty value or a whole number from 1 to 90 and sends `trialDays` (null when empty); the backend refuses anything else ([BR-EVL-001](../product-evaluation/business-rules.md)). | frontend, backend | REQ-CAT-003.17 |
 
 Retire still keeps BR rules of [product-lifecycle](../product-lifecycle/business-rules.md): saving a retired app through the form keeps it RETIRED.
