@@ -5252,6 +5252,7 @@
     "removeConfirm": "Remove my access",
     "removeSuccess": "Your access to {{product}} was removed.",
     "removeError": "Could not remove your access.",
+    "viewMyRequests": "My access requests",
     "myRequestsTitle": "My access requests",
     "myRequestsSubtitle": "Products you have asked for personal access to, and the outcome.",
     "myRequestsNone": "You have not requested access to any product.",

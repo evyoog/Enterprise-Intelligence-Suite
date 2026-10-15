@@ -5257,6 +5257,7 @@
     "removeConfirm": "Quitar mi acceso",
     "removeSuccess": "Se quitó tu acceso a {{product}}.",
     "removeError": "No se pudo quitar tu acceso.",
+    "viewMyRequests": "Mis solicitudes de acceso",
     "myRequestsTitle": "Mis solicitudes de acceso",
     "myRequestsSubtitle": "Productos a los que has solicitado acceso personal, y el resultado.",
     "myRequestsNone": "No has solicitado acceso a ningún producto.",

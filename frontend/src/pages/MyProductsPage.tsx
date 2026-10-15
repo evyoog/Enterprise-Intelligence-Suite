@@ -207,6 +207,9 @@ export function MyProductsPage() {
               <Button component={RouterLink} to="/my/subscriptions" size="small" variant="outlined">
                 Manage subscriptions
               </Button>
+              <Button component={RouterLink} to="/my/access-requests" size="small" variant="outlined">
+                {t('accessRequests.viewMyRequests')}
+              </Button>
               <Button startIcon={<Settings2 size={16} />} size="small" onClick={() => setCustomizing((v) => !v)}>
                 Customize
               </Button>

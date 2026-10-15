@@ -8,6 +8,7 @@ import { HomePage } from './pages/HomePage'
 import { ProductsPage } from './pages/ProductsPage'
 import { ComparePage } from './pages/ComparePage'
 import { MyProductsPage } from './pages/MyProductsPage'
+import { MyAccessRequestsPage } from './pages/MyAccessRequestsPage'
 import { MySubscriptionsPage } from './pages/MySubscriptionsPage'
 import { OrganizationSettingsRedirect } from './pages/OrganizationSettingsPage'
 import { AccessManagementPage } from './pages/AccessManagementPage'
@@ -163,6 +164,8 @@ function MainApp() {
               doc on why preferences stay reachable signed out. */}
           <Route path="/account/preferences" element={<PreferencesPage />} />
           <Route path="/my/products" element={<RequireAuth><MyProductsPage /></RequireAuth>} />
+          {/* REQ-TEN-010 (C103): a member's own history of access requests. */}
+          <Route path="/my/access-requests" element={<RequireAuth><MyAccessRequestsPage /></RequireAuth>} />
           <Route path="/my/subscriptions" element={<RequireAuth><MySubscriptionsPage /></RequireAuth>} />
           {/* REQ-MKT-004 (C94): the products saved with the heart on the catalog. */}
           <Route path="/my/wishlist" element={<RequireAuth><WishlistPage /></RequireAuth>} />
