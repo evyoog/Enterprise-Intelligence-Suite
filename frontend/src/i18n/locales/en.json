@@ -5082,9 +5082,7 @@
       "label": "Add a product",
       "placeholder": "Search products to add",
       "noOptions": "No products found",
-      "limit": "You can compare up to 4 items. Remove one to add another.",
-      "added": "{{name}} added to the comparison.",
-      "removed": "{{name}} removed from the comparison."
+      "limit": "You can compare up to 4 items. Remove one to add another."
     },
     "chooser": {
       "heading": "Items to compare",
@@ -5130,9 +5128,7 @@
     "trial_other": "{{count}}-day free trial",
     "tax": {
       "notSignedIn": "Sign in to see the tax estimate",
-      "signIn": "Sign in",
       "needsBilling": "Add your billing details to see the tax estimate",
-      "billingLink": "Billing details",
       "atCheckout": "Tax is worked out at checkout"
     },
     "features": {
@@ -5142,7 +5138,8 @@
     },
     "actions": {
       "view": "View product",
-      "viewLabel": "View {{name}}"
+      "viewLabel": "View product {{name}}",
+      "addLabel": "Add to cart: {{name}}"
     },
     "note": "Estimates only. Final tax and totals are shown at checkout.",
     "tray": {
@@ -5201,7 +5198,6 @@
       "chip": "Free trial",
       "endsOn_one": "Ends {{date}} ({{count}} day left)",
       "endsOn_other": "Ends {{date}} ({{count}} days left)",
-      "endsToday": "Ends {{date}} (last day)",
       "endedOn": "Ended {{date}}",
       "note": "A free trial cannot be renewed or changed. Subscribe to keep using {{product}}.",
       "subscribe": "Subscribe",

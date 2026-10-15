@@ -3,8 +3,9 @@ import { ProductResources } from '../components/productcontent/ProductResources'
 import { hasPublishedContent } from '../components/productcontent/productContentUtils'
 import { Package as PHPackage } from 'lucide-react'
 import { useBuy } from '../components/cart/useBuy'
+import { TryItFirstPanel } from '../components/evaluation/TryItFirstPanel'
 import { WorksWith } from '../components/offerings/WorksWith'
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import {
   Alert, Box, Breadcrumbs, Button, Chip, CircularProgress, Fade, LinearProgress, Link as MuiLink, Paper, Rating, Tab, Tabs, TextField, Typography,
@@ -58,6 +59,8 @@ export function ProductDetailPage() {
   // REQ-CAT-004: published product content (datasheets, documentation, images, videos, case studies).
   const [content, setContent] = useState<PublicContent | null>(null)
   const [starFilter, setStarFilter] = useState<number | null>(null)
+  // C102: "Watch tutorials" opens the Resources tab and scrolls to its videos.
+  const scrollToVideos = useRef(false)
 
   const loadRatings = () => reviewsApi.getRatings(productId).then(setRatings).catch(() => {})
 
@@ -72,6 +75,23 @@ export function ProductDetailPage() {
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [productId])
+
+  const focusVideos = () => {
+    scrollToVideos.current = false
+    const videos = document.getElementById('res-videos')
+    if (!videos) return
+    videos.setAttribute('tabindex', '-1')
+    videos.focus({ preventScroll: true })
+    videos.scrollIntoView?.({ behavior: 'smooth', block: 'start' })
+  }
+  useEffect(() => {
+    if (scrollToVideos.current && tab === 'resources') focusVideos()
+  }, [tab, content])
+  const watchTutorials = () => {
+    if (tab === 'resources') { focusVideos(); return }
+    scrollToVideos.current = true
+    setTab('resources')
+  }
 
   // C59: Buy adds the plan to the cart and opens it (useBuy).
   const buy = useBuy()
@@ -199,6 +219,14 @@ export function ProductDetailPage() {
           </Box>
         </Box>
       </Paper>
+
+      {/* C102 (REQ-MKT-005): start a free trial, request a demo or watch the product's tutorials before buying. */}
+      <TryItFirstPanel
+        productId={productId}
+        productName={product.name}
+        trialDays={product.trialDays}
+        onWatchTutorials={(content?.videos.length ?? 0) > 0 ? watchTutorials : undefined}
+      />
 
       <Tabs
         value={tab}

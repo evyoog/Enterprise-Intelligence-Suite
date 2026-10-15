@@ -16,6 +16,7 @@
 | Experience | `favorite_product`, `product_usage`, `dashboard_preference`, `customer_preference`, `search_history_entry` |
 | Notifications | `notification`, `notification_preference` |
 | Service status, support, SLA, incidents and problems (V003, V010, V041) | `product_service_status`, `support_ticket` (with the SLA deadlines), `service_incident`, `service_incident_ticket`, `service_instance`, `service_reporter_key`, `sla_policy`, `sla_settings`, `problem`, `problem_action` — see [service-instances-sla-incidents.md](data-model/service-instances-sla-incidents.md) |
+| Free trials (V042) | No new table: columns `products.trial_days`, `product_subscription.trial` and `trial_reminded_at`; a demo request is a `support_ticket` with the category "Demo request" — see [trials.md](data-model/trials.md) |
 | Audit | `audit_log` |
 
 ## Conventions

@@ -3,7 +3,7 @@
 **Status:** Approved
 **BRD:** Not specified
 **Owner:** Product owner
-**Approved by / on:** Product owner / 2026-09-27 ([C38](../../../01-business/roadmap/open-decisions.md#c38)). Amended 2026-10-13: scheduled plan change (07.01.02.03 Schedule change), [C97](../../../01-business/roadmap/open-decisions.md#c97) SC-1
+**Approved by / on:** Product owner / 2026-09-27 ([C38](../../../01-business/roadmap/open-decisions.md#c38)). Amended 2026-10-13: scheduled plan change (07.01.02.03 Schedule change), [C97](../../../01-business/roadmap/open-decisions.md#c97) SC-1. Amended 2026-10-15: a free trial is a subscription with `trial` = true ([C102](../../../01-business/roadmap/open-decisions.md#c102), [REQ-MKT-005](../product-evaluation/requirement.md))
 
 | Field | Value |
 |---|---|
@@ -48,6 +48,7 @@ An individual customer can suspend, reactivate, cancel, renew, and change the pl
 | REQ-SUB-001.9 | **Applied at renewal:** the scheduled plan becomes the subscription's plan when it next renews, whether by the auto-renew job or by the customer renewing manually, and the pending plan is cleared. The renewal (and its invoice) is at the new plan. | Must |
 | REQ-SUB-001.10 | **Withdraw:** the customer can withdraw a scheduled downgrade before the renewal and stay on the current plan. Choosing an upgrade, or the plan already in force, also clears a scheduled downgrade. | Must |
 | REQ-SUB-001.11 | An organization subscription's plan change follows the same rule, through the organization endpoints and the `MANAGE_SUBSCRIPTIONS` permission ([REQ-SUB-003](../subscription-seats/requirement.md), [C65](../../../01-business/roadmap/open-decisions.md#c65)). | Must |
+| REQ-SUB-001.12 | **Free trial** ([C102](../../../01-business/roadmap/open-decisions.md#c102), [REQ-MKT-005](../product-evaluation/requirement.md)): a subscription with **`trial` = true** is ACTIVE on the product's highest plan until `expiresAt` (the end of the trial), with auto-renew off. It **cannot be renewed, set to auto-renew or moved to another plan**, and an organization's trial cannot change its seats (each refused with 400). It has **no grace period**: when `expiresAt` has passed the expiry job sets it EXPIRED at once (no read-only days) and tells the product to deprovision. **Buying** (subscribe, the cart, an organization purchase) sets `trial` to false and the subscription becomes a normal one. Everything else (suspend, reactivate, cancel) works as for any subscription. | Must |
 
 ## Out of scope
 - Organization-owned subscriptions: no self-service action existed when this FRD was approved ([C38](../../../01-business/roadmap/open-decisions.md#c38)); organization suspend, cancel, seats and plan change were added later under [REQ-SUB-003](../subscription-seats/requirement.md)
@@ -55,12 +56,14 @@ An individual customer can suspend, reactivate, cancel, renew, and change the pl
 - Quantity/seat changes on a subscription ([REQ-SUB-003](../subscription-seats/requirement.md)). Scheduling a plan change for a date the customer picks: only "next renewal" exists ([C97](../../../01-business/roadmap/open-decisions.md#c97) SC-1)
 - Scheduling an **upgrade**: an upgrade is always immediate. Prorated charges or credits for the difference are not built (Not specified)
 - Entitlement/license/quota tracking beyond the existing per-member product access model
+- Starting a trial, its notices and the compare page: [REQ-MKT-005](../product-evaluation/requirement.md) (this feature only adds the rules for a subscription that is a trial, REQ-SUB-001.12)
 
 ## Dependencies
 - Existing `ProductSubscription`, `ProductPlan`, `SubscriptionService#subscribe`.
 - New column `product_subscription.plan_id` ([V008](../../../../database/migrations/V008__subscription_lifecycle.sql)).
 - New status `SubscriptionStatus.SUSPENDED`.
 - New columns `product_subscription.pending_plan_id` and `pending_plan_requested_at` ([V037](../../../../database/migrations/V037__billing_rules_sprint_2026_4_3.sql), [data model](../../../07-database/data-model/subscription-seats.md#scheduled-plan-change-columns)).
+- New columns `product_subscription.trial` and `trial_reminded_at` ([V042](../../../../database/migrations/V042__trials_and_demo_requests.sql), [data model](../../../07-database/data-model/trials.md)).
 
 ## Where SC-1 is built
 | Part | Location |

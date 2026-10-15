@@ -32,10 +32,11 @@ Every method above resolves "who is calling" from the JWT (`CurrentCustomerResol
   "quantity": 1,
   "autoRenew": true,
   "pendingPlanId": null,
-  "pendingPlanName": null
+  "pendingPlanName": null,
+  "trial": false
 }
 ```
-`pendingPlanId` and `pendingPlanName` are set only while a downgrade is scheduled ([C97](../../../01-business/roadmap/open-decisions.md#c97) SC-1); the plan in `planId` is unchanged until the subscription renews.
+`trial` is true for a free trial ([C102](../../../01-business/roadmap/open-decisions.md#c102), [product-evaluation API](../../../06-api/api-requirements/product-evaluation.md)): `POST …/renew`, `PATCH …/auto-renew` and `PATCH …/plan` are refused with 400 for it. `pendingPlanId` and `pendingPlanName` are set only while a downgrade is scheduled ([C97](../../../01-business/roadmap/open-decisions.md#c97) SC-1); the plan in `planId` is unchanged until the subscription renews.
 ```json
 // PATCH /me/subscriptions/42/plan { "planId": 8 }  — Basic is cheaper per month than Pro: scheduled, not applied
 { "id": 42, "planId": 7, "planName": "Pro", "expiresAt": "2026-11-02T18:29:00Z", "pendingPlanId": 8, "pendingPlanName": "Basic" }

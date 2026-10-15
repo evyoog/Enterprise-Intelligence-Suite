@@ -72,6 +72,7 @@ Paid subscriptions **auto-renew by default**. On the renewal date the term is ex
 | REQ-SUB-004.18 | **Recipients of an organization subscription:** every ACTIVE **organization administrator**, every ACTIVE member with **Manage billing**, and the people an administrator **added** (REQ-SUB-004.19); each person once. An individual subscription's recipient is its owner. | Must |
 | REQ-SUB-004.19 | **An administrator chooses many people.** Anyone with Manage billing (organization administrators have it) can add any ACTIVE member of the organization as a recipient, with **email**, **in-app** or **both** (at least one) for each, and remove them again, on My subscriptions. Administrators and Manage billing holders always receive on both channels and are shown read-only. A change is audited (`RENEWAL_REMINDER_RECIPIENTS_CHANGED`). A person who stops being an ACTIVE member receives nothing. | Must |
 | REQ-SUB-004.20 | **Settings of an added person.** An added recipient follows their **own** reminder settings: on or off, days before, send time and time zone (REQ-SUB-004.7, .8). **Reminders also appear in the app** (in-app notification, [C100](../../../01-business/roadmap/open-decisions.md#c100) RR-6 A) unless an added person has in-app switched off; the wording of the renewal and grace reminders is edited by platform administrators as **message templates** ([C92](../../../01-business/roadmap/open-decisions.md#c92), [C100](../../../01-business/roadmap/open-decisions.md#c100) RR-7 A; codes `NOTIF_RENEWAL_REMINDER` and `NOTIF_RENEWAL_GRACE_REMINDER`). | Must |
+| REQ-SUB-004.21 | **Free trials are skipped** ([C102](../../../01-business/roadmap/open-decisions.md#c102), [REQ-MKT-005](../product-evaluation/requirement.md)). A subscription with `trial` = true gets **no renewal reminder** and no grace reminder: it does not renew and has no grace period. Its own notice is sent **3 days before it ends** (once) and when it ends, by the subscription job. | Must |
 
 ## Engineering defaults (built 2026-10-03, until the open questions are answered)
 | Topic | Default | Where |
@@ -97,7 +98,7 @@ Paid subscriptions **auto-renew by default**. On the renewal date the term is ex
 | Scheduler | Every 15 minutes; a reminder is due when the recipient's local time has reached the send time on a day 1…N days before the local renewal date, and none was logged for that local date | `RenewalJob` |
 
 ## Out of scope
-Dunning after a failed renewal; a grace period of any other length or one the customer chooses; SMS or push; an organization "Renew now" action (see [Open points](#open-points)).
+Reminders for a free trial (it has its own notice, REQ-SUB-004.21); dunning after a failed renewal; a grace period of any other length or one the customer chooses; SMS or push; an organization "Renew now" action (see [Open points](#open-points)).
 
 ## Dependencies
 Subscription lifecycle (REQ-SUB-001), billing and invoices (REQ-BIL-001), entitlements (REQ-SUB-002.10, the read-only answer), seats (REQ-SUB-003, a pending decrease is applied at renewal), user preferences (time zone), notifications and message templates (C92), organization permissions (REQ-TEN-005), platform events (REQ-INT-002), audit.

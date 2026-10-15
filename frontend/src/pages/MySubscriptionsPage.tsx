@@ -16,6 +16,7 @@ import { OrganizationSubscriptionsSection } from '../components/subscriptions/Or
 import { EntitlementsSection } from '../components/subscriptions/EntitlementsSection'
 import { AutoRenewControl } from '../components/subscriptions/AutoRenewControl'
 import { GraceNotice, ReadOnlyChip } from '../components/subscriptions/GraceNotice'
+import { TrialChips, TrialSubscribe } from '../components/subscriptions/TrialNotice'
 import { isInGrace } from '../utils/grace'
 
 type Action = 'suspend' | 'reactivate' | 'cancel' | 'renew'
@@ -169,9 +170,11 @@ function SubscriptionRow({ subscription, renewal, busy, onAction, onAutoRenew, o
 }) {
   const { t } = useTranslation()
   const { formatDate, formatDateTime } = useLocalePreference()
-  const autoRenew = subscription.autoRenew ?? renewal?.autoRenew ?? false
+  // C102 (REQ-MKT-005): a free trial is never renewed (no auto-renew, no grace) and its plan cannot change.
+  const trial = subscription.trial === true
+  const autoRenew = !trial && (subscription.autoRenew ?? renewal?.autoRenew ?? false)
   // C100 RR-1 B: the term ended with auto-renew off; read-only until the grace period ends.
-  const graceEndsAt = subscription.graceEndsAt ?? renewal?.graceEndsAt ?? null
+  const graceEndsAt = trial ? null : (subscription.graceEndsAt ?? renewal?.graceEndsAt ?? null)
   const inGrace = subscription.status === 'ACTIVE' && graceEndsAt !== null && isInGrace(graceEndsAt)
 
   return (
@@ -181,23 +184,26 @@ function SubscriptionRow({ subscription, renewal, busy, onAction, onAutoRenew, o
         <Typography variant="body2" sx={{ color: 'text.secondary' }}>
           {t('subscriptions.plan')}: {subscription.planName ?? t('subscriptions.noPlan')}
         </Typography>
-        <Typography variant="body2" sx={{ color: 'text.secondary' }}>
-          {subscription.expiresAt
-            ? t('subscriptions.expires', { date: new Date(subscription.expiresAt).toLocaleDateString() })
-            : t('subscriptions.neverExpires')}
-        </Typography>
+        {!trial && (
+          <Typography variant="body2" sx={{ color: 'text.secondary' }}>
+            {subscription.expiresAt
+              ? t('subscriptions.expires', { date: new Date(subscription.expiresAt).toLocaleDateString() })
+              : t('subscriptions.neverExpires')}
+          </Typography>
+        )}
         <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap', mt: 1 }}>
           <Chip size="small" color={statusColor(subscription.status)} label={t(`subscriptions.status.${subscription.status}`)} />
+          {trial && <TrialChips subscription={subscription} />}
           {autoRenew && (
             <Chip size="small" variant="outlined" color="info" icon={<RefreshCw size={14} />} label={t('subscriptions.renewal.autoRenewOn')} />
           )}
-          {renewal && !inGrace && <Chip size="small" variant="outlined" label={t('subscriptions.renewal.renewsOn', { date: formatDate(renewal.renewalDate) })} />}
+          {!trial && renewal && !inGrace && <Chip size="small" variant="outlined" label={t('subscriptions.renewal.renewsOn', { date: formatDate(renewal.renewalDate) })} />}
           {inGrace && graceEndsAt && <ReadOnlyChip graceEndsAt={graceEndsAt} />}
         </Box>
         {inGrace && graceEndsAt && (
           <GraceNotice product={subscription.productName} graceEndsAt={graceEndsAt} busy={busy} onRenew={() => onAction('renew')} />
         )}
-        {subscription.status === 'ACTIVE' && subscription.expiresAt && (
+        {!trial && subscription.status === 'ACTIVE' && subscription.expiresAt && (
           <Box sx={{ mt: 1 }}>
             <AutoRenewControl id={`auto-renew-${subscription.id}`} product={subscription.productName} checked={autoRenew}
               busy={busy} onChange={onAutoRenew} />
@@ -212,7 +218,10 @@ function SubscriptionRow({ subscription, renewal, busy, onAction, onAutoRenew, o
             })}
           </Alert>
         )}
-        {renewal && (
+        {trial && (subscription.status === 'ACTIVE' || subscription.status === 'EXPIRED') && (
+          <Box sx={{ mt: 1.5 }}><TrialSubscribe subscription={subscription} /></Box>
+        )}
+        {!trial && renewal && (
           <Typography variant="body2" sx={{ color: 'text.secondary', mt: 1, display: 'flex', alignItems: 'center', gap: 0.75 }}>
             <BellRing size={14} aria-hidden />
             {!renewal.remindersEnabled
@@ -227,9 +236,9 @@ function SubscriptionRow({ subscription, renewal, busy, onAction, onAutoRenew, o
       <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
         {subscription.status === 'ACTIVE' && (
           <>
-            <Button size="small" variant="outlined" disabled={busy} onClick={onChangePlan}>{t('subscriptions.actions.changePlan')}</Button>
+            {!trial && <Button size="small" variant="outlined" disabled={busy} onClick={onChangePlan}>{t('subscriptions.actions.changePlan')}</Button>}
             <Button size="small" variant="outlined" disabled={busy} onClick={() => onAction('suspend')}>{t('subscriptions.actions.suspend')}</Button>
-            <Button size="small" variant="outlined" disabled={busy} onClick={() => onAction('renew')}>{t('subscriptions.actions.renew')}</Button>
+            {!trial && <Button size="small" variant="outlined" disabled={busy} onClick={() => onAction('renew')}>{t('subscriptions.actions.renew')}</Button>}
             <Button size="small" color="error" variant="outlined" disabled={busy}
               onClick={() => window.confirm(t('subscriptions.confirmCancel', { product: subscription.productName })) && onAction('cancel')}>
               {t('subscriptions.actions.cancel')}
@@ -245,7 +254,7 @@ function SubscriptionRow({ subscription, renewal, busy, onAction, onAutoRenew, o
             </Button>
           </>
         )}
-        {subscription.status === 'EXPIRED' && (
+        {subscription.status === 'EXPIRED' && !trial && (
           <Button size="small" variant="outlined" disabled={busy} onClick={() => onAction('renew')}>{t('subscriptions.actions.renew')}</Button>
         )}
       </Box>

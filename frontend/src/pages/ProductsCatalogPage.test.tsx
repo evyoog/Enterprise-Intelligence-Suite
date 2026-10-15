@@ -1,5 +1,5 @@
 import '../i18n'
-import { screen, waitFor } from '@testing-library/react'
+import { screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { axe } from 'jest-axe'
 import { Route, Routes, useLocation } from 'react-router-dom'
@@ -62,7 +62,7 @@ describe('Product catalog page (C94)', () => {
     list.mockResolvedValue([alpha, beta, gamma])
     listRatings.mockResolvedValue([{ productId: 3, averageRating: 4.9, reviewCount: 10 }])
     wishlistList.mockResolvedValue([])
-    try { localStorage.clear() } catch { /* ignore */ }
+    try { localStorage.clear(); sessionStorage.clear() } catch { /* ignore */ }
   })
 
   it('shows the hero, the category tiles with counts and every product card with its rating', async () => {
@@ -130,6 +130,25 @@ describe('Product catalog page (C94)', () => {
     await user.click(screen.getByRole('button', { name: 'Save Alpha to wishlist' }))
     expect(wishlistAdd).not.toHaveBeenCalled()
     expect(screen.getByTestId('where')).toHaveTextContent(`/login?returnTo=${encodeURIComponent('/products')}`)
+  })
+
+  // TC-MKT-: the Compare tick starts a comparison (C102, REQ-MKT-005)
+  it('ticks Compare on cards, shows the tray with the names and links to the compare page; the choice survives a narrower search', async () => {
+    const user = userEvent.setup()
+    renderPage()
+    await screen.findByText('Showing 3 products')
+    expect(screen.queryByRole('region', { name: 'Compare tray' })).not.toBeInTheDocument()
+    await user.click(screen.getByRole('checkbox', { name: 'Compare Alpha' }))
+    await user.click(screen.getByRole('checkbox', { name: 'Compare Gamma' }))
+    const tray = screen.getByRole('region', { name: 'Compare tray' })
+    expect(tray).toHaveTextContent('Compare (2)')
+    expect(within(tray).getByText('Gamma')).toBeInTheDocument()
+    expect(within(tray).getByRole('link', { name: 'Compare now' })).toHaveAttribute('href', '/compare?items=1,3')
+    // A filter that hides Gamma does not forget it, nor its name.
+    await user.click(screen.getByRole('checkbox', { name: /Free/ }))
+    expect(within(screen.getByRole('region', { name: 'Compare tray' })).getByText('Gamma')).toBeInTheDocument()
+    await user.click(within(tray).getByRole('button', { name: 'Clear' }))
+    expect(screen.queryByRole('region', { name: 'Compare tray' })).not.toBeInTheDocument()
   })
 
   it('shows an empty state with Clear filters, and has no a11y violations', async () => {

@@ -9,13 +9,17 @@ import { EditProductPage } from './EditProductPage'
 
 const product = {
   id: 7, name: 'Thiran Suite', description: 'd', price: 0, status: 'ACTIVE' as const, ssoConnected: false, featured: false,
-  platforms: [], plans: [], version: 4, dependsOnProductIds: [],
+  platforms: [], plans: [], version: 4, dependsOnProductIds: [], trialDays: 14,
 }
 vi.mock('../../api/productsApi', async () => {
   const actual = await vi.importActual<typeof import('../../api/productsApi')>('../../api/productsApi')
   return { ...actual, productsApi: { ...actual.productsApi, get: () => Promise.resolve(product) } }
 })
-vi.mock('../../components/admin/ProductForm', () => ({ ProductForm: () => <p>Details form</p> }))
+vi.mock('../../components/admin/ProductForm', () => ({
+  ProductForm: ({ initialProduct }: { initialProduct: { trialDays?: number | null } }) => (
+    <><p>Details form</p><p>Trial days {String(initialProduct.trialDays)}</p></>
+  ),
+}))
 vi.mock('../../components/productcontent/ProductContentManager', () => ({
   ProductContentManager: ({ productId }: { productId: number }) => <p>Content manager for {productId}</p>,
 }))
@@ -39,6 +43,11 @@ describe('Edit application: Details and Content tabs (REQ-CAT-004)', () => {
     await userEvent.setup().click(screen.getByRole('tab', { name: 'Content' }))
     expect(screen.getByText('Content manager for 7')).toBeInTheDocument()
     expect(screen.queryByText('Details form')).not.toBeInTheDocument()
+  })
+
+  it('hands the saved free-trial days (C102) to the form', async () => {
+    renderAt('/admin/products/7/edit')
+    expect(await screen.findByText('Trial days 14')).toBeInTheDocument()
   })
 
   it('opens the Content tab straight from ?tab=content (the list action and refresh)', async () => {

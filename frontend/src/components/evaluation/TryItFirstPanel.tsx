@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { Alert, Box, Button, CircularProgress, Link as MuiLink, Paper, Typography } from '@mui/material'
+import { Alert, Box, Button, CircularProgress, Paper, Typography } from '@mui/material'
 import { CalendarClock, PlayCircle, Sparkles } from 'lucide-react'
 import { Link as RouterLink, useNavigate } from 'react-router-dom'
 import { ApiError } from '../../api/client'
@@ -89,7 +89,7 @@ export function TryItFirstPanel({ productId, productName, trialDays, onWatchTuto
     <Paper component="section" variant="outlined" aria-labelledby="try-it-first-title" sx={{ p: 3, mb: 3 }}>
       <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 0.5 }}>
         <Sparkles size={18} aria-hidden />
-        <Typography id="try-it-first-title" component="h2" variant="h6" sx={{ fontWeight: 700 }}>{t('evaluation.title')}</Typography>
+        <Typography id="try-it-first-title" component="h5" variant="h6" sx={{ fontWeight: 700 }}>{t('evaluation.title')}</Typography>
       </Box>
       <Typography variant="body2" sx={{ color: 'text.secondary', mb: 2 }}>{t('evaluation.intro', { product: productName })}</Typography>
 
@@ -114,7 +114,7 @@ export function TryItFirstPanel({ productId, productName, trialDays, onWatchTuto
             </Button>
             <Typography id="try-it-first-trial-note" variant="caption" sx={{ display: 'block', color: 'text.secondary', mt: 0.75 }}>
               {blockMessage
-                ?? (!isAuthenticated ? t('evaluation.trial.signInNote') : organization ? t('evaluation.trial.forOrganization') : '')}
+                ?? (organization ? t('evaluation.trial.forOrganization') : '')}
             </Typography>
           </Box>
         )}
@@ -130,10 +130,8 @@ export function TryItFirstPanel({ productId, productName, trialDays, onWatchTuto
           )}
         </Box>
       </Box>
-      {!isAuthenticated && !hasTrial && (
-        <Typography variant="caption" sx={{ display: 'block', color: 'text.secondary', mt: 1 }}>
-          <MuiLink component={RouterLink} to={`/login?returnTo=${encodeURIComponent(`/products/${productId}`)}`}>{t('evaluation.trial.signInNote')}</MuiLink>
-        </Typography>
+      {!isAuthenticated && (
+        <Typography variant="caption" sx={{ display: 'block', color: 'text.secondary', mt: 1.5 }}>{t('evaluation.trial.signInNote')}</Typography>
       )}
 
       <DemoRequestDialog open={demoOpen} productId={productId} productName={productName} onClose={() => setDemoOpen(false)} />

@@ -16,6 +16,7 @@ import { isInGrace } from '../../utils/grace'
 import { AutoRenewControl } from './AutoRenewControl'
 import { GraceNotice, ReadOnlyChip } from './GraceNotice'
 import { RenewalRecipientsSection } from './RenewalRecipientsSection'
+import { TrialChips, TrialSubscribe } from './TrialNotice'
 
 interface Row {
   subscription: Subscription
@@ -91,7 +92,9 @@ function SeatCard({ row, canChangeSeats, onChanged, onSubscription }: {
   const [autoRenewBusy, setAutoRenewBusy] = useState(false)
 
   // C100 RR-1 B: the term ended with auto-renew off, so the subscription is read-only until the grace period ends.
-  const graceEndsAt = subscription.graceEndsAt ?? null
+  // C102 (REQ-MKT-005): a free trial has no grace period, no renewal and no seat or plan change.
+  const trial = subscription.trial === true
+  const graceEndsAt = trial ? null : (subscription.graceEndsAt ?? null)
   const inGrace = graceEndsAt !== null && isInGrace(graceEndsAt)
 
   const quantity = Number(value)
@@ -163,11 +166,12 @@ function SeatCard({ row, canChangeSeats, onChanged, onSubscription }: {
         <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap', alignItems: 'flex-start' }}>
           <Chip size="small" color={subscription.status === 'ACTIVE' ? 'success' : subscription.status === 'SUSPENDED' ? 'warning' : 'default'}
             label={t(`subscriptions.status.${subscription.status}`)} />
-          {subscription.autoRenew && subscription.expiresAt && (
+          {trial && <TrialChips subscription={subscription} />}
+          {!trial && subscription.autoRenew && subscription.expiresAt && (
             <Chip size="small" variant="outlined" color="info" icon={<RefreshCw size={14} />}
               label={t('subscriptions.renewal.autoRenewOn')} />
           )}
-          {subscription.expiresAt && !inGrace && (
+          {!trial && subscription.expiresAt && !inGrace && (
             <Chip size="small" variant="outlined" label={t('subscriptions.renewal.renewsOn', { date: formatDate(subscription.expiresAt) })} />
           )}
           {inGrace && graceEndsAt && <ReadOnlyChip graceEndsAt={graceEndsAt} />}
@@ -175,7 +179,10 @@ function SeatCard({ row, canChangeSeats, onChanged, onSubscription }: {
       </Box>
 
       {inGrace && graceEndsAt && <GraceNotice product={subscription.productName} graceEndsAt={graceEndsAt} />}
-      {subscription.status === 'ACTIVE' && subscription.expiresAt && (
+      {trial && (subscription.status === 'ACTIVE' || subscription.status === 'EXPIRED') && (
+        <Box sx={{ my: 1.5 }}><TrialSubscribe subscription={subscription} /></Box>
+      )}
+      {!trial && subscription.status === 'ACTIVE' && subscription.expiresAt && (
         <Box sx={{ my: 1.5 }}>
           <AutoRenewControl id={`org-auto-renew-${subscription.id}`} product={subscription.productName}
             checked={subscription.autoRenew ?? false} busy={autoRenewBusy} onChange={setAutoRenew} />
@@ -200,7 +207,7 @@ function SeatCard({ row, canChangeSeats, onChanged, onSubscription }: {
                 : t('subscriptions.seats.pendingNoDate', { quantity: pending })}
             </Alert>
           )}
-          {!canChangeSeats ? (
+          {trial ? null : !canChangeSeats ? (
             <Typography variant="body2" sx={{ color: 'text.secondary', mt: 1.5 }}>{t('subscriptions.seats.viewOnly')}</Typography>
           ) : inGrace ? (
             <Typography variant="body2" sx={{ color: 'text.secondary', mt: 1.5 }}>{t('subscriptions.seats.readOnly')}</Typography>

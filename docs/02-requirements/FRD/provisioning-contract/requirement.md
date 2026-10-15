@@ -33,7 +33,7 @@ Nothing in this section is decided. It is a starting proposal for review.
 ### Messages from EIS to the product
 | Message | When | Carries |
 |---|---|---|
-| Provision requested | Subscription starts (individual subscribe, approved organization order) | subscription ID, customer or organization, product, plan, region |
+| Provision requested | Subscription starts (individual subscribe, approved organization order, **a free trial**) | subscription ID, customer or organization, product, plan, region, **trial flag** |
 | Suspend | Subscription suspended | same |
 | Resume | Suspended subscription resumed | same |
 | Deprovision requested | Subscription cancelled or expired | same |
@@ -64,6 +64,13 @@ The existing internal shared secret (`INTERNAL_SSO_SHARED_SECRET`, held in `conf
 | 3, 5, 7 | Product-team confirmation; failed provisioning state; "Configure service" | Still open. A failed provisioning leaves the tenant registry entry FAILED and the subscription unchanged (REQ-INT-003.17). Each hosted product team must still confirm the contract; Thittam Macro Planner is the first. |
 
 The messages "Provision requested / Provisioned / Failed / Suspend / Resume / Deprovision requested" of this FRD map to `provision_tenant`, `report_provisioning_result`, `set_subscription` (status SUSPENDED, ACTIVE, CANCELLED) in contract v1.
+
+## Free trials ([C102](../../../01-business/roadmap/open-decisions.md#c102), 2026-10-15)
+A free trial ([REQ-MKT-005](../product-evaluation/requirement.md)) is a subscription like any other as far as this contract is concerned, so the messages above apply to it unchanged:
+- **Provision requested.** When a trial starts, EIS publishes the `SubscriptionCreated` event (the platform event of [REQ-INT-002](../event-platform/requirement.md)) for the subscription, with **`trial: true`** in its payload. The product creates the customer's tenant and its database with **all features** (a trial is on the product's highest plan). **EIS does not create databases.** Every other subscription event now carries `trial` as well (false for a normal subscription).
+- **Deprovision requested.** When the trial's days are over the subscription expires with no grace period and EIS publishes `SubscriptionChanged` with status `EXPIRED`; the product removes the tenant. **When the trial data is deleted is the product's decision**; EIS sends the request only.
+- **Buying.** When the customer buys, the same subscription carries on with `trial: false` and the chosen plan (`SubscriptionCreated` or `SubscriptionChanged` with the new fields); the product keeps the tenant and lifts the trial limits.
+- The contract itself stays a **Draft**: the product teams have not confirmed it (open questions below).
 
 ## Open questions
 | # | Question | Blocks approval |

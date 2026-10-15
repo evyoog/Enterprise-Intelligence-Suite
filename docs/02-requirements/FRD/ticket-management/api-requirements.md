@@ -44,4 +44,6 @@
 
 **SLA fields (added 2026-10-14, [C101](../../../01-business/roadmap/open-decisions.md#c101)).** `firstRespondedAt`, `firstResponseDueAt` and `resolutionDueAt` are returned on every ticket endpoint and are null for tickets created before SLA tracking. `firstResponseState` and `resolutionState` (`ON_TRACK`, `WARNING`, `BREACHED`, `MET`, `MET_LATE`) are returned only by the administrator endpoints (`/admin/support/tickets…`) and are null on `/me/tickets…`. Changing `priority` in `PATCH` recalculates the deadlines; the SLA settings endpoints (`/admin/support/sla…`) are in [sla-management.md](../../../06-api/api-requirements/sla-management.md).
 
+**Demo requests (added 2026-10-15, [C102](../../../01-business/roadmap/open-decisions.md#c102)).** `POST /me/demo-requests` creates a ticket through the same service with `category` = "Demo request"; the ticket is then read and worked through the endpoints above. See [product-evaluation API](../../../06-api/api-requirements/product-evaluation.md#request-a-demo).
+
 OpenAPI contract: not maintained separately — `SupportTicketController`/`AdminSupportTicketController`/`SupportTicketDto` and this file are the source of truth ([C14](../../../01-business/roadmap/open-decisions.md#c14)).

@@ -5087,9 +5087,7 @@
       "label": "Añadir un producto",
       "placeholder": "Busque productos para añadir",
       "noOptions": "No se encontraron productos",
-      "limit": "Puede comparar hasta 4 elementos. Quite uno para añadir otro.",
-      "added": "{{name}} se añadió a la comparación.",
-      "removed": "{{name}} se quitó de la comparación."
+      "limit": "Puede comparar hasta 4 elementos. Quite uno para añadir otro."
     },
     "chooser": {
       "heading": "Elementos a comparar",
@@ -5135,9 +5133,7 @@
     "trial_other": "{{count}} días de prueba gratuita",
     "tax": {
       "notSignedIn": "Inicie sesión para ver la estimación de impuestos",
-      "signIn": "Iniciar sesión",
       "needsBilling": "Añada sus datos de facturación para ver la estimación de impuestos",
-      "billingLink": "Datos de facturación",
       "atCheckout": "Los impuestos se calculan al pagar"
     },
     "features": {
@@ -5147,7 +5143,8 @@
     },
     "actions": {
       "view": "Ver producto",
-      "viewLabel": "Ver {{name}}"
+      "viewLabel": "Ver producto {{name}}",
+      "addLabel": "Añadir al carrito: {{name}}"
     },
     "note": "Solo son estimaciones. Los impuestos y totales finales se muestran al pagar.",
     "tray": {
@@ -5206,7 +5203,6 @@
       "chip": "Prueba gratuita",
       "endsOn_one": "Termina el {{date}} (queda {{count}} día)",
       "endsOn_other": "Termina el {{date}} (quedan {{count}} días)",
-      "endsToday": "Termina el {{date}} (último día)",
       "endedOn": "Terminó el {{date}}",
       "note": "Una prueba gratuita no se puede renovar ni modificar. Suscríbete para seguir usando {{product}}.",
       "subscribe": "Suscribirse",

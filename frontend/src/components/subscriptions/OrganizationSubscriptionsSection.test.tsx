@@ -169,4 +169,18 @@ describe('OrganizationSubscriptionsSection', () => {
     await screen.findByRole('button', { name: 'Add a seat' })
     expect(await axe(container)).toHaveNoViolations()
   })
+
+  // C102 (REQ-MKT-005): a trial has no auto-renew, renewal date or seat change; Subscribe goes to the product page.
+  it('shows a trial with its end and Subscribe, and no auto-renew, renewal or seat controls', async () => {
+    const trial = { ...sub, trial: true, autoRenew: false, expiresAt: new Date(Date.now() + 9.5 * 86_400_000).toISOString() }
+    list.mockResolvedValue([trial])
+    renderWithProviders(<OrganizationSubscriptionsSection />)
+    expect(await screen.findByText('Free trial')).toBeInTheDocument()
+    expect(screen.getByText(/^Ends .* \(10 days left\)$/)).toBeInTheDocument()
+    expect(screen.getByRole('link', { name: 'Subscribe to Valam.ai' })).toHaveAttribute('href', '/products/7')
+    expect(screen.queryByRole('switch')).not.toBeInTheDocument()
+    expect(screen.queryByText(/Renews on/)).not.toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: 'Add a seat' })).not.toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: 'Save' })).not.toBeInTheDocument()
+  })
 })

@@ -6,6 +6,7 @@ import { Box, CircularProgress } from '@mui/material'
 import { BrowserRouter, Navigate, Outlet, Route, Routes } from 'react-router-dom'
 import { HomePage } from './pages/HomePage'
 import { ProductsPage } from './pages/ProductsPage'
+import { ComparePage } from './pages/ComparePage'
 import { MyProductsPage } from './pages/MyProductsPage'
 import { MySubscriptionsPage } from './pages/MySubscriptionsPage'
 import { OrganizationSettingsRedirect } from './pages/OrganizationSettingsPage'
@@ -144,6 +145,7 @@ function MainApp() {
             anyone else back to "/". */}
         <Route element={<AuthAwareLayout />}>
           <Route path="/products" element={<ProductsPage />} />
+          <Route path="/compare" element={<ComparePage />} />
           {/* 03.04 Reviews & Ratings (sprint 2027.1.3): public product detail. */}
           <Route path="/products/:id" element={<ProductDetailPage />} />
           {/* 02.02 Offering management (REQ-CAT-005, C85): public browsing of published offerings. */}

@@ -57,6 +57,7 @@ export function CompareProvider({ children }: { children: ReactNode }) {
 }
 
 /** Test hook: forgets the shared standalone store so the next consumer re-reads sessionStorage. */
+// eslint-disable-next-line react-refresh/only-export-components
 export function resetStandaloneCompareStore() {
   standalone = null
 }

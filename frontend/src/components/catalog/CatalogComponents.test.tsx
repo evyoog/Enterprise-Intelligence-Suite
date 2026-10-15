@@ -37,6 +37,22 @@ describe('CatalogProductCard', () => {
     expect(screen.getByRole('link', { name: 'Valam.ai' })).toHaveAttribute('href', '/products/1')
   })
 
+  // TC-MKT-: the Compare tick (C102, REQ-MKT-005)
+  it('shows a Compare tick only when asked to, and reports it', async () => {
+    const user = userEvent.setup()
+    const first = renderWithProviders(card())
+    expect(screen.queryByRole('checkbox', { name: /Compare/ })).not.toBeInTheDocument()
+    const onToggleCompare = vi.fn()
+    first.unmount()
+    const second = renderWithProviders(card({ onToggleCompare, compared: true }))
+    expect(screen.getByRole('checkbox', { name: 'Compare Valam.ai' })).toBeChecked()
+    await user.click(screen.getByRole('checkbox', { name: 'Compare Valam.ai' }))
+    expect(onToggleCompare).toHaveBeenCalledTimes(1)
+    second.unmount()
+    renderWithProviders(card({ onToggleCompare, compared: false, compareFull: true }))
+    expect(screen.getByRole('checkbox', { name: 'Compare Valam.ai' })).toBeDisabled()
+  })
+
   it('shows the banner image behind the card and the app icon on it, and falls back to initials', () => {
     const { container } = renderWithProviders(card({ product: product({ bannerImageUrl: '/products/images/banner.png', imageUrl: '/products/images/icon.png' }) }))
     const srcs = [...container.querySelectorAll('img')].map((i) => i.getAttribute('src'))

@@ -41,6 +41,9 @@ const CURRENCIES: Currency[] = ['USD', 'EUR', 'GBP', 'INR']
 // Backend limits (ProductCreateRequest): at most 12 tags of up to 40 characters, no commas.
 const MAX_TAGS = 12
 const MAX_TAG_LENGTH = 40
+// C102: the backend accepts 1-90 trial days (ProductCreateRequest).
+const MIN_TRIAL_DAYS = 1
+const MAX_TRIAL_DAYS = 90
 const URL_PATTERN = /^https?:\/\/.+/
 
 interface TierDraft {
@@ -132,6 +135,8 @@ export function ProductForm({
   const [tagDraft, setTagDraft] = useState('')
   const [documentationUrl, setDocumentationUrl] = useState(initialProduct?.documentationUrl ?? '')
   const [supportUrl, setSupportUrl] = useState(initialProduct?.supportUrl ?? '')
+  // C102 (REQ-MKT-005): days of the free trial, 1-90; empty = the product offers no trial.
+  const [trialDays, setTrialDays] = useState(initialProduct?.trialDays != null ? String(initialProduct.trialDays) : '')
   const [isUploadingImage, setIsUploadingImage] = useState(false)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -145,6 +150,8 @@ export function ProductForm({
     color: accentColor !== null && !isHexColor(accentColor) ? t('ui.color.hexError') : null,
     documentationUrl: documentationUrl.trim() && !URL_PATTERN.test(documentationUrl.trim()) ? t('forms.app.urlError') : null,
     supportUrl: supportUrl.trim() && !URL_PATTERN.test(supportUrl.trim()) ? t('forms.app.urlError') : null,
+    trialDays: trialDays.trim() && !(/^\d+$/.test(trialDays.trim()) && Number(trialDays) >= MIN_TRIAL_DAYS && Number(trialDays) <= MAX_TRIAL_DAYS)
+      ? t('evaluation.admin.trialDaysError') : null,
   }
   // Every tier row that exists must be fully filled in — an admin who wants to
   // abandon one should remove it, not leave it half-empty.
@@ -236,6 +243,7 @@ export function ProductForm({
       featureTags,
       documentationUrl: documentationUrl.trim() || null,
       supportUrl: supportUrl.trim() || null,
+      trialDays: trialDays.trim() ? Number(trialDays) : null,
     })
       .then(() => {
         setSuccess(true)
@@ -389,6 +397,10 @@ export function ProductForm({
           <TextField label={t('forms.app.price')} required fullWidth type="number" sx={{ maxWidth: { sm: 280 } }}
             helperText={show('price') ?? t('forms.app.priceHint')} error={!!show('price')}
             slotProps={{ htmlInput: { min: 0, step: '0.01' } }} value={price} onChange={(e) => setPrice(e.target.value)} />
+          <TextField label={t('evaluation.admin.trialDays')} fullWidth type="number" sx={{ maxWidth: { sm: 280 } }}
+            helperText={show('trialDays') ?? t('evaluation.admin.trialDaysHint')} error={!!show('trialDays')}
+            slotProps={{ htmlInput: { min: MIN_TRIAL_DAYS, max: MAX_TRIAL_DAYS, step: 1 } }}
+            value={trialDays} onChange={(e) => setTrialDays(e.target.value)} />
 
           {tiers.map((tier, index) => {
             const invalid = touched && tierInvalid(tier)

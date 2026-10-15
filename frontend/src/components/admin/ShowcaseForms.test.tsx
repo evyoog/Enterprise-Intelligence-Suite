@@ -153,4 +153,54 @@ describe('ProductForm (C66)', () => {
     await userEvent.setup().click(screen.getByRole('button', { name: 'Save Changes' }))
     await waitFor(() => expect(onSubmit).toHaveBeenCalledWith(expect.objectContaining({ status: 'RETIRED', accentColor: '#F97316', featureTags: ['Old'] })))
   })
+
+  // C102 (REQ-MKT-005): the optional free-trial days (1-90; empty = no trial).
+  it('sends trialDays as null when the field is empty and as a number when set', { timeout: 30000 }, async () => {
+    const onSubmit = vi.fn().mockResolvedValue({})
+    const user = userEvent.setup()
+    renderWithProviders(<ProductForm onSubmit={onSubmit} submitLabel="Create App" submittingLabel="Creating…" successMessage="ok" />)
+    await user.type(screen.getByLabelText(/App name/), 'Insights')
+    await user.type(screen.getByRole('spinbutton', { name: /Price/ }), '49')
+    const field = screen.getByRole('spinbutton', { name: 'Free trial (days)' })
+    expect(screen.getByText('Leave empty to offer no free trial')).toBeInTheDocument()
+    await user.click(screen.getByRole('button', { name: 'Create App' }))
+    await waitFor(() => expect(onSubmit).toHaveBeenLastCalledWith(expect.objectContaining({ trialDays: null })))
+
+    await user.type(field, '14')
+    await user.click(screen.getByRole('button', { name: 'Create App' }))
+    await waitFor(() => expect(onSubmit).toHaveBeenLastCalledWith(expect.objectContaining({ trialDays: 14 })))
+  })
+
+  it('refuses trial days outside 1-90 or not whole', { timeout: 30000 }, async () => {
+    const onSubmit = vi.fn().mockResolvedValue({})
+    const user = userEvent.setup()
+    renderWithProviders(<ProductForm onSubmit={onSubmit} submitLabel="Create App" submittingLabel="Creating…" successMessage="ok" />)
+    await user.type(screen.getByLabelText(/App name/), 'Insights')
+    await user.type(screen.getByRole('spinbutton', { name: /Price/ }), '49')
+    const field = screen.getByRole('spinbutton', { name: 'Free trial (days)' })
+    for (const bad of ['0', '91', '1.5']) {
+      await user.clear(field)
+      await user.type(field, bad)
+      await user.click(screen.getByRole('button', { name: 'Create App' }))
+      expect(await screen.findByText('Enter a whole number of days from 1 to 90.')).toBeInTheDocument()
+      expect(field).toHaveAttribute('aria-invalid', 'true')
+    }
+    expect(onSubmit).not.toHaveBeenCalled()
+    await user.clear(field)
+    await user.type(field, '90')
+    await user.click(screen.getByRole('button', { name: 'Create App' }))
+    await waitFor(() => expect(onSubmit).toHaveBeenCalledWith(expect.objectContaining({ trialDays: 90 })))
+  })
+
+  it('shows an existing trial and clears it when the field is emptied', { timeout: 30000 }, async () => {
+    const onSubmit = vi.fn().mockResolvedValue({})
+    const user = userEvent.setup()
+    const existing = { id: 5, name: 'Legacy', price: 10, status: 'ACTIVE', ssoConnected: false, featured: false, platforms: [], plans: [], version: 1, dependsOnProductIds: [], trialDays: 30 }
+    renderWithProviders(<ProductForm initialProduct={existing as never} onSubmit={onSubmit} submitLabel="Save Changes" submittingLabel="Saving…" successMessage="ok" />)
+    const field = screen.getByRole('spinbutton', { name: 'Free trial (days)' })
+    expect(field).toHaveValue(30)
+    await user.clear(field)
+    await user.click(screen.getByRole('button', { name: 'Save Changes' }))
+    await waitFor(() => expect(onSubmit).toHaveBeenCalledWith(expect.objectContaining({ trialDays: null })))
+  })
 })

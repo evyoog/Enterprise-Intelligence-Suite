@@ -47,8 +47,14 @@ export function DemoRequestDialog({ open, productId, productName, onClose }: {
     }
   }
 
+  // After a sent request the next opening starts with an empty form.
+  const close = () => {
+    onClose()
+    if (ticket) { setTicket(null); setPreferredTime(''); setMessage('') }
+  }
+
   return (
-    <Dialog open={open} onClose={sending ? undefined : onClose} fullWidth maxWidth="sm" aria-labelledby="demo-request-title">
+    <Dialog open={open} onClose={sending ? undefined : close} fullWidth maxWidth="sm" aria-labelledby="demo-request-title">
       <DialogTitle id="demo-request-title">{t('evaluation.demo.dialogTitle', { product: productName })}</DialogTitle>
       {ticket ? (
         <>
@@ -60,7 +66,7 @@ export function DemoRequestDialog({ open, productId, productName, onClose }: {
           </DialogContent>
           <DialogActions>
             <Button component={RouterLink} to="/support/tickets" variant="contained">{t('evaluation.demo.viewTickets')}</Button>
-            <Button onClick={onClose}>{t('evaluation.demo.close')}</Button>
+            <Button onClick={close}>{t('evaluation.demo.close')}</Button>
           </DialogActions>
         </>
       ) : (
@@ -78,7 +84,7 @@ export function DemoRequestDialog({ open, productId, productName, onClose }: {
             </Box>
           </DialogContent>
           <DialogActions>
-            <Button onClick={onClose} disabled={sending}>{t('evaluation.demo.cancel')}</Button>
+            <Button onClick={close} disabled={sending}>{t('evaluation.demo.cancel')}</Button>
             <Button variant="contained" onClick={submit} disabled={sending || timeTooLong || messageTooLong}>
               {sending ? t('evaluation.demo.sending') : t('evaluation.demo.submit')}
             </Button>

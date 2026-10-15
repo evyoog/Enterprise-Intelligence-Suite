@@ -23,5 +23,6 @@ One file per feature, with the tables, columns, constraints and relationships it
 - [search](search.md) — Data model — Search index (C70)
 - [service-instances-sla-incidents](service-instances-sla-incidents.md) — Data model — Service instances, SLA, incidents and problems
 - [subscription-seats](subscription-seats.md) — Data model — Seats and quantity
+- [trials](trials.md) — Data model — Free trials and demo requests (REQ-MKT-005)
 - [tax-rules](tax-rules.md) — Data model — Tax Rules and Calculation
 - [wishlist](wishlist.md) — Data model — Wishlist

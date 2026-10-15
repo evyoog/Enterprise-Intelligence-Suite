@@ -114,6 +114,51 @@ describe('MySubscriptionsPage', () => {
     expect(await screen.findByText('Only a suspended subscription can be reactivated.')).toBeInTheDocument()
   })
 
+  // C102 (REQ-MKT-005): a free trial shows its end, cannot be renewed or changed, and offers Subscribe.
+  describe('free trial', () => {
+    const daysFromNow = (days: number) => new Date(Date.now() + days * 86_400_000 - 3_600_000).toISOString()
+    const trialSub = { ...activeSub, id: 3, productId: 10, planName: 'Enterprise', trial: true, autoRenew: false, expiresAt: daysFromNow(10) }
+
+    it('shows the Free trial chip with the end date and days left, and no renew, auto-renew or change-plan controls', async () => {
+      listSubscriptions.mockResolvedValue([trialSub])
+      myRenewals.mockResolvedValue([{ subscriptionId: 3, productName: 'Valam.ai', planName: null, autoRenew: false,
+        renewalDate: trialSub.expiresAt, remindersEnabled: true, nextReminderAt: null }])
+      renderWithProviders(<MySubscriptionsPage />)
+      expect(await screen.findByText('Free trial')).toBeInTheDocument()
+      expect(screen.getByText(/^Ends .* \(10 days left\)$/)).toBeInTheDocument()
+      expect(screen.queryByRole('button', { name: 'Renew' })).not.toBeInTheDocument()
+      expect(screen.queryByRole('button', { name: 'Change plan' })).not.toBeInTheDocument()
+      expect(screen.queryByRole('switch')).not.toBeInTheDocument()
+      expect(screen.queryByText(/Renews on/)).not.toBeInTheDocument()
+      expect(screen.getByRole('button', { name: 'Suspend' })).toBeInTheDocument()
+    })
+
+    it('Subscribe goes to the product page so the customer can buy', async () => {
+      listSubscriptions.mockResolvedValue([trialSub])
+      renderWithProviders(<MySubscriptionsPage />)
+      expect(await screen.findByRole('link', { name: 'Subscribe to Valam.ai' })).toHaveAttribute('href', '/products/10')
+    })
+
+    it('says "1 day left" in the singular, and offers Subscribe (not Renew) for an ended trial', async () => {
+      listSubscriptions.mockResolvedValue([
+        { ...trialSub, expiresAt: daysFromNow(0.5) },
+        { ...trialSub, id: 4, productName: 'Varthan.ai', productId: 11, status: 'EXPIRED' as const, expiresAt: '2026-01-02T10:00:00Z' },
+      ])
+      renderWithProviders(<MySubscriptionsPage />)
+      expect(await screen.findByText(/\(1 day left\)/)).toBeInTheDocument()
+      expect(screen.getByText(/^Ended /)).toBeInTheDocument()
+      expect(screen.getByRole('link', { name: 'Subscribe to Varthan.ai' })).toHaveAttribute('href', '/products/11')
+      expect(screen.queryByRole('button', { name: 'Renew' })).not.toBeInTheDocument()
+    })
+
+    it('has no detectable a11y violations', async () => {
+      listSubscriptions.mockResolvedValue([trialSub])
+      const { container } = renderWithProviders(<MySubscriptionsPage />)
+      await screen.findByText('Free trial')
+      expect(await axe(container)).toHaveNoViolations()
+    })
+  })
+
   it('has no detectable a11y violations', async () => {
     listSubscriptions.mockResolvedValue([activeSub, suspendedSub])
     const { container } = renderWithProviders(<MySubscriptionsPage />)
