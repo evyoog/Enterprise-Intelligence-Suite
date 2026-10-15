@@ -27,6 +27,7 @@
 | Split | [C31](../open-decisions.md#c31) 15 splits: 15a (Audit, Platform Administration) was built in [2026.4.2](SPRINT-2026.4.2.md); 15b (Policy, Compliance) was nominally here too but [C41](../open-decisions.md#c41) carried it, still unresolved; 15c (Regional Operations) is here | - | - |
 | Already satisfied | [C43](../open-decisions.md#c43) 15.05.01 Region Management — `PlatformAdministrationService`'s existing region CRUD (`REQ-GOV-001.2`, built [2026.4.2](SPRINT-2026.4.2.md)) already covers Create/Configure/Activate/Suspend region; nothing new to build | [platform-administration](../../../02-requirements/FRD/platform-administration/requirement.md) | REQ-GOV-001 |
 | Not built | [C43](../open-decisions.md#c43) 15.05.02 Data Residency — needs the same unresolved general policy-engine decision ([C41](../open-decisions.md#c41)) and 10 Service & Resource Management ([C40](../open-decisions.md#c40)), neither of which this sprint has a new basis to resolve |
+| Decided, still not built | [C104](../open-decisions.md#c104) DR-1 B (2026-10-15): customer data is stored in **separate deployments per region** (India, EU, US), chosen by the customer's region — against the recommended single-region option. This still needs real per-region infrastructure (10, not yet built or deployed — [C40](../open-decisions.md#c40)) and the policy engine ([C41](../open-decisions.md#c41)); recording the decision does not by itself build it | - | - |
 
 ## EIS 15c Administration & Governance: regional operations
 

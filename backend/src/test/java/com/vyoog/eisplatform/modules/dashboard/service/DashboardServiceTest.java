@@ -4,6 +4,7 @@ import com.vyoog.eisplatform.common.exception.ResourceNotFoundException;
 import com.vyoog.eisplatform.modules.authorization.service.PrivilegedAccessService;
 import com.vyoog.eisplatform.modules.dashboard.dto.DashboardDto;
 import com.vyoog.eisplatform.modules.dashboard.dto.DashboardPreferenceDto;
+import com.vyoog.eisplatform.modules.dashboard.repository.ProductLaunchHistoryRepository;
 import com.vyoog.eisplatform.modules.product.model.Product;
 import com.vyoog.eisplatform.modules.product.repository.ProductRepository;
 import com.vyoog.eisplatform.modules.registration.model.*;
@@ -14,6 +15,7 @@ import com.vyoog.eisplatform.modules.registration.service.OrganizationMemberServ
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.context.ActiveProfiles;
 
 import java.math.BigDecimal;
@@ -47,6 +49,10 @@ class DashboardServiceTest {
     private ProductRepository productRepository;
     @Autowired
     private ProductSubscriptionRepository subscriptionRepository;
+    @Autowired
+    private ProductLaunchHistoryRepository launchHistoryRepository;
+    @Autowired
+    private JdbcTemplate jdbcTemplate;
 
     private Organization newOrganization() {
         Organization organization = new Organization();
@@ -201,6 +207,44 @@ class DashboardServiceTest {
         var entry = dashboard.products().get(0);
         assertThat(entry.launchCount()).isEqualTo(3);
         assertThat(entry.lastLaunchedAt()).isNotNull();
+    }
+
+    /** C104 / AN-1: every launch keeps its own history row, kept separately from the cumulative counter. */
+    @Test
+    void everyLaunchIsRecordedAsItsOwnHistoryRow() {
+        Organization org = newOrganization();
+        Product product = newProduct("History Me");
+        subscribeOrgTo(org, product, null);
+        var admin = organizationMemberService.addMember(org.getId(), newCustomer("dash-history@test-org.example").getId(), OrgRole.ORG_ADMIN);
+        Customer adminCustomer = customerRepository.findById(admin.getCustomerId()).orElseThrow();
+
+        dashboardService.recordLaunch(adminCustomer.getId(), product.getId());
+        dashboardService.recordLaunch(adminCustomer.getId(), product.getId());
+
+        var rows = launchHistoryRepository.findByProductIdOrderByLaunchedAtDesc(product.getId());
+        assertThat(rows).hasSize(2);
+        assertThat(rows).allMatch(r -> r.getCustomerId().equals(adminCustomer.getId()));
+    }
+
+    /** C104 / AN-1: launch-history rows older than 13 months are purged; recent ones are kept. */
+    @Test
+    void launchHistoryOlderThan13MonthsIsPurged() {
+        Organization org = newOrganization();
+        Product product = newProduct("Purge Me");
+        subscribeOrgTo(org, product, null);
+        var admin = organizationMemberService.addMember(org.getId(), newCustomer("dash-purge@test-org.example").getId(), OrgRole.ORG_ADMIN);
+        Customer adminCustomer = customerRepository.findById(admin.getCustomerId()).orElseThrow();
+
+        dashboardService.recordLaunch(adminCustomer.getId(), product.getId());
+        dashboardService.recordLaunch(adminCustomer.getId(), product.getId());
+        var rows = launchHistoryRepository.findByProductIdOrderByLaunchedAtDesc(product.getId());
+        jdbcTemplate.update("update product_launch_history set launched_at = ? where id = ?",
+            java.sql.Timestamp.from(Instant.now().minus(400, ChronoUnit.DAYS)), rows.get(0).getId());
+
+        int removed = dashboardService.purgeOldLaunchHistory();
+
+        assertThat(removed).isEqualTo(1);
+        assertThat(launchHistoryRepository.findByProductIdOrderByLaunchedAtDesc(product.getId())).hasSize(1);
     }
 
     @Test

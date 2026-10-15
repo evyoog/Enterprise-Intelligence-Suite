@@ -32,6 +32,10 @@ MVP, priority and phase follow [C4](../open-decisions.md#c4), [C5](../open-decis
 | [16.04](#1604-business-analytics) | Business Analytics | 16.04.01 Financial KPIs, 16.04.02 Growth KPIs | No | Phase 3 | P1 | [WB:Roadmap] "Analytics" |
 | [16.05](#1605-data-platform) | Data Platform | 16.05.01 Data Ingestion, 16.05.02 Data Management | No | Phase 3 | P1 | [WB:Roadmap] "Analytics" |
 
+**Built ahead of this sprint (C104, 2026-10-15), AN-1:** each product launch is now recorded as its own history row (`product_launch_history`: customer, product, timestamp), kept for 13 months, alongside the existing cumulative `product_usage` counter (last-launched timestamp and total count, unchanged). This is raw history, not a chart or report — nothing in 16.01–16.05 below reads it yet; it exists so a future implementation of this application does not start with a blank 13 months of launch data. Migration [V044](../../../database/migrations/V044__product_launch_history.sql).
+
+**Sequencing recorded (C104), nothing else built, AN-2:** when this application is built, **16.04 Business Analytics** (revenue for platform admins — MRR, ARR and churn, from invoices that already exist) comes first, ahead of 16.01/16.02 (customer/product usage analytics) or 16.05 (a full data platform). Everything else in this application stays **Not started**, carried as P1/stretch.
+
 ## 16.01 Customer Analytics
 
 ### Feature 16.01.01 Customer Usage
