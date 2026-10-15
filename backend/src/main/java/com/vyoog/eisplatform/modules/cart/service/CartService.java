@@ -344,7 +344,8 @@ public class CartService {
         Optional<ProductSubscription> subscription = member.isPresent()
             ? subscriptionRepository.findByOwnerOrganizationIdAndProductId(member.get().getOrganizationId(), productId)
             : subscriptionRepository.findByOwnerCustomerIdAndProductId(customerId, productId);
-        return subscription.map(s -> s.getStatus() == SubscriptionStatus.ACTIVE).orElse(false);
+        // C102: a running free trial is not a purchase — buying during or after it must reach checkout and turn the trial into a paid subscription.
+        return subscription.map(s -> s.getStatus() == SubscriptionStatus.ACTIVE && !s.isTrial()).orElse(false);
     }
 
     private Optional<OrganizationMember> membership(Long customerId) {

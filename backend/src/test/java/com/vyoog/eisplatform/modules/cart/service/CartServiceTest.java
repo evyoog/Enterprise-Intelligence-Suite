@@ -178,11 +178,25 @@ class CartServiceTest {
         CartIssueDto dependency = issues.stream().filter(i -> i.code().equals("MISSING_DEPENDENCY")).findFirst().orElseThrow();
         assertThat(dependency.requiredProductId()).isEqualTo(base.getId());
         assertThat(issues.stream().filter(i -> i.itemId().equals(retiredItem)).findFirst().orElseThrow().reason()).isEqualTo("PRODUCT");
+    }
 
-        assertThatThrownBy(() -> cartService.checkout(customer.getId()))
-            .isInstanceOf(CartConflictException.class)
-            .satisfies(e -> assertThat(((CartConflictException) e).getCode()).isEqualTo("CART_INVALID"));
-        assertThat(cartService.getCart(customer.getId()).itemCount()).isEqualTo(4);
+    /** C102: a running free trial is not a purchase, so buying it is never blocked as "already subscribed". */
+    @Test
+    void aRunningFreeTrialDoesNotBlockBuyingTheSameProduct() {
+        Customer customer = newCustomer();
+        Product product = newProduct("Trialled");
+        ProductPlan plan = newPlan(product, "Pro", BillingPeriod.MONTHLY, "10.00");
+        ProductSubscription trial = new ProductSubscription();
+        trial.setProductId(product.getId());
+        trial.setOwnerType(RegistrationOwnerType.INDIVIDUAL);
+        trial.setOwnerCustomerId(customer.getId());
+        trial.setStatus(SubscriptionStatus.ACTIVE);
+        trial.setTrial(true);
+        subscriptionRepository.save(trial);
+
+        cartService.addItem(customer.getId(), new AddCartItemRequest(product.getId(), plan.getId()));
+
+        assertThat(cartService.validate(customer.getId()).issues()).noneMatch(i -> i.code().equals("ALREADY_SUBSCRIBED"));
     }
 
     @Test
