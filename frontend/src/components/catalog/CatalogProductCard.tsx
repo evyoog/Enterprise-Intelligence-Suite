@@ -1,5 +1,5 @@
 import { useTranslation } from 'react-i18next'
-import { Box, Button, Card, Chip, IconButton, Tooltip, Typography } from '@mui/material'
+import { Box, Button, Card, Checkbox, Chip, FormControlLabel, IconButton, Tooltip, Typography } from '@mui/material'
 import { ExternalLink, Heart, ShoppingCart, Star } from 'lucide-react'
 import { Link as RouterLink } from 'react-router-dom'
 import { resolveAssetUrl } from '../../api/client'
@@ -19,6 +19,11 @@ export interface CatalogProductCardProps {
   onAddToCart: () => void
   addToCartUnavailable: boolean
   addingToCart: boolean
+  /** C102 (REQ-MKT-005): the Compare tick. Omit `onToggleCompare` and the card has none (the form preview, the wishlist). */
+  compared?: boolean
+  onToggleCompare?: () => void
+  /** Four products are already chosen: only the chosen ones can still be unticked. */
+  compareFull?: boolean
   /** The admin form's live preview: the same card, with nothing clickable. */
   preview?: boolean
 }
@@ -35,6 +40,7 @@ function initials(name: string) {
  */
 export function CatalogProductCard({
   product, variant = 'grid', rating, saved, onToggleSaved, onSubscribe, onAddToCart, addToCartUnavailable, addingToCart, preview = false,
+  compared = false, onToggleCompare, compareFull = false,
 }: CatalogProductCardProps) {
   const { t } = useTranslation()
   const palette = showcasePalette(appColor(product))
@@ -130,6 +136,19 @@ export function CatalogProductCard({
         <Typography component="span" sx={{ fontWeight: 700, fontSize: 14 }}>{price}</Typography>
       </Box>
       <Box sx={{ flexGrow: 1 }} />
+      {onToggleCompare && !preview && (
+        <Tooltip title={compareFull && !compared ? t('compare.card.full') : ''}>
+          <Box component="span" sx={{ alignSelf: 'flex-start', position: 'relative', zIndex: 1, mt: 1 }}>
+            <FormControlLabel
+              sx={{ m: 0, '& .MuiFormControlLabel-label': { fontSize: 13, color: 'text.secondary' } }}
+              control={(
+                <Checkbox size="small" checked={compared} disabled={compareFull && !compared} onChange={onToggleCompare}
+                  slotProps={{ input: { 'aria-label': t('compare.card.toggleLabel', { name: product.name }) } }} sx={{ p: 0.5, mr: 0.25 }} />
+              )}
+              label={t('compare.card.toggle')} />
+          </Box>
+        </Tooltip>
+      )}
       <Box sx={{ display: 'flex', gap: 1, mt: 1.75, position: 'relative', zIndex: 1, flexWrap: 'wrap' }}>
         <Button size="small" variant="contained" disabled={preview} onClick={onSubscribe} sx={{ flex: '0 0 auto', px: 1.5 }}>{t('catalog.app.subscribe')}</Button>
         <Tooltip title={addToCartUnavailable ? t('cart.noPaidPlan') : ''}>

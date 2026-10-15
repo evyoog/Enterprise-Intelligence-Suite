@@ -17,6 +17,8 @@ import { CatalogFilterPanel } from '../components/catalog/CatalogFilterPanel'
 import { CatalogGrid } from '../components/catalog/CatalogGrid'
 import { CatalogHero } from '../components/catalog/CatalogHero'
 import { CatalogProductCard } from '../components/catalog/CatalogProductCard'
+import { CompareProvider, useCompare } from '../components/catalog/CompareContext'
+import { CompareTray } from '../components/catalog/CompareTray'
 import { CategoryTiles } from '../components/catalog/CategoryTiles'
 import { SiteNavbar } from '../components/layout/SiteNavbar'
 import { useInAppShell } from '../components/layout/appShellContext'
@@ -48,6 +50,10 @@ function readView(): View {
  * Filtering by platform, pricing model and features, and the sort, work on the loaded products. Nothing is hard-coded.
  */
 export function ProductsPage() {
+  return <CompareProvider><ProductsPageContent /></CompareProvider>
+}
+
+function ProductsPageContent() {
   const auth = useAuth()
   const { t } = useTranslation()
   const navigate = useNavigate()
@@ -62,6 +68,7 @@ export function ProductsPage() {
   const [view, setView] = useState<View>(readView)
   const [result, setResult] = useState<ProductSearchResponse | null>(null)
   const [totalApps, setTotalApps] = useState<number | null>(null)
+  const [allNames, setAllNames] = useState<ReadonlyMap<number, string>>(new Map())
   const [platforms, setPlatforms] = useState<CatalogPlatform[] | null>(null)
   const [ratings, setRatings] = useState<ReadonlyMap<number, Rating>>(new Map())
   const [error, setError] = useState<string | null>(null)
@@ -72,6 +79,7 @@ export function ProductsPage() {
   const handleSubscribeClick = useBuy()
   const { addToCart, busyId, notice } = useAddToCart()
   const wishlist = useWishlist()
+  const compare = useCompare()
 
   useEffect(() => {
     const timeout = setTimeout(() => setDebouncedQuery(query), DEBOUNCE_MS)
@@ -86,7 +94,9 @@ export function ProductsPage() {
 
   // Totals for the "All" tile, independent of the current filter; platforms; ratings.
   useEffect(() => {
-    productsApi.list().then((all) => setTotalApps(all.length)).catch(() => setTotalApps(0))
+    productsApi.list()
+      .then((all) => { setTotalApps(all.length); setAllNames(new Map(all.map((p) => [p.id, p.name]))) })
+      .catch(() => setTotalApps(0))
     catalogApi.listPlatforms().then(setPlatforms).catch(() => setPlatforms([]))
     reviewsApi.listRatings()
       .then((list) => setRatings(new Map(list.map((r) => [r.productId, { averageRating: r.averageRating, reviewCount: r.reviewCount }]))))
@@ -122,6 +132,8 @@ export function ProductsPage() {
   const visiblePlatforms = useMemo(() => (platforms ?? []).filter((p) =>
     (!debouncedQuery || matches(p.name, debouncedQuery) || matches(p.description, debouncedQuery))
     && (!category || p.categories.includes(category))), [platforms, debouncedQuery, category])
+  // Names for the compare tray: every active product, else whatever the search has loaded.
+  const compareNames = useMemo(() => new Map([...(loaded ?? []).map((p): [number, string] => [p.id, p.name]), ...allNames]), [loaded, allNames])
   const filterCount = activeFilterCount(filters)
   const filtersActive = Boolean(query || category || filterCount)
   const clearFilters = useCallback(() => { setQuery(''); setCategory(null); setFilters(EMPTY_FILTERS) }, [])
@@ -258,6 +270,9 @@ export function ProductsPage() {
                     onAddToCart={() => addToCart(product)}
                     addToCartUnavailable={!canAddToCart(product)}
                     addingToCart={busyId === product.id}
+                    compared={compare.has(product.id)}
+                    onToggleCompare={() => compare.toggle(product.id)}
+                    compareFull={compare.full}
                   />
                 ))}
               </CatalogGrid>
@@ -268,6 +283,7 @@ export function ProductsPage() {
 
       <Box sx={{ mt: 4 }}><SupportCTA /></Box>
       {notice}
+      <CompareTray names={compareNames} />
       <Snackbar open={Boolean(toast)} autoHideDuration={4000} onClose={() => setToast(null)} message={toast ?? ''} />
     </>
   )

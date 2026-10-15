@@ -5073,5 +5073,149 @@
   "supportTabs": {
     "tickets": "Tickets",
     "sla": "Ajustes de SLA"
+  },
+  "compare": {
+    "title": "Comparar",
+    "subtitle": "Ponga de 2 a 4 productos o planes lado a lado y calcule el coste: precio × puestos + impuestos.",
+    "browseCatalog": "Ver el catálogo",
+    "seats": {
+      "label": "Puestos",
+      "help": "Para cuántos puestos es la suscripción. Los precios son por puesto.",
+      "error": "Los puestos deben ser un número entero entre 1 y 100000."
+    },
+    "add": {
+      "label": "Añadir un producto",
+      "placeholder": "Busque productos para añadir",
+      "noOptions": "No se encontraron productos",
+      "limit": "Puede comparar hasta 4 elementos. Quite uno para añadir otro.",
+      "added": "{{name}} se añadió a la comparación.",
+      "removed": "{{name}} se quitó de la comparación."
+    },
+    "chooser": {
+      "heading": "Elementos a comparar",
+      "plan": "Plan de {{name}}",
+      "entryPlan": "Plan de entrada (precio más bajo)",
+      "remove": "Quitar {{name}}",
+      "unknownProduct": "Producto {{id}}"
+    },
+    "empty": {
+      "title": "Elija al menos 2 productos para comparar",
+      "body": "Añada productos arriba o marque Comparar en las tarjetas del catálogo."
+    },
+    "loading": "Cargando la comparación",
+    "error": {
+      "title": "No se pudo cargar la comparación",
+      "generic": "Algo salió mal. Inténtelo de nuevo."
+    },
+    "live": "Comparación actualizada: {{count}} elementos para {{seats}} puestos.",
+    "table": {
+      "caption": "Comparación de los productos y planes elegidos",
+      "feature": "Característica",
+      "product": "Producto",
+      "category": "Categoría",
+      "plan": "Plan",
+      "billingPeriod": "Periodo de facturación",
+      "unitPrice": "Precio por puesto",
+      "seats": "Puestos",
+      "subtotal": "Subtotal",
+      "tax": "Impuestos estimados",
+      "total": "Total estimado",
+      "beforeTax": "antes de impuestos",
+      "features": "Características incluidas",
+      "actions": "Acciones",
+      "noPlan": "Sin plan (precio fijo)",
+      "none": "—"
+    },
+    "period": {
+      "MONTHLY": "Mensual",
+      "YEARLY": "Anual",
+      "ONE_TIME": "Pago único"
+    },
+    "trial_one": "{{count}} día de prueba gratuita",
+    "trial_other": "{{count}} días de prueba gratuita",
+    "tax": {
+      "notSignedIn": "Inicie sesión para ver la estimación de impuestos",
+      "signIn": "Iniciar sesión",
+      "needsBilling": "Añada sus datos de facturación para ver la estimación de impuestos",
+      "billingLink": "Datos de facturación",
+      "atCheckout": "Los impuestos se calculan al pagar"
+    },
+    "features": {
+      "included": "Incluido",
+      "notIncluded": "No incluido",
+      "none": "No hay características listadas para estos elementos."
+    },
+    "actions": {
+      "view": "Ver producto",
+      "viewLabel": "Ver {{name}}"
+    },
+    "note": "Solo son estimaciones. Los impuestos y totales finales se muestran al pagar.",
+    "tray": {
+      "label": "Bandeja de comparación",
+      "count": "Comparar ({{count}})",
+      "now": "Comparar ahora",
+      "clear": "Vaciar",
+      "needMore": "Elija al menos 2 productos",
+      "remove": "Quitar {{name}} de la comparación"
+    },
+    "card": {
+      "toggle": "Comparar",
+      "toggleLabel": "Comparar {{name}}",
+      "full": "Puede comparar hasta 4 productos."
+    }
+  },
+  "evaluation": {
+    "title": "Pruébalo primero",
+    "intro": "Comprueba si {{product}} se adapta a ti antes de suscribirte.",
+    "trial": {
+      "offer_one": "Prueba gratuita de {{count}} día, sin tarjeta, con todas las funciones",
+      "offer_other": "Prueba gratuita de {{count}} días, sin tarjeta, con todas las funciones",
+      "start": "Iniciar prueba gratuita",
+      "starting": "Iniciando tu prueba…",
+      "forOrganization": "La prueba será para tu organización.",
+      "signInNote": "Primero se te pedirá que inicies sesión.",
+      "alreadySubscribed": "Ya tienes, o tuviste, una suscripción a este producto, por lo que la prueba gratuita no está disponible. Puedes suscribirte en cualquier momento.",
+      "alreadySubscribedOrg": "Tu organización ya tiene, o tuvo, una suscripción a este producto, por lo que la prueba gratuita no está disponible. Puedes suscribirte en cualquier momento.",
+      "memberNotAllowed": "Solo un administrador de la organización o una persona con permiso de Gestionar facturación puede iniciar una prueba gratuita para tu organización. Pídeselo a uno de ellos.",
+      "error": "No se pudo iniciar la prueba gratuita. Inténtalo de nuevo.",
+      "started": "Tu prueba gratuita de {{product}} ha comenzado y termina el {{date}}. El producto se está preparando para ti.",
+      "viewSubscriptions": "Ver mis suscripciones"
+    },
+    "demo": {
+      "button": "Solicitar una demostración",
+      "dialogTitle": "Solicitar una demostración de {{product}}",
+      "intro": "Cuéntanos qué te conviene. Abrimos un ticket de soporte y el equipo se pondrá en contacto contigo.",
+      "preferredTime": "Horario preferido",
+      "preferredTimeHint": "Por ejemplo, días laborables después de las 14:00 IST",
+      "message": "Mensaje (opcional)",
+      "messageHint": "¿Qué te gustaría ver?",
+      "tooLong": "Escribe menos de {{max}} caracteres.",
+      "submit": "Enviar solicitud",
+      "sending": "Enviando…",
+      "cancel": "Cancelar",
+      "close": "Cerrar",
+      "error": "No se pudo enviar tu solicitud de demostración. Inténtalo de nuevo.",
+      "successTitle": "Demostración solicitada",
+      "success": "Abrimos el ticket n.º {{id}}. El equipo se pondrá en contacto contigo para acordar un horario.",
+      "viewTickets": "Ver mis tickets"
+    },
+    "tutorials": {
+      "button": "Ver tutoriales"
+    },
+    "subscription": {
+      "chip": "Prueba gratuita",
+      "endsOn_one": "Termina el {{date}} (queda {{count}} día)",
+      "endsOn_other": "Termina el {{date}} (quedan {{count}} días)",
+      "endsToday": "Termina el {{date}} (último día)",
+      "endedOn": "Terminó el {{date}}",
+      "note": "Una prueba gratuita no se puede renovar ni modificar. Suscríbete para seguir usando {{product}}.",
+      "subscribe": "Suscribirse",
+      "subscribeLabel": "Suscribirse a {{product}}"
+    },
+    "admin": {
+      "trialDays": "Prueba gratuita (días)",
+      "trialDaysHint": "Déjalo vacío para no ofrecer prueba gratuita",
+      "trialDaysError": "Introduce un número entero de días entre 1 y 90."
+    }
   }
 }

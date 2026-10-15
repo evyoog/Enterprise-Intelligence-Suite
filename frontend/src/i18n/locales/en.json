@@ -5068,5 +5068,149 @@
   "supportTabs": {
     "tickets": "Tickets",
     "sla": "SLA settings"
+  },
+  "compare": {
+    "title": "Compare",
+    "subtitle": "Put 2 to 4 products or plans side by side and estimate the cost: price × seats + tax.",
+    "browseCatalog": "Browse the catalog",
+    "seats": {
+      "label": "Seats",
+      "help": "How many seats the subscription is for. Prices are per seat.",
+      "error": "Seats must be a whole number between 1 and 100000."
+    },
+    "add": {
+      "label": "Add a product",
+      "placeholder": "Search products to add",
+      "noOptions": "No products found",
+      "limit": "You can compare up to 4 items. Remove one to add another.",
+      "added": "{{name}} added to the comparison.",
+      "removed": "{{name}} removed from the comparison."
+    },
+    "chooser": {
+      "heading": "Items to compare",
+      "plan": "Plan for {{name}}",
+      "entryPlan": "Entry plan (lowest price)",
+      "remove": "Remove {{name}}",
+      "unknownProduct": "Product {{id}}"
+    },
+    "empty": {
+      "title": "Choose at least 2 products to compare",
+      "body": "Add products above, or tick Compare on the catalog cards."
+    },
+    "loading": "Loading the comparison",
+    "error": {
+      "title": "The comparison could not be loaded",
+      "generic": "Something went wrong. Please try again."
+    },
+    "live": "Comparison updated: {{count}} items for {{seats}} seats.",
+    "table": {
+      "caption": "Comparison of the chosen products and plans",
+      "feature": "Feature",
+      "product": "Product",
+      "category": "Category",
+      "plan": "Plan",
+      "billingPeriod": "Billing period",
+      "unitPrice": "Price per seat",
+      "seats": "Seats",
+      "subtotal": "Subtotal",
+      "tax": "Estimated tax",
+      "total": "Estimated total",
+      "beforeTax": "before tax",
+      "features": "Included features",
+      "actions": "Actions",
+      "noPlan": "No plan (flat price)",
+      "none": "—"
+    },
+    "period": {
+      "MONTHLY": "Monthly",
+      "YEARLY": "Yearly",
+      "ONE_TIME": "One-time"
+    },
+    "trial_one": "{{count}}-day free trial",
+    "trial_other": "{{count}}-day free trial",
+    "tax": {
+      "notSignedIn": "Sign in to see the tax estimate",
+      "signIn": "Sign in",
+      "needsBilling": "Add your billing details to see the tax estimate",
+      "billingLink": "Billing details",
+      "atCheckout": "Tax is worked out at checkout"
+    },
+    "features": {
+      "included": "Included",
+      "notIncluded": "Not included",
+      "none": "No features are listed for these items."
+    },
+    "actions": {
+      "view": "View product",
+      "viewLabel": "View {{name}}"
+    },
+    "note": "Estimates only. Final tax and totals are shown at checkout.",
+    "tray": {
+      "label": "Compare tray",
+      "count": "Compare ({{count}})",
+      "now": "Compare now",
+      "clear": "Clear",
+      "needMore": "Choose at least 2 products",
+      "remove": "Remove {{name}} from the comparison"
+    },
+    "card": {
+      "toggle": "Compare",
+      "toggleLabel": "Compare {{name}}",
+      "full": "You can compare up to 4 products."
+    }
+  },
+  "evaluation": {
+    "title": "Try it first",
+    "intro": "See whether {{product}} fits before you subscribe.",
+    "trial": {
+      "offer_one": "{{count}}-day free trial, no card needed, all features",
+      "offer_other": "{{count}}-day free trial, no card needed, all features",
+      "start": "Start free trial",
+      "starting": "Starting your trial…",
+      "forOrganization": "The trial will be for your organization.",
+      "signInNote": "You will be asked to sign in first.",
+      "alreadySubscribed": "You already have, or had, a subscription to this product, so the free trial is not available. You can subscribe at any time.",
+      "alreadySubscribedOrg": "Your organization already has, or had, a subscription to this product, so the free trial is not available. You can subscribe at any time.",
+      "memberNotAllowed": "Only an organization administrator or a person with Manage billing can start a free trial for your organization. Ask one of them.",
+      "error": "Could not start the free trial. Please try again.",
+      "started": "Your free trial of {{product}} has started and ends on {{date}}. The product is being set up for you.",
+      "viewSubscriptions": "View my subscriptions"
+    },
+    "demo": {
+      "button": "Request a demo",
+      "dialogTitle": "Request a demo of {{product}}",
+      "intro": "Tell us what suits you. We open a support ticket and the team gets back to you.",
+      "preferredTime": "Preferred time",
+      "preferredTimeHint": "For example, weekdays after 2 pm IST",
+      "message": "Message (optional)",
+      "messageHint": "What would you like to see?",
+      "tooLong": "Keep this under {{max}} characters.",
+      "submit": "Send request",
+      "sending": "Sending…",
+      "cancel": "Cancel",
+      "close": "Close",
+      "error": "Could not send your demo request. Please try again.",
+      "successTitle": "Demo requested",
+      "success": "We opened ticket #{{id}}. The team will contact you to agree a time.",
+      "viewTickets": "View my tickets"
+    },
+    "tutorials": {
+      "button": "Watch tutorials"
+    },
+    "subscription": {
+      "chip": "Free trial",
+      "endsOn_one": "Ends {{date}} ({{count}} day left)",
+      "endsOn_other": "Ends {{date}} ({{count}} days left)",
+      "endsToday": "Ends {{date}} (last day)",
+      "endedOn": "Ended {{date}}",
+      "note": "A free trial cannot be renewed or changed. Subscribe to keep using {{product}}.",
+      "subscribe": "Subscribe",
+      "subscribeLabel": "Subscribe to {{product}}"
+    },
+    "admin": {
+      "trialDays": "Free trial (days)",
+      "trialDaysHint": "Leave empty to offer no free trial",
+      "trialDaysError": "Enter a whole number of days from 1 to 90."
+    }
   }
 }
