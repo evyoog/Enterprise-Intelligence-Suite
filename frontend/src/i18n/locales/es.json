@@ -1373,7 +1373,8 @@
         "offline": "Pagos sin conexión",
         "methods": "Métodos de pago",
         "gateway": "Pasarelas de pago",
-        "reminders": "Recordatorios de renovación"
+        "reminders": "Recordatorios de renovación",
+        "seatPricing": "Precio por puesto"
       },
       "overview": {
         "notSet": "Aún sin configurar",
@@ -1540,6 +1541,15 @@
         "daysLeft_other": "{{count}} días antes",
         "renewalDay": "Renovación",
         "saveError": "No se pudieron guardar los valores predeterminados."
+      },
+      "seatPricing": {
+        "title": "Precio global por puesto",
+        "description": "El precio predeterminado por puesto de usuario para cada aplicación con precio por puesto activado. Una aplicación con su propio precio nunca se ve afectada por este valor predeterminado.",
+        "price": "Precio predeterminado por puesto",
+        "priceHelp": "Déjelo vacío para no tener un valor predeterminado (una aplicación sin su propio precio no tendrá entonces recargo por puesto).",
+        "currency": "Moneda",
+        "invalidPrice": "Escriba un número de 0 o más.",
+        "note": "Active el precio por puesto y, si es necesario, defina un precio propio en la configuración de precios de cada aplicación."
       },
       "loading": "Cargando…",
       "payByInvoiceOrgs": {
@@ -2409,7 +2419,8 @@
       "counter": "{{count}} / {{max}} caracteres",
       "submit": "Enviar solicitud"
     },
-    "seatsTimesPrice": "{{seats}} puestos × {{price}}"
+    "seatsTimesPrice": "{{seats}} puestos × {{price}}",
+    "seatPricingBreakdown": "Base {{base}} + {{seats}} puestos × {{seatPrice}} = {{total}}"
   },
   "apiKeys": {
     "title": "Claves de API",
@@ -2610,7 +2621,9 @@
       "new": "Nuevo",
       "ratingLabel": "Valorado con {{rating}} de 5 según {{count}} reseñas",
       "reviews_one": "({{count}} reseña)",
-      "reviews_other": "({{count}} reseñas)"
+      "reviews_other": "({{count}} reseñas)",
+      "seatIncluded": "1 licencia de usuario incluida",
+      "additionalUsers": "Usuarios adicionales: {{price}}/usuario/mes"
     },
     "toolbar": {
       "showing_one": "Mostrando {{count}} producto",
@@ -2749,6 +2762,11 @@
       "price": "Precio",
       "priceHint": "Se muestra solo si no se añaden niveles de precios.",
       "priceError": "Introduzca un precio mayor que 0.",
+      "seatPricingEnabled": "Cobrar un recargo por puesto",
+      "seatPricingHint": "Total = precio base + (precio por puesto x puestos). El primer puesto se incluye en el precio inicial mostrado en la tarjeta del catálogo, pero no es gratis.",
+      "seatPrice": "Precio por puesto de esta aplicación",
+      "seatPriceHint": "Déjelo vacío para usar el valor predeterminado global (Configuración de facturación).",
+      "seatPriceError": "Introduzca un número de 0 o más.",
       "tierLabel": "Nivel de precio {{n}}",
       "tierName": "Nombre del nivel",
       "currency": "Moneda",

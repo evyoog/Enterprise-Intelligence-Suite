@@ -1,4 +1,5 @@
 import { RenewalReminderDefaultsPanel } from '../../components/settings/RenewalReminderDefaultsPanel'
+import { SeatPricingDefaultsPanel } from '../../components/settings/SeatPricingDefaultsPanel'
 import { useCallback, useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useSearchParams } from 'react-router-dom'
@@ -10,10 +11,10 @@ import { alpha } from '@mui/material/styles'
 import {
   BellRing,
   BadgeCheck, Building2, CreditCard, Eye, FileText, Landmark, Mail, MapPin, Palette, PlugZap, ReceiptText, Settings2,
-  Smartphone, Wallet, Banknote, ListChecks, MessageSquareText,
+  Smartphone, Wallet, Banknote, ListChecks, MessageSquareText, Users,
 } from 'lucide-react'
 import {
-  adminBillingApi, type BusinessProfile, type OfflineBankDetails, type PaymentMethodSettings,
+  adminBillingApi, type BusinessProfile, type OfflineBankDetails, type PaymentMethodSettings, type SeatPricingDefaults,
 } from '../../api/billingApi'
 import { PageHeader } from '../../components/layout/PageHeader'
 import { FieldGrid, SettingsSection, StatusTile } from '../../components/settings/SettingsSection'
@@ -24,8 +25,8 @@ import { SaveBar } from '../../components/settings/SaveBar'
 import { useSettingsForm } from '../../components/settings/useSettingsForm'
 import { accentColor } from '../../theming/accents'
 
-type TabKey = 'business' | 'offline' | 'methods' | 'gateway' | 'reminders'
-const TABS: TabKey[] = ['business', 'offline', 'methods', 'gateway', 'reminders']
+type TabKey = 'business' | 'offline' | 'methods' | 'gateway' | 'reminders' | 'seatPricing'
+const TABS: TabKey[] = ['business', 'offline', 'methods', 'gateway', 'reminders', 'seatPricing']
 
 const RE = {
   gstin: /^[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z][0-9A-Z]Z[0-9A-Z]$/i,
@@ -61,12 +62,13 @@ export function AdminBillingSettingsPage() {
   const setTab = (next: TabKey) => setParams({ tab: next }, { replace: true })
 
   // Overview tiles read the same endpoints the tabs edit.
-  const [overview, setOverview] = useState<{ business?: BusinessProfile; offline?: OfflineBankDetails; methods?: PaymentMethodSettings; gateway?: GatewaySummary }>({})
+  const [overview, setOverview] = useState<{ business?: BusinessProfile; offline?: OfflineBankDetails; methods?: PaymentMethodSettings; gateway?: GatewaySummary; seatPricing?: SeatPricingDefaults }>({})
   const refreshOverview = useCallback(() => {
     adminBillingApi.businessProfile().then((business) => setOverview((o) => ({ ...o, business }))).catch(() => {})
     adminBillingApi.offlineBankDetails().then((offline) => setOverview((o) => ({ ...o, offline }))).catch(() => {})
     adminBillingApi.paymentMethodSettings().then((methods) => setOverview((o) => ({ ...o, methods }))).catch(() => {})
     paymentGatewayApi.summary().then((gateway) => setOverview((o) => ({ ...o, gateway }))).catch(() => {})
+    adminBillingApi.seatPricingDefaults().then((seatPricing) => setOverview((o) => ({ ...o, seatPricing }))).catch(() => {})
   }, [])
   useEffect(() => { refreshOverview() }, [refreshOverview])
   const [toast, setToast] = useState<string | null>(null)
@@ -83,7 +85,7 @@ export function AdminBillingSettingsPage() {
       <PageHeader icon={Settings2} accent="violet" eyebrow={t('admin.billingSettings.eyebrow')}
         title={t('admin.billingSettings.title')} subtitle={t('admin.billingSettings.subtitle')} />
 
-      <Box sx={{ display: 'grid', gap: 1.5, mb: 3, gridTemplateColumns: { xs: '1fr', sm: 'repeat(2, minmax(0, 1fr))', lg: 'repeat(4, minmax(0, 1fr))' } }}>
+      <Box sx={{ display: 'grid', gap: 1.5, mb: 3, gridTemplateColumns: { xs: '1fr', sm: 'repeat(2, minmax(0, 1fr))', lg: 'repeat(5, minmax(0, 1fr))' } }}>
         <StatusTile icon={Building2} accent="blue" label={t('admin.billingSettings.tabs.business')} selected={tab === 'business'} onClick={() => setTab('business')}
           value={overview.business?.legalName ?? t('admin.billingSettings.overview.notSet')}
           status={businessReady ? t('admin.billingSettings.overview.complete') : t('admin.billingSettings.overview.incomplete')}
@@ -99,6 +101,9 @@ export function AdminBillingSettingsPage() {
           value={overview.gateway ? t('admin.paymentGateway.stats.activeOf', { active: overview.gateway.active, total: overview.gateway.implemented }) : '—'}
           status={overview.gateway ? (overview.gateway.active > 0 ? t('admin.paymentGateway.configured') : t('admin.paymentGateway.noneActive')) : undefined}
           statusColor={overview.gateway && overview.gateway.active > 0 ? 'success' : 'error'} />
+        <StatusTile icon={Users} accent="violet" label={t('admin.billingSettings.tabs.seatPricing')} selected={tab === 'seatPricing'} onClick={() => setTab('seatPricing')}
+          value={overview.seatPricing?.globalSeatPrice != null ? `${overview.seatPricing.globalSeatPriceCurrency ?? 'USD'} ${overview.seatPricing.globalSeatPrice}` : t('admin.billingSettings.overview.notSet')}
+          status={overview.seatPricing?.globalSeatPrice != null ? t('admin.billingSettings.overview.ready') : undefined} statusColor="success" />
       </Box>
 
       <Paper variant="outlined" sx={{ borderRadius: 3, mb: 3 }}>
@@ -108,6 +113,7 @@ export function AdminBillingSettingsPage() {
           <Tab value="methods" icon={<ListChecks size={16} aria-hidden />} iconPosition="start" label={t('admin.billingSettings.tabs.methods')} id="tab-methods" aria-controls="panel-methods" />
           <Tab value="gateway" icon={<PlugZap size={16} aria-hidden />} iconPosition="start" label={t('admin.billingSettings.tabs.gateway')} id="tab-gateway" aria-controls="panel-gateway" />
           <Tab value="reminders" icon={<BellRing size={16} aria-hidden />} iconPosition="start" label={t('admin.billingSettings.tabs.reminders')} id="tab-reminders" aria-controls="panel-reminders" />
+          <Tab value="seatPricing" icon={<Users size={16} aria-hidden />} iconPosition="start" label={t('admin.billingSettings.tabs.seatPricing')} id="tab-seatPricing" aria-controls="panel-seatPricing" />
         </Tabs>
       </Paper>
 
@@ -117,6 +123,7 @@ export function AdminBillingSettingsPage() {
         {tab === 'methods' && <MethodsTab onSaved={onSaved} gatewayConfigured={overview.gateway ? overview.gateway.active > 0 : true} />}
         {tab === 'gateway' && <PaymentGatewayManagement />}
         {tab === 'reminders' && <RenewalReminderDefaultsPanel onSaved={onSaved} />}
+        {tab === 'seatPricing' && <SeatPricingDefaultsPanel onSaved={onSaved} />}
       </Box>
 
       <Snackbar open={Boolean(toast)} autoHideDuration={4000} onClose={() => setToast(null)}>

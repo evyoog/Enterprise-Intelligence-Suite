@@ -53,8 +53,24 @@ public record ProductCreateRequest(
     // C95: the banner image of the catalog card (uploaded through POST /products/images); null = none.
     @Size(max = 500) String bannerImageUrl,
     // C102: free trial length in days (1 to 90); null = no trial. Left out by older clients (no trial).
-    @Min(1) @Max(90) Integer trialDays
+    @Min(1) @Max(90) Integer trialDays,
+    // C106: whether this application charges a seat add-on; null/false = unchanged pricing (the default).
+    Boolean seatPricingEnabled,
+    // C106: this application's own seat price override; null = inherit the platform default.
+    @jakarta.validation.constraints.PositiveOrZero BigDecimal seatPrice,
+    com.vyoog.eisplatform.modules.product.model.Currency seatPriceCurrency
 ) {
+
+    /** The pre-C106 shape: no seat pricing fields. */
+    public ProductCreateRequest(String name, String description, BigDecimal price, String imageUrl, String launchUrl,
+                                String category, ProductStatus status, Boolean ssoConnected, List<Long> platformIds,
+                                List<ProductPlanCreateRequest> plans, Long parentProductId, String variantLabel,
+                                List<Long> dependsOnProductIds, Boolean featured, String accentColor, List<String> featureTags,
+                                String documentationUrl, String supportUrl, String bannerImageUrl, Integer trialDays) {
+        this(name, description, price, imageUrl, launchUrl, category, status, ssoConnected, platformIds, plans,
+            parentProductId, variantLabel, dependsOnProductIds, featured, accentColor, featureTags, documentationUrl, supportUrl,
+            bannerImageUrl, trialDays, null, null, null);
+    }
 
     /** The pre-C102 shape: no trial. */
     public ProductCreateRequest(String name, String description, BigDecimal price, String imageUrl, String launchUrl,

@@ -137,6 +137,10 @@ export function ProductForm({
   const [supportUrl, setSupportUrl] = useState(initialProduct?.supportUrl ?? '')
   // C102 (REQ-MKT-005): days of the free trial, 1-90; empty = the product offers no trial.
   const [trialDays, setTrialDays] = useState(initialProduct?.trialDays != null ? String(initialProduct.trialDays) : '')
+  // C106: seat pricing — a product-level override, inheriting the platform's global default when empty.
+  const [seatPricingEnabled, setSeatPricingEnabled] = useState(initialProduct?.seatPricingEnabled ?? false)
+  const [seatPrice, setSeatPrice] = useState(initialProduct?.seatPrice != null ? String(initialProduct.seatPrice) : '')
+  const [seatPriceCurrency, setSeatPriceCurrency] = useState<Currency>(initialProduct?.seatPriceCurrency ?? 'USD')
   const [isUploadingImage, setIsUploadingImage] = useState(false)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -152,6 +156,7 @@ export function ProductForm({
     supportUrl: supportUrl.trim() && !URL_PATTERN.test(supportUrl.trim()) ? t('forms.app.urlError') : null,
     trialDays: trialDays.trim() && !(/^\d+$/.test(trialDays.trim()) && Number(trialDays) >= MIN_TRIAL_DAYS && Number(trialDays) <= MAX_TRIAL_DAYS)
       ? t('evaluation.admin.trialDaysError') : null,
+    seatPrice: seatPrice.trim() && !(Number(seatPrice) >= 0) ? t('forms.app.seatPriceError') : null,
   }
   // Every tier row that exists must be fully filled in — an admin who wants to
   // abandon one should remove it, not leave it half-empty.
@@ -244,6 +249,9 @@ export function ProductForm({
       documentationUrl: documentationUrl.trim() || null,
       supportUrl: supportUrl.trim() || null,
       trialDays: trialDays.trim() ? Number(trialDays) : null,
+      seatPricingEnabled,
+      seatPrice: seatPricingEnabled && seatPrice.trim() ? Number(seatPrice) : null,
+      seatPriceCurrency: seatPricingEnabled && seatPrice.trim() ? seatPriceCurrency : null,
     })
       .then(() => {
         setSuccess(true)
@@ -274,6 +282,11 @@ export function ProductForm({
     accentColor: isHexColor(previewColor) ? previewColor : null,
     featureTags,
     createdAt: initialProduct?.createdAt ?? new Date().toISOString(),
+    seatPricingEnabled,
+    seatPrice: seatPricingEnabled && seatPrice.trim() ? Number(seatPrice) : null,
+    seatPriceCurrency: seatPricingEnabled ? seatPriceCurrency : null,
+    effectiveSeatPrice: seatPricingEnabled && seatPrice.trim() ? Number(seatPrice) : null,
+    effectiveSeatPriceCurrency: seatPricingEnabled ? seatPriceCurrency : null,
   }
 
   return (
@@ -401,6 +414,25 @@ export function ProductForm({
             helperText={show('trialDays') ?? t('evaluation.admin.trialDaysHint')} error={!!show('trialDays')}
             slotProps={{ htmlInput: { min: MIN_TRIAL_DAYS, max: MAX_TRIAL_DAYS, step: 1 } }}
             value={trialDays} onChange={(e) => setTrialDays(e.target.value)} />
+
+          <Box sx={{ p: 2, border: '1px solid', borderColor: 'divider', borderRadius: 2 }}>
+            <FormControlLabel control={<Switch checked={seatPricingEnabled} onChange={(e) => setSeatPricingEnabled(e.target.checked)} />}
+              label={t('forms.app.seatPricingEnabled')} />
+            <Typography variant="body2" sx={{ color: 'text.secondary', mb: seatPricingEnabled ? 1.5 : 0 }}>
+              {t('forms.app.seatPricingHint')}
+            </Typography>
+            {seatPricingEnabled && (
+              <Box sx={{ display: 'flex', gap: 1.5, flexWrap: 'wrap' }}>
+                <TextField label={t('forms.app.seatPrice')} type="number" sx={{ flex: 1, minWidth: 180 }}
+                  helperText={show('seatPrice') ?? t('forms.app.seatPriceHint')} error={!!show('seatPrice')}
+                  slotProps={{ htmlInput: { min: 0, step: '0.01' } }} value={seatPrice} onChange={(e) => setSeatPrice(e.target.value)} />
+                <TextField select label={t('forms.app.currency')} sx={{ flex: 1, minWidth: 120 }} value={seatPriceCurrency}
+                  onChange={(e) => setSeatPriceCurrency(e.target.value as Currency)}>
+                  {CURRENCIES.map((c) => <MenuItem key={c} value={c}>{c}</MenuItem>)}
+                </TextField>
+              </Box>
+            )}
+          </Box>
 
           {tiers.map((tier, index) => {
             const invalid = touched && tierInvalid(tier)

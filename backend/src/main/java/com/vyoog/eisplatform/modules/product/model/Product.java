@@ -95,6 +95,22 @@ public class Product {
     @Column(name = "trial_days")
     private Integer trialDays;
 
+    /** C106: whether this application is eligible for seat-based pricing — total price =
+     * base price + (effective seat price x seats). False (the default) means this product's
+     * pricing is exactly as before this feature (its plan/product price, multiplied by seats
+     * for an organization, as C100 SE-1 B already does). */
+    @Column(name = "seat_pricing_enabled", nullable = false)
+    private boolean seatPricingEnabled = false;
+
+    /** C106: this application's own per-seat price override; null = inherit the platform
+     * default (BillingSettings#globalSeatPrice). Meaningless unless {@link #seatPricingEnabled}. */
+    @Column(name = "seat_price", precision = 12, scale = 2)
+    private BigDecimal seatPrice;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "seat_price_currency", length = 10)
+    private Currency seatPriceCurrency;
+
     /** Which high-level platform(s) (e.g. Thittam) this app is shown under.
      * Many-to-many: the same app can be assigned to more than one platform. */
     @ManyToMany(fetch = FetchType.LAZY)

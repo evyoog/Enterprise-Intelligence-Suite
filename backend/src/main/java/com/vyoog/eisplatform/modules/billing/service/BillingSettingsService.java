@@ -102,6 +102,30 @@ public class BillingSettingsService {
         return toBusinessDto(s);
     }
 
+    public com.vyoog.eisplatform.modules.billing.dto.SeatPricingDefaultsDto seatPricingDefaults() {
+        BillingSettings s = current();
+        return new com.vyoog.eisplatform.modules.billing.dto.SeatPricingDefaultsDto(
+            s.getGlobalSeatPrice(), s.getGlobalSeatPriceCurrency(), s.getUpdatedAt());
+    }
+
+    /** C106: the global default per-seat price. Changing it only affects applications that inherit it (no
+     * seat price override of their own) — a product with its own {@code seatPrice} is never touched by this. */
+    @Transactional
+    public com.vyoog.eisplatform.modules.billing.dto.SeatPricingDefaultsDto saveSeatPricingDefaults(
+            Long adminCustomerId, com.vyoog.eisplatform.modules.billing.dto.SaveSeatPricingDefaultsRequest r) {
+        BillingSettings s = current();
+        String before = s.getGlobalSeatPrice() + " " + s.getGlobalSeatPriceCurrency();
+        s.setGlobalSeatPrice(r.globalSeatPrice());
+        s.setGlobalSeatPriceCurrency(r.globalSeatPrice() == null ? null
+            : r.globalSeatPriceCurrency() != null ? r.globalSeatPriceCurrency() : com.vyoog.eisplatform.modules.product.model.Currency.USD);
+        s.setUpdatedByCustomerId(adminCustomerId);
+        s = settingsRepository.save(s);
+        auditService.recordSuccess("GLOBAL_SEAT_PRICE_CHANGED", null, adminCustomerId, null, "BillingSettings",
+            s.getId() == null ? "1" : s.getId().toString(), null,
+            "Global seat price changed from " + before + " to " + s.getGlobalSeatPrice() + " " + s.getGlobalSeatPriceCurrency());
+        return seatPricingDefaults();
+    }
+
     public PaymentMethodSettingsDto paymentMethods() {
         return toMethodsDto(current());
     }

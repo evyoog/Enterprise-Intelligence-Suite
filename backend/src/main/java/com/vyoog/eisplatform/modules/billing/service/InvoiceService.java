@@ -76,6 +76,8 @@ public class InvoiceService {
     private final InvoiceNumberService invoiceNumberService;
     /** C100 (PB-1 note): coupons. */
     private final CouponService couponService;
+    /** C106: the seat add-on, for seat-pricing-enabled products. */
+    private final SeatPricingService seatPricingService;
     private final org.springframework.context.ApplicationEventPublisher eventPublisher;
     /** REQ-INT-002 (C62): InvoiceGenerated. */
     private final com.vyoog.eisplatform.modules.integration.service.OutboxService outboxService;
@@ -116,6 +118,11 @@ public class InvoiceService {
         if (product == null) {
             return Optional.empty();
         }
+        // C106: a seat-pricing-enabled product's per-seat price is the seat add-on, not the plan/product price.
+        if (product.isSeatPricingEnabled()) {
+            return seatPricingService.effectiveSeatPrice(product)
+                .map(p -> new SeatPrice(p.unitAmount(), p.currency()));
+        }
         ProductPlan plan = subscription.getPlanId() == null ? null : productPlanRepository.findById(subscription.getPlanId()).orElse(null);
         BigDecimal price = plan != null ? plan.getPrice() : product.getPrice();
         long amount = toMinorUnits(price);
@@ -135,7 +142,9 @@ public class InvoiceService {
     /** Shared by a new or renewal invoice (seatsAdded = 0: every seat, the whole term) and a seat-increase invoice (the added seats, the share of the
      * term left, in 1/10 000). */
     private Invoice generate(List<Long> subscriptionIds, int seatsAdded, int termShareBasisPoints, String couponCode) {
-        record Billed(ProductSubscription subscription, Product product, ProductPlan plan, long unit, int quantity, long amount, Currency currency) {}
+        // C106: a seat-pricing-enabled product bills a base line (quantity 1) plus a seat-addon line (quantity = seats) on a new/renewal
+        // invoice, or an addon-only prorated line on a mid-term seat increase — so one subscription may contribute one or two lines here.
+        record Billed(ProductSubscription subscription, Product product, ProductPlan plan, String descSuffix, int quantity, long unit, long amount, Currency currency) {}
         List<Billed> billed = new ArrayList<>();
         for (Long subscriptionId : subscriptionIds) {
             ProductSubscription subscription = subscriptionRepository.findById(subscriptionId)
@@ -149,14 +158,38 @@ public class InvoiceService {
             long unit = toMinorUnits(price);
             // C100 SE-1 B: the price is per seat for an organization subscription; an individual subscription is always one seat.
             boolean perSeat = subscription.getOwnerOrganizationId() != null;
-            int quantity = seatsAdded > 0 ? seatsAdded : perSeat ? Math.max(1, subscription.getQuantity()) : 1;
+            int seats = seatsAdded > 0 ? seatsAdded : perSeat ? Math.max(1, subscription.getQuantity()) : 1;
+
+            if (product.isSeatPricingEnabled()) {
+                var seatPrice = seatPricingService.effectiveSeatPrice(product).orElse(null);
+                Currency seatCurrency = seatPrice != null ? seatPrice.currency() : currency;
+                long seatUnit = seatPrice != null ? seatPrice.unitAmount() : 0;
+                long seatAddon = seatUnit * seats;
+                if (seatsAdded > 0) {
+                    // Mid-term top-up: addon only, prorated for the remaining term.
+                    long prorated = prorate(seatAddon, termShareBasisPoints);
+                    if (prorated > 0) {
+                        billed.add(new Billed(subscription, product, plan, "Added seats", seats, seatUnit, prorated, seatCurrency));
+                    }
+                } else {
+                    // Initial purchase or renewal: a base line (quantity 1) plus a seat-addon line.
+                    if (unit > 0) {
+                        billed.add(new Billed(subscription, product, plan, null, 1, unit, unit, currency));
+                    }
+                    if (seatAddon > 0) {
+                        billed.add(new Billed(subscription, product, plan, "User seats", seats, seatUnit, seatAddon, seatCurrency));
+                    }
+                }
+                continue;
+            }
+
+            int quantity = seats;
             long amount = unit * quantity;
             if (seatsAdded > 0) {
-                amount = BigDecimal.valueOf(amount).multiply(BigDecimal.valueOf(termShareBasisPoints))
-                    .divide(BigDecimal.valueOf(10_000), 0, RoundingMode.HALF_UP).longValueExact();
+                amount = prorate(amount, termShareBasisPoints);
             }
             if (amount > 0) {
-                billed.add(new Billed(subscription, product, plan, unit, quantity, amount, currency));
+                billed.add(new Billed(subscription, product, plan, seatsAdded > 0 ? "Added seats" : null, quantity, unit, amount, currency));
             }
         }
         if (billed.isEmpty()) {
@@ -211,7 +244,7 @@ public class InvoiceService {
             line.setDiscountAmount(share);
             discountLeft -= share;
             String what = b.product().getName() + (b.plan() != null ? " — " + b.plan().getName() : "");
-            line.setDescription(seatsAdded > 0 ? "Added seats: " + what : what);
+            line.setDescription(b.descSuffix() != null ? b.descSuffix() + ": " + what : what);
             line.setPeriodStart(b.subscription().getStartedAt() != null ? b.subscription().getStartedAt() : invoice.getPeriodStart());
             line.setPeriodEnd(b.subscription().getExpiresAt());
             line.setQuantity(b.quantity());
@@ -382,6 +415,12 @@ public class InvoiceService {
 
     private long toMinorUnits(BigDecimal price) {
         return price.multiply(BigDecimal.valueOf(100)).setScale(0, RoundingMode.HALF_UP).longValueExact();
+    }
+
+    /** {@code amount x termShareBasisPoints / 10 000}, rounded. */
+    private long prorate(long amount, int termShareBasisPoints) {
+        return BigDecimal.valueOf(amount).multiply(BigDecimal.valueOf(termShareBasisPoints))
+            .divide(BigDecimal.valueOf(10_000), 0, RoundingMode.HALF_UP).longValueExact();
     }
 
     private void notifyOwner(Invoice invoice, String productName) {

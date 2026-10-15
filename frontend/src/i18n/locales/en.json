@@ -1373,7 +1373,8 @@
         "offline": "Offline payments",
         "methods": "Payment methods",
         "gateway": "Payment gateways",
-        "reminders": "Renewal reminders"
+        "reminders": "Renewal reminders",
+        "seatPricing": "Seat pricing"
       },
       "overview": {
         "notSet": "Not set yet",
@@ -1540,6 +1541,15 @@
         "daysLeft_other": "{{count}} days before",
         "renewalDay": "Renewal",
         "saveError": "Could not save the reminder defaults."
+      },
+      "seatPricing": {
+        "title": "Global seat pricing",
+        "description": "The default price per user seat for every seat-pricing-enabled application. An application with its own price override is never affected by this default.",
+        "price": "Default price per seat",
+        "priceHelp": "Leave empty for no default (a product with no override of its own then has no seat add-on).",
+        "currency": "Currency",
+        "invalidPrice": "Enter a number of 0 or more.",
+        "note": "Enable seat pricing and set an override, if needed, on each application's own pricing configuration."
       },
       "loading": "Loading…",
       "payByInvoiceOrgs": {
@@ -2408,7 +2418,8 @@
       "counter": "{{count}} / {{max}} characters",
       "submit": "Submit request"
     },
-    "seatsTimesPrice": "{{seats}} seats × {{price}}"
+    "seatsTimesPrice": "{{seats}} seats × {{price}}",
+    "seatPricingBreakdown": "Base {{base}} + {{seats}} seats × {{seatPrice}} = {{total}}"
   },
   "apiKeys": {
     "title": "API keys",
@@ -2609,7 +2620,9 @@
       "new": "New",
       "ratingLabel": "Rated {{rating}} out of 5 from {{count}} reviews",
       "reviews_one": "({{count}} review)",
-      "reviews_other": "({{count}} reviews)"
+      "reviews_other": "({{count}} reviews)",
+      "seatIncluded": "1 User License Included",
+      "additionalUsers": "Additional users: {{price}}/user/month"
     },
     "toolbar": {
       "showing_one": "Showing {{count}} product",
@@ -2748,6 +2761,11 @@
       "price": "Price",
       "priceHint": "Shown only if no pricing tiers are added.",
       "priceError": "Enter a price greater than 0.",
+      "seatPricingEnabled": "Charge a per-seat add-on",
+      "seatPricingHint": "Total = base price + (per-seat price x seats). The first seat is included in the starting price shown on the catalog card, not free.",
+      "seatPrice": "This application's per-seat price",
+      "seatPriceHint": "Leave empty to use the platform's global default (Billing settings).",
+      "seatPriceError": "Enter a number of 0 or more.",
       "tierLabel": "Pricing tier {{n}}",
       "tierName": "Tier name",
       "currency": "Currency",

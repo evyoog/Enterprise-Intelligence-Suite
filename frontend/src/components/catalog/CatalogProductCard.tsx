@@ -5,7 +5,7 @@ import { Link as RouterLink } from 'react-router-dom'
 import { resolveAssetUrl } from '../../api/client'
 import type { Product } from '../../api/productsApi'
 import { fromPlan, isNewProduct, pricingModelOf, type Rating } from '../../utils/catalogFilters'
-import { formatPlanPrice } from '../../utils/productPricing'
+import { formatMoney, formatPlanPrice } from '../../utils/productPricing'
 import { appColor, showcasePalette } from '../../utils/showcaseColor'
 import { FeatureTag } from '../ui/FeatureTag'
 
@@ -60,10 +60,18 @@ export function CatalogProductCard({
     <Box component="span" sx={{ px: 1, py: 0.25, borderRadius: 1.5, fontSize: 11, fontWeight: 700, bgcolor: bg, color: fg, lineHeight: 1.4 }}>{label}</Box>
   )
 
+  // C106: a seat-pricing-enabled product's starting price already includes its first seat (not free — its cost is in the total).
+  const seatPricingActive = product.seatPricingEnabled && product.effectiveSeatPrice != null
+  const basePrice = plan ? plan.price : product.price
+  const baseCurrency = plan ? plan.currency : (product.effectiveSeatPriceCurrency ?? 'USD')
+  const basePeriod = plan ? plan.billingPeriod : 'MONTHLY'
+  const seatPrice = seatPricingActive ? (product.effectiveSeatPrice as number) : 0
+  const startingPrice = basePrice + seatPrice
+
   const price = plan
-    ? t('catalog.card.from', { price: formatPlanPrice(plan.price, plan.currency, plan.billingPeriod) })
-    : model === 'ONE_TIME'
-      ? t('catalog.card.from', { price: formatPlanPrice(product.price, 'USD', 'ONE_TIME') })
+    ? t('catalog.card.from', { price: formatPlanPrice(startingPrice, plan.currency, plan.billingPeriod) })
+    : model === 'ONE_TIME' || seatPricingActive
+      ? t('catalog.card.from', { price: formatPlanPrice(startingPrice, baseCurrency, basePeriod) })
       : t('catalog.pricingModel.FREE')
 
   const banner = (
@@ -135,6 +143,14 @@ export function CatalogProductCard({
         )}
         <Typography component="span" sx={{ fontWeight: 700, fontSize: 14 }}>{price}</Typography>
       </Box>
+      {seatPricingActive && (
+        <Box sx={{ mt: 0.25 }}>
+          <Typography component="div" sx={{ fontSize: 12, color: 'text.secondary' }}>{t('catalog.card.seatIncluded')}</Typography>
+          <Typography component="div" sx={{ fontSize: 12, color: 'text.secondary' }}>
+            {t('catalog.card.additionalUsers', { price: formatMoney(seatPrice, baseCurrency) })}
+          </Typography>
+        </Box>
+      )}
       <Box sx={{ flexGrow: 1 }} />
       {onToggleCompare && !preview && (
         <Tooltip title={compareFull && !compared ? t('compare.card.full') : ''}>

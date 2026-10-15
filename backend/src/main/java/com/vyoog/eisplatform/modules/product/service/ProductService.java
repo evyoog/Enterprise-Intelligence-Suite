@@ -51,6 +51,7 @@ public class ProductService {
     private final PlatformRepository platformRepository;
     private final List<ProductUsageGuard> usageGuards;
     private final List<ProductDeleteListener> deleteListeners;
+    private final com.vyoog.eisplatform.modules.billing.service.SeatPricingService seatPricingService;
 
     /** platformIds -> Set<Platform> needs a repository lookup, so it can't be
      * done in the mapper (see ProductMapper's @Mapping(target="platforms", ignore)). */
@@ -75,6 +76,11 @@ public class ProductService {
     private ProductDto toDtoWithDependencies(Product product) {
         ProductDto dto = productMapper.toDto(product);
         dto.setDependsOnProductIds(product.getDependsOn().stream().map(Product::getId).sorted().toList());
+        // C106: resolved once, here, so the catalog/admin screens never re-derive the inherit-vs-override rule themselves.
+        seatPricingService.effectiveSeatPrice(product).ifPresent(seat -> {
+            dto.setEffectiveSeatPrice(java.math.BigDecimal.valueOf(seat.unitAmount(), 2));
+            dto.setEffectiveSeatPriceCurrency(seat.currency());
+        });
         return dto;
     }
 
@@ -231,6 +237,10 @@ public class ProductService {
         product.setStatus(request.status() != null ? request.status() : ProductStatus.ACTIVE);
         product.setSsoConnected(request.ssoConnected() != null && request.ssoConnected());
         product.setFeatured(request.featured() != null && request.featured());
+        // C106: seat pricing. seatPrice/seatPriceCurrency null = inherit the platform default.
+        product.setSeatPricingEnabled(request.seatPricingEnabled() != null && request.seatPricingEnabled());
+        product.setSeatPrice(request.seatPrice());
+        product.setSeatPriceCurrency(request.seatPriceCurrency());
         product.setPlatforms(resolvePlatforms(request.platformIds()));
         product.setParentProductId(request.parentProductId());
         product.setVariantLabel(request.variantLabel());

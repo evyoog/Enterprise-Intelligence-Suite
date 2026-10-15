@@ -130,9 +130,13 @@ export function CartPage() {
     const previous = cart
     const plan = item.plans.find((p) => p.id === planId)
     if (plan) {
-      const items = cart.items.map((i) => i.id === item.id
-        ? { ...i, planId, planName: plan.name, billingPeriod: plan.billingPeriod, unitPrice: plan.price, unitPriceAtAdd: plan.price, amount: plan.price * (i.seats ?? 1) }
-        : i)
+      const items = cart.items.map((i) => {
+        if (i.id !== item.id) return i
+        // C106: a seat-pricing-enabled item's base changes with the plan; its seat add-on is unaffected.
+        const baseAmount = i.seatPricingEnabled ? plan.price : plan.price * (i.seats ?? 1)
+        const amount = i.seatPricingEnabled ? baseAmount + (i.seatAddonAmount ?? 0) : baseAmount
+        return { ...i, planId, planName: plan.name, billingPeriod: plan.billingPeriod, unitPrice: plan.price, unitPriceAtAdd: plan.price, baseAmount, amount }
+      })
       const subtotal = items.reduce((s, i) => s + i.amount, 0)
       setCart({ ...cart, items, subtotal, total: Math.max(subtotal - cart.discount, 0) })
     }
@@ -384,7 +388,14 @@ export function CartPage() {
                     <Box sx={{ flex: 1, minWidth: 0 }}>
                       <Typography component="h2" sx={{ fontWeight: 700, fontSize: 16 }}>{item.productName}</Typography>
                       <Typography variant="body2" sx={{ color: 'text.secondary' }}>{item.planName}</Typography>
-                      {item.seats > 1 && (
+                      {item.seatPricingEnabled ? (
+                        <Typography variant="body2" sx={{ color: 'text.secondary' }}>
+                          {t('cart.seatPricingBreakdown', {
+                            base: money(item.baseAmount ?? 0, item.currency), seats: item.seats,
+                            seatPrice: money(item.seatUnitPrice ?? 0, item.currency), total: money(item.amount, item.currency),
+                          })}
+                        </Typography>
+                      ) : item.seats > 1 && (
                         <Typography variant="body2" sx={{ color: 'text.secondary' }}>
                           {t('cart.seatsTimesPrice', { seats: item.seats, price: money(item.unitPrice, item.currency) })}
                         </Typography>

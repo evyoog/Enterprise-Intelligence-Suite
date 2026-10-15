@@ -39,4 +39,16 @@ public class ProductDto {
     private Integer trialDays;
     /** C94: when the product was added, for the catalog's New badge and Newest sort. */
     private java.time.Instant createdAt;
+
+    // ---- C106: seat pricing ----
+    /** Whether this application's total price includes a seat add-on (base price + effective seat price x seats). */
+    private boolean seatPricingEnabled;
+    /** This application's own seat price override; null = inherits the platform default. */
+    private BigDecimal seatPrice;
+    private com.vyoog.eisplatform.modules.product.model.Currency seatPriceCurrency;
+    /** The seat price actually charged (the override above, else the platform default); null when
+     * {@link #seatPricingEnabled} is false or neither is configured yet. Resolved server-side so the
+     * catalog card never computes this itself. */
+    private BigDecimal effectiveSeatPrice;
+    private com.vyoog.eisplatform.modules.product.model.Currency effectiveSeatPriceCurrency;
 }

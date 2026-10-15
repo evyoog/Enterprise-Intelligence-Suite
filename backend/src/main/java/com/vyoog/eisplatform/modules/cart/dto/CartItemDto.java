@@ -21,6 +21,12 @@ public record CartItemDto(
     Instant addedAt,
     List<CartPlanOptionDto> plans,
     /** C100 SE-1 B: a plan's price is per seat for an organization, so an organization's item is {@code seats} x {@code unitPrice}; 1 for an individual. */
-    int seats
+    int seats,
+    /** C106: true when this product charges a seat add-on on top of its base price (amount = baseAmount + seatAddonAmount);
+     * false means {@code amount} is exactly {@code unitPrice x seats}, as before this feature. */
+    boolean seatPricingEnabled,
+    long seatUnitPrice,
+    long baseAmount,
+    long seatAddonAmount
 ) {
 }

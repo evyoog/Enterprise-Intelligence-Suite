@@ -163,6 +163,13 @@ export interface PaymentMethodSettings {
   updatedAt?: string
 }
 
+/** C106: the platform-wide default per-seat price. `globalSeatPrice` null clears the default. */
+export interface SeatPricingDefaults {
+  globalSeatPrice?: number | null
+  globalSeatPriceCurrency?: string | null
+  updatedAt?: string
+}
+
 export interface OfflineInvoiceResult {
   invoiceId: number
   invoiceNumber: string
@@ -411,6 +418,9 @@ export const adminBillingApi = {
   paymentMethodSettings: () => apiRequest<PaymentMethodSettings>('/admin/billing/settings/payment-methods'),
   savePaymentMethodSettings: (body: Omit<PaymentMethodSettings, 'updatedAt'>) =>
     apiRequest<PaymentMethodSettings>('/admin/billing/settings/payment-methods', { method: 'PUT', body: JSON.stringify(body) }),
+  seatPricingDefaults: () => apiRequest<SeatPricingDefaults>('/admin/billing/settings/seat-pricing'),
+  saveSeatPricingDefaults: (body: Omit<SeatPricingDefaults, 'updatedAt'>) =>
+    apiRequest<SeatPricingDefaults>('/admin/billing/settings/seat-pricing', { method: 'PUT', body: JSON.stringify(body) }),
   reconcile: (paymentId: number) => apiRequest<Payment>(`/admin/billing/payments/${paymentId}/reconcile`, { method: 'POST' }),
   gatewayStatus: () => apiRequest<GatewayStatus>('/admin/billing/gateway'),
   testGateway: () => apiRequest<void>('/admin/billing/gateway/test', { method: 'POST' }),

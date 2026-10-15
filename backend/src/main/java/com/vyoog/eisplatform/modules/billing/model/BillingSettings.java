@@ -1,11 +1,13 @@
 package com.vyoog.eisplatform.modules.billing.model;
 
+import com.vyoog.eisplatform.modules.product.model.Currency;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
+import java.math.BigDecimal;
 import java.time.Instant;
 
 /** C55 (REQ-BIL-001.21), extended by C60: the one platform-wide row of
@@ -179,6 +181,16 @@ public class BillingSettings {
 
     @Column(name = "active_gateway", nullable = false, length = 30)
     private String activeGateway = "RAZORPAY";
+
+    /** C106: the default per-seat add-on price for every seat-pricing-enabled application that has not set its
+     * own override. Null = no platform default configured yet (a product with no override then has no seat
+     * add-on, until either this or the product's own price is set). */
+    @Column(name = "global_seat_price", precision = 12, scale = 2)
+    private BigDecimal globalSeatPrice;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "global_seat_price_currency", length = 10)
+    private Currency globalSeatPriceCurrency;
 
     @LastModifiedDate
     @Column(name = "updated_at")

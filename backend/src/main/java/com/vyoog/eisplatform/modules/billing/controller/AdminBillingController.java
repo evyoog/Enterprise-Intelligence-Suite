@@ -103,6 +103,20 @@ public class AdminBillingController {
         return billingSettingsService.saveBusinessProfile(admin.getId(), request);
     }
 
+    /** C106: the platform-wide default per-seat price. */
+    @GetMapping("/settings/seat-pricing")
+    public com.vyoog.eisplatform.modules.billing.dto.SeatPricingDefaultsDto seatPricingDefaults() {
+        return billingSettingsService.seatPricingDefaults();
+    }
+
+    @PutMapping("/settings/seat-pricing")
+    public com.vyoog.eisplatform.modules.billing.dto.SeatPricingDefaultsDto saveSeatPricingDefaults(
+            @AuthenticationPrincipal Jwt jwt,
+            @Valid @RequestBody com.vyoog.eisplatform.modules.billing.dto.SaveSeatPricingDefaultsRequest request) {
+        Customer admin = currentCustomerResolver.resolve(jwt);
+        return billingSettingsService.saveSeatPricingDefaults(admin.getId(), request);
+    }
+
     /** C60: checkout payment methods and Razorpay Checkout appearance (not secrets). */
     @GetMapping("/settings/payment-methods")
     public PaymentMethodSettingsDto paymentMethodSettings() {

@@ -24,11 +24,18 @@ export interface CartItem {
   unitPrice: number
   unitPriceAtAdd: number
   currency: string
-  /** Organization cart: the seats the subscription starts with (the plan's price is per seat); 1 for an individual. amount = unitPrice x seats. */
+  /** Organization cart: the seats the subscription starts with (the plan's price is per seat); 1 for an individual. amount = unitPrice x seats,
+   * unless C106 seat pricing is enabled (see below). */
   seats: number
   amount: number
   addedAt: string
   plans: CartPlanOption[]
+  /** C106: true when this product charges a seat add-on on top of its base price (amount = baseAmount + seatAddonAmount);
+   * false/absent means amount is exactly unitPrice x seats, as before this feature. */
+  seatPricingEnabled?: boolean
+  seatUnitPrice?: number
+  baseAmount?: number
+  seatAddonAmount?: number
 }
 
 export interface Cart {

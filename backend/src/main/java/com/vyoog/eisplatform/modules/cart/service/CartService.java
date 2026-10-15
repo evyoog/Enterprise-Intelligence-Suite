@@ -5,6 +5,7 @@ import com.vyoog.eisplatform.common.exception.ResourceNotFoundException;
 import com.vyoog.eisplatform.modules.billing.model.Invoice;
 import com.vyoog.eisplatform.modules.billing.repository.BillingDetailsRepository;
 import com.vyoog.eisplatform.modules.billing.service.InvoiceService;
+import com.vyoog.eisplatform.modules.billing.service.SeatPricingService;
 import com.vyoog.eisplatform.modules.cart.dto.AddCartItemRequest;
 import com.vyoog.eisplatform.modules.cart.dto.CartCheckoutResultDto;
 import com.vyoog.eisplatform.modules.cart.dto.CartDto;
@@ -76,6 +77,7 @@ public class CartService {
     private final BillingDetailsRepository billingDetailsRepository;
     private final SubscriptionService subscriptionService;
     private final InvoiceService invoiceService;
+    private final SeatPricingService seatPricingService;
     private final OrderService orderService;
     /** C100 (PB-1 note): the coupon field. */
     private final com.vyoog.eisplatform.modules.billing.service.CouponService couponService;
@@ -411,6 +413,23 @@ public class CartService {
                 .thenComparing(ProductPlan::getId))
             .map(p -> new CartPlanOptionDto(p.getId(), p.getName(), p.getBillingPeriod().name(), minorUnits(p.getPrice()), p.getCurrency().name()))
             .toList();
+
+        // C106: base price + (effective seat price x seats) for a seat-pricing-enabled product;
+        // unchanged (unitPrice x seats, no seat add-on) for every other product.
+        boolean seatPricingEnabled = product != null && product.isSeatPricingEnabled();
+        long seatUnitPrice = 0;
+        long baseAmount;
+        long seatAddonAmount;
+        if (seatPricingEnabled) {
+            seatUnitPrice = seatPricingService.effectiveSeatPrice(product).map(SeatPricingService.SeatPrice::unitAmount).orElse(0L);
+            baseAmount = unitPrice;
+            seatAddonAmount = seatUnitPrice * seats;
+        } else {
+            baseAmount = unitPrice * seats;
+            seatAddonAmount = 0;
+        }
+        long amount = baseAmount + seatAddonAmount;
+
         return new CartItemDto(
             item.getId(),
             item.getProductId(),
@@ -422,10 +441,14 @@ public class CartService {
             unitPrice,
             item.getUnitPriceAtAdd(),
             (plan != null ? plan.getCurrency() : item.getCurrency()).name(),
-            unitPrice * seats,
+            amount,
             item.getAddedAt(),
             plans,
-            seats);
+            seats,
+            seatPricingEnabled,
+            seatUnitPrice,
+            baseAmount,
+            seatAddonAmount);
     }
 
     private static long minorUnits(BigDecimal price) {

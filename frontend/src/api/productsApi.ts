@@ -76,6 +76,14 @@ export interface Product {
   bannerImageUrl?: string | null
   /** C102 (REQ-MKT-005): days of the free trial (1-90); null/absent = the product offers no trial. */
   trialDays?: number | null
+  /** C106: whether this product charges a seat add-on on top of its base price. */
+  seatPricingEnabled?: boolean
+  /** C106: this product's own per-seat price; null = inherit the platform's global default. */
+  seatPrice?: number | null
+  seatPriceCurrency?: Currency | null
+  /** C106: the resolved per-seat price (this product's override, or the global default) — null when seat pricing is enabled but neither is set. */
+  effectiveSeatPrice?: number | null
+  effectiveSeatPriceCurrency?: Currency | null
 }
 
 export interface ProductCreateRequest {
@@ -100,6 +108,11 @@ export interface ProductCreateRequest {
   bannerImageUrl?: string | null
   /** 1-90, or null/omitted for no free trial. On update, omitting it clears the trial. */
   trialDays?: number | null
+  /** C106: default false — every existing product keeps its current pricing unless turned on. */
+  seatPricingEnabled?: boolean
+  /** C106: null/omitted inherits the platform's global default seat price. */
+  seatPrice?: number | null
+  seatPriceCurrency?: Currency | null
 }
 
 export interface CategoryFacet {
