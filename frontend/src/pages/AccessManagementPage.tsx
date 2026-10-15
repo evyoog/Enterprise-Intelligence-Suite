@@ -3,11 +3,12 @@ import { useTranslation } from 'react-i18next'
 import { Box, Tab, Tabs } from '@mui/material'
 import { AccessActivityTab } from '../components/access/AccessActivityTab'
 import { AccessMembersTab } from '../components/access/AccessMembersTab'
+import { AccessRequestsTab } from '../components/access/AccessRequestsTab'
 import { RoleDefaultsTab } from '../components/access/RoleDefaultsTab'
 import { PageHeader } from '../components/layout/PageHeader'
 import { useTabParam } from '../components/layout/useTabParam'
 
-const TABS = ['members', 'roles', 'activity'] as const
+const TABS = ['members', 'roles', 'requests', 'activity'] as const
 
 /**
  * "/organization/access" — REQ-TEN-005 (C90): what each member can do and which products they can open. Members
@@ -25,6 +26,7 @@ export function AccessManagementPage() {
       </Tabs>
       {tab === 'members' && <AccessMembersTab />}
       {tab === 'roles' && <RoleDefaultsTab />}
+      {tab === 'requests' && <AccessRequestsTab />}
       {tab === 'activity' && <AccessActivityTab />}
     </Box>
   )

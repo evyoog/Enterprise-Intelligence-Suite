@@ -18,6 +18,9 @@ const permissions = vi.fn()
 const activity = vi.fn()
 const reviewMemberAccess = vi.fn()
 const changeMemberRole = vi.fn()
+const listForOrganization = vi.fn()
+const approveRequest = vi.fn()
+const rejectRequest = vi.fn()
 
 vi.mock('../../api/accessApi', () => ({
   accessApi: {
@@ -34,6 +37,13 @@ vi.mock('../../api/accessApi', () => ({
 }))
 vi.mock('../../api/registrationApi', () => ({
   organizationApi: { reviewMemberAccess: (id: number) => reviewMemberAccess(id), changeMemberRole: (id: number, r: string) => changeMemberRole(id, r) },
+}))
+vi.mock('../../api/accessRequestApi', () => ({
+  accessRequestApi: {
+    listForOrganization: () => listForOrganization(),
+    approve: (id: number) => approveRequest(id),
+    reject: (id: number, note: string) => rejectRequest(id, note),
+  },
 }))
 
 const ada = { memberId: 7, customerId: 70, name: 'Ada Lovelace', email: 'ada@example.com', role: 'ORG_ADMIN', status: 'ACTIVE', productsOn: 2, productsEntitled: 2, customAccessCount: 0, lastReviewedAt: null, lastReviewedBy: null, canChange: false, lockedReason: 'You cannot change your own access.' }
@@ -68,7 +78,7 @@ const memberDefaults = {
 // REQ-TEN-005 Access management (C90).
 describe('AccessManagementPage', () => {
   beforeEach(() => {
-    ;[members, member, setOverrides, resetAll, roleDefaults, saveRoleDefaults, bulk, permissions, activity, reviewMemberAccess, changeMemberRole].forEach((m) => m.mockReset())
+    ;[members, member, setOverrides, resetAll, roleDefaults, saveRoleDefaults, bulk, permissions, activity, reviewMemberAccess, changeMemberRole, listForOrganization, approveRequest, rejectRequest].forEach((m) => m.mockReset())
     members.mockResolvedValue(page)
     permissions.mockResolvedValue(catalogue)
     roleDefaults.mockResolvedValue(memberDefaults)
@@ -224,5 +234,45 @@ describe('AccessManagementPage', () => {
     members.mockRejectedValue(new ApiError(403, 'You do not have permission to do this'))
     renderWithProviders(<AccessManagementPage />)
     expect(await screen.findByText('You do not have permission to do this')).toBeInTheDocument()
+  })
+
+  const pendingRequest = {
+    id: 1, productId: 3, productName: 'Valam.ai', memberId: 9, memberName: 'Cy Core',
+    status: 'PENDING' as const, message: 'Need it for the Q1 launch', createdAt: '2027-01-05T00:00:00Z',
+  }
+
+  it('lists access requests and approves one', async () => {
+    const user = userEvent.setup()
+    listForOrganization.mockResolvedValue([pendingRequest])
+    approveRequest.mockResolvedValue({ ...pendingRequest, status: 'APPROVED', decidedByName: 'Ada Lovelace', decidedAt: '2027-01-06T00:00:00Z' })
+    const { container } = renderWithProviders(<AccessManagementPage />, { route: '/?tab=requests' })
+
+    expect(await screen.findByText('Cy Core')).toBeInTheDocument()
+    expect(screen.getByText('Need it for the Q1 launch')).toBeInTheDocument()
+    await user.click(screen.getByRole('button', { name: 'Approve' }))
+    expect(approveRequest).toHaveBeenCalledWith(1)
+    expect(await axe(container)).toHaveNoViolations()
+  })
+
+  it('requires a note to reject an access request', async () => {
+    const user = userEvent.setup()
+    listForOrganization.mockResolvedValue([pendingRequest])
+    rejectRequest.mockResolvedValue({ ...pendingRequest, status: 'REJECTED', decisionNote: 'No seats left' })
+    renderWithProviders(<AccessManagementPage />, { route: '/?tab=requests' })
+
+    await user.click(await screen.findByRole('button', { name: 'Reject' }))
+    const dialog = await screen.findByRole('dialog')
+    await user.click(within(dialog).getByRole('button', { name: 'Reject' }))
+    expect(rejectRequest).not.toHaveBeenCalled()
+
+    await user.type(within(dialog).getByRole('textbox', { name: 'Reason' }), 'No seats left')
+    await user.click(within(dialog).getByRole('button', { name: 'Reject' }))
+    expect(rejectRequest).toHaveBeenCalledWith(1, 'No seats left')
+  })
+
+  it('shows an empty state when there are no access requests', async () => {
+    listForOrganization.mockResolvedValue([])
+    renderWithProviders(<AccessManagementPage />, { route: '/?tab=requests' })
+    expect(await screen.findByText('No access requests')).toBeInTheDocument()
   })
 })

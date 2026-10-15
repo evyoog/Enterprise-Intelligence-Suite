@@ -4391,7 +4391,8 @@
     "tabs": {
       "members": "Miembros",
       "roles": "Valores por rol",
-      "activity": "Actividad"
+      "activity": "Actividad",
+      "requests": "Solicitudes de acceso"
     },
     "search": "Buscar nombre o correo",
     "role": "Rol",
@@ -5213,5 +5214,55 @@
       "trialDaysHint": "Déjalo vacío para no ofrecer prueba gratuita",
       "trialDaysError": "Introduce un número entero de días entre 1 y 90."
     }
+  },
+  "accessRequests": {
+    "title": "Solicitudes de acceso",
+    "subtitle": "Solicita acceso a un producto al que tu organización ya está suscrita, o revisa tus solicitudes anteriores.",
+    "loading": "Cargando solicitudes de acceso…",
+    "loadError": "No se pudieron cargar las solicitudes de acceso.",
+    "actionError": "No se pudo completar esa acción.",
+    "none": "No hay solicitudes de acceso",
+    "noneDescription": "Ningún miembro ha solicitado acceso personal a un producto todavía.",
+    "member": "Miembro",
+    "product": "Producto",
+    "statusLabel": "Estado",
+    "message": "Mensaje",
+    "requested": "Solicitado",
+    "decision": "Decisión",
+    "actions": "Acciones",
+    "statuses": {
+      "PENDING": "Pendiente",
+      "APPROVED": "Aprobada",
+      "REJECTED": "Rechazada",
+      "CANCELLED": "Cancelada"
+    },
+    "decidedBy": "Decidido por {{name}}",
+    "note": "Nota: {{note}}",
+    "approve": "Aprobar",
+    "reject": "Rechazar",
+    "rejectTitle": "Rechazar esta solicitud de acceso",
+    "reason": "Motivo",
+    "noteRequired": "Se requiere un motivo para rechazar una solicitud.",
+    "requestAccess": "Solicitar acceso",
+    "requestTitle": "Solicitar acceso a {{product}}",
+    "requestBody": "Tu organización ya está suscrita a {{product}}. Pide a quien administre el acceso a productos que te conceda acceso personal.",
+    "requestMessageLabel": "Mensaje (opcional)",
+    "requestSubmit": "Enviar solicitud",
+    "requestSuccess": "Solicitud enviada para {{product}}.",
+    "requestError": "No se pudo enviar esta solicitud.",
+    "requestPending": "Solicitud pendiente",
+    "removeAccess": "Quitar mi acceso",
+    "removeTitle": "¿Quitar tu acceso a {{product}}?",
+    "removeBody": "Perderás el acceso a {{product}} de inmediato. Recuperarlo requiere una nueva solicitud. Esto no afecta a nadie más ni a la suscripción de tu organización.",
+    "removeConfirm": "Quitar mi acceso",
+    "removeSuccess": "Se quitó tu acceso a {{product}}.",
+    "removeError": "No se pudo quitar tu acceso.",
+    "myRequestsTitle": "Mis solicitudes de acceso",
+    "myRequestsSubtitle": "Productos a los que has solicitado acceso personal, y el resultado.",
+    "myRequestsNone": "No has solicitado acceso a ningún producto.",
+    "myRequestsNoneDescription": "Cuando solicites acceso a un producto al que tu organización esté suscrita, tus solicitudes aparecerán aquí.",
+    "cancel": "Cancelar solicitud",
+    "cancelSuccess": "Solicitud cancelada.",
+    "cancelError": "No se pudo cancelar esta solicitud."
   }
 }

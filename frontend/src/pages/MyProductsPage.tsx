@@ -1,16 +1,19 @@
 import { LayoutDashboard as PHLayoutDashboard } from 'lucide-react'
 import { PageHeader } from '../components/layout/PageHeader'
 import { useEffect, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import {
-  Alert, Box, Button, Chip, CircularProgress, Grid, IconButton,
-  Paper, Switch, Typography,
+  Alert, Box, Button, Chip, CircularProgress, Dialog, DialogActions, DialogContent, DialogContentText,
+  DialogTitle, Grid, IconButton, Paper, Snackbar, Switch, TextField, Typography,
 } from '@mui/material'
 import { ChevronDown, ChevronUp, Settings2, Star } from 'lucide-react'
 import { Link as RouterLink } from 'react-router-dom'
+import { accessRequestApi, type AccessRequestDto } from '../api/accessRequestApi'
 import { ApiError } from '../api/client'
 import { dashboardApi, type Dashboard, type DashboardProduct } from '../api/dashboardApi'
 import { myProductsApi } from '../api/registrationApi'
 import { recommendationsApi, type Recommendations, type RecommendedProduct } from '../api/recommendationsApi'
+import { ConfirmDialog } from '../components/ui/ConfirmDialog'
 
 type ViewState =
   | { kind: 'loading' }
@@ -39,10 +42,24 @@ const withKnownWidgets = (order: string[]) => [...order, ...ALL_WIDGETS.filter((
  * both just different views over the SAME product list the backend returns
  * — not separate data sources. */
 export function MyProductsPage() {
+  const { t } = useTranslation()
   const [state, setState] = useState<ViewState>({ kind: 'loading' })
   const [subscribingId, setSubscribingId] = useState<number | null>(null)
   const [customizing, setCustomizing] = useState(false)
   const [recommendations, setRecommendations] = useState<Recommendations | null>(null)
+
+  // REQ-TEN-010 (C103): for an org member, which products already have a
+  // pending access request — so "Request access" can disable itself instead
+  // of letting a second request be submitted.
+  const [myAccessRequests, setMyAccessRequests] = useState<AccessRequestDto[]>([])
+  const [requestDialogProduct, setRequestDialogProduct] = useState<DashboardProduct | null>(null)
+  const [requestMessage, setRequestMessage] = useState('')
+  const [requestBusy, setRequestBusy] = useState(false)
+  const [requestError, setRequestError] = useState<string | null>(null)
+  const [removeDialogProduct, setRemoveDialogProduct] = useState<DashboardProduct | null>(null)
+  const [removeBusy, setRemoveBusy] = useState(false)
+  const [removeError, setRemoveError] = useState<string | null>(null)
+  const [toast, setToast] = useState<string | null>(null)
 
   const load = () => {
     setState({ kind: 'loading' })
@@ -50,9 +67,51 @@ export function MyProductsPage() {
       .then((dashboard) => setState({ kind: 'loaded', dashboard }))
       .catch((e) => setState({ kind: 'error', message: e instanceof ApiError ? e.message : 'Could not load your dashboard.' }))
   }
+  const loadAccessRequests = () => { accessRequestApi.myRequests().then(setMyAccessRequests).catch(() => setMyAccessRequests([])) }
 
   useEffect(load, [])
+  useEffect(loadAccessRequests, [])
   useEffect(() => { recommendationsApi.get().then(setRecommendations).catch(() => setRecommendations({ featured: [], popular: [] })) }, [])
+
+  const hasPendingRequest = (productId: number) => myAccessRequests.some((r) => r.productId === productId && r.status === 'PENDING')
+
+  const openRequestDialog = (product: DashboardProduct) => {
+    setRequestDialogProduct(product)
+    setRequestMessage('')
+    setRequestError(null)
+  }
+
+  const submitRequest = async () => {
+    if (!requestDialogProduct) return
+    setRequestBusy(true)
+    setRequestError(null)
+    try {
+      await accessRequestApi.request(requestDialogProduct.productId, requestMessage.trim() || undefined)
+      setToast(t('accessRequests.requestSuccess', { product: requestDialogProduct.productName }))
+      setRequestDialogProduct(null)
+      loadAccessRequests()
+    } catch (e) {
+      setRequestError(e instanceof ApiError ? e.message : t('accessRequests.requestError'))
+    } finally {
+      setRequestBusy(false)
+    }
+  }
+
+  const confirmRemoveAccess = async () => {
+    if (!removeDialogProduct) return
+    setRemoveBusy(true)
+    setRemoveError(null)
+    try {
+      await accessRequestApi.removeMyAccess(removeDialogProduct.productId)
+      setToast(t('accessRequests.removeSuccess', { product: removeDialogProduct.productName }))
+      setRemoveDialogProduct(null)
+      load()
+    } catch (e) {
+      setRemoveError(e instanceof ApiError ? e.message : t('accessRequests.removeError'))
+    } finally {
+      setRemoveBusy(false)
+    }
+  }
 
   if (state.kind === 'loading') {
     return (
@@ -228,6 +287,9 @@ export function MyProductsPage() {
                         onSubscribe={() => subscribe(product.productId)}
                         onToggleFavorite={() => toggleFavorite(product)}
                         onLaunch={() => launch(product)}
+                        requestPending={hasPendingRequest(product.productId)}
+                        onRequestAccess={() => openRequestDialog(product)}
+                        onRemoveAccess={() => setRemoveDialogProduct(product)}
                       />
                     </Grid>
                   ))}
@@ -238,6 +300,44 @@ export function MyProductsPage() {
           return null
         })}
       </Box>
+
+      <Dialog open={requestDialogProduct !== null} onClose={() => !requestBusy && setRequestDialogProduct(null)} aria-labelledby="request-access-title" maxWidth="xs" fullWidth>
+        <DialogTitle id="request-access-title">{requestDialogProduct && t('accessRequests.requestTitle', { product: requestDialogProduct.productName })}</DialogTitle>
+        <DialogContent>
+          {requestError && <Alert severity="error" sx={{ mb: 2 }}>{requestError}</Alert>}
+          <DialogContentText sx={{ mb: 2 }}>
+            {requestDialogProduct && t('accessRequests.requestBody', { product: requestDialogProduct.productName })}
+          </DialogContentText>
+          <TextField
+            fullWidth
+            multiline
+            minRows={2}
+            label={t('accessRequests.requestMessageLabel')}
+            value={requestMessage}
+            onChange={(e) => setRequestMessage(e.target.value)}
+          />
+        </DialogContent>
+        <DialogActions sx={{ px: 3, pb: 2 }}>
+          <Button onClick={() => setRequestDialogProduct(null)} disabled={requestBusy}>{t('forms.cancel')}</Button>
+          <Button variant="contained" onClick={submitRequest} disabled={requestBusy}
+            startIcon={requestBusy ? <CircularProgress size={14} color="inherit" /> : undefined}>
+            {t('accessRequests.requestSubmit')}
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      <ConfirmDialog
+        open={removeDialogProduct !== null}
+        title={removeDialogProduct ? t('accessRequests.removeTitle', { product: removeDialogProduct.productName }) : ''}
+        body={removeDialogProduct ? t('accessRequests.removeBody', { product: removeDialogProduct.productName }) : undefined}
+        confirmLabel={t('accessRequests.removeConfirm')}
+        onConfirm={confirmRemoveAccess}
+        onClose={() => setRemoveDialogProduct(null)}
+        busy={removeBusy}
+      />
+      {removeError && <Alert severity="error" sx={{ mt: 2 }} onClose={() => setRemoveError(null)}>{removeError}</Alert>}
+
+      <Snackbar open={toast !== null} autoHideDuration={4000} onClose={() => setToast(null)} message={toast ?? ''} />
     </Box>
   )
 }
@@ -287,7 +387,10 @@ function RecommendationRail({ title, products }: { title: string; products: Reco
   )
 }
 
-function ProductCard({ product, entitled, isOrgMember, subscribing, onSubscribe, onToggleFavorite, onLaunch }: {
+function ProductCard({
+  product, entitled, isOrgMember, subscribing, onSubscribe, onToggleFavorite, onLaunch,
+  requestPending, onRequestAccess, onRemoveAccess,
+}: {
   product: DashboardProduct
   entitled: boolean
   isOrgMember: boolean
@@ -295,7 +398,14 @@ function ProductCard({ product, entitled, isOrgMember, subscribing, onSubscribe,
   onSubscribe: () => void
   onToggleFavorite: () => void
   onLaunch: () => void
+  requestPending: boolean
+  onRequestAccess: () => void
+  onRemoveAccess: () => void
 }) {
+  const { t } = useTranslation()
+  // REQ-TEN-010 (C103): the organization already has an active subscription
+  // to this product — the member can ask for, or drop, their own access.
+  const canManageOwnAccess = isOrgMember && product.subscriptionStatus === 'ACTIVE'
   return (
     <Paper variant="outlined" sx={{ p: 2 }}>
       <Box sx={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between' }}>
@@ -330,11 +440,21 @@ function ProductCard({ product, entitled, isOrgMember, subscribing, onSubscribe,
         )}
       </Box>
 
-      <Box sx={{ mt: 1.5, display: 'flex', gap: 1 }}>
+      <Box sx={{ mt: 1.5, display: 'flex', gap: 1, flexWrap: 'wrap' }}>
         {entitled && <Button size="small" variant="contained" onClick={onLaunch}>Launch</Button>}
         {!isOrgMember && product.subscriptionStatus !== 'ACTIVE' && (
           <Button size="small" variant="outlined" disabled={subscribing} onClick={onSubscribe}>
             {subscribing ? 'Subscribing…' : 'Subscribe'}
+          </Button>
+        )}
+        {canManageOwnAccess && product.myAccessAssigned === false && (
+          <Button size="small" variant="outlined" disabled={requestPending} onClick={onRequestAccess}>
+            {requestPending ? t('accessRequests.requestPending') : t('accessRequests.requestAccess')}
+          </Button>
+        )}
+        {canManageOwnAccess && product.myAccessAssigned === true && (
+          <Button size="small" color="error" variant="outlined" onClick={onRemoveAccess}>
+            {t('accessRequests.removeAccess')}
           </Button>
         )}
       </Box>

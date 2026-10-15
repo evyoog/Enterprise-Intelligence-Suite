@@ -4390,7 +4390,8 @@
     "tabs": {
       "members": "Members",
       "roles": "Role defaults",
-      "activity": "Activity"
+      "activity": "Activity",
+      "requests": "Access requests"
     },
     "search": "Search name or email",
     "role": "Role",
@@ -5208,5 +5209,55 @@
       "trialDaysHint": "Leave empty to offer no free trial",
       "trialDaysError": "Enter a whole number of days from 1 to 90."
     }
+  },
+  "accessRequests": {
+    "title": "Access requests",
+    "subtitle": "Ask for access to a product your organization already subscribes to, or review your past requests.",
+    "loading": "Loading access requests…",
+    "loadError": "Could not load access requests.",
+    "actionError": "That action could not be completed.",
+    "none": "No access requests",
+    "noneDescription": "No member has asked for personal access to a product yet.",
+    "member": "Member",
+    "product": "Product",
+    "statusLabel": "Status",
+    "message": "Message",
+    "requested": "Requested",
+    "decision": "Decision",
+    "actions": "Actions",
+    "statuses": {
+      "PENDING": "Pending",
+      "APPROVED": "Approved",
+      "REJECTED": "Rejected",
+      "CANCELLED": "Cancelled"
+    },
+    "decidedBy": "Decided by {{name}}",
+    "note": "Note: {{note}}",
+    "approve": "Approve",
+    "reject": "Reject",
+    "rejectTitle": "Reject this access request",
+    "reason": "Reason",
+    "noteRequired": "A reason is required to reject a request.",
+    "requestAccess": "Request access",
+    "requestTitle": "Request access to {{product}}",
+    "requestBody": "Your organization already subscribes to {{product}}. Ask whoever manages product access to grant you personal access to it.",
+    "requestMessageLabel": "Message (optional)",
+    "requestSubmit": "Send request",
+    "requestSuccess": "Request sent for {{product}}.",
+    "requestError": "Could not send this request.",
+    "requestPending": "Request pending",
+    "removeAccess": "Remove my access",
+    "removeTitle": "Remove your access to {{product}}?",
+    "removeBody": "You will lose access to {{product}} immediately. Getting it back needs a new request. This does not affect anyone else or your organization's subscription.",
+    "removeConfirm": "Remove my access",
+    "removeSuccess": "Your access to {{product}} was removed.",
+    "removeError": "Could not remove your access.",
+    "myRequestsTitle": "My access requests",
+    "myRequestsSubtitle": "Products you have asked for personal access to, and the outcome.",
+    "myRequestsNone": "You have not requested access to any product.",
+    "myRequestsNoneDescription": "When you ask for access to a product your organization subscribes to, your requests appear here.",
+    "cancel": "Cancel request",
+    "cancelSuccess": "Request cancelled.",
+    "cancelError": "Could not cancel this request."
   }
 }
