@@ -4585,6 +4585,11 @@
     "loadError": "Could not load the templates.",
     "saveError": "Could not save the template."
   },
+  "customerOnly": {
+    "title": "This page is for customer accounts",
+    "description": "You are signed in as the platform administrator, which has no cart, wishlist or subscriptions of its own. Use the admin area, or sign in with a customer account.",
+    "toAdmin": "Go to the admin area"
+  },
   "wishlist": {
     "add": "Save to wishlist",
     "remove": "Remove from wishlist",

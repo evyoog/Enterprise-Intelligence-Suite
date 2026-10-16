@@ -1,5 +1,6 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
 import { useAuth } from '../../auth/AuthProvider'
+import { useCustomerWorkspace } from '../../auth/useCustomerWorkspace'
 import { cartApi } from '../../api/cartApi'
 
 /** C59 (REQ-MKT-003.7): the cart item count for the top-bar badge. The cart
@@ -17,6 +18,7 @@ const NO_CART: CartState = { count: 0, setCount: () => {}, refresh: () => {} }
 
 export function CartProvider({ children }: { children: ReactNode }) {
   const { isAuthenticated } = useAuth()
+  const customer = useCustomerWorkspace() === true   // the platform admin has no cart
   const [count, setCount] = useState(0)
   // C79: a cart answer that arrives after sign-out is dropped, so the last
   // person's item count never comes back.
@@ -24,12 +26,12 @@ export function CartProvider({ children }: { children: ReactNode }) {
   useEffect(() => { signedInRef.current = isAuthenticated }, [isAuthenticated])
 
   const refresh = useCallback(() => {
-    if (!isAuthenticated) return
+    if (!isAuthenticated || !customer) return
     cartApi.get().then((cart) => { if (signedInRef.current) setCount(cart.itemCount) }).catch(() => {})
-  }, [isAuthenticated])
+  }, [isAuthenticated, customer])
 
   // eslint-disable-next-line react-hooks/set-state-in-effect -- the count follows sign-in and sign-out
-  useEffect(() => { if (isAuthenticated) refresh(); else setCount(0) }, [isAuthenticated, refresh])
+  useEffect(() => { if (isAuthenticated && customer) refresh(); else setCount(0) }, [isAuthenticated, customer, refresh])
 
   const value = useMemo(() => ({ count, setCount, refresh }), [count, refresh])
   return <CartContext.Provider value={value}>{children}</CartContext.Provider>
