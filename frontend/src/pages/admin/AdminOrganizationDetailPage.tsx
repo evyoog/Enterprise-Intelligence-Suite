@@ -17,6 +17,7 @@ import { OrganizationActions, type OrgAction } from '../../components/admin/Orga
 import { PageHeader } from '../../components/layout/PageHeader'
 import { useTabParam } from '../../components/layout/useTabParam'
 import { OrgStructureViewer } from '../../components/organization/OrgStructureViewer'
+import { ProfileEditDialog } from '../../components/profile/ProfileEditDialog'
 
 const ORG_TABS = ['overview', 'structure', 'members', 'subscriptions', 'billing', 'support', 'security', 'activity'] as const
 const IND_TABS = ['profile', 'subscriptions', 'billing', 'support', 'activity'] as const
@@ -109,18 +110,27 @@ function InvitationsList({ id }: { id: number }) {
 function MembersTab({ id }: { id: number }) {
   const { t } = useTranslation()
   const r = useAsync<MemberRow[]>(() => orgDirectoryApi.members(id), `m${id}`)
+  // C107: a platform administrator edits a member's profile (the admin endpoint, no photo).
+  const [editing, setEditing] = useState<MemberRow | null>(null)
   return (
     <>
+    <ProfileEditDialog customerId={editing?.customerId ?? null} name={editing?.name} onClose={() => setEditing(null)} />
     <Async result={r}>
       {(rows) => rows.length === 0 ? <Empty>{t('orgDirectory.detail.noMembers')}</Empty> : (
         <Table size="small" aria-label={t('orgDirectory.detail.tabs.members')}>
           <TableHead><TableRow>
             {['name', 'email', 'role', 'status', 'node', 'joined'].map((c) => <TableCell key={c}>{t(`orgDirectory.detail.col.${c}`)}</TableCell>)}
+            <TableCell><span style={{ position: 'absolute', left: -9999 }}>{t('orgDirectory.col.actions')}</span></TableCell>
           </TableRow></TableHead>
           <TableBody>{rows.map((m) => (
             <TableRow key={m.memberId}>
               <TableCell>{m.name}</TableCell><TableCell>{m.email}</TableCell><TableCell>{m.orgRole}</TableCell>
               <TableCell>{m.status}</TableCell><TableCell>{m.orgNodeName ?? '—'}</TableCell><TableCell>{date(m.joinedAt)}</TableCell>
+              <TableCell align="right">
+                <Button size="small" onClick={() => setEditing(m)} aria-label={t('profile.admin.editFor', { name: m.name ?? m.email ?? '' })}>
+                  {t('profile.admin.edit')}
+                </Button>
+              </TableCell>
             </TableRow>
           ))}</TableBody>
         </Table>
@@ -337,7 +347,9 @@ function OrganizationDetailView({ id }: { id: number }) {
 function IndividualDetailView({ id }: { id: number }) {
   const { t } = useTranslation()
   const [tab, setTab] = useTabParam(IND_TABS, 'profile')
-  const r = useAsync<IndividualDetail>(() => orgDirectoryApi.individual(id), `c${id}`)
+  const [version, setVersion] = useState(0)
+  const r = useAsync<IndividualDetail>(() => orgDirectoryApi.individual(id), `c${id}.${version}`)
+  const [editing, setEditing] = useState(false)
   return (
     <Async result={r}>
       {(c) => {
@@ -358,6 +370,9 @@ function IndividualDetailView({ id }: { id: number }) {
             {tab === 'profile' && (
               <>
                 <CompletionPanel completion={c.completion} />
+                <Button size="small" variant="outlined" onClick={() => setEditing(true)} sx={{ mb: 2 }}>{t('profile.admin.edit')}</Button>
+                <ProfileEditDialog customerId={editing ? c.id : null} name={name} onClose={() => setEditing(false)}
+                  onSaved={() => setVersion((v) => v + 1)} />
                 <Paper variant="outlined" sx={{ p: 2, maxWidth: 560 }}>
                   <Facts rows={[
                     [t('orgDirectory.detail.name'), name], [t('orgDirectory.detail.email'), c.email], [t('orgDirectory.detail.mobile'), c.mobile],

@@ -116,3 +116,21 @@ export async function apiDownload(path: string): Promise<void> {
   link.click()
   URL.revokeObjectURL(url)
 }
+
+/** For an endpoint that returns an image (the profile photo): fetches it with the bearer
+ * token and returns the bytes as a Blob the caller can turn into an object URL (an <img src>
+ * cannot send an Authorization header). A 404 means "none" and resolves to null. */
+export async function apiBlob(path: string): Promise<Blob | null> {
+  const token = tokenProvider()
+  const response = await fetch(`${API_BASE_URL}${path}`, {
+    credentials: 'include',
+    cache: 'no-cache',
+    headers: token ? { Authorization: `Bearer ${token}` } : {},
+  })
+  if (response.status === 404) return null
+  if (!response.ok) {
+    const detail = await response.json().catch(() => null)
+    throw new ApiError(response.status, detail?.message ?? 'Request failed', detail)
+  }
+  return response.blob()
+}
