@@ -5,6 +5,7 @@ import com.vyoog.eisplatform.common.exception.ResourceNotFoundException;
 import com.vyoog.eisplatform.modules.audit.service.AuditService;
 import com.vyoog.eisplatform.modules.auth.service.KeycloakAdminClient;
 import com.vyoog.eisplatform.modules.authorization.service.AuthorizationService;
+import com.vyoog.eisplatform.modules.platformadmin.service.PlatformAdminRegistry;
 import com.vyoog.eisplatform.modules.profile.dto.ProfileDtos.Account;
 import com.vyoog.eisplatform.modules.profile.dto.ProfileDtos.Address;
 import com.vyoog.eisplatform.modules.profile.dto.ProfileDtos.Completion;
@@ -72,6 +73,7 @@ public class ProfileService {
     private final AuditService auditService;
     private final KeycloakAdminClient keycloakAdminClient;
     private final AuthorizationService authorizationService;
+    private final PlatformAdminRegistry platformAdminRegistry;
 
     /** Bytes and headers material of a stored photo. */
     public record PhotoContent(byte[] data, String contentType, Instant updatedAt) {
@@ -84,7 +86,7 @@ public class ProfileService {
 
     public ProfileDto getMine(Jwt jwt, Collection<String> authorities) {
         requireUserToken(jwt);
-        boolean admin = isPlatformAdmin(authorities);
+        boolean admin = isPlatformAdmin(jwt, authorities);
         Optional<Customer> customer = customerResolver.resolveOptional(jwt);
         if (customer.isPresent()) {
             return toDto(customer.get(), admin);
@@ -107,7 +109,7 @@ public class ProfileService {
     @Transactional
     public ProfileDto updateMine(Jwt jwt, Collection<String> authorities, ProfileUpdateRequest request) {
         requireUserToken(jwt);
-        boolean admin = isPlatformAdmin(authorities);
+        boolean admin = isPlatformAdmin(jwt, authorities);
         ProfileUpdateRequest values = validator.validate(request);
         Optional<Customer> existing = customerResolver.resolveOptional(jwt);
         if (existing.isEmpty()) {
@@ -154,7 +156,7 @@ public class ProfileService {
         photo.setUpdatedAt(Instant.now());
         photoRepository.save(photo);
         audit("PROFILE_PHOTO_UPDATED", jwt.getSubject(), customer.getId(), customer, "photo replaced");
-        return toDto(customer, isPlatformAdmin(authorities));
+        return toDto(customer, isPlatformAdmin(jwt, authorities));
     }
 
     @Transactional
@@ -166,7 +168,7 @@ public class ProfileService {
             photoRepository.flush();
             audit("PROFILE_PHOTO_REMOVED", jwt.getSubject(), customer.getId(), customer, "photo removed");
         }
-        return toDto(customer, isPlatformAdmin(authorities));
+        return toDto(customer, isPlatformAdmin(jwt, authorities));
     }
 
     public PhotoContent getPhoto(Jwt jwt) {
@@ -316,7 +318,7 @@ public class ProfileService {
         if (customer.isPresent()) {
             return customer.get();
         }
-        if (!isPlatformAdmin(authorities)) {
+        if (!isPlatformAdmin(jwt, authorities)) {
             return customerResolver.resolve(jwt); // the platform's standard 404 for a login with no account
         }
         throw new ProfileException(HttpStatus.CONFLICT, "Create your profile before adding a photo");
@@ -328,8 +330,14 @@ public class ProfileService {
         }
     }
 
-    private boolean isPlatformAdmin(Collection<String> authorities) {
-        return authorizationService.hasPlatformPermission(authorities, ADMIN_PERMISSION);
+    /**
+     * A platform admin for profile purposes (C108): the login holds the admin permission, OR it is an enabled
+     * entry of the platform admin registry file. The registry grants nothing else: only this recognition.
+     * (An API key is refused by {@link #requireUserToken} before this is reached.)
+     */
+    private boolean isPlatformAdmin(Jwt jwt, Collection<String> authorities) {
+        return authorizationService.hasPlatformPermission(authorities, ADMIN_PERMISSION)
+            || platformAdminRegistry.isPlatformAdmin(jwt);
     }
 
     /** An API key is not a person: it can never read or change a profile. */

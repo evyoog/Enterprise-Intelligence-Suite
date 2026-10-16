@@ -33,7 +33,12 @@ import org.springframework.context.annotation.Primary;
 import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.DynamicPropertyRegistry;
+import org.springframework.test.context.DynamicPropertySource;
 
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.List;
 
 import static com.vyoog.eisplatform.modules.profile.service.ProfileTestImages.image;
@@ -57,6 +62,37 @@ class ProfileServiceTest {
         KeycloakAdminClient fakeKeycloakAdminClient() {
             return new FakeKeycloakAdminClient();
         }
+    }
+
+    /**
+     * The platform admin registry (C108) for this test class: a temp JSON file with placeholder identities.
+     * The people in it hold no admin permission (USER authorities below), so only the registry can make them admins.
+     */
+    private static final Path REGISTRY_FILE = writeRegistry();
+
+    private static Path writeRegistry() {
+        try {
+            Path file = Files.createTempFile("platform-admins-profile-service", ".json");
+            file.toFile().deleteOnExit();
+            Files.writeString(file, """
+                {"version":1,"platformAdmins":[
+                  {"email":"c108-listed-sub@profile.example","keycloakSub":"c108-sub-listed","enabled":true},
+                  {"email":"C108-Listed-Email@Profile.Example","keycloakSub":"","enabled":true},
+                  {"email":"c108-disabled@profile.example","keycloakSub":"c108-sub-disabled","enabled":false},
+                  {"email":"c108-apikey@profile.example","keycloakSub":"c108-sub-apikey","enabled":true},
+                  {"email":"c108-conflict@profile.example","keycloakSub":"c108-sub-conflict","enabled":true},
+                  {"email":"c108-existing@profile.example","keycloakSub":"c108-sub-existing","enabled":true}
+                ]}""");
+            return file;
+        } catch (IOException e) {
+            throw new IllegalStateException(e);
+        }
+    }
+
+    @DynamicPropertySource
+    static void registryLocation(DynamicPropertyRegistry registry) {
+        registry.add("eis.platform-admins.location", () -> "file:" + REGISTRY_FILE.toAbsolutePath());
+        registry.add("eis.platform-admins.refresh-seconds", () -> "3600");
     }
 
     private static final List<String> ADMIN = List.of("ROLE_ADMIN");
@@ -384,6 +420,108 @@ class ProfileServiceTest {
         assertThatThrownBy(() -> service.putPhoto(jwt, ADMIN, file(image("png", 8, 8), "image/png")))
             .isInstanceOfSatisfying(ProfileException.class, e -> assertThat(e.getStatus().value()).isEqualTo(409));
         assertThatThrownBy(() -> service.getPhoto(jwt)).isInstanceOf(ResourceNotFoundException.class);
+    }
+
+    // ---- platform admin registry (C108): listed logins without the admin permission ----
+
+    private static Jwt verifiedJwt(String sub, String email) {
+        return Jwt.withTokenValue("token").header("alg", "none").subject(sub)
+            .claim("email", email).claim("email_verified", true).claim("given_name", "Reg").claim("family_name", "Admin").build();
+    }
+
+    @Test
+    void aListedAdminWithoutTheAdminPermissionGetsExistsFalseCreatesTheOwnRecordThenAddsAPhoto() {
+        String email = "c108-created@profile.example";
+        // listed by Keycloak sub; the token email is a different, unlisted one (sub alone is enough)
+        Jwt jwt = verifiedJwt("c108-sub-listed", email);
+
+        ProfileDto before = service.getMine(jwt, USER);
+        assertThat(before.exists()).isFalse();
+        assertThat(before.account().role()).isEqualTo("PLATFORM_ADMIN");
+        assertThat(before.account().email()).isEqualTo(email);
+        assertThat(service.completionMine(jwt).exists()).isFalse();
+        assertThatThrownBy(() -> service.putPhoto(jwt, USER, file(image("png", 8, 8), "image/png")))
+            .isInstanceOfSatisfying(ProfileException.class, e -> assertThat(e.getStatus().value()).isEqualTo(409));
+
+        ProfileDto created = service.updateMine(jwt, USER, request("Reg", "Admin"));
+        assertThat(created.exists()).isTrue();
+        assertThat(created.account().role()).isEqualTo("PLATFORM_ADMIN");
+        Customer row = customerRepository.findByKeycloakSub("c108-sub-listed").orElseThrow();
+        assertThat(row.getEmail()).isEqualTo(email);
+        assertThat(audit(row)).extracting(AuditLog::getAction).containsExactly("PROFILE_CREATED");
+
+        ProfileDto withPhoto = service.putPhoto(jwt, USER, file(image("png", 8, 8), "image/png"));
+        assertThat(withPhoto.photo().present()).isTrue();
+        assertThat(withPhoto.account().role()).isEqualTo("PLATFORM_ADMIN");
+        assertThat(service.getMine(jwt, USER).exists()).isTrue();
+        assertThat(service.removePhoto(jwt, USER).photo().present()).isFalse();
+    }
+
+    @Test
+    void aListedAdminMatchedByVerifiedEmailCreatesTheirRecordButAnUnverifiedEmailDoesNot() {
+        String email = "C108-LISTED-EMAIL@profile.example"; // different case from the file on purpose
+        Jwt unverified = Jwt.withTokenValue("token").header("alg", "none").subject("c108-sub-by-email-unverified")
+            .claim("email", email).claim("email_verified", false).build();
+        assertThatThrownBy(() -> service.getMine(unverified, USER))
+            .isInstanceOf(ResourceNotFoundException.class).hasMessage("No Vyoog account is linked to this login");
+
+        Jwt verified = verifiedJwt("c108-sub-by-email", email);
+        assertThat(service.getMine(verified, USER).account().role()).isEqualTo("PLATFORM_ADMIN");
+        assertThat(service.updateMine(verified, USER, request("Reg", "Admin")).exists()).isTrue();
+        assertThat(customerRepository.findByKeycloakSub("c108-sub-by-email")).isPresent();
+    }
+
+    @Test
+    void aLoginThatIsNeitherLinkedNorListedStillGets404WithTheStandardMessage() {
+        Jwt ghost = verifiedJwt(unique("c108-unlisted"), "c108-unlisted@profile.example");
+        assertThatThrownBy(() -> service.getMine(ghost, USER))
+            .isInstanceOf(ResourceNotFoundException.class).hasMessage("No Vyoog account is linked to this login");
+        assertThatThrownBy(() -> service.updateMine(ghost, USER, request("Gh", "Ost")))
+            .isInstanceOf(ResourceNotFoundException.class).hasMessage("No Vyoog account is linked to this login");
+        assertThat(customerRepository.findByEmailIgnoreCase("c108-unlisted@profile.example")).isEmpty();
+    }
+
+    @Test
+    void aDisabledRegistryEntryStillGets404() {
+        Jwt disabled = verifiedJwt("c108-sub-disabled", "c108-disabled@profile.example");
+        assertThatThrownBy(() -> service.getMine(disabled, USER))
+            .isInstanceOf(ResourceNotFoundException.class).hasMessage("No Vyoog account is linked to this login");
+        assertThatThrownBy(() -> service.updateMine(disabled, USER, request("Dis", "Abled"))).isInstanceOf(ResourceNotFoundException.class);
+        assertThat(customerRepository.findByKeycloakSub("c108-sub-disabled")).isEmpty();
+    }
+
+    @Test
+    void aListedAdminWhoseEmailBelongsToAnotherLoginStillGets409AndNothingIsCreated() {
+        Customer other = person("Other", "Login");
+        Jwt listedWithTakenEmail = Jwt.withTokenValue("token").header("alg", "none").subject("c108-sub-conflict")
+            .claim("email", other.getEmail()).claim("email_verified", true).build();
+        assertThatThrownBy(() -> service.updateMine(listedWithTakenEmail, USER, request("Reg", "Admin")))
+            .isInstanceOfSatisfying(ProfileException.class, e -> assertThat(e.getStatus().value()).isEqualTo(409));
+        assertThat(customerRepository.findByKeycloakSub("c108-sub-conflict")).isEmpty();
+    }
+
+    @Test
+    void aListedAdminWithAnApiKeyClaimIsForbiddenOnEveryOwnProfileCall() {
+        Jwt apiKey = Jwt.withTokenValue("t").header("alg", "none").subject("c108-sub-apikey")
+            .claim("email", "c108-apikey@profile.example").claim("email_verified", true).claim("api_key_id", "9").build();
+        assertThatThrownBy(() -> service.getMine(apiKey, USER)).isInstanceOf(ForbiddenException.class);
+        assertThatThrownBy(() -> service.updateMine(apiKey, USER, request("A", "B"))).isInstanceOf(ForbiddenException.class);
+        assertThatThrownBy(() -> service.putPhoto(apiKey, USER, file(image("png", 8, 8), "image/png"))).isInstanceOf(ForbiddenException.class);
+        assertThatThrownBy(() -> service.removePhoto(apiKey, USER)).isInstanceOf(ForbiddenException.class);
+        assertThatThrownBy(() -> service.completionMine(apiKey)).isInstanceOf(ForbiddenException.class);
+        assertThat(customerRepository.findByKeycloakSub("c108-sub-apikey")).isEmpty();
+    }
+
+    @Test
+    void aListedAdminWhoAlreadyHasARecordIsShownAsPlatformAdminWhileAnUnlistedPersonIsNot() {
+        Customer listed = person("Li", "Sted");
+        listed.setKeycloakSub("c108-sub-existing");
+        listed.setEmail("c108-existing@profile.example");
+        customerRepository.save(listed);
+        Customer plain = person("Plain", "Person");
+
+        assertThat(service.getMine(jwtOf(listed), USER).account().role()).isEqualTo("PLATFORM_ADMIN");
+        assertThat(service.getMine(jwtOf(plain), USER).account().role()).isEqualTo("INDIVIDUAL");
     }
 
     // ---- a non-admin without a record ----
