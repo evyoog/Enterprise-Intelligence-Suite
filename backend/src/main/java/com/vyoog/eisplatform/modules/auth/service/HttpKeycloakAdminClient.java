@@ -235,6 +235,48 @@ public class HttpKeycloakAdminClient implements KeycloakAdminClient {
     }
 
     /**
+     * My profile (C107): reads the user's current representation, replaces only firstName/lastName and
+     * writes the whole representation back. A read-modify-write rather than a two-field PUT, so no other
+     * attribute can be dropped by a realm whose User Profile validates the full representation.
+     */
+    @Override
+    public boolean updateUser(String keycloakUserId, String firstName, String lastName) {
+        String token = adminToken();
+        if (token == null) {
+            return false;
+        }
+        URI userUri = URI.create(adminBaseUri + "/users/" + URLEncoder.encode(keycloakUserId, StandardCharsets.UTF_8));
+        try {
+            HttpResponse<String> current = httpClient.send(HttpRequest.newBuilder().uri(userUri)
+                .header("Authorization", "Bearer " + token).GET().build(), HttpResponse.BodyHandlers.ofString());
+            if (current.statusCode() != 200) {
+                log.warn("Keycloak admin user read failed (HTTP {}) for user {}", current.statusCode(), keycloakUserId);
+                return false;
+            }
+            JsonNode representation = objectMapper.readTree(current.body());
+            if (!(representation instanceof com.fasterxml.jackson.databind.node.ObjectNode user)) {
+                return false;
+            }
+            user.put("firstName", firstName);
+            user.put("lastName", lastName);
+            HttpResponse<String> response = httpClient.send(HttpRequest.newBuilder().uri(userUri)
+                .header("Authorization", "Bearer " + token)
+                .header("Content-Type", "application/json")
+                .PUT(HttpRequest.BodyPublishers.ofString(objectMapper.writeValueAsString(user))).build(),
+                HttpResponse.BodyHandlers.ofString());
+            if (response.statusCode() != 204) {
+                log.warn("Keycloak admin user update failed (HTTP {}) for user {}: {}", response.statusCode(), keycloakUserId, response.body());
+                return false;
+            }
+            return true;
+        } catch (IOException | InterruptedException e) {
+            if (e instanceof InterruptedException) Thread.currentThread().interrupt();
+            log.warn("Unable to reach Keycloak admin API to update user {}: {}", keycloakUserId, e.toString());
+            return false;
+        }
+    }
+
+    /**
      * Phase 3 (2026.3.3): verified live against the real Keycloak server
      * before this was written — {@code GET /admin/realms/eVyoog/users/{id}/sessions}
      * with a real logged-in test user returned real session objects

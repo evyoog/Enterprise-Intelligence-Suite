@@ -1,3 +1,4 @@
+import { lazy, Suspense } from 'react'
 import { PlatformDetailPage } from './pages/PlatformDetailPage'
 import { AdminApiKeysPage } from './pages/admin/AdminApiKeysPage'
 import { AdminSearchPage } from './pages/admin/AdminSearchPage'
@@ -23,6 +24,8 @@ import { LEGACY_ADMIN_REDIRECTS } from './components/routing/legacyRedirects'
 import { BusinessDashboardPage } from './pages/BusinessDashboardPage'
 import { SecuritySettingsPage } from './pages/SecuritySettingsPage'
 import { PreferencesPage } from './pages/PreferencesPage'
+// C107: My profile loads on demand (photo canvas code and the five-tab form are not needed by every visit).
+const ProfilePage = lazy(() => import('./pages/ProfilePage').then((m) => ({ default: m.ProfilePage })))
 import { OrganizationRegisterPage } from './pages/register/OrganizationRegisterPage'
 import { CheckEmailPage } from './pages/register/CheckEmailPage'
 import { VerifyEmailPage } from './pages/register/VerifyEmailPage'
@@ -177,6 +180,14 @@ function MainApp() {
           {/* REQ-TEN-006 (C82): organization hierarchy; MANAGE_ORGANIZATION is enforced by the backend. */}
           <Route path="/organization/structure" element={<Navigate to="/organization/members?tab=structure" replace />} />
           <Route path="/organization/privileged-access" element={<RequireAuth><OrganizationPrivilegedAccessPage /></RequireAuth>} />
+          {/* C107 My profile: every signed-in person (organization admin, platform admin, member, individual). */}
+          <Route path="/account/profile" element={
+            <RequireAuth>
+              <Suspense fallback={<Box sx={{ display: 'flex', justifyContent: 'center', py: 8 }}><CircularProgress size={28} /></Box>}>
+                <ProfilePage />
+              </Suspense>
+            </RequireAuth>
+          } />
           <Route path="/account/security" element={<RequireAuth><SecuritySettingsPage /></RequireAuth>} />
           <Route path="/organization/identity-federation" element={<RequireAuth><OrganizationSecurityPage /></RequireAuth>} />
           {/* REQ-PRT-001 (C26): signed-in customers. */}

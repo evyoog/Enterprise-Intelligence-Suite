@@ -29,6 +29,7 @@
 | Decided | [C33](../open-decisions.md#c33) Plan Management: currency, usage limit, included features, usage price, overage charge, tier-pricing text — data fields only, no billing engine | [plan-management](../../../02-requirements/FRD/plan-management/requirement.md) | REQ-CAT-002 |
 | Decided | [C89](../open-decisions.md#c89) Product content (02.04): PC-1 to PC-6 confirmed (A); videos can also be uploaded to S3 and played on the product page (PC-3 note) | [product-content](../../../02-requirements/FRD/product-content/requirement.md) | REQ-CAT-004.6 |
 | Decided | [C88](../open-decisions.md#c88) Projects (05.04.02): a project is a group plus product access (PR-1 A, PR-2 A); built, pulled back from 2026.4.2 | [projects](../../../02-requirements/FRD/projects/requirement.md) | REQ-TEN-009 |
+| Decided | [C107](../open-decisions.md#c107) (2026-10-16) My profile for every signed-in person: five-tab page with photo, validations and a global profile-filling bar; a platform administrator may edit customer records and does not have to create their own. Defaults PF-1 to PF-14 marked "default, to confirm"; migration V046 | [my-profile](../../../02-requirements/FRD/my-profile/requirement.md) | REQ-TEN-011 |
 | Decided | [C87](../open-decisions.md#c87) Invite user follow-up (IN-7 to IN-10): Create user (05.03.01.02) removed from the MVP; inviter notified on accept or decline; one organization per person; pending invitations kept when `INVITE_USERS` is removed | [invite-user](../../../02-requirements/FRD/invite-user/requirement.md) | REQ-TEN-008.19 |
 | Decided | [C84](../open-decisions.md#c84) Invite user (05.03.01.01) by email, with `INVITE_USERS` delegation | [invite-user](../../../02-requirements/FRD/invite-user/requirement.md) | REQ-TEN-008 |
 | Decided | [C34](../open-decisions.md#c34) Member Lifecycle: Suspend/Reactivate/Remove and Review access; Invite/Create user carried to 2026.4.2 | [member-lifecycle](../../../02-requirements/FRD/member-lifecycle/requirement.md) | REQ-TEN-002 |
@@ -50,6 +51,7 @@
 | [projects](../../../02-requirements/FRD/projects/requirement.md) | REQ-TEN-009 | 05.04.02.01–.03 | Approved |
 | [group-management](../../../02-requirements/FRD/group-management/requirement.md) | REQ-TEN-003 | 05.04.01 | Approved |
 | [catalog-showcase](../../../02-requirements/FRD/catalog-showcase/requirement.md) | REQ-CAT-003 | No function ID (restyles 02.01/02.03 screens; links touch 02.04.01.02) | Approved |
+| [my-profile](../../../02-requirements/FRD/my-profile/requirement.md) | REQ-TEN-011 | No function ID (cross-cutting: profile page, photo, global profile bar; touches 05.03 user data and the application layout) | Approved (2026-10-16, [C107](../open-decisions.md#c107); defaults PF-1 to PF-14 to confirm) |
 
 ### Progress (as of 2026-09-26, first week of the sprint)
 
@@ -174,6 +176,7 @@ Full breakdown: [applications/05-customer-tenant-management.md](../applications/
 - [C4](../open-decisions.md#c4), [C5](../open-decisions.md#c5), [C6](../open-decisions.md#c6) MVP, priority and phase as shown above.
 - [C31](../open-decisions.md#c31) Corrected sprint sequence: 05 Tenant pulled into this sprint.
 - [C32](../open-decisions.md#c32), [C33](../open-decisions.md#c33), [C34](../open-decisions.md#c34), [C35](../open-decisions.md#c35), [C66](../open-decisions.md#c66), [C67](../open-decisions.md#c67): see the FRDs and sections above.
+- [C107](../open-decisions.md#c107) My profile (REQ-TEN-011): see the FRD and the changes table above.
 - Sprint goal, team, capacity and status are Not specified.
 
 Details: [open-decisions.md](../open-decisions.md).

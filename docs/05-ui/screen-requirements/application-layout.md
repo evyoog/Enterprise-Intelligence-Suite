@@ -14,6 +14,7 @@ Requested by the product owner on 2026-09-26. The frontend has two separate fram
 | `/products` | Public catalog with the website header and banner | Catalog inside the tool: title, search and filters only |
 | `/compare` | Public compare page with the website header | The same page inside the tool, without the website header ([product-evaluation.md](product-evaluation.md#5-compare-page), C102) |
 | `/account/preferences` | Public page with the website header | Inside the tool |
+| `/account/profile` | Redirected to `/` (`RequireAuth`) | Inside the tool: [My profile](profile.md) ([C107](../../01-business/roadmap/open-decisions.md#c107)) |
 | `/my/products`, `/organization/business-dashboard`, `/account/security`, `/organization/identity-federation` | Redirected to `/` (`RequireAuth`) | Inside the tool |
 | `/cart`, `/checkout` | Redirected to sign in (`RequireAuth`; REQ-MKT-003 Open question 5) | Inside the tool ([cart.md](cart.md), [checkout-payment.md](checkout-payment.md)) |
 | `/admin/**` | Redirected to `/` (`RequireAdmin`) | Inside the tool for a platform admin; a non-admin is sent to `/products` |
@@ -50,7 +51,7 @@ Requested by the product owner on 2026-10-06 and approved with the mapping in [C
 | **Operations** | Billing (`MANAGE_BILLING`, or organization `MANAGE_ORGANIZATION`) → Overview, Invoices & payments (organization) or Invoices & payments, Payment gateway, Billing settings (platform); Support (`MANAGE_SUPPORT_TICKETS` → agent queue; organization administrators → own tickets); Reviews (`MANAGE_REVIEWS`); Partners (`MANAGE_PARTNERS`); Audit log (`VIEW_AUDIT_LOG`) |
 | **Help** | Support, for members (same entry as in Operations; never both) |
 | **Billing** | Overview, Invoices & payments, for members (same entry as in Operations) |
-| ~~Account~~ | Removed in [C83](../../01-business/roadmap/open-decisions.md#c83): Security and Preferences are in the profile menu at the top right (name, email, role, organization, Security, Preferences, Sign out) |
+| ~~Account~~ | Removed in [C83](../../01-business/roadmap/open-decisions.md#c83): My profile ([C107](../../01-business/roadmap/open-decisions.md#c107)), Security and Preferences are in the profile menu at the top right (name, email, role, organization, My profile, Security, Preferences, Sign out) |
 
 - **Knowledge Center** is the only knowledge entry; the label opens `/knowledge`, the chevron beside it folds the children. Readers: Articles, Guides, FAQs. People holding `KNOWLEDGE_CONTRIBUTE` or `MANAGE_KNOWLEDGE_BASE`: Articles, Drafts, Manage (and Categories for `MANAGE_KNOWLEDGE_BASE`), which use the existing `/knowledge-management/*` routes. Knowledge Management is no longer a sidebar entry.
 - **Not in the sidebar:** Search (the top-bar search stays; `/search` is its "See all results" page), Become a partner (a call-to-action; `/partners/apply` stays), Settings.
@@ -78,8 +79,27 @@ Requested by the product owner on 2026-10-06 and approved with the mapping in [C
 
 The redirect table is `components/routing/legacyRedirects.ts`.
 
+## Profile menu (C107)
+Added by [C107](../../01-business/roadmap/open-decisions.md#c107) ([REQ-TEN-011](../../02-requirements/FRD/my-profile/requirement.md)) on 2026-10-16. The menu opened from the avatar at the top right of the signed-in tool has, from the top:
+
+1. The identity block: avatar (the profile photo when there is one, otherwise the initial), display name, **email line** (C83 documented it but the code did not show it; now shown), role, and the organization name when there is one. **The avatar and name block opens `/account/profile`.**
+2. **My profile** (first menu item, `appShell.nav.profile`) → `/account/profile`.
+3. Security → `/account/security`; Preferences → `/account/preferences`.
+4. Sign out.
+
+Every signed-in person has the same entries; none depends on a permission.
+
+## Global profile completion bar
+Added by [C107](../../01-business/roadmap/open-decisions.md#c107) (BR-PRF-019).
+
+- Rendered by `AppShell` on every signed-in page, directly **below the app bar** and above the page: a `LinearProgress`, the text "Your profile is {percent}% complete", a **Complete profile** button (to `/account/profile`) and a **dismiss** control (accessible name "Dismiss for this session").
+- Shown only while `GET /me/profile/completion` says `exists` is true and `percent` is below 100. Hidden at 100%, hidden for a person with no customer record (typically a platform administrator who has not created one; there is no nagging), and hidden on `/account/profile` itself.
+- Dismiss hides it for that user for the rest of the browser session (`sessionStorage`, key `eis.profileBar.dismissed.<username>`); it returns when a new browser session starts, that is at the next sign-in in a new tab or window. Signing out and in again in the same tab does not clear it. Signing in as another person on the same tab does not inherit the dismissal. If storage is blocked the bar still shows and the dismissal lasts for that page view only.
+- It reloads the figure after a profile save and after a photo upload or removal (a small shared context), and does not poll.
+- Text: `profile.bar.*` in `en.json` and `es.json`. The progress bar has an accessible name and value. Screen spec: [profile.md](profile.md).
+
 ## States and accessibility
 - Desktop: permanent 260px sidebar. Below the `md` breakpoint it becomes a drawer, opened from the top bar.
 - A skip link goes to `#main-content`. The sidebar is a `nav` landmark labelled "Application", and the current page has `aria-current="page"`.
 - Text is under `appShell` in `en.json` and `es.json`.
-- Tests: `AppShell.test.tsx` (including jest-axe), `appNavigation.test.ts` (member, organization administrator, platform administrator and intermediate roles) and `SidebarConsolidation.test.tsx` (redirects and tab pages). Test cases [TC-PRT-035 to TC-PRT-038](../../../test-cases/functional/application-layout/).
+- Tests: `AppShell.test.tsx` (including jest-axe; the profile menu item and the global bar, C107), `appNavigation.test.ts` (member, organization administrator, platform administrator and intermediate roles) and `SidebarConsolidation.test.tsx` (redirects and tab pages). Test cases [TC-PRT-035 to TC-PRT-038](../../../test-cases/functional/application-layout/).

@@ -5,7 +5,7 @@ import {
   ListItemText, ListSubheader, Menu, MenuItem, Toolbar, Tooltip, Typography, useMediaQuery, useTheme,
 } from '@mui/material'
 import { alpha } from '@mui/material/styles'
-import { ChevronDown, ChevronRight, Home as HomeIcon, LogOut, Menu as MenuIcon, Moon, Palette, Search as SearchIcon, Sun, UserCog } from 'lucide-react'
+import { ChevronDown, ChevronRight, Home as HomeIcon, LogOut, Menu as MenuIcon, Moon, Palette, Search as SearchIcon, Sun, UserCog, UserRound } from 'lucide-react'
 import { Link as RouterLink, Navigate, Outlet, useLocation, useNavigate } from 'react-router-dom'
 import { useAuth } from '../../auth/AuthProvider'
 import { useSignOut } from '../../auth/useSignOut'
@@ -17,6 +17,9 @@ import { CartButton } from '../cart/CartButton'
 import { TopBarSearch } from './TopBarSearch'
 import { AppShellContext, NavAccessContext } from './appShellContext'
 import { NavBreadcrumbs } from './NavBreadcrumbs'
+import { ProfileCompletionBar } from '../profile/ProfileCompletionBar'
+import { useProfileCompletion } from '../profile/ProfileCompletionContext'
+import { ProfileCompletionProvider } from '../profile/ProfileCompletionProvider'
 import { appHomePath, buildAppNavigation, isNavBranchActive, isNavItemActive, wantsWebsite, WEBSITE_HOME_STATE, type AppNavItem } from './appNavigation'
 
 const DRAWER_WIDTH = 240
@@ -49,6 +52,11 @@ export function PublicOnly({ children }: { children: React.ReactNode }) {
  * navigation or marketing content appears here.
  */
 export function AppShell() {
+  // C107: the profile completion (global bar, top-bar avatar photo) is shared by everything inside.
+  return <ProfileCompletionProvider><AppShellFrame /></ProfileCompletionProvider>
+}
+
+function AppShellFrame() {
   const { t } = useTranslation()
   const auth = useAuth()
   const location = useLocation()
@@ -65,6 +73,7 @@ export function AppShell() {
   const [openGroups, setOpenGroups] = useState<Record<string, boolean>>({})
   const [userAnchor, setUserAnchor] = useState<HTMLElement | null>(null)
   const [orgName, setOrgName] = useState<string | null>(null)
+  const { state: profileState } = useProfileCompletion()
 
   useEffect(() => {
     let active = true
@@ -91,6 +100,7 @@ export function AppShell() {
   )
 
   const username = auth.user?.username ?? ''
+  const email = auth.user?.email
   const home = appHomePath(auth.isAdmin)
   const closeMobile = () => setMobileOpen(false)
   const drawerOpen = isMobile ? mobileOpen : isTablet ? tabletOpen : true
@@ -329,7 +339,7 @@ export function AppShell() {
                   aria-haspopup="menu"
                   onClick={(e) => setUserAnchor(e.currentTarget)}
                 >
-                  <Avatar sx={{ width: 30, height: 30, fontSize: 14, bgcolor: 'primary.main' }}>
+                  <Avatar src={profileState.photoUrl ?? undefined} alt="" sx={{ width: 30, height: 30, fontSize: 14, bgcolor: 'primary.main' }}>
                     {username.slice(0, 1).toUpperCase()}
                   </Avatar>
                   {!isMobile && (
@@ -340,12 +350,19 @@ export function AppShell() {
                 </IconButton>
               </Tooltip>
               <Menu anchorEl={userAnchor} open={Boolean(userAnchor)} onClose={() => setUserAnchor(null)}>
-                <Box sx={{ px: 2, py: 1, minWidth: 240 }}>
+                {/* C107: the identity block opens My profile (the first menu item below is the keyboard route to it). */}
+                <Box
+                  onClick={() => { setUserAnchor(null); navigate('/account/profile') }}
+                  sx={{ px: 2, py: 1, minWidth: 240, cursor: 'pointer', '&:hover': { bgcolor: 'action.hover' } }}
+                >
                   <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-                    <Avatar sx={{ width: 40, height: 40, bgcolor: 'primary.main' }}>{username.slice(0, 1).toUpperCase()}</Avatar>
+                    <Avatar src={profileState.photoUrl ?? undefined} alt="" sx={{ width: 40, height: 40, bgcolor: 'primary.main' }}>{username.slice(0, 1).toUpperCase()}</Avatar>
                     <Box sx={{ minWidth: 0 }}>
                       <Typography variant="body2" sx={{ fontWeight: 700, overflow: 'hidden', textOverflow: 'ellipsis' }}>{username}</Typography>
-                      <Typography variant="caption" sx={{ color: 'text.secondary' }}>
+                      {email && email !== username && (
+                        <Typography variant="caption" sx={{ display: 'block', color: 'text.secondary', overflow: 'hidden', textOverflow: 'ellipsis' }}>{email}</Typography>
+                      )}
+                      <Typography variant="caption" sx={{ display: 'block', color: 'text.secondary' }}>
                         {auth.isAdmin ? t('appShell.rolePlatformAdmin') : inOrganization && permissions?.organization.includes('MANAGE_ORGANIZATION') ? t('appShell.roleOrgAdmin') : t('appShell.roleUser')}
                       </Typography>
                     </Box>
@@ -357,6 +374,10 @@ export function AppShell() {
                   )}
                 </Box>
                 <Divider />
+                <MenuItem onClick={() => { setUserAnchor(null); navigate('/account/profile') }}>
+                  <ListItemIcon><UserRound size={16} /></ListItemIcon>
+                  {t('appShell.nav.profile')}
+                </MenuItem>
                 <MenuItem onClick={() => { setUserAnchor(null); navigate('/account/security') }}>
                   <ListItemIcon><UserCog size={16} /></ListItemIcon>
                   {t('appShell.nav.security')}
@@ -373,6 +394,8 @@ export function AppShell() {
               </Menu>
             </Toolbar>
           </AppBar>
+
+          <ProfileCompletionBar />
 
           <Box component="main" id="main-content" tabIndex={-1} sx={{ flexGrow: 1, p: { xs: 2, sm: 3, md: 4 }, outline: 'none' }}>
             <NavBreadcrumbs sections={sections} />

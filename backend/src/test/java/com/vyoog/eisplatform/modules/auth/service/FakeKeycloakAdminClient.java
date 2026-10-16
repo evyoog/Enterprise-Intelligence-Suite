@@ -21,6 +21,8 @@ public class FakeKeycloakAdminClient implements KeycloakAdminClient {
     public final List<String> resetPasswordCalls = new ArrayList<>();
     public final List<String> logoutCalls = new ArrayList<>();
     public final List<CreateUserCall> createUserCalls = new ArrayList<>();
+    public final List<UpdateUserCall> updateUserCalls = new ArrayList<>();
+    public boolean updateUserShouldFail = false;
     public boolean resetPasswordShouldFail = false;
     public boolean createUserShouldFail = false;
     private int nextUserId = 1;
@@ -31,6 +33,9 @@ public class FakeKeycloakAdminClient implements KeycloakAdminClient {
     public final java.util.Set<String> setEnabledFailsFor = new java.util.HashSet<>();
 
     public record CreateUserCall(String email, String firstName, String lastName, String password, boolean enabled) {
+    }
+
+    public record UpdateUserCall(String keycloakUserId, String firstName, String lastName) {
     }
 
     /** Adds a fake session for a user, returning its id — mirrors what a
@@ -59,6 +64,8 @@ public class FakeKeycloakAdminClient implements KeycloakAdminClient {
         resetPasswordCalls.clear();
         logoutCalls.clear();
         createUserCalls.clear();
+        updateUserCalls.clear();
+        updateUserShouldFail = false;
         resetPasswordShouldFail = false;
         createUserShouldFail = false;
         nextUserId = 1;
@@ -106,6 +113,12 @@ public class FakeKeycloakAdminClient implements KeycloakAdminClient {
         }
         enabledByUserId.put(keycloakUserId, enabled);
         return true;
+    }
+
+    @Override
+    public boolean updateUser(String keycloakUserId, String firstName, String lastName) {
+        updateUserCalls.add(new UpdateUserCall(keycloakUserId, firstName, lastName));
+        return !updateUserShouldFail;
     }
 
     @Override
