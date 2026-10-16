@@ -116,26 +116,33 @@ class PlatformAdminSourceTest {
     }
 
     @Test
-    void theShippedDefaultFileParsesAndGrantsNothing() throws IOException {
+    void theShippedFileParsesHoldsIdentitiesOnlyAndRecognisesNobodyElse() throws IOException {
+        // The product owner maintains the real entries in this file, so the test must not depend on which
+        // identities are listed: it checks the structure, that no credential-like field is ever present,
+        // and that an unrelated login is not recognised.
         PlatformAdminProperties defaults = new PlatformAdminProperties("classpath:config/platform-admins.json", 60, "", "");
         PlatformAdminSource source = PlatformAdminSourceFactory.create(defaults);
         String json = source.read();
         PlatformAdminRegistry registry = new PlatformAdminRegistry(source, 60, Clock.systemUTC());
 
-        assertThat(registry.enabledCount()).as("the shipped example entry is disabled").isZero();
-        assertThat(json).contains("\"version\": 1").contains("\"enabled\": false").contains("example");
         var tree = new com.fasterxml.jackson.databind.ObjectMapper().readTree(json);
+        assertThat(tree.get("version").asInt()).isEqualTo(1);
         List<String> topLevel = new ArrayList<>();
         tree.fieldNames().forEachRemaining(topLevel::add);
         assertThat(topLevel).as("only the documented top-level fields").containsExactlyInAnyOrder("version", "description", "platformAdmins");
-        assertThat(tree.get("platformAdmins")).hasSize(1);
-        List<String> entryFields = new ArrayList<>();
-        tree.get("platformAdmins").get(0).fieldNames().forEachRemaining(entryFields::add);
-        assertThat(entryFields).as("identity fields only, never a credential")
-            .containsExactlyInAnyOrder("email", "keycloakSub", "displayName", "enabled", "notes");
-        assertThat(tree.get("platformAdmins").get(0).get("email").asText()).endsWith(".example");
-        var jwt = org.springframework.security.oauth2.jwt.Jwt.withTokenValue("t").header("alg", "none").subject("anyone")
-            .claim("email", "replace-with-admin@your-company.example").claim("email_verified", true).build();
-        assertThat(registry.isPlatformAdmin(jwt)).isFalse();
+        assertThat(tree.get("platformAdmins").isArray()).isTrue();
+        for (var entry : tree.get("platformAdmins")) {
+            List<String> entryFields = new ArrayList<>();
+            entry.fieldNames().forEachRemaining(entryFields::add);
+            assertThat(entryFields).as("identity fields only, never a credential")
+                .isSubsetOf("email", "keycloakSub", "displayName", "enabled", "notes");
+            assertThat(entry.path("email").asText("").isBlank() && entry.path("keycloakSub").asText("").isBlank())
+                .as("every entry names an email or a Keycloak sub").isFalse();
+        }
+        assertThat(registry.enabledCount()).isLessThanOrEqualTo(tree.get("platformAdmins").size());
+        var stranger = org.springframework.security.oauth2.jwt.Jwt.withTokenValue("t").header("alg", "none")
+            .subject("00000000-0000-0000-0000-00000000dead")
+            .claim("email", "nobody-listed@invalid.example").claim("email_verified", true).build();
+        assertThat(registry.isPlatformAdmin(stranger)).isFalse();
     }
 }
