@@ -3,11 +3,11 @@
   "description": "Platform admin registry: the people listed here (and enabled) are recognised as platform admins by the My profile endpoints. This file lists WHO, never passwords or any secret; people sign in with their normal Keycloak account. Replace the example with real entries (prefer keycloakSub).",
   "platformAdmins": [
     {
-      "email": "replace-with-admin@your-company.example",
-      "keycloakSub": "",
-      "displayName": "Example Platform Admin",
-      "enabled": false,
-      "notes": "Example only, disabled. Copy this entry, fill in the real email and the Keycloak user id (sub), and set enabled to true."
+      "email": "apps@vyoog.com",
+      "keycloakSub": "e83c71bb-971b-4d4a-a408-ac8ebd8a56dd",
+      "displayName": "Vyoog",
+      "enabled": true,
+      "notes": "Primary platform admin (apps@vyoog.com). Keycloak sub taken from the audit log entries made by this login."
     }
   ]
 }
