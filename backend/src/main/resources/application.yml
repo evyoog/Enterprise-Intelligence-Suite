@@ -213,6 +213,14 @@ eis:
     youtube:
       api-key: ${EIS_YOUTUBE_API_KEY:}
       timeout-ms: 3000
+  # Platform admin registry (C108): the JSON file that lists who is a platform admin. classpath: (the project
+  # file), file:/absolute/path or s3://bucket/key. S3 uses the AWS default credential chain (task role); no key here.
+  platform-admins:
+    location: ${EIS_PLATFORM_ADMINS_LOCATION:classpath:config/platform-admins.json}
+    refresh-seconds: ${EIS_PLATFORM_ADMINS_REFRESH_SECONDS:60}
+    s3:
+      region: ${EIS_PLATFORM_ADMINS_S3_REGION:}
+      endpoint: ${EIS_PLATFORM_ADMINS_S3_ENDPOINT:}
   product-content:
     image-max-size: ${EIS_PRODUCT_CONTENT_IMAGE_MAX_SIZE:5242880}
     document-max-size: ${EIS_PRODUCT_CONTENT_DOCUMENT_MAX_SIZE:20971520}

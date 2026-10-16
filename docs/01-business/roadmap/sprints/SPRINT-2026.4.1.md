@@ -30,6 +30,7 @@
 | Decided | [C89](../open-decisions.md#c89) Product content (02.04): PC-1 to PC-6 confirmed (A); videos can also be uploaded to S3 and played on the product page (PC-3 note) | [product-content](../../../02-requirements/FRD/product-content/requirement.md) | REQ-CAT-004.6 |
 | Decided | [C88](../open-decisions.md#c88) Projects (05.04.02): a project is a group plus product access (PR-1 A, PR-2 A); built, pulled back from 2026.4.2 | [projects](../../../02-requirements/FRD/projects/requirement.md) | REQ-TEN-009 |
 | Decided | [C107](../open-decisions.md#c107) (2026-10-16) My profile for every signed-in person: five-tab page with photo, validations and a global profile-filling bar; a platform administrator may edit customer records and does not have to create their own. Defaults PF-1 to PF-14 marked "default, to confirm"; migration V046 | [my-profile](../../../02-requirements/FRD/my-profile/requirement.md) | REQ-TEN-011 |
+| Decided | [C108](../open-decisions.md#c108) (2026-10-16) Platform administrator registry: one JSON file lists the platform administrator accounts (identities only, never passwords), read from the project today and from S3 later; a listed login is a platform administrator for the profile endpoints only and no longer gets "No Vyoog account is linked to this login". Defaults RG-1 to RG-6 marked "default, to confirm"; no migration | [my-profile](../../../02-requirements/FRD/my-profile/requirement.md) | REQ-TEN-011.16, .17 |
 | Decided | [C87](../open-decisions.md#c87) Invite user follow-up (IN-7 to IN-10): Create user (05.03.01.02) removed from the MVP; inviter notified on accept or decline; one organization per person; pending invitations kept when `INVITE_USERS` is removed | [invite-user](../../../02-requirements/FRD/invite-user/requirement.md) | REQ-TEN-008.19 |
 | Decided | [C84](../open-decisions.md#c84) Invite user (05.03.01.01) by email, with `INVITE_USERS` delegation | [invite-user](../../../02-requirements/FRD/invite-user/requirement.md) | REQ-TEN-008 |
 | Decided | [C34](../open-decisions.md#c34) Member Lifecycle: Suspend/Reactivate/Remove and Review access; Invite/Create user carried to 2026.4.2 | [member-lifecycle](../../../02-requirements/FRD/member-lifecycle/requirement.md) | REQ-TEN-002 |
@@ -177,6 +178,7 @@ Full breakdown: [applications/05-customer-tenant-management.md](../applications/
 - [C31](../open-decisions.md#c31) Corrected sprint sequence: 05 Tenant pulled into this sprint.
 - [C32](../open-decisions.md#c32), [C33](../open-decisions.md#c33), [C34](../open-decisions.md#c34), [C35](../open-decisions.md#c35), [C66](../open-decisions.md#c66), [C67](../open-decisions.md#c67): see the FRDs and sections above.
 - [C107](../open-decisions.md#c107) My profile (REQ-TEN-011): see the FRD and the changes table above.
+- [C108](../open-decisions.md#c108) Platform administrator registry (REQ-TEN-011.16, .17): see the FRD and the changes table above.
 - Sprint goal, team, capacity and status are Not specified.
 
 Details: [open-decisions.md](../open-decisions.md).

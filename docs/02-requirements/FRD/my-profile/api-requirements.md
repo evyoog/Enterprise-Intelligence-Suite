@@ -5,7 +5,7 @@ Convention: `/me/profile` is always the signed-in person's own profile; the call
 | Method | Path | Purpose | Who |
 |---|---|---|---|
 | GET | `/me/profile` | Own profile (`ProfileDto`) | signed in |
-| PUT | `/me/profile` | Replace personal, work, address and online; creates the record of a platform administrator who has none → `ProfileDto` | signed in |
+| PUT | `/me/profile` | Replace personal, work, address and online; creates the record of a platform administrator (permission holder or registry-listed login) who has none → `ProfileDto` | signed in |
 | GET | `/me/profile/completion` | `{exists, percent, filled, total, missing}` for the global bar; 200 with `exists:false` when the person has no record (never 404) | signed in |
 | PUT | `/me/profile/photo` | Multipart field `file` → `ProfileDto` | signed in |
 | DELETE | `/me/profile/photo` | Remove the photo → `ProfileDto` | signed in |
@@ -13,4 +13,6 @@ Convention: `/me/profile` is always the signed-in person's own profile; the call
 | GET | `/admin/registrations/individuals/{customerId}/profile` | Any existing customer's profile (no photo) | platform `MANAGE_REGISTRATIONS` |
 | PUT | `/admin/registrations/individuals/{customerId}/profile` | Replace the four sections of that customer | platform `MANAGE_REGISTRATIONS` |
 
-Errors have the body `{timestamp, status, error, message}`; a validation failure adds `fieldErrors`. 400 validation (`message:"Validation failed", fieldErrors:{"<section>.<field>": "<message>"}`; also a login with no email claim trying to create a record) or a wrong photo type or content, 401 not signed in, 403 not allowed (admin paths, or an API key used on `/me/profile`), 404 no customer record (non-administrator) or unknown customer, 409 the token's email belongs to a customer linked to a different login (or a platform administrator with no record adds or removes a photo), 413 photo too large (or a multipart request over the server limit), 502 Keycloak could not be updated (nothing saved).
+Errors have the body `{timestamp, status, error, message}`; a validation failure adds `fieldErrors`. 400 validation (`message:"Validation failed", fieldErrors:{"<section>.<field>": "<message>"}`; also a login with no email claim trying to create a record) or a wrong photo type or content, 401 not signed in, 403 not allowed (admin paths, or an API key used on `/me/profile`), 404 no customer record (a person who is neither a holder of `MANAGE_REGISTRATIONS` nor listed and enabled in the platform administrator registry, so the "No Vyoog account is linked to this login" case now applies only to logins that are neither linked nor listed) or unknown customer, 409 the token's email belongs to a customer linked to a different login (or a platform administrator with no record adds or removes a photo), 413 photo too large (or a multipart request over the server limit), 502 Keycloak could not be updated (nothing saved).
+
+Who counts as a platform administrator on these `/me/profile` calls: a holder of `MANAGE_REGISTRATIONS` or a login listed and enabled in the platform administrator registry (BR-PRF-026 to BR-PRF-028, [C108](../../../01-business/roadmap/open-decisions.md#c108)). The registry changes nothing on the admin paths, which still need `MANAGE_REGISTRATIONS` (BR-PRF-027). No endpoint was added or changed.

@@ -20,9 +20,15 @@ import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.DynamicPropertyRegistry;
+import org.springframework.test.context.DynamicPropertySource;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.request.RequestPostProcessor;
+
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 
 import static com.vyoog.eisplatform.modules.profile.service.ProfileTestImages.image;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -53,6 +59,30 @@ class ProfileControllerTest {
         KeycloakAdminClient fakeKeycloakAdminClient() {
             return new FakeKeycloakAdminClient();
         }
+    }
+
+    /** The platform admin registry (C108) for this test class: a temp JSON file with placeholder identities. */
+    private static final Path REGISTRY_FILE = writeRegistry();
+
+    private static Path writeRegistry() {
+        try {
+            Path file = Files.createTempFile("platform-admins-profile-controller", ".json");
+            file.toFile().deleteOnExit();
+            Files.writeString(file, """
+                {"version":1,"platformAdmins":[
+                  {"email":"c108-http@profile.example","keycloakSub":"c108-http-sub","enabled":true},
+                  {"email":"c108-http-off@profile.example","keycloakSub":"c108-http-sub-off","enabled":false}
+                ]}""");
+            return file;
+        } catch (IOException e) {
+            throw new IllegalStateException(e);
+        }
+    }
+
+    @DynamicPropertySource
+    static void registryLocation(DynamicPropertyRegistry registry) {
+        registry.add("eis.platform-admins.location", () -> "file:" + REGISTRY_FILE.toAbsolutePath());
+        registry.add("eis.platform-admins.refresh-seconds", () -> "3600");
     }
 
     private static final String VALID_BODY = """
@@ -236,6 +266,53 @@ class ProfileControllerTest {
             .andExpect(status().isOk())
             .andExpect(jsonPath("$.exists").value(true));
         mockMvc.perform(get("/me/profile").with(root)).andExpect(jsonPath("$.exists").value(true));
+    }
+
+    @Test
+    void aRegistryAdminWithoutTheAdminPermissionGetsExistsFalseCreatesTheRecordAndAddsAPhoto() throws Exception {
+        RequestPostProcessor listed = jwt().jwt(j -> j.subject("c108-http-sub").claim("email", "c108-http@profile.example")
+                .claim("email_verified", true).claim("given_name", "Reg").claim("family_name", "Admin"))
+            .authorities(new SimpleGrantedAuthority("ROLE_ACTIVITY_USER"));
+
+        mockMvc.perform(get("/me/profile").with(listed))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.exists").value(false))
+            .andExpect(jsonPath("$.account.role").value("PLATFORM_ADMIN"))
+            .andExpect(jsonPath("$.personal.firstName").value("Reg"));
+        mockMvc.perform(get("/me/profile/completion").with(listed))
+            .andExpect(status().isOk()).andExpect(jsonPath("$.exists").value(false));
+        mockMvc.perform(put("/me/profile").with(listed).contentType(MediaType.APPLICATION_JSON).content(VALID_BODY))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.exists").value(true))
+            .andExpect(jsonPath("$.account.role").value("PLATFORM_ADMIN"));
+        mockMvc.perform(multipart(HttpMethod.PUT, "/me/profile/photo").file(upload(image("png", 16, 16), "image/png")).with(listed))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.photo.present").value(true));
+        mockMvc.perform(get("/me/profile/completion").with(listed))
+            .andExpect(jsonPath("$.exists").value(true));
+
+        // the registry recognises the profile only: it opens none of the admin endpoints
+        mockMvc.perform(get("/admin/registrations/individuals/1/profile").with(listed)).andExpect(status().isForbidden());
+    }
+
+    @Test
+    void aDisabledRegistryEntryOrAnUnverifiedEmailStillGets404() throws Exception {
+        mockMvc.perform(get("/me/profile").with(jwt().jwt(j -> j.subject("c108-http-sub-off").claim("email", "c108-http-off@profile.example")
+                .claim("email_verified", true))
+            .authorities(new SimpleGrantedAuthority("ROLE_ACTIVITY_USER"))))
+            .andExpect(status().isNotFound());
+        mockMvc.perform(get("/me/profile").with(jwt().jwt(j -> j.subject("someone-unverified").claim("email", "c108-http@profile.example")
+                .claim("email_verified", false))
+            .authorities(new SimpleGrantedAuthority("ROLE_ACTIVITY_USER"))))
+            .andExpect(status().isNotFound());
+    }
+
+    @Test
+    void aRegistryAdminUsingAnApiKeyIsForbidden() throws Exception {
+        mockMvc.perform(get("/me/profile").with(jwt().jwt(j -> j.subject("c108-http-sub").claim("email", "c108-http@profile.example")
+                .claim("email_verified", true).claim("api_key_id", "5"))
+            .authorities(new SimpleGrantedAuthority("ROLE_ACTIVITY_USER"))))
+            .andExpect(status().isForbidden());
     }
 
     @Test

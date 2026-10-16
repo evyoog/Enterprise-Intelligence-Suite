@@ -39,3 +39,5 @@ Computed on read from these columns and the existence of a `customer_photo` row 
 
 ## Audit
 Uses the existing `audit_log` table (BR-PRF-021): actions `PROFILE_CREATED`, `PROFILE_UPDATED`, `PROFILE_PHOTO_UPDATED`, `PROFILE_PHOTO_REMOVED`, `PROFILE_UPDATED_BY_ADMIN`; entries carry the sections changed, never values.
+
+**Platform administrator registry ([C108](../../01-business/roadmap/open-decisions.md#c108)): no database change.** The registry is a JSON file (project today, S3 later, [platform-admin-registry.md](../../08-architecture/security/platform-admin-registry.md)), not a table; there is no migration and no change to `schema.sql`. A listed login that creates their own profile inserts the same `customer` row as BR-PRF-003 describes.
