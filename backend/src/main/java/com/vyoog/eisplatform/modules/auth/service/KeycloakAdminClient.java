@@ -37,6 +37,12 @@ public interface KeycloakAdminClient {
      * {@link #resetPassword}. */
     boolean setEnabled(String keycloakUserId, boolean enabled);
 
+    /** My profile (C107): mirrors a changed first/last name into the Keycloak user, keeping every other
+     * attribute as it is. Both names must be non-blank (see {@link #createUser}). Returns false rather than
+     * throwing on any failure, same convention as {@link #setEnabled}; the profile service turns that into a
+     * rolled-back save so the two systems never silently diverge. */
+    boolean updateUser(String keycloakUserId, String firstName, String lastName);
+
     /** Phase 3 (2026.3.3): one real Keycloak SSO session — {@code id} is
      * what {@link #revokeSession} takes, distinct from the user's own id.
      * Verified live against the real realm before this was written (see
