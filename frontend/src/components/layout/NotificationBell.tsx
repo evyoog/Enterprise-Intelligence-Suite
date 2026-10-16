@@ -5,6 +5,7 @@ import {
 } from '@mui/material'
 import { Bell, Settings } from 'lucide-react'
 import { ApiError } from '../../api/client'
+import { useCustomerWorkspace } from '../../auth/useCustomerWorkspace'
 import {
   notificationsApi, type Notification, type NotificationCategory, type NotificationPreferences,
 } from '../../api/notificationsApi'
@@ -40,6 +41,7 @@ function timeAgo(iso: string): string {
  * shown only for authenticated users (SiteNavbar already gates its own
  * "My Products"/"Admin Panel" links the same way). */
 export function NotificationBell() {
+  const customer = useCustomerWorkspace() === true
   const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null)
   const [unreadCount, setUnreadCount] = useState(0)
   const [notifications, setNotifications] = useState<Notification[] | null>(null)
@@ -54,10 +56,11 @@ export function NotificationBell() {
   }
 
   useEffect(() => {
+    if (!customer) return   // the platform admin has no notifications of their own
     refresh()
     const interval = setInterval(refresh, 60_000)
     return () => clearInterval(interval)
-  }, [])
+  }, [customer])
 
   const open = Boolean(anchorEl)
 
@@ -93,6 +96,8 @@ export function NotificationBell() {
   const handleMarkAllRead = () => {
     notificationsApi.markAllRead().then(refresh).catch(() => {})
   }
+
+  if (!customer) return null
 
   return (
     <>

@@ -1,6 +1,7 @@
 import { useEffect, useRef } from 'react'
 import { useTranslation } from 'react-i18next'
 import { preferenceApi } from '../api/preferenceApi'
+import { useCustomerWorkspace } from '../auth/useCustomerWorkspace'
 import { useAuth } from '../auth/AuthProvider'
 import { useLocalePreference } from './LocalePreferenceProvider'
 import { DATE_FORMATS, type DateFormat } from './formatOptions'
@@ -36,6 +37,8 @@ const isDateFormat = (v: string): v is DateFormat => (DATE_FORMATS as readonly s
  */
 export function PreferenceSync() {
   const auth = useAuth()
+  // The platform admin has no customer account, so there is nothing to load or save on the server: their choices stay on this device.
+  const customer = useCustomerWorkspace() === true
   const { i18n } = useTranslation()
   const { mode, setMode, reducedMotion, setReducedMotion } = useThemeMode()
   const { timeZone, setTimeZone, region, setRegion, dateFormat, setDateFormat } = useLocalePreference()
@@ -44,7 +47,7 @@ export function PreferenceSync() {
   const readyToPersist = useRef(false)
 
   useEffect(() => {
-    if (!auth.isAuthenticated) {
+    if (!auth.isAuthenticated || !customer) {
       hydratedFor.current = null
       readyToPersist.current = false
       return
@@ -78,15 +81,15 @@ export function PreferenceSync() {
         readyToPersist.current = true
       })
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [auth.isAuthenticated, auth.user?.username])
+  }, [auth.isAuthenticated, customer, auth.user?.username])
 
   useEffect(() => {
-    if (!auth.isAuthenticated || !readyToPersist.current) return
+    if (!auth.isAuthenticated || !customer || !readyToPersist.current) return
     preferenceApi.update({ language: i18n.language, region, timeZone, themeMode: mode, reducedMotion }).catch(() => {
       // Best-effort — a failed save just means this device falls back to
       // localStorage next time, same as before this feature existed.
     })
-  }, [auth.isAuthenticated, mode, reducedMotion, timeZone, region, i18n.language])
+  }, [auth.isAuthenticated, customer, mode, reducedMotion, timeZone, region, i18n.language])
 
   return null
 }

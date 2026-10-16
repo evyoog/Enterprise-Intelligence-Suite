@@ -1,5 +1,6 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
 import { useAuth } from '../../auth/AuthProvider'
+import { useCustomerWorkspace } from '../../auth/useCustomerWorkspace'
 import { wishlistApi } from '../../api/wishlistApi'
 
 /** C94 (REQ-MKT-004): the signed-in user's saved product ids, for the heart on the catalog cards. */
@@ -15,6 +16,7 @@ const WishlistContext = createContext<WishlistState | null>(null)
 
 export function WishlistProvider({ children }: { children: ReactNode }) {
   const { isAuthenticated } = useAuth()
+  const customer = useCustomerWorkspace() === true   // the platform admin has no wishlist
   const [ids, setIds] = useState<ReadonlySet<number>>(new Set())
   // A list that arrives after sign-out is dropped, so the last person's saved products never come back (as the cart does).
   const signedInRef = useRef(isAuthenticated)
@@ -22,9 +24,9 @@ export function WishlistProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect -- the list follows sign-in and sign-out
-    if (!isAuthenticated) { setIds(new Set()); return }
+    if (!isAuthenticated || !customer) { setIds(new Set()); return }
     wishlistApi.list().then((list) => { if (signedInRef.current) setIds(new Set(list)) }).catch(() => {})
-  }, [isAuthenticated])
+  }, [isAuthenticated, customer])
 
   const toggle = useCallback(async (productId: number) => {
     const saved = ids.has(productId)
