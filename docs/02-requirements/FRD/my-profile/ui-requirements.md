@@ -1,0 +1,2 @@
+# UI requirements — My profile
+Screen spec: [profile.md](../../../05-ui/screen-requirements/profile.md). Layout changes (profile menu, global bar): [application-layout.md](../../../05-ui/screen-requirements/application-layout.md). Route `/account/profile` (`RequireAuth`, lazy page `ProfilePage`); the admin "Edit profile" dialog is opened from the organization detail members list and the individuals list.

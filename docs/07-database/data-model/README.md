@@ -19,6 +19,7 @@ One file per feature, with the tables, columns, constraints and relationships it
 - [org-hierarchy](org-hierarchy.md) — Data model — Organization hierarchy (REQ-TEN-006)
 - [platform-defaults-templates](platform-defaults-templates.md) — Data model — platform defaults and message templates
 - [product-content](product-content.md) — Data model — Product content (02.04)
+- [profile](profile.md) — Data model — My profile (REQ-TEN-011)
 - [projects](projects.md) — Data model — Projects (REQ-TEN-009)
 - [renewal-reminders](renewal-reminders.md) — Data model — Auto-renewal and renewal reminders
 - [search](search.md) — Data model — Search index (C70)

@@ -514,7 +514,8 @@
       "entitlementsLookup": "Entitlements lookup",
       "coupons": "Coupons",
       "taxConfiguration": "Tax configuration",
-      "serviceInstances": "Service instances"
+      "serviceInstances": "Service instances",
+      "profile": "My profile"
     },
     "catalogTitle": "Product catalog",
     "catalogSubtitle": "Search and filter the products available on the platform.",
@@ -5283,5 +5284,169 @@
     "cancel": "Cancel request",
     "cancelSuccess": "Request cancelled.",
     "cancelError": "Could not cancel this request."
+  },
+  "profile": {
+    "title": "My profile",
+    "subtitle": "Your details, photo and contact information. Language and time zone are in Preferences.",
+    "loadError": "Could not load your profile.",
+    "saveError": "Could not save your profile. Please try again.",
+    "saved": "Profile saved.",
+    "created": "Your profile has been created.",
+    "fixErrors": "Some fields need your attention. They are marked on their tabs.",
+    "tabsLabel": "Profile sections",
+    "tabHasErrors": "(has errors)",
+    "createAction": "Create my profile",
+    "preferencesNote": "Language and time zone are not part of your profile.",
+    "preferencesLink": "Change them in Preferences",
+    "tabs": {
+      "personal": "Personal",
+      "work": "Work",
+      "address": "Address",
+      "online": "Online",
+      "account": "Account"
+    },
+    "tabHints": {
+      "personal": "How you are called and how to reach you. First and last name are required.",
+      "work": "Your role and the company you work for.",
+      "address": "Your postal address. The postal code format depends on the country.",
+      "online": "Links to your professional profile and website.",
+      "account": "Details of your sign-in and membership. These are read-only here."
+    },
+    "fields": {
+      "firstName": "First name",
+      "lastName": "Last name",
+      "preferredName": "Preferred name",
+      "mobile": "Mobile number",
+      "alternatePhone": "Alternate phone",
+      "bio": "About you",
+      "jobTitle": "Job title",
+      "department": "Department",
+      "companyName": "Company",
+      "industry": "Industry",
+      "addressLine1": "Address line 1",
+      "addressLine2": "Address line 2",
+      "city": "City",
+      "state": "State / province",
+      "postalCode": "Postal code",
+      "country": "Country",
+      "linkedinUrl": "LinkedIn profile",
+      "websiteUrl": "Website"
+    },
+    "hints": {
+      "preferredName": "Shown instead of your first name, for example in greetings.",
+      "mobile": "With country code, for example +919876543210.",
+      "alternatePhone": "Optional. With country code.",
+      "postalCode": "For India, 6 digits.",
+      "linkedinUrl": "For example https://www.linkedin.com/in/your-name",
+      "websiteUrl": "For example https://www.example.com",
+      "nameManaged": "Your name is managed by your organization's identity provider.",
+      "counter": "{{count}} / {{max}}"
+    },
+    "errors": {
+      "required": "This field is required.",
+      "maxLength": "Use {{max}} characters or fewer.",
+      "invalidChars": "Remove the characters < and > and any control characters.",
+      "invalidName": "Use letters, spaces and . ' - only, starting with a letter.",
+      "invalidPhone": "Enter the number with country code, for example +919876543210.",
+      "invalidPostalCode": "Use letters, digits, spaces or hyphens (2 to 11 characters).",
+      "invalidPostalCodeIndia": "An Indian postal code has exactly 6 digits.",
+      "invalidLinkedin": "Enter a LinkedIn address starting with https://.",
+      "invalidWebsite": "Enter a web address starting with http:// or https://.",
+      "identityProvider": "Your name could not be updated at the sign-in service, so nothing was saved. Please try again later."
+    },
+    "roles": {
+      "PLATFORM_ADMIN": "Platform administrator",
+      "ORG_ADMIN": "Organization administrator",
+      "MEMBER": "Member",
+      "INDIVIDUAL": "Individual"
+    },
+    "status": {
+      "ACTIVE": "Active",
+      "SUSPENDED": "Suspended",
+      "INACTIVE": "Inactive",
+      "COMPLETED": "Active"
+    },
+    "account": {
+      "email": "Email",
+      "role": "Role",
+      "organization": "Organization",
+      "status": "Membership status",
+      "memberSince": "Member since",
+      "emailNote": "Your email address is your sign-in name and cannot be changed here.",
+      "linkSecurity": "Sign-in security",
+      "linkPreferences": "Preferences (language and time zone)",
+      "linkMembers": "People and structure",
+      "linkOrganization": "Organization dashboard"
+    },
+    "header": {
+      "label": "Profile summary"
+    },
+    "photo": {
+      "alt": "Profile photo of {{name}}",
+      "add": "Add photo",
+      "change": "Change photo",
+      "remove": "Remove photo",
+      "input": "Choose a profile photo",
+      "uploading": "Uploading photo",
+      "saved": "Photo updated.",
+      "removed": "Photo removed.",
+      "needsProfile": "Create your profile to add a photo.",
+      "errors": {
+        "type": "Use a JPEG, PNG or WebP image.",
+        "sourceTooLarge": "That image is too large to process. Choose one under 20 MB.",
+        "tooLarge": "The photo is still larger than 1 MB after resizing. Choose a simpler image.",
+        "unreadable": "That file could not be read as an image.",
+        "failed": "Could not update the photo. Please try again."
+      }
+    },
+    "completion": {
+      "summary": "{{filled}} of {{total}} complete",
+      "aria": "Profile {{percent}}% complete",
+      "done": "Your profile is complete.",
+      "toggle_one": "{{count}} item missing",
+      "toggle_other": "{{count}} items missing",
+      "items": {
+        "photo": "Photo",
+        "mobile": "Mobile number",
+        "jobTitle": "Job title",
+        "department": "Department",
+        "companyName": "Company",
+        "industry": "Industry",
+        "addressLine1": "Address line 1",
+        "city": "City",
+        "state": "State / province",
+        "postalCode": "Postal code",
+        "country": "Country"
+      }
+    },
+    "saveBar": {
+      "label": "Save changes",
+      "unsaved": "You have unsaved changes",
+      "discard": "Discard",
+      "save": "Save changes",
+      "saving": "Saving…"
+    },
+    "leave": {
+      "title": "Leave without saving?",
+      "body": "Your changes to the profile have not been saved and will be lost.",
+      "confirm": "Leave"
+    },
+    "notCreated": {
+      "title": "Your customer profile has not been created.",
+      "body": "It is optional."
+    },
+    "bar": {
+      "label": "Profile completion",
+      "message": "Your profile is {{percent}}% complete",
+      "complete": "Complete profile",
+      "dismiss": "Dismiss for this session"
+    },
+    "admin": {
+      "title": "Edit profile: {{name}}",
+      "hint": "Editing the profile of {{email}}. The email and photo cannot be changed here.",
+      "edit": "Edit profile",
+      "editFor": "Edit profile of {{name}}",
+      "cancel": "Cancel"
+    }
   }
 }

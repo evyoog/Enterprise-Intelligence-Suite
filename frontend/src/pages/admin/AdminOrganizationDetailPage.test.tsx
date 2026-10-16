@@ -1,10 +1,11 @@
 import '../../i18n'
-import { screen, within } from '@testing-library/react'
+import { screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { axe } from 'jest-axe'
 import { Route, Routes } from 'react-router-dom'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { ApiError } from '../../api/client'
+import { makeProfile } from '../../test/profileFixtures'
 import { renderWithProviders } from '../../test/renderWithProviders'
 import { AdminOrganizationDetailPage } from './AdminOrganizationDetailPage'
 
@@ -34,6 +35,11 @@ vi.mock('../../api/adminRegistrationApi', () => ({
     changeOrganizationLifecycle: (id: number, action: string, reason?: string) => changeOrganizationLifecycle(id, action, reason),
     updateSeats: vi.fn(),
   },
+}))
+const getForCustomer = vi.fn()
+vi.mock('../../api/profileApi', async (importActual) => ({
+  ...(await importActual<typeof import('../../api/profileApi')>()),
+  profileApi: { getForCustomer: (id: number) => getForCustomer(id), updateForCustomer: vi.fn() },
 }))
 vi.mock('../../api/auditLogApi', () => ({ auditLogApi: { search: vi.fn().mockResolvedValue({ items: [], totalElements: 0, page: 0, size: 50 }) } }))
 
@@ -93,6 +99,18 @@ describe('AdminOrganizationDetailPage — organization', () => {
     expect(await screen.findByText('inv@acme.example')).toBeInTheDocument()
     await userEvent.setup().click(screen.getByRole('tab', { name: 'Security' }))
     expect(await screen.findByText('Required')).toBeInTheDocument()
+  })
+
+  it('lets a platform administrator edit a member\'s profile from the members list (C107)', async () => {
+    getForCustomer.mockReset().mockResolvedValue(makeProfile())
+    renderAt('/admin/organizations/organization/7?tab=members')
+    const user = userEvent.setup()
+    await user.click(await screen.findByRole('button', { name: 'Edit profile of Asha Rao' }))
+    const dialog = await screen.findByRole('dialog', { name: 'Edit profile: Asha Rao' })
+    expect(getForCustomer).toHaveBeenCalledWith(2)
+    expect(await within(dialog).findByLabelText(/First name/)).toHaveValue('Asha')
+    await user.click(within(dialog).getByRole('button', { name: 'Cancel' }))
+    await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument())
   })
 
   it('edits the company details and leaves the code alone', async () => {
@@ -157,5 +175,19 @@ describe('AdminOrganizationDetailPage — individual', () => {
     expect(await screen.findByRole('heading', { name: 'Dina Rao' })).toBeInTheDocument()
     expect(screen.getAllByText('Profile 40% complete').length).toBeGreaterThan(0)
     expect(screen.getAllByRole('tab').map((t) => t.textContent)).toEqual(['Profile', 'Subscriptions', 'Billing', 'Support', 'Activity'])
+  })
+
+  it('offers Edit profile for the individual, which opens the profile editor for that person (C107)', async () => {
+    individual.mockReset()
+    individual.mockResolvedValue({
+      id: 9, firstName: 'Dina', lastName: 'Rao', email: 'dina@example.com', country: 'India', status: 'EMAIL_VERIFIED', signInLinked: true,
+      completion: { percent: 40, missing: ['MOBILE'] }, subscriptions: [], invoices: [], tickets: [],
+    })
+    getForCustomer.mockReset().mockResolvedValue(makeProfile({ personal: { ...makeProfile().personal, firstName: 'Dina' } }))
+    renderAt('/admin/organizations/individual/9')
+    await userEvent.setup().click(await screen.findByRole('button', { name: 'Edit profile' }))
+    const dialog = await screen.findByRole('dialog')
+    expect(getForCustomer).toHaveBeenCalledWith(9)
+    expect(await within(dialog).findByLabelText(/First name/)).toHaveValue('Dina')
   })
 })

@@ -514,7 +514,8 @@
       "entitlementsLookup": "Consulta de derechos de uso",
       "coupons": "Cupones",
       "taxConfiguration": "Configuración de impuestos",
-      "serviceInstances": "Instancias de servicio"
+      "serviceInstances": "Instancias de servicio",
+      "profile": "Mi perfil"
     },
     "catalogTitle": "Catálogo de productos",
     "catalogSubtitle": "Busque y filtre los productos disponibles en la plataforma.",
@@ -5288,5 +5289,169 @@
     "cancel": "Cancelar solicitud",
     "cancelSuccess": "Solicitud cancelada.",
     "cancelError": "No se pudo cancelar esta solicitud."
+  },
+  "profile": {
+    "title": "Mi perfil",
+    "subtitle": "Tus datos, tu foto y tu información de contacto. El idioma y la zona horaria están en Preferencias.",
+    "loadError": "No se pudo cargar tu perfil.",
+    "saveError": "No se pudo guardar tu perfil. Inténtalo de nuevo.",
+    "saved": "Perfil guardado.",
+    "created": "Tu perfil se ha creado.",
+    "fixErrors": "Algunos campos necesitan tu atención. Están marcados en sus pestañas.",
+    "tabsLabel": "Secciones del perfil",
+    "tabHasErrors": "(con errores)",
+    "createAction": "Crear mi perfil",
+    "preferencesNote": "El idioma y la zona horaria no forman parte de tu perfil.",
+    "preferencesLink": "Cámbialos en Preferencias",
+    "tabs": {
+      "personal": "Personal",
+      "work": "Trabajo",
+      "address": "Dirección",
+      "online": "En línea",
+      "account": "Cuenta"
+    },
+    "tabHints": {
+      "personal": "Cómo te llamas y cómo contactarte. El nombre y el apellido son obligatorios.",
+      "work": "Tu puesto y la empresa en la que trabajas.",
+      "address": "Tu dirección postal. El formato del código postal depende del país.",
+      "online": "Enlaces a tu perfil profesional y a tu sitio web.",
+      "account": "Datos de tu inicio de sesión y de tu pertenencia. Aquí son de solo lectura."
+    },
+    "fields": {
+      "firstName": "Nombre",
+      "lastName": "Apellido",
+      "preferredName": "Nombre preferido",
+      "mobile": "Número de móvil",
+      "alternatePhone": "Teléfono alternativo",
+      "bio": "Sobre ti",
+      "jobTitle": "Puesto",
+      "department": "Departamento",
+      "companyName": "Empresa",
+      "industry": "Sector",
+      "addressLine1": "Dirección, línea 1",
+      "addressLine2": "Dirección, línea 2",
+      "city": "Ciudad",
+      "state": "Estado / provincia",
+      "postalCode": "Código postal",
+      "country": "País",
+      "linkedinUrl": "Perfil de LinkedIn",
+      "websiteUrl": "Sitio web"
+    },
+    "hints": {
+      "preferredName": "Se muestra en lugar de tu nombre, por ejemplo en los saludos.",
+      "mobile": "Con prefijo del país, por ejemplo +919876543210.",
+      "alternatePhone": "Opcional. Con prefijo del país.",
+      "postalCode": "Para India, 6 dígitos.",
+      "linkedinUrl": "Por ejemplo https://www.linkedin.com/in/tu-nombre",
+      "websiteUrl": "Por ejemplo https://www.example.com",
+      "nameManaged": "Tu nombre lo gestiona el proveedor de identidad de tu organización.",
+      "counter": "{{count}} / {{max}}"
+    },
+    "errors": {
+      "required": "Este campo es obligatorio.",
+      "maxLength": "Usa {{max}} caracteres o menos.",
+      "invalidChars": "Quita los caracteres < y > y cualquier carácter de control.",
+      "invalidName": "Usa solo letras, espacios y . ' -, empezando por una letra.",
+      "invalidPhone": "Escribe el número con prefijo del país, por ejemplo +919876543210.",
+      "invalidPostalCode": "Usa letras, dígitos, espacios o guiones (de 2 a 11 caracteres).",
+      "invalidPostalCodeIndia": "Un código postal de India tiene exactamente 6 dígitos.",
+      "invalidLinkedin": "Escribe una dirección de LinkedIn que empiece por https://.",
+      "invalidWebsite": "Escribe una dirección web que empiece por http:// o https://.",
+      "identityProvider": "No se pudo actualizar tu nombre en el servicio de inicio de sesión, así que no se guardó nada. Inténtalo más tarde."
+    },
+    "roles": {
+      "PLATFORM_ADMIN": "Administrador de la plataforma",
+      "ORG_ADMIN": "Administrador de la organización",
+      "MEMBER": "Miembro",
+      "INDIVIDUAL": "Particular"
+    },
+    "status": {
+      "ACTIVE": "Activo",
+      "SUSPENDED": "Suspendido",
+      "INACTIVE": "Inactivo",
+      "COMPLETED": "Activo"
+    },
+    "account": {
+      "email": "Correo electrónico",
+      "role": "Rol",
+      "organization": "Organización",
+      "status": "Estado de la pertenencia",
+      "memberSince": "Miembro desde",
+      "emailNote": "Tu correo electrónico es tu nombre de inicio de sesión y no se puede cambiar aquí.",
+      "linkSecurity": "Seguridad del inicio de sesión",
+      "linkPreferences": "Preferencias (idioma y zona horaria)",
+      "linkMembers": "Personas y estructura",
+      "linkOrganization": "Panel de la organización"
+    },
+    "header": {
+      "label": "Resumen del perfil"
+    },
+    "photo": {
+      "alt": "Foto de perfil de {{name}}",
+      "add": "Añadir foto",
+      "change": "Cambiar foto",
+      "remove": "Quitar foto",
+      "input": "Elegir una foto de perfil",
+      "uploading": "Subiendo la foto",
+      "saved": "Foto actualizada.",
+      "removed": "Foto eliminada.",
+      "needsProfile": "Crea tu perfil para añadir una foto.",
+      "errors": {
+        "type": "Usa una imagen JPEG, PNG o WebP.",
+        "sourceTooLarge": "Esa imagen es demasiado grande para procesarla. Elige una de menos de 20 MB.",
+        "tooLarge": "La foto sigue pesando más de 1 MB después de reducirla. Elige una imagen más sencilla.",
+        "unreadable": "No se pudo leer ese archivo como imagen.",
+        "failed": "No se pudo actualizar la foto. Inténtalo de nuevo."
+      }
+    },
+    "completion": {
+      "summary": "{{filled}} de {{total}} completados",
+      "aria": "Perfil completo al {{percent}} %",
+      "done": "Tu perfil está completo.",
+      "toggle_one": "Falta {{count}} elemento",
+      "toggle_other": "Faltan {{count}} elementos",
+      "items": {
+        "photo": "Foto",
+        "mobile": "Número de móvil",
+        "jobTitle": "Puesto",
+        "department": "Departamento",
+        "companyName": "Empresa",
+        "industry": "Sector",
+        "addressLine1": "Dirección, línea 1",
+        "city": "Ciudad",
+        "state": "Estado / provincia",
+        "postalCode": "Código postal",
+        "country": "País"
+      }
+    },
+    "saveBar": {
+      "label": "Guardar cambios",
+      "unsaved": "Tienes cambios sin guardar",
+      "discard": "Descartar",
+      "save": "Guardar cambios",
+      "saving": "Guardando…"
+    },
+    "leave": {
+      "title": "¿Salir sin guardar?",
+      "body": "Los cambios en tu perfil no se han guardado y se perderán.",
+      "confirm": "Salir"
+    },
+    "notCreated": {
+      "title": "Tu perfil de cliente no se ha creado.",
+      "body": "Es opcional."
+    },
+    "bar": {
+      "label": "Perfil completado",
+      "message": "Tu perfil está completo al {{percent}} %",
+      "complete": "Completar perfil",
+      "dismiss": "Ocultar durante esta sesión"
+    },
+    "admin": {
+      "title": "Editar perfil: {{name}}",
+      "hint": "Editando el perfil de {{email}}. El correo electrónico y la foto no se pueden cambiar aquí.",
+      "edit": "Editar perfil",
+      "editFor": "Editar el perfil de {{name}}",
+      "cancel": "Cancelar"
+    }
   }
 }

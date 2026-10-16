@@ -1,4 +1,4 @@
-import { Building2, MoreHorizontal, UserRound } from 'lucide-react'
+import { Building2, MoreHorizontal, Pencil, UserRound } from 'lucide-react'
 import { useEffect, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link as RouterLink, useNavigate, useSearchParams } from 'react-router-dom'
@@ -11,6 +11,7 @@ import { adminRegistrationApi } from '../../api/adminRegistrationApi'
 import { ApiError } from '../../api/client'
 import { orgDirectoryApi, type DirectoryRow, type DirectorySummary } from '../../api/orgDirectoryApi'
 import { PageHeader } from '../../components/layout/PageHeader'
+import { ProfileEditDialog } from '../../components/profile/ProfileEditDialog'
 import { ResetMfaDialog } from '../../components/security/ResetMfaDialog'
 
 const FILTER_KEYS = ['q', 'type', 'status', 'lifecycle', 'country', 'region', 'industry', 'profile', 'seats', 'from', 'to'] as const
@@ -40,6 +41,8 @@ export function AdminOrganizationsPage() {
   const [menu, setMenu] = useState<{ anchor: HTMLElement; row: DirectoryRow } | null>(null)
   const [resetOpen, setResetOpen] = useState(false)
   const [resetNotice, setResetNotice] = useState<string | null>(null)
+  // C107: a platform administrator editing an individual's profile from the list.
+  const [profileFor, setProfileFor] = useState<DirectoryRow | null>(null)
   const [version, setVersion] = useState(0)
 
   useEffect(() => {
@@ -258,6 +261,14 @@ export function AdminOrganizationsPage() {
                               <MoreHorizontal size={16} />
                             </IconButton>
                           )}
+                          {r.kind === 'INDIVIDUAL' && (
+                            <Tooltip title={t('profile.admin.edit')}>
+                              <IconButton size="small" aria-label={t('profile.admin.editFor', { name: r.name })}
+                                onClick={() => setProfileFor(r)}>
+                                <Pencil size={15} />
+                              </IconButton>
+                            </Tooltip>
+                          )}
                         </TableCell>
                       </TableRow>
                     ))}
@@ -269,6 +280,8 @@ export function AdminOrganizationsPage() {
                 rowsPerPageOptions={[10, 25, 50, 100]} />
             </Paper>
           )}
+          <ProfileEditDialog customerId={profileFor?.id ?? null} name={profileFor?.name} onClose={() => setProfileFor(null)}
+            onSaved={() => setVersion((v) => v + 1)} />
           <Menu anchorEl={menu?.anchor} open={!!menu} onClose={() => setMenu(null)}>
             {menu && (['edit', menu.row.lifecycleStatus === 'ACTIVE' ? 'suspend' : 'activate', ...(menu.row.lifecycleStatus === 'CLOSED' ? [] : ['close'])] as const)
               .filter((a) => !(a === 'edit' && menu.row.lifecycleStatus === 'CLOSED'))

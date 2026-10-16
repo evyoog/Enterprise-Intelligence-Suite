@@ -2145,3 +2145,27 @@ ALTER TABLE billing_settings ADD COLUMN IF NOT EXISTS global_seat_price_currency
 ALTER TABLE products ADD COLUMN IF NOT EXISTS seat_pricing_enabled BOOLEAN NOT NULL DEFAULT false;
 ALTER TABLE products ADD COLUMN IF NOT EXISTS seat_price NUMERIC(12, 2);
 ALTER TABLE products ADD COLUMN IF NOT EXISTS seat_price_currency VARCHAR(10);
+
+-- C107 (2026-10-16): "My profile" for every signed-in person (migration V046).
+-- New optional person-owned columns on customer; existing columns are reused.
+ALTER TABLE customer ADD COLUMN IF NOT EXISTS preferred_name VARCHAR(60);
+ALTER TABLE customer ADD COLUMN IF NOT EXISTS alternate_phone VARCHAR(20);
+ALTER TABLE customer ADD COLUMN IF NOT EXISTS bio VARCHAR(500);
+ALTER TABLE customer ADD COLUMN IF NOT EXISTS department VARCHAR(100);
+ALTER TABLE customer ADD COLUMN IF NOT EXISTS address_line1 VARCHAR(150);
+ALTER TABLE customer ADD COLUMN IF NOT EXISTS address_line2 VARCHAR(150);
+ALTER TABLE customer ADD COLUMN IF NOT EXISTS city VARCHAR(80);
+ALTER TABLE customer ADD COLUMN IF NOT EXISTS state VARCHAR(80);
+ALTER TABLE customer ADD COLUMN IF NOT EXISTS postal_code VARCHAR(12);
+ALTER TABLE customer ADD COLUMN IF NOT EXISTS linkedin_url VARCHAR(200);
+ALTER TABLE customer ADD COLUMN IF NOT EXISTS website_url VARCHAR(200);
+ALTER TABLE customer ADD COLUMN IF NOT EXISTS profile_updated_at TIMESTAMP;
+
+-- Profile photo, one row per person, stored in the database on purpose (object-storage decision KC-3 is open).
+CREATE TABLE IF NOT EXISTS customer_photo (
+    customer_id BIGINT PRIMARY KEY REFERENCES customer (id) ON DELETE CASCADE,
+    content_type VARCHAR(40) NOT NULL,
+    size_bytes INTEGER NOT NULL,
+    data BYTEA NOT NULL,
+    updated_at TIMESTAMP NOT NULL
+);

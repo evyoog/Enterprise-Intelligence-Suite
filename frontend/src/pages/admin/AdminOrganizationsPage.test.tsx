@@ -3,11 +3,17 @@ import { screen, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { axe } from 'jest-axe'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { makeProfile } from '../../test/profileFixtures'
 import { renderWithProviders } from '../../test/renderWithProviders'
 import { AdminOrganizationsPage } from './AdminOrganizationsPage'
 
 const directory = vi.fn()
 vi.mock('../../api/orgDirectoryApi', () => ({ orgDirectoryApi: { directory: () => directory() } }))
+const getForCustomer = vi.fn()
+vi.mock('../../api/profileApi', async (importActual) => ({
+  ...(await importActual<typeof import('../../api/profileApi')>()),
+  profileApi: { getForCustomer: (id: number) => getForCustomer(id), updateForCustomer: vi.fn() },
+}))
 vi.mock('../../api/adminRegistrationApi', () => ({ adminRegistrationApi: { resetMfa: vi.fn() } }))
 
 const base = {
@@ -49,6 +55,16 @@ describe('AdminOrganizationsPage', () => {
     expect(screen.getByText('72%')).toBeInTheDocument()
     expect(screen.queryByRole('tab')).not.toBeInTheDocument()
     expect(screen.queryByText(/Keycloak provisioning/i)).not.toBeInTheDocument()
+  })
+
+  it('lets a platform administrator edit an individual\'s profile from the list, not an organization\'s (C107)', async () => {
+    getForCustomer.mockReset().mockResolvedValue(makeProfile())
+    renderWithProviders(<AdminOrganizationsPage />)
+    await screen.findByRole('table')
+    expect(screen.queryByRole('button', { name: 'Edit profile of Acme' })).not.toBeInTheDocument()
+    await userEvent.setup().click(screen.getByRole('button', { name: 'Edit profile of Dina Rao' }))
+    expect(await screen.findByRole('dialog', { name: /Edit profile/ })).toBeInTheDocument()
+    expect(getForCustomer).toHaveBeenCalledWith(9)
   })
 
   it('narrows by type, by profile completion and by search, and clears the filters', async () => {
