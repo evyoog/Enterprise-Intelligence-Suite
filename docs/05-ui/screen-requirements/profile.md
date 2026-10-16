@@ -1,6 +1,6 @@
 # Screen: My profile
 
-**Requirement:** [REQ-TEN-011](../../02-requirements/FRD/my-profile/requirement.md) ([C107](../../01-business/roadmap/open-decisions.md#c107))
+**Requirement:** [REQ-TEN-011](../../02-requirements/FRD/my-profile/requirement.md) ([C107](../../01-business/roadmap/open-decisions.md#c107), [C108](../../01-business/roadmap/open-decisions.md#c108))
 
 | Field | Value |
 |---|---|
@@ -46,8 +46,8 @@ One form state for the first four tabs and one sticky **Save** and **Discard** b
 |---|---|
 | Loading | Skeleton of the header card and the form |
 | Error loading | Alert with a Retry button |
-| Platform administrator without a record (`exists` false) | A banner "Your customer profile has not been created. It is optional." and a **Create my profile** action; first and last name are prefilled from the sign-in; the completion bar shows 0 of 11; the photo button is disabled with the note "Create your profile to add a photo."; after the first save the page behaves as for everyone else. No other screen is blocked and the global bar is not shown |
-| Person without a record who is not a platform administrator | The server answers 404; the page shows the load-error state "Could not load your profile." with the server's message and a Retry button |
+| Platform administrator without a record (`exists` false): a holder of `MANAGE_REGISTRATIONS` or a login listed and enabled in the platform administrator registry ([C108](../../01-business/roadmap/open-decisions.md#c108), no frontend change: the server now answers `exists:false` for a listed login instead of 404) | A banner "Your customer profile has not been created. It is optional." and a **Create my profile** action; first and last name are prefilled from the sign-in; the completion bar shows 0 of 11; the photo button is disabled with the note "Create your profile to add a photo."; after the first save the page behaves as for everyone else. No other screen is blocked and the global bar is not shown |
+| Person without a record who is not a platform administrator (not a permission holder and not listed in the registry) | The server answers 404; the page shows the load-error state "Could not load your profile." with the server's message and a Retry button |
 | Saving | Save disabled with a progress indicator, the form is disabled until the answer |
 
 ## 4. Admin: Edit profile dialog

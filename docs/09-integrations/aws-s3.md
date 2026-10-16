@@ -68,3 +68,13 @@ S3 errors are logged on the server with the request id; users see friendly messa
 - `eis.knowledge.storage.provider` defaults to `none`: uploads then answer STORAGE_NOT_CONFIGURED and hosted playback is unavailable; YouTube and external videos still work.
 - Browser uploads send `Content-Type` as signed; CORS must allow `PUT`, `GET` and expose `ETag` (multipart completion needs it).
 - Verified: presigned URLs carry `X-Amz-Expires` and never the secret (unit test with the real signer); no credentials in API responses or the built frontend bundle. An expired URL refusing at S3 needs a real bucket (UAT-KNW-003).
+
+## Platform administrator registry (`eis.platform-admins.*`)
+Not a knowledge bucket: a second, separate use of S3 and of the same AWS SDK ([C108](../01-business/roadmap/open-decisions.md#c108)). The registry is one small JSON file that lists the platform administrator accounts; it is read from this project today and from an S3 object later. Full description and the migration steps: [platform-admin-registry.md](../08-architecture/security/platform-admin-registry.md). No secret is configured: S3 is read with the default AWS credential chain (IAM role).
+
+| Key | Environment variable | Default | Meaning |
+|---|---|---|---|
+| `eis.platform-admins.location` | `EIS_PLATFORM_ADMINS_LOCATION` | `classpath:config/platform-admins.json` | Where the file is read from: `classpath:...`, `file:/absolute/path.json` or `s3://bucket/key`. Blank falls back to the default; an unsupported or malformed value leaves the registry empty (WARN) and does not stop startup |
+| `eis.platform-admins.refresh-seconds` | `EIS_PLATFORM_ADMINS_REFRESH_SECONDS` | `60` | The source is re-read at most this often (lazily, on use); minimum 1 |
+| `eis.platform-admins.s3.region` | `EIS_PLATFORM_ADMINS_S3_REGION` | empty | AWS region of the bucket (S3 only); blank lets the SDK region chain apply |
+| `eis.platform-admins.s3.endpoint` | `EIS_PLATFORM_ADMINS_S3_ENDPOINT` | empty | Optional S3-compatible endpoint (MinIO, localstack; S3 only) |
