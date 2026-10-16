@@ -1,5 +1,5 @@
 import '../../i18n'
-import { render, screen, within } from '@testing-library/react'
+import { render, screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { axe } from 'jest-axe'
 import { MemoryRouter, Route, Routes } from 'react-router-dom'
@@ -13,6 +13,11 @@ const mockUseAuth = vi.fn()
 vi.mock('../../auth/AuthProvider', () => ({ useAuth: () => mockUseAuth() }))
 const getPermissions = vi.fn()
 vi.mock('../../api/myPermissionsApi', () => ({ myPermissionsApi: { get: () => getPermissions() } }))
+const getCompletion = vi.fn()
+const getPhoto = vi.fn()
+vi.mock('../../api/profileApi', () => ({ profileApi: { completion: () => getCompletion(), photo: () => getPhoto() } }))
+const COMPLETE = { exists: true, percent: 100, filled: 11, total: 11, missing: [] }
+const PARTIAL = { exists: true, percent: 45, filled: 5, total: 11, missing: ['department', 'industry'] }
 vi.mock('./NotificationBell', () => ({ NotificationBell: () => <button type="button">Notifications</button> }))
 vi.mock('../../api/globalSearchApi', () => ({ globalSearchApi: { search: () => Promise.resolve({ products: [], knowledgeArticles: [], tickets: [] }) } }))
 
@@ -30,6 +35,7 @@ function renderAt(path: string) {
             <Route element={<AuthAwareLayout />}>
               <Route path="/products" element={<Probe label="Catalog" />} />
               <Route path="/admin" element={<Probe label="Admin home" />} />
+              <Route path="/account/profile" element={<Probe label="My profile page" />} />
               <Route path="/organization/business-dashboard" element={<Probe label="Dashboard" />} />
               <Route path="*" element={<Probe label="Page" />} />
             </Route>
@@ -52,6 +58,9 @@ describe('Public website vs signed-in tool', () => {
   beforeEach(() => {
     mockUseAuth.mockReset()
     getPermissions.mockReset()
+    getCompletion.mockReset().mockResolvedValue(COMPLETE)
+    getPhoto.mockReset().mockResolvedValue(null)
+    sessionStorage.clear()
   })
 
   it('shows the public website to a visitor, with no sidebar', () => {
@@ -101,6 +110,7 @@ describe('Public website vs signed-in tool', () => {
     const user = userEvent.setup()
     await user.click(screen.getByRole('button', { name: 'Account menu for ada@example.com' }))
     const menu = await screen.findByRole('menu')
+    expect(within(menu).getAllByRole('menuitem').map((e) => e.textContent)).toEqual(['My profile', 'Security', 'Preferences', 'Sign out'])
     expect(within(menu).getByRole('menuitem', { name: 'Security' })).toBeInTheDocument()
     expect(within(menu).getByRole('menuitem', { name: 'Preferences' })).toBeInTheDocument()
     expect(within(menu).getByText('ada@example.com')).toBeInTheDocument()
@@ -155,6 +165,9 @@ describe('Sidebar by kind of user (C80)', () => {
   beforeEach(() => {
     mockUseAuth.mockReset()
     getPermissions.mockReset()
+    getCompletion.mockReset().mockResolvedValue(COMPLETE)
+    getPhoto.mockReset().mockResolvedValue(null)
+    sessionStorage.clear()
   })
 
   const groupLabels = (sidebar: HTMLElement) =>
@@ -242,5 +255,90 @@ describe('Sidebar by kind of user (C80)', () => {
     const crumbs = await screen.findByRole('navigation', { name: 'Breadcrumb' })
     expect(within(crumbs).getByText('Platform')).toBeInTheDocument()
     expect(within(crumbs).getByText('API keys')).toHaveAttribute('aria-current', 'page')
+  })
+})
+
+// C107: My profile in the account menu and the global profile-filling bar.
+describe('My profile in the shell (C107)', () => {
+  beforeEach(() => {
+    mockUseAuth.mockReset()
+    getPermissions.mockReset().mockResolvedValue({ platform: [], organization: [] })
+    getCompletion.mockReset().mockResolvedValue(PARTIAL)
+    getPhoto.mockReset().mockResolvedValue(null)
+    sessionStorage.clear()
+  })
+
+  it('opens My profile from the first account-menu item', async () => {
+    signedIn(false)
+    renderAt('/products')
+    const user = userEvent.setup()
+    await user.click(screen.getByRole('button', { name: 'Account menu for ada@example.com' }))
+    await user.click(within(await screen.findByRole('menu')).getByRole('menuitem', { name: 'My profile' }))
+    expect(await screen.findByText('My profile page (in app)')).toBeInTheDocument()
+  })
+
+  it('opens My profile when the avatar and name block in the menu is clicked, and shows the email line', async () => {
+    mockUseAuth.mockReturnValue({ isAuthenticated: true, isAdmin: false, user: { username: 'ada', email: 'ada@example.com' }, logout: vi.fn() })
+    renderAt('/products')
+    const user = userEvent.setup()
+    await user.click(screen.getByRole('button', { name: 'Account menu for ada' }))
+    const menu = await screen.findByRole('menu')
+    expect(within(menu).getByText('ada@example.com')).toBeInTheDocument()
+    await user.click(within(menu).getByText('ada'))
+    expect(await screen.findByText('My profile page (in app)')).toBeInTheDocument()
+  })
+
+  it('shows the person\'s photo in the top bar once the completion says there is one', async () => {
+    URL.createObjectURL = vi.fn(() => 'blob:ada')
+    URL.revokeObjectURL = vi.fn()
+    getCompletion.mockResolvedValue({ ...PARTIAL, missing: ['department'] })
+    getPhoto.mockResolvedValue(new Blob(['x'], { type: 'image/webp' }))
+    signedIn(false)
+    renderAt('/products')
+    const button = screen.getByRole('button', { name: 'Account menu for ada@example.com' })
+    await waitFor(() => expect(button.querySelector('img')).toHaveAttribute('src', 'blob:ada'))
+  })
+
+  it('shows the profile bar under the app bar on every page while the profile is incomplete', async () => {
+    signedIn(false)
+    renderAt('/products')
+    expect(await screen.findByText('Your profile is 45% complete')).toBeInTheDocument()
+    expect(screen.getByRole('link', { name: 'Complete profile' })).toHaveAttribute('href', '/account/profile')
+    expect(getCompletion).toHaveBeenCalledTimes(1)
+  })
+
+  it('dismisses the bar for the session', async () => {
+    signedIn(false)
+    renderAt('/products')
+    await userEvent.setup().click(await screen.findByRole('button', { name: 'Dismiss for this session' }))
+    expect(screen.queryByText('Your profile is 45% complete')).not.toBeInTheDocument()
+  })
+
+  it('leaves the bar out on the profile page, when complete, and for a person with no customer record', async () => {
+    signedIn(false)
+    const profilePage = renderAt('/account/profile')
+    await waitFor(() => expect(getCompletion).toHaveBeenCalled())
+    expect(screen.queryByText('Your profile is 45% complete')).not.toBeInTheDocument()
+    profilePage.unmount()
+
+    getCompletion.mockResolvedValue(COMPLETE)
+    const complete = renderAt('/products')
+    await waitFor(() => expect(getCompletion).toHaveBeenCalledTimes(2))
+    expect(screen.queryByTestId('profile-completion-bar')).not.toBeInTheDocument()
+    complete.unmount()
+
+    getCompletion.mockResolvedValue({ exists: false, percent: 0, filled: 0, total: 11, missing: [] })
+    renderAt('/products')
+    await waitFor(() => expect(getCompletion).toHaveBeenCalledTimes(3))
+    expect(screen.queryByTestId('profile-completion-bar')).not.toBeInTheDocument()
+  })
+
+  it('still works when the completion cannot be read', async () => {
+    getCompletion.mockRejectedValue(new Error('offline'))
+    signedIn(false)
+    renderAt('/products')
+    expect(screen.getByText('Catalog (in app)')).toBeInTheDocument()
+    await waitFor(() => expect(getCompletion).toHaveBeenCalled())
+    expect(screen.queryByTestId('profile-completion-bar')).not.toBeInTheDocument()
   })
 })

@@ -32,6 +32,10 @@ public interface OrganizationMemberRepository extends JpaRepository<Organization
      * an ORG_ADMIN of" from their own customer id. */
     Optional<OrganizationMember> findFirstByCustomerIdAndStatus(Long customerId, MembershipStatus status);
 
+    /** My profile (C107): every membership a person has ever had, newest first, so the Account tab
+     * can show the status of a suspended or removed member too. */
+    List<OrganizationMember> findByCustomerIdOrderByJoinedAtDesc(Long customerId);
+
     /** REQ-TEN-006: members placed on an organization-hierarchy node. */
     List<OrganizationMember> findByOrgNodeId(Long orgNodeId);
 

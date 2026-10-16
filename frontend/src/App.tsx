@@ -1,3 +1,4 @@
+import { lazy, Suspense } from 'react'
 import { PlatformDetailPage } from './pages/PlatformDetailPage'
 import { AdminApiKeysPage } from './pages/admin/AdminApiKeysPage'
 import { AdminSearchPage } from './pages/admin/AdminSearchPage'
@@ -23,6 +24,8 @@ import { LEGACY_ADMIN_REDIRECTS } from './components/routing/legacyRedirects'
 import { BusinessDashboardPage } from './pages/BusinessDashboardPage'
 import { SecuritySettingsPage } from './pages/SecuritySettingsPage'
 import { PreferencesPage } from './pages/PreferencesPage'
+// C107: My profile loads on demand (photo canvas code and the five-tab form are not needed by every visit).
+const ProfilePage = lazy(() => import('./pages/ProfilePage').then((m) => ({ default: m.ProfilePage })))
 import { OrganizationRegisterPage } from './pages/register/OrganizationRegisterPage'
 import { CheckEmailPage } from './pages/register/CheckEmailPage'
 import { VerifyEmailPage } from './pages/register/VerifyEmailPage'
@@ -81,6 +84,7 @@ import { AdminEntitlementsPage } from './pages/admin/AdminEntitlementsPage'
 import { AdminPartnerDetailPage } from './pages/admin/AdminPartnerDetailPage'
 import { RequireAdmin } from './components/routing/RequireAdmin'
 import { RequireAuth } from './components/routing/RequireAuth'
+import { RequireCustomer } from './components/routing/RequireCustomer'
 import { WishlistPage } from './pages/WishlistPage'
 import { AuthAwareLayout, PublicOnly } from './components/layout/AppShell'
 import { useAuth } from './auth/AuthProvider'
@@ -163,12 +167,12 @@ function MainApp() {
           {/* Deliberately NOT behind RequireAuth — see that component's own
               doc on why preferences stay reachable signed out. */}
           <Route path="/account/preferences" element={<PreferencesPage />} />
-          <Route path="/my/products" element={<RequireAuth><MyProductsPage /></RequireAuth>} />
+          <Route path="/my/products" element={<RequireAuth><RequireCustomer><MyProductsPage /></RequireCustomer></RequireAuth>} />
           {/* REQ-TEN-010 (C103): a member's own history of access requests. */}
-          <Route path="/my/access-requests" element={<RequireAuth><MyAccessRequestsPage /></RequireAuth>} />
-          <Route path="/my/subscriptions" element={<RequireAuth><MySubscriptionsPage /></RequireAuth>} />
+          <Route path="/my/access-requests" element={<RequireAuth><RequireCustomer><MyAccessRequestsPage /></RequireCustomer></RequireAuth>} />
+          <Route path="/my/subscriptions" element={<RequireAuth><RequireCustomer><MySubscriptionsPage /></RequireCustomer></RequireAuth>} />
           {/* REQ-MKT-004 (C94): the products saved with the heart on the catalog. */}
-          <Route path="/my/wishlist" element={<RequireAuth><WishlistPage /></RequireAuth>} />
+          <Route path="/my/wishlist" element={<RequireAuth><RequireCustomer><WishlistPage /></RequireCustomer></RequireAuth>} />
           <Route path="/organization/business-dashboard" element={<RequireAuth><BusinessDashboardPage /></RequireAuth>} />
           {/* C69: organization administration moved off the dashboard. */}
           <Route path="/organization/settings" element={<RequireAuth><OrganizationSettingsRedirect /></RequireAuth>} />
@@ -177,6 +181,14 @@ function MainApp() {
           {/* REQ-TEN-006 (C82): organization hierarchy; MANAGE_ORGANIZATION is enforced by the backend. */}
           <Route path="/organization/structure" element={<Navigate to="/organization/members?tab=structure" replace />} />
           <Route path="/organization/privileged-access" element={<RequireAuth><OrganizationPrivilegedAccessPage /></RequireAuth>} />
+          {/* C107 My profile: every signed-in person (organization admin, platform admin, member, individual). */}
+          <Route path="/account/profile" element={
+            <RequireAuth>
+              <Suspense fallback={<Box sx={{ display: 'flex', justifyContent: 'center', py: 8 }}><CircularProgress size={28} /></Box>}>
+                <ProfilePage />
+              </Suspense>
+            </RequireAuth>
+          } />
           <Route path="/account/security" element={<RequireAuth><SecuritySettingsPage /></RequireAuth>} />
           <Route path="/organization/identity-federation" element={<RequireAuth><OrganizationSecurityPage /></RequireAuth>} />
           {/* REQ-PRT-001 (C26): signed-in customers. */}
@@ -228,8 +240,8 @@ function MainApp() {
               customer (RequireAuth is a bookmark/reload safety net — the
               Subscribe button itself already routes signed-out visitors to
               /login first, with ?returnTo back here). */}
-          <Route path="/cart" element={<RequireAuth><CartPage /></RequireAuth>} />
-          <Route path="/checkout" element={<RequireAuth><CheckoutPage /></RequireAuth>} />
+          <Route path="/cart" element={<RequireAuth><RequireCustomer><CartPage /></RequireCustomer></RequireAuth>} />
+          <Route path="/checkout" element={<RequireAuth><RequireCustomer><CheckoutPage /></RequireCustomer></RequireAuth>} />
           <Route path="/checkout/:productId" element={<LegacyCheckoutRedirect />} />
 
           {/* C80: the generic Settings group is gone. Its old URLs redirect to where each setting

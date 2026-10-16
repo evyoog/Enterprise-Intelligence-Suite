@@ -51,6 +51,45 @@ public class Customer {
     @Column(length = 150)
     private String industry;
 
+    // "My profile" (C107, migration V046): every field below is optional and
+    // person-owned; validation limits live in ProfileValidator.
+    @Column(name = "preferred_name", length = 60)
+    private String preferredName;
+
+    @Column(name = "alternate_phone", length = 20)
+    private String alternatePhone;
+
+    @Column(length = 500)
+    private String bio;
+
+    @Column(length = 100)
+    private String department;
+
+    @Column(name = "address_line1", length = 150)
+    private String addressLine1;
+
+    @Column(name = "address_line2", length = 150)
+    private String addressLine2;
+
+    @Column(length = 80)
+    private String city;
+
+    @Column(length = 80)
+    private String state;
+
+    @Column(name = "postal_code", length = 12)
+    private String postalCode;
+
+    @Column(name = "linkedin_url", length = 200)
+    private String linkedinUrl;
+
+    @Column(name = "website_url", length = 200)
+    private String websiteUrl;
+
+    /** Stamped when the person (or a platform admin) saves the profile form. */
+    @Column(name = "profile_updated_at")
+    private Instant profileUpdatedAt;
+
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 30)
     private RegistrationStatus status = RegistrationStatus.PENDING_EMAIL_VERIFICATION;
